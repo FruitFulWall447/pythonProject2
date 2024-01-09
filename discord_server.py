@@ -410,7 +410,6 @@ def thread_recv_messages(n, addr, username):
 Communication = Communication()
 
 def main():
-    print("print")
     logger = logging.getLogger(__name__)
     try:
         s.bind((server, port))
