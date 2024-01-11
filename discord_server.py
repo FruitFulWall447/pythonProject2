@@ -60,9 +60,6 @@ def get_and_remove_message_for_client(client):
     # If the client is not found, return None
     return messages_to_clients_dict.pop(client, None)
 
-def threaded_client(conn, player, username):
-    n = server_net(conn)
-    threading.Thread(target=thread_recv_messages, args=(n, player, username)).start()
 
 def gets_group_attributes_from_format(group_format):
     parts = group_format.split(")")
@@ -423,8 +420,8 @@ def main():
         username1 = "0000"
         conn, addr = s.accept()
         logger.info(f"connect to: {addr}")
-
-        threading.Thread(target=threaded_client, args=(conn, addr, username1)).start()
+        n = server_net(conn)
+        threading.Thread(target=thread_recv_messages, args=(n, addr, username1)).start()
 
 if __name__ == '__main__':
     main()

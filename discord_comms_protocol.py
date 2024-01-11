@@ -362,6 +362,7 @@ class client_net:
         except socket.error as e:
             print(e)
 
+
 class server_net:
     def __init__(self, s):
         self.server = s
