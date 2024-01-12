@@ -70,8 +70,6 @@ Flag_recv_messages = True
 def thread_recv_messages():
     global n, list_last_messages, main_page, friends_list, request_list, vc_thread_flag, vc_data_list, vc_play_flag
     print("receiving thread started running")
-    threading.Thread(target=thread_is_chat_need_updated, args=()).start()
-    #threading.Thread(target=thread_get_friend_request_list(), args=()).start()
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
     while Flag_recv_messages:
         data = n.recv_str()
@@ -246,16 +244,6 @@ def thread_send_voice_chat_data():
             if not main_page.mute:
                 n.send_vc_data(data)
             accumulated_data = []  # Reset accumulated data
-
-
-def thread_is_chat_need_updated():
-    global n, main_page, request_list, friends_list
-    time_between_chat_updated = 1
-    while flag_updates:
-        with lock:
-            if chat_clicked:
-                time.sleep(time_between_chat_updated)
-
 
 
 class SplashScreen(QWidget):
