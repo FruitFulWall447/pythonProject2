@@ -225,7 +225,8 @@ def thread_play_vc_data():
             del vc_data_list[0]
 
 def thread_send_voice_chat_data():
-    global n, accumulated_data, main_page
+    global n, main_page
+    accumulated_data = []
     print("started voice chat thread....")
     input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
     count = 0

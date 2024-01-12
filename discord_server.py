@@ -1,6 +1,5 @@
 import socket
 import threading
-from _thread import *
 from discord_comms_protocol import server_net
 from email_send_code import *
 from chat_file import Communication, Call
@@ -11,6 +10,8 @@ import json
 import time
 import zlib
 import logging
+from multiprocessing import Process
+
 
 # Set up the logging configuration
 logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as needed
@@ -422,6 +423,7 @@ def main():
         logger.info(f"connect to: {addr}")
         n = server_net(conn)
         threading.Thread(target=thread_recv_messages, args=(n, addr, username1)).start()
+        #Process(target=thread_recv_messages, args=(n, addr, username1)).start()
 
 if __name__ == '__main__':
     main()
