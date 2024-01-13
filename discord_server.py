@@ -150,7 +150,7 @@ def threaded_logged_in_client(n, User):
 
 
 
-
+vc_data_sequence = br'\vc_data'
 def thread_recv_messages(n, addr, username):
     global ringing_list, online_users, current_calls_list
     User = ""
@@ -399,8 +399,10 @@ def thread_recv_messages(n, addr, username):
                             Communication.reject_ring_by_ringer(rejected_caller, User)
                     if action == "ended":
                         Communication.remove_user_from_call(User)
-            elif is_zlib_compressed(data):
-                vc_data = zlib.decompress(data)
+
+            elif data.startswith(vc_data_sequence):
+                rest_of_bytes = data[len(vc_data_sequence):]
+                vc_data = zlib.decompress(rest_of_bytes)
                 #logger.info(f"{User} send server vc data")
                 Communication.send_vc_data_to_call(vc_data, User)
 

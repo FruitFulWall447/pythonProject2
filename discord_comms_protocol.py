@@ -217,7 +217,11 @@ class client_net:
     def send_vc_data(self, vc_data):
         try:
             full_message = vc_data
-            full_message = zlib.compress(full_message)
+            compressed_message = zlib.compress(full_message)
+
+            # Add a specific sequence of bytes at the beginning
+            sequence = br'\vc_data'  # Use raw string to treat backslash as a literal character
+            full_message = sequence + compressed_message
             # Convert the length of the data to a string
             size_str = str(len(full_message))
             size = str(self.size + int(size_str))
