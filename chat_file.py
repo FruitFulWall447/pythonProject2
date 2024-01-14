@@ -2197,7 +2197,7 @@ import database_func
 
 
 class Call:
-    def __init__(self, participants, nets, group_id=None):
+    def __init__(self,parent, participants, nets, group_id=None):
         self.logger = logging.getLogger(__name__)
         self.nets_dict = nets
         if group_id is not None:
@@ -2564,7 +2564,7 @@ class Communication:
         return None
 
     def create_call_and_add(self, group_id, participants):
-        call = Call(participants=participants, nets=self.nets_dict, group_id=group_id)
+        call = Call(parent=self, participants=participants, nets=self.nets_dict, group_id=group_id)
         self.add_call(call)
 
     def get_id_from_format(self, format):
