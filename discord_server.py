@@ -406,7 +406,7 @@ def thread_recv_messages(n, addr, username):
                 vc_data = zlib.decompress(rest_of_bytes)
                 Communication.send_vc_data_to_call(vc_data, User)
             elif data.startswith(share_screen_sequence):
-                rest_of_bytes = data[len(vc_data_sequence):]
+                rest_of_bytes = data[len(share_screen_sequence):]
                 share_screen_data = zlib.decompress(rest_of_bytes)
 
 
