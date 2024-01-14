@@ -195,8 +195,13 @@ def thread_recv_messages():
                     second_colon_index = data.find(':', data.find(':') + 1)
                     json_str = data[second_colon_index + 1:].strip()
                     call_dict = json.loads(json_str)
-                    main_page.call_dicts.append(call_dict)
+                    if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
+                        main_page.update_call_dict_by_id(call_dict.get("call_id"), call_dict)
+                    else:
+                        main_page.call_dicts.append(call_dict)
+                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print("got call dict from server")
+                    print(call_dict)
         else:
             try:
                 vc_data = zlib.decompress(data)
@@ -514,6 +519,31 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             if group["group_id"] == group_id:
                 return len(group["group_members"])
         return 0  # Return 0 if the group ID is not found
+
+    def get_call_dict_by_group_id(self, group_id):
+        for call_dict in self.call_dicts:
+            if call_dict.get("is_group_call"):
+                if call_dict.get("group_id") == group_id:
+                    return call_dict
+        print("could not find the call dict")
+
+    def get_call_dict_by_user(self, user):
+        for call_dict in self.call_dicts:
+            if user in call_dict.get("participants"):
+                return call_dict
+        print("could not find the call dict")
+
+    def is_call_dict_exists_by_id(self, call_id):
+        for call_dict in self.call_dicts:
+            if call_dict.get("call_id") == call_id:
+                return True
+        return False
+
+    def update_call_dict_by_id(self, call_id, updated_call_dict):
+        for call_dict in self.call_dicts:
+            if call_dict.get("call_id") == call_id:
+                self.call_dicts.remove(call_dict)
+        self.call_dicts.append(updated_call_dict)
 
 
     def reset_call_var(self):

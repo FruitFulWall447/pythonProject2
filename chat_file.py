@@ -171,7 +171,9 @@ class ChatBox(QWidget):
         self.around_name.move(around_name_x, around_name_y)
         self.around_name.raise_()
 
-        self.current_chat, _ = gets_group_attributes_from_format(self.parent.selected_chat)
+        self.call_profiles_list = []
+
+        self.current_chat, self.current_group_id  = gets_group_attributes_from_format(self.parent.selected_chat)
 
         if self.parent.selected_chat != "":
             self.ringing_square_label = QLabel(self)
@@ -380,6 +382,7 @@ class ChatBox(QWidget):
                 self.end_call_button.move(end_call_button_x,
                                           share_screen_y-15)
                 self.end_call_button.clicked.connect(self.end_current_call)
+                self.put_call_icons_on_the_screen()
 
             self.call_button = QPushButton(self)
 
@@ -691,6 +694,52 @@ class ChatBox(QWidget):
 
         return button
 
+    def put_call_icons_on_the_screen(self):
+        if self.current_group_id:
+            dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
+            print(f"dict is {dict}")
+        else:
+            dict = self.parent.get_call_dict_by_user(self.parent.username)
+            print(f"dict is {dict}")
+        numbers_of_users_in_call = len(dict.get("participants"))
+        starts_x = 900+((numbers_of_users_in_call-2) * 70)
+        y_of_profiles = 95
+        for name in dict.get("participants"):
+            self.create_profile_button(starts_x, y_of_profiles, name, dict)
+            starts_x += 105
+
+    def create_profile_button(self, x, y, name, dict):
+        button = QPushButton(self)
+        width, height = (90, 90)
+        button_size = QSize(width, height)
+        button.setFixedSize(button_size)
+
+        button.move(x, y)
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                background-repeat: no-repeat;
+                background-position: center;
+                border-radius: """ + str(height // 2) + """px;  /* Set to half of the button height */
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        muted_icon = QIcon("muted_profile.png")
+        deafened_icon = QIcon("deafened_profile.png")
+        regular_icon = QIcon("regular_profile.png")
+        deafened = dict.get("deafened")
+        muted = dict.get("muted")
+        if name in dict.get("deafened"):
+            self.set_button_icon(button, deafened_icon, width, height)
+        elif name in dict.get("muted"):
+            self.set_button_icon(button, muted_icon, width, height)
+        else:
+            self.set_button_icon(button, regular_icon, width, height)
+        self.call_profiles_list.append(button)
+        return button
+
     def set_button_icon(self, button, icon_path, width, height):
         icon = QIcon(icon_path)
         button.setIcon(icon)
@@ -977,6 +1026,8 @@ class ChatBox(QWidget):
                 self.end_call_button.raise_()
                 self.share_screen_button.raise_()
                 self.deafen_button.raise_()
+                for profile_button in self.call_profiles_list:
+                    profile_button.raise_()
         except Exception as e:
             print(f"error in raising elements {e}")
 
@@ -1098,20 +1149,23 @@ class ChatBox(QWidget):
         self.parent.end_current_call()
 
     def mute_and_unmute(self):
-        if self.parent.mute:
-            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
-            self.parent.play_sound(media_content)
-            print("mic is not muted")
-            self.parent.mute = False
-            self.mic_button.setIcon(self.unmuted_mic_icon)
-            self.Network.toggle_mute_for_myself()
-        else:
-            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
-            self.parent.play_sound(media_content)
-            print("mic is muted")
-            self.parent.mute = True
-            self.mic_button.setIcon(self.muted_mic_icon)
-            self.Network.send_muted_myself()
+        try:
+            if self.parent.mute:
+                media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+                self.parent.play_sound(media_content)
+                print("mic is not muted")
+                self.parent.mute = False
+                self.mic_button.setIcon(self.unmuted_mic_icon)
+                self.Network.toggle_mute_for_myself()
+            else:
+                media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+                self.parent.play_sound(media_content)
+                print("mic is muted")
+                self.parent.mute = True
+                self.mic_button.setIcon(self.muted_mic_icon)
+                self.Network.toggle_mute_for_myself()
+        except Exception as e:
+            print(e)
 
     def deafen_and_undeafen(self):
         if self.parent.deafen:
