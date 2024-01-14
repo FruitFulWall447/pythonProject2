@@ -14,6 +14,8 @@ import zlib
 import base64
 import datetime
 import pickle
+import cv2
+import struct
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
                    "tutanota", "icloud", "rackspace","mailchimp",
@@ -245,6 +247,20 @@ def thread_send_voice_chat_data():
             if not main_page.mute:
                 n.send_vc_data(data)
             accumulated_data = []  # Reset accumulated data
+
+def thread_send_share_screen_data():
+    global n
+    try:
+        while True:
+            # Capture the screen using OpenCV
+            _, frame = cv2.VideoCapture(0).read()
+
+            # Send the frame to the server
+            n.send_share_screen_data(frame)
+
+            time.sleep(0.1)  # Adjust the sleep time based on your needs
+    except KeyboardInterrupt:
+        print("Screen sharing stopped.")
 
 
 class SplashScreen(QWidget):
@@ -1131,6 +1147,60 @@ class Login_page(QWidget):
             self.current_icon = "show_password_icon.png"
             self.visibility_password_button.setIcon(self.show_password_icon)
 
+
+class VideoClient(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+
+
+    def init_ui(self):
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+
+        self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignCenter)
+
+        layout = QVBoxLayout(self.central_widget)
+        layout.addWidget(self.image_label)
+
+        self.setGeometry(100, 100, 800, 600)
+        self.setWindowTitle('Video Client')
+
+    def update_frame(self):
+        try:
+            # Receive the size of the incoming frame
+            data_size = self.client_socket.recv(struct.calcsize('<L'))
+            if not data_size:
+                return
+            frame_size = struct.unpack('<L', data_size)[0]
+
+            # Receive the actual frame data
+            frame_data = b''
+            while len(frame_data) < frame_size:
+                packet = self.client_socket.recv(frame_size - len(frame_data))
+                if not packet:
+                    return
+                frame_data += packet
+
+            # Deserialize the frame
+            frame = pickle.loads(frame_data)
+
+            # Display the frame in the Qt window
+            self.display_frame(frame)
+        except Exception as e:
+            print(f"Error: {e}")
+
+    def display_frame(self, frame):
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
+        pixmap = QPixmap.fromImage(q_image)
+        self.image_label.setPixmap(pixmap)
+
+    def closeEvent(self, event):
+        self.client_socket.close()
+        event.accept()
 
 class Forget_password_page(QWidget):
     def __init__(self):

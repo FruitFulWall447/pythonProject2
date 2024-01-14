@@ -233,6 +233,25 @@ class client_net:
         except Exception as e:
             print(f"error is: {e}")
 
+    def send_share_screen_data(self, share_screen_data):
+        try:
+            full_message = share_screen_data
+            compressed_message = zlib.compress(full_message)
+
+            # Add a specific sequence of bytes at the beginning
+            sequence = br'\share_screen_data'  # Use raw string to treat backslash as a literal character
+            full_message = sequence + compressed_message
+            # Convert the length of the data to a string
+            size_str = str(len(full_message))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.client.send(size.encode('utf-8'))
+            self.client.send(full_message)
+        except Exception as e:
+            print(f"error is: {e}")
+
 
     def send_friend_request(self, username, friend_username):
         data = f"friend_request:{username}:{friend_username}"
