@@ -368,6 +368,13 @@ def thread_recv_messages(n, addr, username):
                 if data.startswith("call:"):
                     parts = data.split(":")
                     action = parts[1]
+                    if action == "mute":
+                        if parts[2] != "myself":
+                            person_to_mute = parts[2]
+                        else:
+                            Communication.mute_or_unmute_self_user(User)
+                    if action == "deafen":
+                        Communication.deafen_or_undeafen_self_user(User)
                     if action == "calling":
                         if parts[2] != "stop!":
                             user_that_is_getting_called = parts[2]

@@ -213,7 +213,7 @@ class ChatBox(QWidget):
 
             if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
 
-                rings_to_x = 895
+                rings_to_x = 920
                 if self.parent.selected_chat.startswith("("):
                     text = f"Ringing Group..."
                 else:
@@ -329,7 +329,7 @@ class ChatBox(QWidget):
                 share_screen_height = 45
                 share_screen_button_width = 45
                 share_screen_x = 905
-                share_screen_y = 200
+                share_screen_y = 215
                 self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
                                                                     share_screen_y, self.share_screen_and_unshare)
 
@@ -341,12 +341,26 @@ class ChatBox(QWidget):
                     self.set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
                                          share_screen_button_width)
 
+                deafen_button_height = 45
+                deafen_button_width = 45
+                self.deafened_icon = QIcon("deafened.png")
+                self.not_deafened_icon = QIcon("not_deafened.png")
+                deafen_x = share_screen_x + 65
+                deafen_y = share_screen_y
+                self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
+                if self.parent.deafen:
+                    self.set_button_icon(self.deafen_button, self.deafened_icon, deafen_button_width, deafen_button_height)
+                else:
+                    self.set_button_icon(self.deafen_button, self.not_deafened_icon, deafen_button_width,
+                                         deafen_button_height)
+
+
                 mic_button_height = 45
                 mic_button_width = 45
                 self.unmuted_mic_icon = QIcon("mic_not_muted_icon.png")
                 self.muted_mic_icon = QIcon("mic_muted_icon.png")
-                mic_x = share_screen_x + 65
-                mic_button_y = 150
+                mic_x = deafen_x + 65
+                mic_button_y = share_screen_y
                 self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
                 if self.parent.mute:
                     self.set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
@@ -364,7 +378,7 @@ class ChatBox(QWidget):
                 self.end_call_button.setStyleSheet(self.call_button_style_sheet)
                 end_call_button_x = mic_x + 55
                 self.end_call_button.move(end_call_button_x,
-                                          mic_button_y + 5)
+                                          share_screen_y-15)
                 self.end_call_button.clicked.connect(self.end_current_call)
 
             self.call_button = QPushButton(self)
@@ -384,7 +398,7 @@ class ChatBox(QWidget):
 
             # Set the scaled icon size for the button
             self.call_button.setIconSize(scaled_size)
-            call_button_x = 600 + (self.width_of_chat_box // 2) + 315
+            call_button_x = 600 + (self.width_of_chat_box // 2) + 340
             self.call_button.move(call_button_x, 8)
             self.call_button.setStyleSheet("""           
              QPushButton:hover {
@@ -400,7 +414,7 @@ class ChatBox(QWidget):
             self.call_button.clicked.connect(self.call_user)
             # Create a QLineEdit for text entry
             self.text_entry = QLineEdit(self)
-            self.text_entry.setGeometry(10, 10, 650, 40)
+            self.text_entry.setGeometry(10, 10, self.width_of_chat_box-70, 40)
             self.text_entry.setStyleSheet(
                 "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
             text_entry_y = self.send_image_y
@@ -962,6 +976,7 @@ class ChatBox(QWidget):
                 self.mic_button.raise_()
                 self.end_call_button.raise_()
                 self.share_screen_button.raise_()
+                self.deafen_button.raise_()
         except Exception as e:
             print(f"error in raising elements {e}")
 
@@ -1089,12 +1104,28 @@ class ChatBox(QWidget):
             print("mic is not muted")
             self.parent.mute = False
             self.mic_button.setIcon(self.unmuted_mic_icon)
+            self.Network.toggle_mute_for_myself()
         else:
             media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
             self.parent.play_sound(media_content)
             print("mic is muted")
             self.parent.mute = True
             self.mic_button.setIcon(self.muted_mic_icon)
+            self.Network.send_muted_myself()
+
+    def deafen_and_undeafen(self):
+        if self.parent.deafen:
+            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+            self.parent.play_sound(media_content)
+            self.parent.deafen = False
+            self.deafen_button.setIcon(self.not_deafened_icon)
+            self.Network.toggle_deafen_for_myself()
+        else:
+            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+            self.parent.play_sound(media_content)
+            self.parent.deafen = True
+            self.deafen_button.setIcon(self.deafened_icon)
+            self.Network.toggle_deafen_for_myself()
 
     def share_screen_and_unshare(self):
         if self.parent.is_screen_shared:
@@ -2211,13 +2242,30 @@ class Call:
 
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
-            if name != user and net is not None:
+            if name != user and net is not None and name not in self.deafened:
                 net.send_vc_data(vc_data)
                 # self.logger.debug(f"Sent voice chat data to {name}")
 
     def is_a_group_a_call(self):
         return self.is_group_call
 
+    def toggle_mute_for_user(self, user):
+        if user in self.muted:
+            self.muted.remove(user)
+            self.logger.info(f"{user} unmuted himself in call of id {self.call_id}")
+        else:
+            self.muted.append(user)
+            self.logger.info(f"{user} muted himself in call of id {self.call_id}")
+        self.send_call_object_to_clients()
+
+    def toggle_deafen_for_user(self, user):
+        if user in self.deafened:
+            self.deafened.remove(user)
+            self.logger.info(f"{user} undeafened himself in call of id {self.call_id}")
+        else:
+            self.deafened.append(user)
+            self.logger.info(f"{user} deafened himself in call of id {self.call_id}")
+        self.send_call_object_to_clients()
 
 from discord_comms_protocol import server_net
 import threading
@@ -2523,6 +2571,16 @@ class Communication:
         for ring in self.rings:
             if ring.is_ring_by_ringer(ringer):
                 ring.cancel_ring_for_all()
+
+    def mute_or_unmute_self_user(self, user):
+        for call in self.calls:
+            if call.is_user_in_a_call(user):
+                call.toggle_mute_for_user(user)
+
+    def deafen_or_undeafen_self_user(self, user):
+        for call in self.calls:
+            if call.is_user_in_a_call(user):
+                call.toggle_deafen_for_user(user)
 
 
 

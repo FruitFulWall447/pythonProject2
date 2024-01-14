@@ -244,7 +244,7 @@ def thread_send_voice_chat_data():
 
             data = b''.join(accumulated_data)
             # output_stream.write(data)
-            if not main_page.mute:
+            if not main_page.mute and not main_page.deafen:
                 n.send_vc_data(data)
             accumulated_data = []  # Reset accumulated data
 
@@ -389,6 +389,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_current_chat_a_group = False
 
         self.mute = False
+        self.deafen = False
+
         self.online_users_list = []
         self.friends_list = []
         # friend_box_page could be online, add friend, blocked, all, pending

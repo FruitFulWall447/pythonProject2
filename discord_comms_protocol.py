@@ -121,6 +121,38 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def toggle_mute_for_myself(self):
+        data = f"call:mute:myself"
+        try:
+            # Convert the length of the data to a string
+            size_str = str(len(data.encode('utf-8')))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.client.send(size.encode('utf-8'))
+            # Send the actual data
+            self.client.send(data.encode('utf-8'))
+
+        except socket.error as e:
+            print(e)
+
+    def toggle_deafen_for_myself(self):
+        data = f"call:deafen:myself"
+        try:
+            # Convert the length of the data to a string
+            size_str = str(len(data.encode('utf-8')))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.client.send(size.encode('utf-8'))
+            # Send the actual data
+            self.client.send(data.encode('utf-8'))
+
+        except socket.error as e:
+            print(e)
+
 
     def send_login_info(self, username, password):
         format = "login"
@@ -317,6 +349,7 @@ class client_net:
 
         except socket.error as e:
             print(e)
+
 
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()
