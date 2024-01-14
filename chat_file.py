@@ -80,7 +80,7 @@ class ChatBox(QWidget):
         self.parent = parent
         self.is_getting_called = self.parent.is_getting_called
         self.square_label = QLabel(self)
-        self.width_of_chat_box = 720
+        self.width_of_chat_box = 800
         self.height_of_chat_box = 1000
         self.file_dialog = QFileDialog(self)
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
@@ -163,9 +163,10 @@ class ChatBox(QWidget):
         self.around_name = QLabel(self)
         self.around_name.setStyleSheet("background-color: #141c4b; border: 5px solid #2980b9;")
         height_of_around_name = 50
+        self.around_name_delta = 220
         if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
                 (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
-            height_of_around_name = 200
+            height_of_around_name = height_of_around_name + self.around_name_delta
         self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
         self.around_name.move(around_name_x, around_name_y)
         self.around_name.raise_()
@@ -325,11 +326,26 @@ class ChatBox(QWidget):
                 self.accept_button.clicked.connect(self.accept_call)
                 self.reject_button.clicked.connect(self.reject_call)
             if self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with:
+                share_screen_height = 45
+                share_screen_button_width = 45
+                share_screen_x = 905
+                share_screen_y = 200
+                self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
+                                                                    share_screen_y, self.share_screen_and_unshare)
+
+                self.share_screen_off_icon = QIcon("share_screen_off_icon.png")
+                self.share_screen_on_icon = QIcon("share_screen_on_icon.png")
+                if self.parent.is_screen_shared:
+                    self.set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
+                else:
+                    self.set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
+                                         share_screen_button_width)
+
                 mic_button_height = 45
                 mic_button_width = 45
                 self.unmuted_mic_icon = QIcon("mic_not_muted_icon.png")
                 self.muted_mic_icon = QIcon("mic_muted_icon.png")
-                mic_x = 960
+                mic_x = share_screen_x + 65
                 mic_button_y = 150
                 self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
                 if self.parent.mute:
@@ -348,7 +364,7 @@ class ChatBox(QWidget):
                 self.end_call_button.setStyleSheet(self.call_button_style_sheet)
                 end_call_button_x = mic_x + 55
                 self.end_call_button.move(end_call_button_x,
-                                          mic_button_y - (call_button_height - mic_button_height) + 5)
+                                          mic_button_y + 5)
                 self.end_call_button.clicked.connect(self.end_current_call)
 
             self.call_button = QPushButton(self)
@@ -945,6 +961,7 @@ class ChatBox(QWidget):
             if self.parent.is_in_a_call:
                 self.mic_button.raise_()
                 self.end_call_button.raise_()
+                self.share_screen_button.raise_()
         except Exception as e:
             print(f"error in raising elements {e}")
 
@@ -1078,6 +1095,15 @@ class ChatBox(QWidget):
             print("mic is muted")
             self.parent.mute = True
             self.mic_button.setIcon(self.muted_mic_icon)
+
+    def share_screen_and_unshare(self):
+        if self.parent.is_screen_shared:
+            self.parent.is_screen_shared = False
+            self.share_screen_button.setIcon(self.share_screen_off_icon)
+        else:
+            self.parent.is_screen_shared = True
+            self.share_screen_button.setIcon(self.share_screen_on_icon)
+
 
     def accept_call(self):
         # Add your logic when the call is accepted

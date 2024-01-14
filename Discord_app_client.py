@@ -412,6 +412,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.blocked_list = []
         self.groups_list = []
 
+        self.is_screen_shared = False
+        self.is_watching_screen = False
+        self.watching_user = ""
+
         self.chat_start_index_max = float('inf')
         self.current_chat_box_search = False
         self.temp_search_list = []
