@@ -16,6 +16,7 @@ import datetime
 import pickle
 import cv2
 import struct
+import re
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
                    "tutanota", "icloud", "rackspace","mailchimp",
@@ -565,18 +566,48 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         n.send_str("call:ended")
         print(f"client hang up call...")
 
+    def parse_group_caller_format(self, input_format):
+        # Define a regular expression pattern to capture the information
+        print(f"input format is:{input_format}")
+        pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
+
+        # Use the pattern to match the input_format
+        match = pattern.match(input_format)
+
+        if match:
+            # Extract the matched groups
+            group_id = int(match.group(1))
+            group_name = match.group(2).strip()
+            group_caller = match.group(3).strip()
+
+            return group_id, group_name, group_caller
+        else:
+            # Return None if no match is found
+            return None
 
     def initiate_call(self):
         self.is_in_a_call = True
         self.is_calling = False
         self.is_getting_called = False
         self.stop_sound()
-        if self.calling_to != "":
-            self.in_call_with = self.calling_to
-            self.calling_to = ""
-        elif self.getting_called_by != "":
-            self.in_call_with = self.getting_called_by
-            self.getting_called_by = ""
+        try:
+            if self.calling_to != "":
+                if "(" in self.calling_to:
+                    self.in_call_with = self.calling_to
+                    print(f"in call with {self.in_call_with}")
+                    self.calling_to = ""
+            elif self.getting_called_by != "":
+                if "(" in self.getting_called_by:
+                    group_id, group_name, group_caller = self.parse_group_caller_format(self.getting_called_by)
+                    self.in_call_with = "(" + str(group_id) + ")" + group_name
+                    print(f"in call with {self.in_call_with}")
+                    self.getting_called_by = ""
+                else:
+                    self.in_call_with = self.getting_called_by
+                    print(f"in call with {self.in_call_with}")
+                    self.getting_called_by = ""
+        except Exception as e:
+            print(f"error in initiating call is {e}")
 
     def handle_state_changed(self, state):
         if state == QMediaPlayer.StoppedState:

@@ -68,7 +68,7 @@ def gets_group_attributes_from_format(group_format):
         parts = group_format.split(")")
         id = parts[0][1]
         name = parts[1]
-        return name, id
+        return name, int(id)
 
 
 class ChatBox(QWidget):
@@ -173,7 +173,7 @@ class ChatBox(QWidget):
 
         self.call_profiles_list = []
 
-        self.current_chat, self.current_group_id  = gets_group_attributes_from_format(self.parent.selected_chat)
+        self.current_chat, self.current_group_id = gets_group_attributes_from_format(self.parent.selected_chat)
 
         if self.parent.selected_chat != "":
             self.ringing_square_label = QLabel(self)
@@ -1384,6 +1384,7 @@ class ChatBox(QWidget):
                 text = name
                 self.parent.is_current_chat_a_group = False
                 print("chat is a private chat")
+            print(f"chat changed to {name}")
             self.chat_name_label.setText(text)
             place_holder_text = "Message" + " " + text
             try:
