@@ -268,6 +268,9 @@ def thread_recv_messages(n, addr, username):
         else:
             logger.debug("waiting for data...")
             data = n.recv_str()
+            if isinstance(data, str):
+                if len(data) < 50:
+                    logger.debug(f"got {data} from {User}")
             if data is None:
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)

@@ -1209,15 +1209,18 @@ class ChatBox(QWidget):
             print(e)
 
     def call_user(self):
-        if not self.parent.is_getting_called and not self.parent.is_calling and not self.parent.is_in_a_call:
-            if self.parent.selected_chat.startswith("("):
-                print(f"Calling Group...{self.parent.selected_chat}")  # Replace this with your actual functionality
-            else:
-                print(f"Calling User...{self.parent.selected_chat}")  # Replace this with your actual functionality
-            media_content = QMediaContent(QUrl.fromLocalFile('Phone_Internal_RingingCalling - Sound Effect.mp3'))
-            self.parent.play_sound(media_content)
-            self.Network.send_calling_user(self.parent.selected_chat)
-            self.ringing_user(self.parent.selected_chat)
+        try:
+            if not self.parent.is_getting_called and not self.parent.is_calling and not self.parent.is_in_a_call:
+                if self.parent.selected_chat.startswith("("):
+                    print(f"Calling Group...{self.parent.selected_chat}")  # Replace this with your actual functionality
+                else:
+                    print(f"Calling User...{self.parent.selected_chat}")  # Replace this with your actual functionality
+                media_content = QMediaContent(QUrl.fromLocalFile('Phone_Internal_RingingCalling - Sound Effect.mp3'))
+                self.parent.play_sound(media_content)
+                self.Network.send_calling_user(self.parent.selected_chat)
+                self.ringing_user(self.parent.selected_chat)
+        except Exception as e:
+            print(e)
 
     def on_friend_button_clicked(self, label):
         try:
@@ -2359,6 +2362,7 @@ class Ring:
 
     def rejected_ring(self, user):
         self.rejected_rings.append(user)
+        self.logger.info(f"{user} declined call")
 
     def accepted_ring(self, user):
         self.accepted_rings.append(user)
@@ -2413,7 +2417,7 @@ class Ring:
                 if net is not None:
                     net.send_user_that_calling(format)
                     self.ringed_to.append(name)
-                    print(f"Sent ring of id {self.ring_id} to {name}")
+                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
                     self.already_ringed_to.append(name)
         else:
             self.logger.info(f"Created 1 on 1 ring (id={self.ring_id}) [{self.ringing_to[0]}, ringer is:{self.ringer}]")

@@ -253,6 +253,7 @@ def thread_send_voice_chat_data():
             if not main_page.mute and not main_page.deafen:
                 n.send_vc_data(data)
             accumulated_data = []  # Reset accumulated data
+    print("stopped voice chat thread....")
 
 def thread_send_share_screen_data():
     global n
@@ -593,6 +594,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         try:
             if self.calling_to != "":
                 if "(" in self.calling_to:
+                    self.in_call_with = self.calling_to
+                    print(f"in call with {self.in_call_with}")
+                    self.calling_to = ""
+                else:
                     self.in_call_with = self.calling_to
                     print(f"in call with {self.in_call_with}")
                     self.calling_to = ""

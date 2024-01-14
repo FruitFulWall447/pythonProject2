@@ -69,7 +69,6 @@ class client_net:
             self.client.send(size.encode('utf-8'))
             # Send the actual data
             self.client.send(data.encode('utf-8'))
-
         except socket.error as e:
             print(e)
 
