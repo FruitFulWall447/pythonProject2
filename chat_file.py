@@ -325,59 +325,30 @@ class ChatBox(QWidget):
                 self.accept_button.clicked.connect(self.accept_call)
                 self.reject_button.clicked.connect(self.reject_call)
             if self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with:
-                self.mic_button = QPushButton(self)
-                mic_button_height = 40
-                button_size = QSize(40, mic_button_height)  # Adjust this to your desired button size
-                self.mic_button.setFixedSize(button_size)
-                # Load an image and set it as the button's icon
+                mic_button_height = 45
+                mic_button_width = 45
                 self.unmuted_mic_icon = QIcon("mic_not_muted_icon.png")
                 self.muted_mic_icon = QIcon("mic_muted_icon.png")
+                mic_x = 960
+                mic_button_y = 150
+                self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
                 if self.parent.mute:
-                    self.mic_button.setIcon(self.muted_mic_icon)
+                    self.set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
                 else:
-                    self.mic_button.setIcon(self.unmuted_mic_icon)
-
-                icon_size = QSize(40, mic_button_height)  # Set your desired size
-                icon_actual_size = self.unmuted_mic_icon.actualSize(self.unmuted_mic_icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                self.mic_button.setIconSize(scaled_size)
-                mic_x = 900
-                mic_button_y = 145
-                self.mic_button.move(mic_x, mic_button_y)
-                self.mic_button.clicked.connect(self.mute_and_unmute)
-
-                self.mic_button.setStyleSheet("""
-                    QPushButton {
-                        background-color: #6fa8b6;
-                        background-repeat: no-repeat;
-                        background-position: center;
-                    }
-                                QPushButton:hover {
-                background-color: #2980b9;
-            }
-
-                """)
+                    self.set_button_icon(self.mic_button, self.unmuted_mic_icon, mic_button_width, mic_button_height)
 
                 self.end_call_button = QPushButton(self)
 
                 # Set button styles
                 call_button_height = 70
-                button_size = QSize(70, call_button_height)  # Adjust this to your desired button size
+                call_button_width = 70
+                button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
                 self.end_call_button.setFixedSize(button_size)
-                # Set button icons (assuming you have phone icons available)
-
-                icon = QIcon("reject_button.png")
-                self.end_call_button.setIcon(icon)
-                icon_size = QSize(70, call_button_height)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                self.end_call_button.setIconSize(scaled_size)
+                self.set_button_icon(self.end_call_button, "reject_button.png", call_button_width, call_button_height)
                 self.end_call_button.setStyleSheet(self.call_button_style_sheet)
-                # Set button positions
-                end_call_button_x = mic_x + 60
-
+                end_call_button_x = mic_x + 55
                 self.end_call_button.move(end_call_button_x,
-                                          mic_button_y - (call_button_height - mic_button_height) + 15)
+                                          mic_button_y - (call_button_height - mic_button_height) + 5)
                 self.end_call_button.clicked.connect(self.end_current_call)
 
             self.call_button = QPushButton(self)
@@ -665,6 +636,40 @@ class ChatBox(QWidget):
     # Layout
 
     # Display friends
+
+    def create_custom_in_call_button(self, width, height, x, y, click_function):
+        button = QPushButton(self)
+
+        button_size = QSize(width, height)
+        button.setFixedSize(button_size)
+
+        button.move(x, y)
+
+        button.clicked.connect(click_function)
+
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: #6fa8b6;
+                background-repeat: no-repeat;
+                background-position: center;
+                border-radius: """ + str(height // 2) + """px;  /* Set to half of the button height */
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+
+        return button
+
+    def set_button_icon(self, button, icon_path, width, height):
+        icon = QIcon(icon_path)
+        button.setIcon(icon)
+        icon_size = QSize(width, height)
+        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+        button.setIconSize(scaled_size)
+
+
     def stop_calling(self):
         self.Network.stop_ringing_to_group_or_user()
 
