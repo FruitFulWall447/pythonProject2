@@ -71,9 +71,8 @@ def is_string(variable):
 
 Flag_recv_messages = True
 def thread_recv_messages():
-    global n, list_last_messages, main_page, friends_list, request_list, vc_thread_flag, vc_data_list, vc_play_flag
+    global n, main_page, vc_thread_flag, vc_data_list, vc_play_flag
     print("receiving thread started running")
-    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
     while Flag_recv_messages:
         data = n.recv_str()
         if is_string(data):
@@ -181,8 +180,10 @@ def thread_recv_messages():
                         QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                         vc_thread_flag = True
                         vc_play_flag = True
-                        threading.Thread(target=thread_send_voice_chat_data, args=()).start()
-                        threading.Thread(target=thread_play_vc_data, args=()).start()
+                        send_vc_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
+                        recv_vc_data = threading.Thread(target=thread_play_vc_data, args=())
+                        send_vc_thread.start()
+                        recv_vc_data.start()
                     if action == "timeout":
                         print("call timeout passed")
                         QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
@@ -191,6 +192,8 @@ def thread_recv_messages():
                     print("call ended")
                     vc_thread_flag = False
                     vc_play_flag = False
+                    send_vc_thread.join()
+                    recv_vc_data.join()
                     QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
                 if action == "dict":
                     second_colon_index = data.find(':', data.find(':') + 1)
@@ -231,6 +234,8 @@ def thread_play_vc_data():
         if len(vc_data_list) > 0:
             output_stream.write(vc_data_list[0])
             del vc_data_list[0]
+    output_stream.stop_stream()
+    output_stream.close()
 
 def thread_send_voice_chat_data():
     global n, main_page
@@ -253,6 +258,8 @@ def thread_send_voice_chat_data():
             if not main_page.mute and not main_page.deafen:
                 n.send_vc_data(data)
             accumulated_data = []  # Reset accumulated data
+    input_stream.stop_stream()
+    input_stream.close()
     print("stopped voice chat thread....")
 
 def thread_send_share_screen_data():
@@ -370,7 +377,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     getting_call_signal = pyqtSignal()
     stop_sound_signal = pyqtSignal()
     initiating_call_signal = pyqtSignal()
-    end_current_call_signal = pyqtSignal()
     reset_call_var_signal = pyqtSignal()
     new_message_play_audio_signal = pyqtSignal()
     def __init__(self, Netwrok):
@@ -406,7 +412,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.image_to_send = None
         self.image_file_name = ""
         self.chat_start_index = 0
-        self.Netwrok = Netwrok
+        self.Network = Netwrok
         self.chat_box_chats_index = 0
         self.chat_box_index_y_start = 100
 
@@ -434,7 +440,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.getting_call_signal.connect(self.getting_a_call)
         self.stop_sound_signal.connect(self.stop_sound)
         self.initiating_call_signal.connect(self.initiate_call)
-        self.end_current_call_signal.connect(self.end_current_call)
         self.reset_call_var_signal.connect(self.reset_call_var)
         self.new_message_play_audio_signal.connect(self.new_message_play_audio)
         self.media_player = QMediaPlayer()
@@ -549,23 +554,25 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
 
     def reset_call_var(self):
-        global vc_play_flag, vc_thread_flag
-        self.is_in_a_call = False
-        self.is_calling = False
-        self.calling_to = ""
-        self.in_call_with = ""
-        self.is_getting_called = False
-        self.getting_called_by = ""
-        self.mute = False
-        vc_play_flag = False
-        vc_thread_flag = False
-        self.updated_chat()
-        self.stop_sound()
+        try:
+            self.is_in_a_call = False
+            self.is_calling = False
+            self.calling_to = ""
+            self.in_call_with = ""
+            self.is_getting_called = False
+            self.getting_called_by = ""
+            self.mute = False
+            self.stop_sound()
+            self.updated_chat()
+        except Exception as e:
+            print(e)
 
     def end_current_call(self):
-        global n
-        n.send_str("call:ended")
-        print(f"client hang up call...")
+        try:
+            self.Network.send_str("call:ended")
+            print(f"client hang up call123...")
+        except Exception as e:
+            print(e)
 
     def parse_group_caller_format(self, input_format):
         # Define a regular expression pattern to capture the information

@@ -1144,8 +1144,6 @@ class ChatBox(QWidget):
                 return image_bytes
 
     def end_current_call(self):
-        media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
-        self.parent.play_sound(media_content)
         self.parent.end_current_call()
 
     def mute_and_unmute(self):
