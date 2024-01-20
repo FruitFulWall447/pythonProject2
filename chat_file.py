@@ -1164,14 +1164,14 @@ class ChatBox(QWidget):
     def mute_and_unmute(self):
         try:
             if self.parent.mute:
-                media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+                media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
                 self.parent.play_sound(media_content)
                 print("mic is not muted")
                 self.parent.mute = False
                 self.mic_button.setIcon(self.unmuted_mic_icon)
                 self.Network.toggle_mute_for_myself()
             else:
-                media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+                media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
                 self.parent.play_sound(media_content)
                 print("mic is muted")
                 self.parent.mute = True
@@ -1182,13 +1182,13 @@ class ChatBox(QWidget):
 
     def deafen_and_undeafen(self):
         if self.parent.deafen:
-            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+            media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
             self.parent.play_sound(media_content)
             self.parent.deafen = False
             self.deafen_button.setIcon(self.not_deafened_icon)
             self.Network.toggle_deafen_for_myself()
         else:
-            media_content = QMediaContent(QUrl.fromLocalFile('Discord_mute_sound_effect.mp3'))
+            media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
             self.parent.play_sound(media_content)
             self.parent.deafen = True
             self.deafen_button.setIcon(self.deafened_icon)
@@ -1228,7 +1228,7 @@ class ChatBox(QWidget):
                     print(f"Calling Group...{self.parent.selected_chat}")  # Replace this with your actual functionality
                 else:
                     print(f"Calling User...{self.parent.selected_chat}")  # Replace this with your actual functionality
-                media_content = QMediaContent(QUrl.fromLocalFile('Phone_Internal_RingingCalling - Sound Effect.mp3'))
+                media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Phone_Internal_RingingCalling - Sound Effect.mp3'))
                 self.parent.play_sound(media_content)
                 self.Network.send_calling_user(self.parent.selected_chat)
                 self.ringing_user(self.parent.selected_chat)

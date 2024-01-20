@@ -445,8 +445,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.media_player = QMediaPlayer()
         self.media_player.stateChanged.connect(self.handle_state_changed)
         self.media_player.setVolume(70)
-        self.ringtone = QMediaContent(QUrl.fromLocalFile('Getting_called_sound_effect.mp3'))
-        self.new_message_audio = QMediaContent(QUrl.fromLocalFile('new_message_sound_effect.mp3'))
+        self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
+        self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.media_player.setMedia(self.ringtone)
         self.init_ui()
 
