@@ -569,7 +569,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
     def end_current_call(self):
         try:
-            self.Network.send_str("call:ended")
+            self.Network.leave_call()
             print(f"client hang up call123...")
         except Exception as e:
             print(e)

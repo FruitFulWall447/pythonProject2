@@ -266,7 +266,7 @@ def thread_recv_messages(n, addr, username):
             except socket.error as e:
                 print(e)
         else:
-            logger.debug("waiting for data...")
+            logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
             if isinstance(data, str):
                 if len(data) < 50:

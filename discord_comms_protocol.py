@@ -3,32 +3,43 @@ import json
 import time
 import zlib
 import pickle
+import threading
+import logging
+
 
 class client_net:
 
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        # Create a StreamHandler with the desired format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+
+        # Add the StreamHandler to the logger
+        self.logger.addHandler(stream_handler)
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_ip = "127.0.0.1"
         self.port = 4444
-        print(f"trying to connect to  ip: {self.server_ip},and port: {self.port }")
         self.addr = (self.server_ip, self.port)
+        self.logger.debug(f"trying to connect to addr: {self.addr}")
         self.id = self.connect()
         self.size = 0000000
         self.original_len = 7
+        self.lock = threading.Lock()
+
 
     def connect(self):
         try:
-            self.client.connect((self.addr))
-            print("connected to server")
-
-
+            self.client.connect(self.addr)
+            self.logger.info("connected to server")
         except:
-            print("couldn't connect to server")
+            self.logger.info("couldn't connect to server")
             pass
 
     def send_str(self, data):
-
-
         try:
             # Convert the length of the data to a string
             size_str = str(len(data.encode('utf-8')))
@@ -39,10 +50,24 @@ class client_net:
             self.client.send(size.encode('utf-8'))
             # Send the actual data
             self.client.send(data.encode('utf-8'))
-
         except socket.error as e:
             print(e)
 
+    def leave_call(self):
+        data = f"call:ended"
+        try:
+            # Convert the length of the data to a string
+            size_str = str(len(data.encode('utf-8')))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.client.send(size.encode('utf-8'))
+            # Send the actual data
+            self.client.send(data.encode('utf-8'))
+            self.logger.debug(f"Sent call:ended to server, socket == {self.client}")
+        except socket.error as e:
+            print(e)
 
     def create_group(self, group_members_list):
         encoded_list = json.dumps(group_members_list)
@@ -92,15 +117,18 @@ class client_net:
         data = f"call:accepted:{accepted_caller}"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
-
+            if self.client.fileno() == -1:
+                self.logger.error("Socket is closed.")
+            else:
+                size_str = str(len(data.encode('utf-8')))
+                size = str(self.size + int(size_str))
+                number_of_zero = self.original_len - len(size)
+                size = ("0" * number_of_zero) + size
+                # Send the size as a string
+                self.client.send(size.encode('utf-8'))
+                # Send the actual data
+                self.client.send(data.encode('utf-8'))
+                self.logger.debug(f"Sent call:accepted to server, socket == {self.client}")
         except socket.error as e:
             print(e)
 

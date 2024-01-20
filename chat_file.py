@@ -2281,7 +2281,7 @@ class Call:
         self.logger.info(f"{user} joined call by id {self.call_id}")
 
     def process_vc_data(self):
-        while True:
+        while not self.stop_thread.is_set():
             if self.data_collection:
                 user, vc_data = self.data_collection.pop(0)
                 self.send_vc_data_to_everyone_but_user(vc_data, user)
