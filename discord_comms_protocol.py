@@ -65,7 +65,6 @@ class client_net:
             self.client.send(size.encode('utf-8'))
             # Send the actual data
             self.client.send(data.encode('utf-8'))
-            self.logger.debug(f"Sent call:ended to server, socket == {self.client}")
         except socket.error as e:
             print(e)
 
@@ -128,7 +127,6 @@ class client_net:
                 self.client.send(size.encode('utf-8'))
                 # Send the actual data
                 self.client.send(data.encode('utf-8'))
-                self.logger.debug(f"Sent call:accepted to server, socket == {self.client}")
         except socket.error as e:
             print(e)
 

@@ -520,6 +520,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
+    def get_group_manager_by_group_id(self, id):
+        for group_dict in self.groups_list:
+            if group_dict["group_id"] == id:
+                return group_dict.get("group_manager")
+        else:
+            return None
+
+
     def get_number_of_members_by_group_id(self, group_id):
         group_id = int(group_id)
         for group in self.groups_list:
@@ -905,7 +913,7 @@ class Sign_up_page(QWidget):
         image_button = QPushButton(self)
 
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
 
         icon_size = QSize(20, 20)  # Set your desired size
@@ -1029,10 +1037,10 @@ class Login_page(QWidget):
         self.init_ui()
         self.visibility_password_button = QPushButton(self)
         # Load an image and set it as the button's icon
-        self.show_password_icon = QIcon("show_password_icon.png")
-        self.hide_password_icon = QIcon("hide_password_icon1.png")
+        self.show_password_icon = QIcon("discord_app_assets/show_password_icon.png")
+        self.hide_password_icon = QIcon("discord_app_assets/hide_password_icon1.png")
         self.visibility_password_button.setIcon(self.show_password_icon)
-        self.current_icon = "show_password_icon.png"
+        self.current_icon = "discord_app_assets/show_password_icon.png"
         icon_size = QSize(40, 40)  # Set your desired size
         icon_actual_size = self.show_password_icon.actualSize(self.show_password_icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
@@ -1075,7 +1083,7 @@ class Login_page(QWidget):
         image_button = QPushButton(self)
 
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
 
         icon_size = QSize(20, 20)  # Set your desired size
@@ -1217,13 +1225,13 @@ class Login_page(QWidget):
         self.hide()
 
     def show_password_button_pressed(self):
-        if self.current_icon == "show_password_icon.png":
+        if self.current_icon == "discord_app_assets/show_password_icon.png":
             self.password.setEchoMode(QLineEdit.Normal)
-            self.current_icon = "hide_password_icon.png"
+            self.current_icon = "discord_app_assets/hide_password_icon.png"
             self.visibility_password_button.setIcon(self.hide_password_icon)
         else:
             self.password.setEchoMode(QLineEdit.Password)
-            self.current_icon = "show_password_icon.png"
+            self.current_icon = "discord_app_assets/show_password_icon.png"
             self.visibility_password_button.setIcon(self.show_password_icon)
 
 
@@ -1307,7 +1315,7 @@ class Forget_password_page(QWidget):
 
         image_button = QPushButton(self)
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
         icon_size = QSize(20, 20)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -1422,7 +1430,7 @@ class Verification_code_page(QWidget):
         super().__init__()
         self.init_ui()
         self.info_label = QLabel(self)
-        pixmap = QPixmap('info_icon.png')  # Replace with the path to your 'i' icon
+        pixmap = QPixmap('discord_app_assets/info_icon.png')  # Replace with the path to your 'i' icon
         scaled_pixmap = pixmap.scaled(40, 40, Qt.KeepAspectRatio)
         self.info_label.setPixmap(scaled_pixmap)
         self.info_label.setAlignment(Qt.AlignCenter)
@@ -1447,7 +1455,7 @@ class Verification_code_page(QWidget):
 
         self.image_button = QPushButton(self)
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         self.image_button.setIcon(icon)
         icon_size = QSize(20, 20)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -1597,7 +1605,7 @@ class Change_password_page(QWidget):
         self.status = False
         self.image_button = QPushButton(self)
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         self.image_button.setIcon(icon)
         icon_size = QSize(20, 20)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -1652,7 +1660,7 @@ class Change_password_page(QWidget):
 
         image_button = QPushButton(self)
         # Load an image and set it as the button's icon
-        icon = QIcon("right-arrow-icon-27.png")
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
         icon_size = QSize(20, 20)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])

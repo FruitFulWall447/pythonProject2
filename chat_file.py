@@ -116,7 +116,7 @@ class ChatBox(QWidget):
         self.create_group_open = QPushButton(self)
 
         # Load an image and set it as the button's icon
-        icon = QIcon("add_image_button.png")
+        icon = QIcon("discord_app_assets/add_image_button.png")
         self.create_group_open.setIcon(icon)
 
         # Set the desired size for the button
@@ -183,7 +183,7 @@ class ChatBox(QWidget):
             self.send_image_button = QPushButton(self)
 
             # Load an image and set it as the button's icon
-            icon = QIcon("add_image_button.png")
+            icon = QIcon("discord_app_assets/add_image_button.png")
             self.send_image_button.setIcon(icon)
 
             # Set the desired size for the button
@@ -239,7 +239,7 @@ class ChatBox(QWidget):
                 self.stop_calling_button.setFixedSize(button_size)
                 icon_size = QSize(35, 35)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                icon = QIcon("reject_button.png")
+                icon = QIcon("discord_app_assets/reject_button.png")
                 self.stop_calling_button.setIcon(icon)
                 icon_size = QSize(65, 65)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -303,7 +303,7 @@ class ChatBox(QWidget):
                 self.reject_button.setFixedSize(button_size)
                 # Set button icons (assuming you have phone icons available)
 
-                icon = QIcon("accept_button.png")
+                icon = QIcon("discord_app_assets/accept_button.png")
                 self.accept_button.setIcon(icon)
                 icon_size = QSize(50, 50)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -311,7 +311,7 @@ class ChatBox(QWidget):
 
                 self.accept_button.setIconSize(scaled_size)
                 self.accept_button.setStyleSheet(self.call_button_style_sheet)
-                icon = QIcon("reject_button.png")
+                icon = QIcon("discord_app_assets/reject_button.png")
                 self.reject_button.setIcon(icon)
                 icon_size = QSize(50, 50)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -335,8 +335,8 @@ class ChatBox(QWidget):
                 self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
                                                                     share_screen_y, self.share_screen_and_unshare)
 
-                self.share_screen_off_icon = QIcon("share_screen_off_icon.png")
-                self.share_screen_on_icon = QIcon("share_screen_on_icon.png")
+                self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
+                self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
                 if self.parent.is_screen_shared:
                     self.set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
                 else:
@@ -345,8 +345,8 @@ class ChatBox(QWidget):
 
                 deafen_button_height = 45
                 deafen_button_width = 45
-                self.deafened_icon = QIcon("deafened.png")
-                self.not_deafened_icon = QIcon("not_deafened.png")
+                self.deafened_icon = QIcon("discord_app_assets/deafened.png")
+                self.not_deafened_icon = QIcon("discord_app_assets/not_deafened.png")
                 deafen_x = share_screen_x + 65
                 deafen_y = share_screen_y
                 self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
@@ -359,8 +359,8 @@ class ChatBox(QWidget):
 
                 mic_button_height = 45
                 mic_button_width = 45
-                self.unmuted_mic_icon = QIcon("mic_not_muted_icon.png")
-                self.muted_mic_icon = QIcon("mic_muted_icon.png")
+                self.unmuted_mic_icon = QIcon("discord_app_assets/mic_not_muted_icon.png")
+                self.muted_mic_icon = QIcon("discord_app_assets/mic_muted_icon.png")
                 mic_x = deafen_x + 65
                 mic_button_y = share_screen_y
                 self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
@@ -376,7 +376,7 @@ class ChatBox(QWidget):
                 call_button_width = 70
                 button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
                 self.end_call_button.setFixedSize(button_size)
-                self.set_button_icon(self.end_call_button, "reject_button.png", call_button_width, call_button_height)
+                self.set_button_icon(self.end_call_button, "discord_app_assets/reject_button.png", call_button_width, call_button_height)
                 self.end_call_button.setStyleSheet(self.call_button_style_sheet)
                 end_call_button_x = mic_x + 55
                 self.end_call_button.move(end_call_button_x,
@@ -384,38 +384,26 @@ class ChatBox(QWidget):
                 self.end_call_button.clicked.connect(self.end_current_call)
                 self.put_call_icons_on_the_screen()
 
-            self.call_button = QPushButton(self)
 
             # Load an image and set it as the button's icon
-            icon = QIcon("ringing_blue_icon.png")
-            self.call_button.setIcon(icon)
-
-            # Set the desired size for the button
-            button_size = QSize(35, 35)  # Adjust this to your desired button size
-            self.call_button.setFixedSize(button_size)
-
-            # Scale the icon while keeping its aspect ratio
-            icon_size = QSize(35, 35)  # Set your desired icon size
-            icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-            scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-
-            # Set the scaled icon size for the button
-            self.call_button.setIconSize(scaled_size)
+            icon = QIcon("discord_app_assets/ringing_blue_icon.png")
             call_button_x = 600 + (self.width_of_chat_box // 2) + 340
-            self.call_button.move(call_button_x, 8)
-            self.call_button.setStyleSheet("""           
-             QPushButton:hover {
-                background-color: #2980b9;
-            }
-                        QPushButton {
-                background-color: transparent;
-                }
-            QPushButton:pressed {
-                background-color: #202225;
-                border-color: #72767d;
-            }""")
+            call_button_y = 8
+            self.call_button = self.create_top_page_button(call_button_x, call_button_y, icon)
             self.call_button.clicked.connect(self.call_user)
-            # Create a QLineEdit for text entry
+            icon = QIcon("discord_app_assets/add_user.png")
+            add_user_x = call_button_x - 50
+            add_user_y = call_button_y
+            self.add_user_button = self.create_top_page_button(add_user_x, add_user_y, icon)
+
+            if self.current_group_id:
+                group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
+                if group_manager == self.parent.username:
+                    icon = QIcon("discord_app_assets/edit_name.png")
+                    rename_group_x = add_user_x - 50
+                    rename_group_y = call_button_y
+                    self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+
             self.text_entry = QLineEdit(self)
             self.text_entry.setGeometry(10, 10, self.width_of_chat_box-70, 40)
             self.text_entry.setStyleSheet(
@@ -467,7 +455,7 @@ class ChatBox(QWidget):
                 self.reject_button.setFixedSize(button_size)
                 # Set button icons (assuming you have phone icons available)
 
-                icon = QIcon("accept_button.png")
+                icon = QIcon("discord_app_assets/accept_button.png")
                 self.accept_button.setIcon(icon)
                 icon_size = QSize(50, 50)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -475,7 +463,7 @@ class ChatBox(QWidget):
 
                 self.accept_button.setIconSize(scaled_size)
                 self.accept_button.setStyleSheet(self.call_button_style_sheet)
-                icon = QIcon("reject_button.png")
+                icon = QIcon("discord_app_assets/reject_button.png")
                 self.reject_button.setIcon(icon)
                 icon_size = QSize(50, 50)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
@@ -610,7 +598,7 @@ class ChatBox(QWidget):
             }
 
         ''')
-        icon = QIcon("friends_icon.png")  # Replace with the path to your icon image
+        icon = QIcon("discord_app_assets/friends_icon.png")  # Replace with the path to your icon image
         self.friends_button.setIcon(icon)
 
         # Set the position and size of the button
@@ -646,7 +634,7 @@ class ChatBox(QWidget):
         settings_button = QPushButton(self)
         settings_button.setFixedSize(50, 50)  # Set the fixed size of the button
         # Set the icon for the chat button
-        settings_button_icon = QIcon(QPixmap("Setting_logo.png"))
+        settings_button_icon = QIcon(QPixmap("discord_app_assets/Setting_logo.png"))
         settings_button.setIcon(settings_button_icon)
         settings_button.setIconSize(settings_button_icon.actualSize(QSize(50, 50)))  # Adjust the size as needed
         settings_button.move(friend_x + 260, info_y + 5)
@@ -726,9 +714,9 @@ class ChatBox(QWidget):
                 background-color: #2980b9;
             }
         """)
-        muted_icon = QIcon("muted_profile.png")
-        deafened_icon = QIcon("deafened_profile.png")
-        regular_icon = QIcon("regular_profile.png")
+        muted_icon = QIcon("discord_app_assets/muted_profile.png")
+        deafened_icon = QIcon("discord_app_assets/deafened_profile.png")
+        regular_icon = QIcon("discord_app_assets/regular_profile.png")
         deafened = dict.get("deafened")
         muted = dict.get("muted")
         if name in dict.get("deafened"):
@@ -738,6 +726,27 @@ class ChatBox(QWidget):
         else:
             self.set_button_icon(button, regular_icon, width, height)
         self.call_profiles_list.append(button)
+        return button
+
+    def create_top_page_button(self, x, y, icon_path):
+        button = QPushButton(self)
+        width, height = (35, 35)
+        button_size = QSize(width, height)
+        button.setFixedSize(button_size)
+
+        button.move(x, y)
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                background-repeat: no-repeat;
+                background-position: center;
+                border-radius: """ + str(height // 2) + """px;  /* Set to half of the button height */
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        self.set_button_icon(button, icon_path, width, height)
         return button
 
     def set_button_icon(self, button, icon_path, width, height):
@@ -1006,6 +1015,12 @@ class ChatBox(QWidget):
 
     def raise_needed_elements(self):
         try:
+            if self.parent.selected_chat != "":
+                self.add_user_button.raise_()
+                if self.current_group_id:
+                    group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
+                    if group_manager == self.parent.username:
+                        self.rename_group.raise_()
             self.border_label2.raise_()
             self.find_contact_text_entry.raise_()
             self.friends_button.raise_()
@@ -1448,7 +1463,7 @@ class FriendsBox(QWidget):
 
         ''')
 
-        icon = QIcon("friends_icon.png")  # Replace with the path to your icon image
+        icon = QIcon("discord_app_assets/friends_icon.png")  # Replace with the path to your icon image
         self.friends_label.setIcon(icon)
         button_y = 10
         # Set the position and size of the button
@@ -1648,7 +1663,7 @@ class FriendsBox(QWidget):
                     chat_button,
                     self.chat_label,
                     "Message",
-                    "press_chat_icon.png",
+                    "discord_app_assets/press_chat_icon.png",
                     self.chat_label,
                     chat_button_x,
                     friend_starter_y + 10,
@@ -1663,7 +1678,7 @@ class FriendsBox(QWidget):
                     remove_friend_button,
                     self.remove_friend_label,
                     "Remove",
-                    "remove_friend_icon.png",
+                    "discord_app_assets/remove_friend_icon.png",
                     self.remove_friend_label,
                     remove_friend_button_x,
                     friend_starter_y + 10,
@@ -1677,7 +1692,7 @@ class FriendsBox(QWidget):
                     block_friend_button,
                     self.block_friend_label,
                     "Block",
-                    "block_icon.png",
+                    "discord_app_assets/block_icon.png",
                     self.block_friend,
                     remove_friend_button_x - 60,
                     friend_starter_y + 10,
@@ -1752,7 +1767,7 @@ class FriendsBox(QWidget):
                     chat_button,
                     self.chat_label,
                     "Message",
-                    "press_chat_icon.png",
+                    "discord_app_assets/press_chat_icon.png",
                     self.open_chat,
                     chat_button_x,
                     friend_starter_y + 10,
@@ -1767,7 +1782,7 @@ class FriendsBox(QWidget):
                     remove_friend_button,
                     self.remove_friend_label,
                     "Remove",
-                    "remove_friend_icon.png",
+                    "discord_app_assets/remove_friend_icon.png",
                     self.remove_friend,
                     remove_friend_button_x,
                     friend_starter_y + 10,
@@ -1782,7 +1797,7 @@ class FriendsBox(QWidget):
                     block_friend_button,
                     self.block_friend_label,
                     "Block",
-                    "block_icon.png",
+                    "discord_app_assets/block_icon.png",
                     self.block_friend,
                     remove_friend_button_x - 60,
                     friend_starter_y + 10,
