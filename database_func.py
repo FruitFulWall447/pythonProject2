@@ -354,6 +354,15 @@ def mark_messages_as_read(receiver, sender):
             cursor.close()
             connection.close()
 
+def gets_group_attributes_from_format(group_format):
+    if "(" not in group_format:
+        return group_format, None
+    else:
+        parts = group_format.split(")")
+        id = parts[0][1]
+        name = parts[1]
+        return name, id
+
 
 def get_messages(sender, receiver):
     try:
@@ -368,8 +377,10 @@ def get_messages(sender, receiver):
 
         # Execute the query to retrieve messages
         if is_group_chat:
-            query = "SELECT message_content, sender_id, timestamp FROM messages WHERE receiver_id = '{0}'".format(
-                receiver.replace('\'', '\'\''))
+            _, group_id = gets_group_attributes_from_format(receiver)
+            id_format = f"({str(group_id)})"
+            query = "SELECT message_content, sender_id, timestamp FROM messages WHERE receiver_id LIKE '{0}%'".format(
+                id_format.replace('\'', '\'\''))
         else:
             query = "SELECT message_content, sender_id, timestamp FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
                 sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))

@@ -459,33 +459,13 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         global n
         # Set up the main window
         try:
-
-
             self.setGeometry(100, 100, 600, 400)
             self.setWindowTitle('Main Page')
-
-            # Create buttons (labels) for Chat, Settings, and Social
-
-
-            # Set the style for the buttons
             self.setStyleSheet('''
                 QWidget {
                     background-color: #141c4b;  /* Set your desired background color */
                 }
             ''')
-
-            max_label_width = 120
-            max_label_height = 20
-
-            #self.add_friends.setFixedWidth(120)  # Adjust the width as needed
-
-            # Create a QLabel for friend requests
-
-            # Set fixed width for QLabel
-            #self.request_label.setFixedWidth(120)  # Adjust the width as needed
-
-
-
 
             # Create an instance of ChatBox
             if chat_clicked:
@@ -495,12 +475,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             # Create layouts
             buttons_layout = QHBoxLayout()
             self.main_layout = QVBoxLayout(self)
-            self.hbox_layout = QHBoxLayout()
-
-
-            # Set spacing between buttons (adjust the value as needed)
-
-            # Add the buttons layout to the main layout
             self.main_layout.addSpacing(30)
             self.main_layout.addLayout(buttons_layout)
 
@@ -531,6 +505,12 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         else:
             return None
 
+    def is_call_dict_exist_by_group_id(self, group_id):
+        for call_dict in self.call_dicts:
+            if call_dict.get("is_group_call"):
+                if call_dict.get("group_id") == group_id:
+                    return True
+        return False
 
     def get_number_of_members_by_group_id(self, group_id):
         group_id = int(group_id)

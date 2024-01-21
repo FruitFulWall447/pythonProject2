@@ -162,18 +162,26 @@ class ChatBox(QWidget):
         around_name_x = self.square_pos[0]
         self.around_name = QLabel(self)
         self.around_name.setStyleSheet("background-color: #141c4b; border: 5px solid #2980b9;")
+        start_height_of_around_name = 50
         height_of_around_name = 50
         self.around_name_delta = 220
         if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
                 (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
-            height_of_around_name = height_of_around_name + self.around_name_delta
+            height_of_around_name = start_height_of_around_name + self.around_name_delta
+
+        self.call_profiles_list = []
+
+        self.current_chat, self.current_group_id = gets_group_attributes_from_format(self.parent.selected_chat)
+        if self.current_group_id:
+            if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
+                height_of_around_name = start_height_of_around_name + self.around_name_delta
+
         self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
         self.around_name.move(around_name_x, around_name_y)
         self.around_name.raise_()
 
         self.call_profiles_list = []
 
-        self.current_chat, self.current_group_id = gets_group_attributes_from_format(self.parent.selected_chat)
 
         if self.parent.selected_chat != "":
             self.ringing_square_label = QLabel(self)
@@ -403,6 +411,10 @@ class ChatBox(QWidget):
                     rename_group_x = add_user_x - 50
                     rename_group_y = call_button_y
                     self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+                if self.current_group_id:
+                    if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
+                        x = 5
+
 
             self.text_entry = QLineEdit(self)
             self.text_entry.setGeometry(10, 10, self.width_of_chat_box-70, 40)
@@ -1415,6 +1427,7 @@ class ChatBox(QWidget):
             self.parent.size_error_label = False
             self.parent.image_to_send = None
             self.parent.image_file_name = ""
+            #self.parent.updated_chat()
 
     def is_mouse_on_chat_box(self, mouse_pos):
         box_geometry = self.square_label.geometry()
@@ -2200,6 +2213,36 @@ class SettingsBox(QWidget):
         self.volume_slider.setMaximum(100)
         self.volume_slider.setValue(50)  # Set initial volume
         self.volume_slider.valueChanged.connect(self.set_volume)
+
+        # Create a combo box with color options
+        self.color_combobox = QComboBox(self)
+        self.color_combobox.addItem("Select Color")
+        self.color_combobox.addItem("Red")
+        self.color_combobox.addItem("Green")
+        self.color_combobox.addItem("Blue")
+
+        # Label to display the selected color
+        self.selected_color_label = QLabel("Selected Color: ", self)
+
+        # Connect the combo box signal to a function that updates the label
+        self.color_combobox.currentIndexChanged.connect(self.update_selected_color)
+
+        # Create a layout and add widgets
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.color_combobox)
+        layout.addWidget(self.selected_color_label)
+
+        # Set up the main window
+        self.setGeometry(300, 300, 300, 150)
+        self.setWindowTitle('Color Selector')
+        self.show()
+
+    def update_selected_color(self):
+        # Get the selected color from the combo box
+        selected_color = self.color_combobox.currentText()
+
+        # Update the label with the selected color
+        self.selected_color_label.setText(f"Selected Color: {selected_color}")
 
     def set_volume(self, value):
         # Set the volume of the QMediaPlayer
