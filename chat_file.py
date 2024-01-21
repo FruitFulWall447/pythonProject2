@@ -2216,14 +2216,19 @@ class Call:
     def __init__(self, parent, participants, nets, group_id=None):
         self.logger = logging.getLogger(__name__)
         self.nets_dict = nets
+        self.parent = parent
         if group_id is not None:
             self.is_group_call = True
             self.group_id = group_id
         else:
             self.is_group_call = False
-        self.call_id = str(uuid.uuid4())  # Generates a random UUID
-        self.logger.info(f"Call of id ({self.call_id}) was created. Users in call are {participants}")
         self.participants = participants
+        existed_ring_id_associated_with_call = self.parent.get_ring_id_by_possible_ringers(self.participants)
+        if existed_ring_id_associated_with_call is not None:
+            self.call_id = existed_ring_id_associated_with_call
+        else:
+            self.call_id = str(uuid.uuid4())  # Generates a random UUID
+        self.logger.info(f"Call of id ({self.call_id}) was created. Users in call are {self.participants}")
         self.call_nets = {}
         self.initiated_time = datetime.now()
         self.gets_call_nets_from_dict()
@@ -2656,6 +2661,12 @@ class Communication:
         for call in self.calls:
             if call.is_user_in_a_call(user):
                 call.toggle_deafen_for_user(user)
+
+    def get_ring_id_by_possible_ringers(self, possible_ringers):
+        for ring in self.rings:
+            if ring.ringer in possible_ringers:
+                return ring.ring_id
+        return None
 
 
 
