@@ -217,7 +217,7 @@ def thread_recv_messages():
             except Exception as e:
                 print(e)
 
-lock = threading.Lock()
+
 
 flag_updates = True
 
