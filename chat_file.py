@@ -12,7 +12,7 @@ import base64
 import binascii
 import zlib
 import time
-
+import copy
 
 def calculate_font_size(text):
     # You can adjust the coefficients for the linear relationship
@@ -2213,7 +2213,7 @@ import database_func
 
 
 class Call:
-    def __init__(self,parent, participants, nets, group_id=None):
+    def __init__(self, parent, participants, nets, group_id=None):
         self.logger = logging.getLogger(__name__)
         self.nets_dict = nets
         if group_id is not None:
@@ -2255,9 +2255,12 @@ class Call:
                 net.send_call_dict(call_data)
 
     def call_ending_protocol(self):
+        self.logger.debug(f"call participants: {self.participants}")
         for name, net in self.call_nets.items():
-            if net is not None:
+            if net is not None and name in self.participants:
+
                 net.send_str("call:ended")
+                net.remove_call_to_user_of_id(self.call_id)
         self.logger.info(f"Call of id {self.call_id} ended")
         call_time = datetime.now() - self.initiated_time
         self.logger.info(f"Call was up for {call_time}")
@@ -2302,7 +2305,7 @@ class Call:
                 self.send_vc_data_to_everyone_but_user(vc_data, user)
             else:
                 # Sleep or perform other tasks if the data collection is empty
-                time.sleep(1)
+                time.sleep(0.1)
 
     def stop_processing(self):
         self.stop_thread.set()
@@ -2555,9 +2558,9 @@ class Communication:
                 if len(call.participants) == 2:
                     if call.is_group_call:
                         self.logger.info(
-                            f"{user} ended call in group call:{database_func.get_group_name_by_id(call.group_id)}")
+                            f"{user} ended call in group call of id:{database_func.get_group_name_by_id(call.group_id)}")
                     else:
-                        temp_list = call.participants
+                        temp_list = copy.deepcopy(call.participants)
                         temp_list.remove(user)
                         self.logger.info(f"{user} ended call with {temp_list[0]}")
                     call.call_ending_protocol()

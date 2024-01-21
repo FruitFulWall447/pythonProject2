@@ -608,6 +608,21 @@ class server_net:
         self.server.send(size.encode('utf-8'))
         self.server.send(full_message.encode())
 
+    def remove_call_to_user_of_id(self, call_id):
+        data = f"call:remove_id:{call_id}"
+        try:
+            # Convert the length of the data to a string
+            size_str = str(len(data.encode('utf-8')))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.server.send(size.encode('utf-8'))
+            # Send the actual data
+            self.server.send(data.encode('utf-8'))
+
+        except socket.error as e:
+            print(e)
 
     def recv_login_info(self):
         try:
@@ -635,6 +650,7 @@ class server_net:
             print(f"TypeError: {type_error}")
         except ValueError as e:
             print("Value error")
+
 
     def recv_str(self):
         try:

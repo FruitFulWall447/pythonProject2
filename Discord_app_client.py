@@ -206,6 +206,10 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print("got call dict from server")
                     print(call_dict)
+                if action == "remove_id":
+                    call_id_to_remove = parts[2]
+                    main_page.remove_call_dict_by_id(call_id_to_remove)
+
         else:
             try:
                 vc_data = zlib.decompress(data)
@@ -534,6 +538,12 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             if group["group_id"] == group_id:
                 return len(group["group_members"])
         return 0  # Return 0 if the group ID is not found
+
+    def remove_call_dict_by_id(self, id_to_remove):
+        for call_dict in self.call_dicts:
+            if call_dict.get("call_id") == id_to_remove:
+                self.call_dicts.remove(call_dict)
+                print("removed call dict, because call isn't available anymore")
 
     def get_call_dict_by_group_id(self, group_id):
         for call_dict in self.call_dicts:
