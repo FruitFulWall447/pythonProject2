@@ -175,6 +175,9 @@ class ChatBox(QWidget):
         if self.current_group_id:
             if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
                 height_of_around_name = start_height_of_around_name + self.around_name_delta
+            else:
+                print(self.parent.call_dicts)
+                print(f"couldn't find call for group of {self.current_group_id}")
 
         self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
         self.around_name.move(around_name_x, around_name_y)
@@ -1427,7 +1430,7 @@ class ChatBox(QWidget):
             self.parent.size_error_label = False
             self.parent.image_to_send = None
             self.parent.image_file_name = ""
-            #self.parent.updated_chat()
+            self.parent.updated_chat()
 
     def is_mouse_on_chat_box(self, mouse_pos):
         box_geometry = self.square_label.geometry()
@@ -2286,6 +2289,23 @@ class Call:
         self.thread = threading.Thread(target=self.process_vc_data)
         self.thread.start()
 
+
+    def get_call_group_members(self):
+        temp_list = database_func.get_group_members(self.group_id)
+        return temp_list
+
+    def get_call_dict(self):
+        call_data = {
+            "is_group_call": self.is_group_call,
+            "call_id": self.call_id,
+            "participants": self.participants,
+            "muted": self.muted,
+            "deafened": self.deafened,
+            "group_id": self.group_id if self.is_group_call else None,
+            # Add more attributes as needed
+        }
+        return call_data
+
     def send_call_object_to_clients(self):
         # Extract relevant attributes to send
         call_data = {
@@ -2301,6 +2321,8 @@ class Call:
         for name, net in self.call_nets.items():
             if net is not None:
                 net.send_call_dict(call_data)
+
+
 
     def call_ending_protocol(self):
         self.logger.debug(f"call participants: {self.participants}")
@@ -2327,7 +2349,10 @@ class Call:
             return False
 
     def gets_call_nets_from_dict(self):
-        temp_list = self.participants
+        if not self.is_group_call:
+            temp_list = self.participants
+        else:
+            temp_list = database_func.get_group_members(self.group_id)
         # Create a dictionary with names and corresponding nets for names in temp_list
         self.call_nets = {name: self.nets_dict.get(name) for name in temp_list}
 
@@ -2346,6 +2371,7 @@ class Call:
             if name == user and net is not None:
                 net.send_str("call:accepted")
         self.logger.info(f"{user} joined call by id {self.call_id}")
+
 
     def process_vc_data(self):
         while not self.stop_thread.is_set():
@@ -2538,6 +2564,18 @@ class Communication:
         online_friends = self.find_common_elements(self.online_users, friends_list)
         net.send_online_users_list(online_friends)
         self.logger.info(f"Sent Online friends list to user {User}")
+        list_call_dicts = self.get_list_of_calls_for_user(User)
+        net.send_call_list_of_dicts(list_call_dicts)
+        self.logger.info(f"Sent list of call dicts list to user {User}")
+
+    def get_list_of_calls_for_user(self, user):
+        list_of_calls_dicts = []
+        for call in self.calls:
+            if call.is_group_call:
+                if user in call.get_call_group_members():
+                    current_call_dict = call.get_call_dict()
+                    list_of_calls_dicts.append(current_call_dict)
+        return list_of_calls_dicts
 
     def update_online_list_for_users_friends(self, user):
         user_friends_list = database_func.get_user_friends(user)

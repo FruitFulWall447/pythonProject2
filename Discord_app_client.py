@@ -137,7 +137,6 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print(f"Got online users list: {online_users_list}")
-                    print("Updated the online users list")
                 except Exception as e:
                     print(e)
             if data.startswith("friends_list:"):
@@ -206,6 +205,11 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print("got call dict from server")
                     print(call_dict)
+                if action == "list_call_dicts":
+                    second_colon_index = data.find(':', data.find(':') + 1)
+                    list_of_call_dicts = json.loads(data[second_colon_index + 1:].strip())
+                    main_page.call_dicts = list_of_call_dicts
+                    print(f"got list of call dicts: {list_of_call_dicts}")
                 if action == "remove_id":
                     call_id_to_remove = parts[2]
                     main_page.remove_call_dict_by_id(call_id_to_remove)
