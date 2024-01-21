@@ -564,6 +564,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.is_getting_called = False
             self.getting_called_by = ""
             self.mute = False
+            self.deafen = False
             self.stop_sound()
             self.updated_chat()
         except Exception as e:
