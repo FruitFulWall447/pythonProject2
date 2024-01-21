@@ -2269,6 +2269,7 @@ class Call:
         self.logger.info(f"Call of id {self.call_id} ended")
         call_time = datetime.now() - self.initiated_time
         self.logger.info(f"Call was up for {call_time}")
+        self.parent.cancel_ring_by_id(self.call_id)
         self.stop_processing()
 
     def send_to_everyone_call_accepted(self):
@@ -2667,6 +2668,12 @@ class Communication:
             if ring.ringer in possible_ringers:
                 return ring.ring_id
         return None
+
+    def cancel_ring_by_id(self, ring_id):
+        for ring in self.rings:
+            if ring.ring_id == ring_id:
+                ring.stop_ring_for_unanswered_users()
+                self.rings.remove(ring)
 
 
 
