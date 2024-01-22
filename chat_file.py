@@ -734,7 +734,7 @@ class ChatBox(QWidget):
             dict = self.parent.get_call_dict_by_user(self.parent.username)
             print(f"dict is {dict}")
         numbers_of_users_in_call = len(dict.get("participants"))
-        starts_x = 900+((numbers_of_users_in_call-2) * 70)
+        starts_x = 900+((numbers_of_users_in_call-2) * -70)
         y_of_profiles = 95
         for name in dict.get("participants"):
             self.create_profile_button(starts_x, y_of_profiles, name, dict)
@@ -1206,6 +1206,8 @@ class ChatBox(QWidget):
                 return image_bytes
 
     def join_call(self):
+        self.parent.is_joining_call = True
+        self.parent.joining_to = self.parent.selected_chat
         self.Network.send_join_call_of_group_id(self.current_group_id)
 
     def end_current_call(self):
@@ -2402,6 +2404,7 @@ class Call:
         try:
             net = self.parent.get_net_by_name(user)
             net.send_str("call:accepted")
+            self.logger.debug(f"Sent call:accepted to user {user}, with net {net}")
         except Exception as e:
             self.logger.error(f"Error sending string: {e}")
         self.send_call_object_to_clients()

@@ -167,7 +167,7 @@ def thread_recv_messages():
                             QMetaObject.invokeMethod(main_page, "getting_call_signal", Qt.QueuedConnection)
                         except Exception as e:
                             print(e)
-                if main_page.is_getting_called or main_page.is_calling:
+                if main_page.is_getting_called or main_page.is_calling or main_page.is_joining_call:
                     if action == "rejected":
                         print(f"call was rejected")
                         QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
@@ -402,6 +402,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.in_call_with = ""
         self.is_getting_called = False
         self.getting_called_by = ""
+        self.is_joining_call = False
+        self.joining_to = ""
         self.call_dicts = []
 
         self.username = ""
@@ -562,6 +564,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
     def reset_call_var(self):
         try:
+            self.is_joining_call = False
+            self.joining_to = ""
             self.is_in_a_call = False
             self.is_calling = False
             self.calling_to = ""
@@ -605,6 +609,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_in_a_call = True
         self.is_calling = False
         self.is_getting_called = False
+        self.is_joining_call = False
         self.stop_sound()
         try:
             if self.calling_to != "":
@@ -626,6 +631,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     self.in_call_with = self.getting_called_by
                     print(f"in call with {self.in_call_with}")
                     self.getting_called_by = ""
+            elif self.joining_to != "":
+                self.in_call_with = self.joining_to
+                print(f"in call with {self.in_call_with}")
+                self.joining_to = ""
         except Exception as e:
             print(f"error in initiating call is {e}")
 
