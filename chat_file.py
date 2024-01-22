@@ -2357,8 +2357,6 @@ class Call:
             if net is not None:
                 net.send_call_dict(call_data)
 
-
-
     def call_ending_protocol(self):
         self.logger.debug(f"call participants: {self.participants}")
         for name, net in self.call_nets.items():
