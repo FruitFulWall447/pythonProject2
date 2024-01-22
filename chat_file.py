@@ -2401,9 +2401,11 @@ class Call:
     def add_user_to_call(self, user):
         self.participants.append(user)
         self.gets_call_nets_from_dict()
-        for name, net in self.call_nets.items():
-            if name == user and net is not None:
-                net.send_str("call:accepted")
+        try:
+            net = self.parent.get_net_by_name(user)
+            net.send_str("call:accepted")
+        except Exception as e:
+            self.logger.error(f"Error sending string: {e}")
         self.send_call_object_to_clients()
         self.logger.info(f"{user} joined call by id {self.call_id}")
 
