@@ -231,7 +231,7 @@ class ChatBox(QWidget):
                     text = f"Ringing Group..."
                 else:
                     text = f"Ringing User..."
-                y_of_label = 50
+                y_of_label = 95
                 self.ringing_to_label = QLabel(text, self)
                 self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
                 self.ringing_to_label.move(rings_to_x, y_of_label)
@@ -271,7 +271,7 @@ class ChatBox(QWidget):
 
                 # Apply the modified style sheet to the button
                 self.stop_calling_button.setStyleSheet(modified_style_sheet)
-                self.stop_calling_button.move(rings_to_x + (text_1_width // 2) - 15, y_of_label + 90)
+                self.stop_calling_button.move(rings_to_x + (text_1_width // 2) - 15, y_of_label + 110)
                 self.stop_calling_button.clicked.connect(self.stop_calling)
 
             if self.parent.is_getting_called:
@@ -2280,7 +2280,7 @@ class Call:
         self.gets_call_nets_from_dict()
         self.muted = []
         self.deafened = []
-
+        self.video_streams_list = []
         self.send_call_object_to_clients()
         self.send_to_everyone_call_accepted()
         # if using thread here
@@ -2757,7 +2757,54 @@ class Communication:
                 self.rings.remove(ring)
 
 
+class VideoStream:
+    def _init_(self, Comms_object, streamer, call_object, group_id=None):
+        self.logger = logging.getLogger(__name__)
+        self.stream_id = str(uuid.uuid4())
+        self.streamer = streamer
+        if group_id:
+            self.is_group_stream = True
+        else:
+            self.is_group_stream = False
+        self.spectators = []
+        self.spectators_nets = {}
+        self.data_collection = []  # List of tuples containing user and vc_data
+        self.stop_thread = threading.Event()  # Event for signaling the thread to stop
+        self.thread = threading.Thread(target=self.process_vc_data)
 
+    def add_spectator(self, user):
+        self.spectators.append(user)
+        self.add_specator_net_to_dict(user)
+        if len(self.spectators) == 1:
+            self.thread.start()
+
+    def add_specator_net_to_dict(self, specator):
+        specator_net = self.parent.get_net_by_name(specator)
+        self.spectators_nets[specator] = specator_net
+
+    def remove_user_net_from_dict(self, user):
+        x = 5
+
+    def remove_spectator(self, user):
+        self.spectators.remove(user)
+
+    def process_share_screen_data(self):
+        while not self.stop_thread.is_set():
+            if self.data_collection:
+                user, share_screen = self.data_collection.pop(0)
+                self.send_share_screen_data_to_everyone_but_user(share_screen, user)
+            else:
+                # Sleep or perform other tasks if the data collection is empty
+                time.sleep(0.1)
+
+    def stop_processing(self):
+        self.stop_thread.set()
+        self.thread.join()  # Wait for the thread to finish
+
+    def send_share_screen_data_to_everyone_but_user(self, vc_data, user):
+        for name, net in self.spectators_nets.items():
+            if name != user and net is not None:
+                net.send_share_screen_data(vc_data)
 
 
 

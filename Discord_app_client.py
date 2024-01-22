@@ -304,7 +304,7 @@ class SplashScreen(QWidget):
         """)
         # Create logo label
         logo_label = QLabel(self)
-        logo_label.setPixmap(QPixmap('C:/Users/kevin/Downloads/connectify_icon.png'))  # Replace with the actual path to your PNG file
+        logo_label.setPixmap(QPixmap('discord_app_assets/connectify_icon.png'))  # Replace with the actual path to your PNG file
         logo_label.setAlignment(Qt.AlignCenter)
         logo_label.move(1690//2, 300)
 
