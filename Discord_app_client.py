@@ -556,7 +556,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             participants_before = call_dict.get("participants")
             if call_dict.get("call_id") == updated_call_dict.get("call_id"):
                 self.call_dicts.remove(call_dict)
-                if len(updated_participants) > len(participants_before):
+                if len(updated_participants) > len(participants_before) and self.username in updated_participants:
                     join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
                     self.play_sound(join_sound)
         self.call_dicts.append(updated_call_dict)
