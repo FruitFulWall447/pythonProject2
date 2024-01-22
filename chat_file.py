@@ -2397,6 +2397,8 @@ class Call:
     def remove_user_from_call(self, user):
         self.participants.remove(user)
         self.gets_call_nets_from_dict()
+        self.send_call_object_to_clients()
+        self.logger.info(f"{user} left call by id {self.call_id}")
 
     def add_user_to_call(self, user):
         self.participants.append(user)
