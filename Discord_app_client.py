@@ -199,7 +199,7 @@ def thread_recv_messages():
                     json_str = data[second_colon_index + 1:].strip()
                     call_dict = json.loads(json_str)
                     if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
-                        main_page.update_call_dict_by_id(call_dict.get("call_id"), call_dict)
+                        main_page.update_call_dict_by_id(call_dict)
                     else:
                         main_page.call_dicts.append(call_dict)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
@@ -548,10 +548,15 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 return True
         return False
 
-    def update_call_dict_by_id(self, call_id, updated_call_dict):
+    def update_call_dict_by_id(self, updated_call_dict):
+        updated_participants = updated_call_dict.get("participants")
         for call_dict in self.call_dicts:
-            if call_dict.get("call_id") == call_id:
+            participants_before = call_dict.get("participants")
+            if call_dict.get("call_id") == updated_call_dict.get("call_id"):
                 self.call_dicts.remove(call_dict)
+                if len(updated_participants) > len(participants_before):
+                    join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
+                    self.play_sound(join_sound)
         self.call_dicts.append(updated_call_dict)
 
 

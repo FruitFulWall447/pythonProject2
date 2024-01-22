@@ -112,6 +112,21 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_join_call_of_group_id(self, group_id):
+        data = f"call:join:{group_id}"
+        try:
+            # Convert the length of the data to a string
+            size_str = str(len(data.encode('utf-8')))
+            size = str(self.size + int(size_str))
+            number_of_zero = self.original_len - len(size)
+            size = ("0" * number_of_zero) + size
+            # Send the size as a string
+            self.client.send(size.encode('utf-8'))
+            # Send the actual data
+            self.client.send(data.encode('utf-8'))
+        except socket.error as e:
+            print(e)
+
     def send_accept_call_with(self, accepted_caller):
         data = f"call:accepted:{accepted_caller}"
         try:

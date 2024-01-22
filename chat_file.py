@@ -225,13 +225,12 @@ class ChatBox(QWidget):
             self.send_image_button.clicked.connect(self.open_image_file_dialog)
 
             if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
-
+                y_of_label = 95
                 rings_to_x = 920
                 if self.parent.selected_chat.startswith("("):
                     text = f"Ringing Group..."
                 else:
                     text = f"Ringing User..."
-                y_of_label = 95
                 self.ringing_to_label = QLabel(text, self)
                 self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
                 self.ringing_to_label.move(rings_to_x, y_of_label)
@@ -414,9 +413,39 @@ class ChatBox(QWidget):
                     rename_group_x = add_user_x - 50
                     rename_group_y = call_button_y
                     self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+                # if in chat where there is a group call gives option to join
                 if self.current_group_id:
-                    if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
-                        x = 5
+                    if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
+                        self.join_call_button = QPushButton(self)
+                        y_of_label = 95
+                        rings_to_x = 920
+                        # Set button styles
+                        button_size = QSize(50, 50)  # Adjust this to your desired button size
+                        self.join_call_button.setFixedSize(button_size)
+                        icon = QIcon("discord_app_assets/accept_button.png")
+                        self.join_call_button.setIcon(icon)
+                        icon_size = QSize(65, 65)  # Set your desired icon size
+                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+                        self.join_call_button.setIconSize(scaled_size)
+                        self.join_call_button.setObjectName("join_call_button")
+                        original_style_sheet = self.buttons_style_sheet
+
+                        # Define a more specific style for self.stop_calling_button
+                        specific_style = """
+                            QPushButton#stop_calling_button {
+                                border: none;
+                            }
+                        """
+
+                        # Append the specific style for self.stop_calling_button to the original style sheet
+                        modified_style_sheet = original_style_sheet + specific_style
+
+                        # Apply the modified style sheet to the button
+                        self.join_call_button.setStyleSheet(modified_style_sheet)
+                        self.join_call_button.move(rings_to_x + (35 // 2) - 15, y_of_label + 110)
+                        self.join_call_button.clicked.connect(self.join_call)
+
 
 
             self.text_entry = QLineEdit(self)
@@ -1058,6 +1087,9 @@ class ChatBox(QWidget):
                 self.deafen_button.raise_()
                 for profile_button in self.call_profiles_list:
                     profile_button.raise_()
+            if self.current_group_id:
+                if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
+                    self.join_call_button.raise_()
         except Exception as e:
             print(f"error in raising elements {e}")
 
@@ -1172,6 +1204,9 @@ class ChatBox(QWidget):
                 self.image_too_big.hide()
                 self.parent.size_error_label = False
                 return image_bytes
+
+    def join_call(self):
+        self.Network.send_join_call_of_group_id(self.current_group_id)
 
     def end_current_call(self):
         self.parent.end_current_call()
@@ -2327,8 +2362,7 @@ class Call:
     def call_ending_protocol(self):
         self.logger.debug(f"call participants: {self.participants}")
         for name, net in self.call_nets.items():
-            if net is not None and name in self.participants:
-
+            if net is not None:
                 net.send_str("call:ended")
                 net.remove_call_to_user_of_id(self.call_id)
         self.logger.info(f"Call of id {self.call_id} ended")
@@ -2354,10 +2388,10 @@ class Call:
         else:
             temp_list = database_func.get_group_members(self.group_id)
         # Create a dictionary with names and corresponding nets for names in temp_list
-        self.call_nets = {name: self.nets_dict.get(name) for name in temp_list}
+        self.call_nets = {name: self.parent.nets_dict.get(name) for name in temp_list}
 
-    def update_call_nets(self, nets):
-        self.nets_dict = nets
+    def update_call_nets(self):
+        self.nets_dict = self.parent.nets_dict
         self.gets_call_nets_from_dict()
 
     def remove_user_from_call(self, user):
@@ -2370,6 +2404,7 @@ class Call:
         for name, net in self.call_nets.items():
             if name == user and net is not None:
                 net.send_str("call:accepted")
+        self.send_call_object_to_clients()
         self.logger.info(f"{user} joined call by id {self.call_id}")
 
 
@@ -2391,7 +2426,7 @@ class Call:
 
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
-            if name != user and net is not None and name not in self.deafened:
+            if name != user and net is not None and name not in self.deafened and name in self.participants:
                 net.send_vc_data(vc_data)
                 # self.logger.debug(f"Sent voice chat data to {name}")
 
@@ -2525,9 +2560,11 @@ class Ring:
         self.ring_to_users_who_didnt_get_a_ring()
 
     def ring_to_users_who_didnt_get_a_ring(self):
+        group_name = database_func.get_group_name_by_id(self.group_id)
+        format = f"({self.group_id}){group_name}({self.ringer})"
         for name, net in self.ringers_nets.items():
             if name not in self.already_ringed_to and net is not None:
-                net.send_user_that_calling(self.ringer)
+                net.send_user_that_calling(format)
                 self.ringed_to.append(name)
                 self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
                 self.already_ringed_to.append(name)
@@ -2611,7 +2648,7 @@ class Communication:
         for ring in self.rings:
             ring.update_ring_nets(self.nets_dict)
         for call in self.calls:
-            call.update_call_nets(self.nets_dict)
+            call.update_call_nets()
 
     def get_net_by_name(self, name):
         return self.nets_dict.get(name, None)
