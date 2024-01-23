@@ -2224,46 +2224,74 @@ class FriendsBox(QWidget):
 
 
 class SettingsBox(QWidget):
-    def __init__(self, settings, Network, username, parent=None):
+    def __init__(self, parent):
         super().__init__()
         self.font_size = 60
-        self.Network = Network
-        self.volume_value = settings.get("volume")
-        self.volume_slider = QSlider(Qt.Horizontal)
-        self.volume_slider.setMinimum(0)
-        self.volume_slider.setMaximum(100)
-        self.volume_slider.setValue(50)  # Set initial volume
-        self.volume_slider.valueChanged.connect(self.set_volume)
+        self.parent = parent
+        self.Network = self.parent.Network
 
-        # Create a combo box with color options
-        self.color_combobox = QComboBox(self)
-        self.color_combobox.addItem("Select Color")
-        self.color_combobox.addItem("Red")
-        self.color_combobox.addItem("Green")
-        self.color_combobox.addItem("Blue")
+        try:
+            if self.parent.selected_settings == "My Account":
+                start_y = 100
+                start_x = 500
+                username = self.parent.username
+                self.name_label = QLabel("Name:")
+                self.name_value_label = QLabel(username, self)
+                self.change_name_button = QPushButton("Edit user profile", self)
+                self.name_label.move(start_x, start_y)
+                self.name_value_label.move(start_x + self.name_label.width(), start_y)
+                self.change_name_button.move(start_x + 400, start_y)
 
-        # Label to display the selected color
-        self.selected_color_label = QLabel("Selected Color: ", self)
+                self.image_label = QLabel("Image:")
+                # Add code for the image (e.g., QPixmap)
 
-        # Connect the combo box signal to a function that updates the label
-        self.color_combobox.currentIndexChanged.connect(self.update_selected_color)
+                self.username_label = QLabel("Username:")
+                self.username_value_label = QLabel(username, self)
+                self.change_username_button = QPushButton("Edit Username", self)
+                self.username_label.move(start_x, start_y + 50)
+                self.username_value_label.move(start_x + self.name_value_label.width(), start_y + 50)
+                self.change_username_button.move(start_x + 400, start_y + 50)
 
-        # Create a layout and add widgets
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.color_combobox)
-        layout.addWidget(self.selected_color_label)
+                self.email_label = QLabel("Email:")
+                self.email_value_label = QLabel("user@example.com", self)
+                self.email_label.move(start_x + self.name_value_label.width(), start_y + 100)
+                self.email_value_label.move(start_x + 400, start_y + 50)
 
-        # Set up the main window
-        self.setGeometry(300, 300, 300, 150)
-        self.setWindowTitle('Color Selector')
-        self.show()
+                self.change_password_button = QPushButton("Change Password", self)
+                self.delete_account_button = QPushButton("Delete Account", self)
+                self.change_password_button.move(start_x, start_y + 150)
+                self.delete_account_button.move(start_x + 150, start_y + 150)
 
-    def update_selected_color(self):
-        # Get the selected color from the combo box
-        selected_color = self.color_combobox.currentText()
+            else:
+                self.volume_slider = QSlider(Qt.Horizontal, self)
+                self.volume_slider.setMinimum(0)
+                self.volume_slider.setMaximum(100)
+                self.volume_slider.setValue(50)  # Set initial volume
+                self.volume_slider.valueChanged.connect(self.set_volume)
 
-        # Update the label with the selected color
-        self.selected_color_label.setText(f"Selected Color: {selected_color}")
+                self.color_combobox = QComboBox(self)
+                self.color_combobox.addItem("Select Color")
+                self.color_combobox.addItem("Red")
+                self.color_combobox.addItem("Green")
+                self.color_combobox.addItem("Blue")
+
+                self.color_combobox.move(400, 400)
+                self.volume_slider.move(500, 500)
+
+        except Exception as e:
+            print(e)
+
+    def change_username_function(self):
+        # Implement the function for changing the username
+        pass
+
+    def change_password_function(self):
+        # Implement the function for changing the password
+        pass
+
+    def delete_account_function(self):
+        # Implement the function for deleting the account
+        pass
 
     def set_volume(self, value):
         # Set the volume of the QMediaPlayer

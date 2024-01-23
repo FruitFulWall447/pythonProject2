@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
 from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from chat_file import ChatBox, FriendsBox
+from chat_file import ChatBox, FriendsBox, SettingsBox
 import pyaudio
 import random
 import json
@@ -422,6 +422,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.mute = False
         self.deafen = False
 
+        self.selected_settings = "My Account"
+
         self.online_users_list = []
         self.friends_list = []
         # friend_box_page could be online, add friend, blocked, all, pending
@@ -496,13 +498,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                                           requests_list=self.request_list, Network=n, username=self.username, parent=self)
             self.friends_box.hide()
 
-
+            self.setting_box = SettingsBox(parent=self)
+            self.setting_box.hide()
             # Add some spacing between buttons and ChatBox
 
             # Add the ChatBox to the main layout
             self.stacked_widget = QStackedWidget(self)
             self.stacked_widget.addWidget(self.chat_box)
-            self.stacked_widget.addWidget(QWidget())  # Placeholder for the Settings page
+            self.stacked_widget.addWidget(self.setting_box)  # Placeholder for the Settings page
             self.stacked_widget.addWidget(self.friends_box)
 
             self.main_layout.addWidget(self.stacked_widget)
