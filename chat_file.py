@@ -2549,14 +2549,22 @@ class Ring:
         self.ring_to_users_who_didnt_get_a_ring()
 
     def ring_to_users_who_didnt_get_a_ring(self):
-        group_name = database_func.get_group_name_by_id(self.group_id)
-        format = f"({self.group_id}){group_name}({self.ringer})"
-        for name, net in self.ringers_nets.items():
-            if name not in self.already_ringed_to and net is not None:
-                net.send_user_that_calling(format)
-                self.ringed_to.append(name)
-                self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
-                self.already_ringed_to.append(name)
+        if self.is_group_ring:
+            group_name = database_func.get_group_name_by_id(self.group_id)
+            format = f"({self.group_id}){group_name}({self.ringer})"
+            for name, net in self.ringers_nets.items():
+                if name not in self.already_ringed_to and net is not None:
+                    net.send_user_that_calling(format)
+                    self.ringed_to.append(name)
+                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                    self.already_ringed_to.append(name)
+        else:
+            for name, net in self.ringers_nets.items():
+                if name not in self.already_ringed_to and net is not None:
+                    net.send_user_that_calling(self.ringer)
+                    self.ringed_to.append(name)
+                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                    self.already_ringed_to.append(name)
 
     def is_ring_by_ringer(self, ringer):
         return self.ringer == ringer

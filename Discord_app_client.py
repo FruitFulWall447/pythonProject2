@@ -17,6 +17,7 @@ import pickle
 import cv2
 import struct
 import re
+from queue import Queue, Empty
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
                    "tutanota", "icloud", "rackspace","mailchimp",
@@ -71,7 +72,7 @@ def is_string(variable):
 
 Flag_recv_messages = True
 def thread_recv_messages():
-    global n, main_page, vc_thread_flag, vc_data_list, vc_play_flag
+    global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag
     print("receiving thread started running")
     while Flag_recv_messages:
         data = n.recv_str()
@@ -189,6 +190,7 @@ def thread_recv_messages():
                         QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
                 if action == "ended":
                     print("call ended")
+                    vc_data_queue = Queue()
                     vc_thread_flag = False
                     vc_play_flag = False
                     send_vc_thread.join()
@@ -217,7 +219,7 @@ def thread_recv_messages():
         else:
             try:
                 vc_data = zlib.decompress(data)
-                vc_data_list.append(vc_data)
+                vc_data_queue.put(vc_data)
             except Exception as e:
                 print(e)
 
@@ -233,15 +235,18 @@ p = pyaudio.PyAudio()
 vc_thread_flag = False
 vc_play_flag = False
 accumulated_data = []
-vc_data_list = []
+vc_data_queue = Queue()
 
 def thread_play_vc_data():
-    global vc_data_list
+    global vc_data_queue
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
     while vc_play_flag:
-        if len(vc_data_list) > 0:
-            output_stream.write(vc_data_list[0])
-            del vc_data_list[0]
+        try:
+            vc_data = vc_data_queue.get(block=True, timeout=1)
+
+            output_stream.write(vc_data)
+        except Empty:
+            pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
     output_stream.close()
 
@@ -254,18 +259,21 @@ def thread_send_voice_chat_data():
     const = 20
     # Open output stream (speakers)
     while vc_thread_flag:
-        input_data = input_stream.read(CHUNK)
-        accumulated_data.append(input_data)
+        if not main_page.mute and not main_page.deafen:
+            input_data = input_stream.read(CHUNK)
+            accumulated_data.append(input_data)
 
-        count += 1
-        if count % const == 0:  # Send every 10 chunks (adjust as needed)
-            # Send the accumulated data over the network
+            count += 1
+            if count % const == 0:  # Send every 10 chunks (adjust as needed)
+                # Send the accumulated data over the network
 
-            data = b''.join(accumulated_data)
-            # output_stream.write(data)
-            if not main_page.mute and not main_page.deafen:
+                data = b''.join(accumulated_data)
+                # output_stream.write(data)
+
                 n.send_vc_data(data)
-            accumulated_data = []  # Reset accumulated data
+                accumulated_data = []  # Reset accumulated data
+        else:
+            time.sleep(0.1)
     input_stream.stop_stream()
     input_stream.close()
     print("stopped voice chat thread....")
@@ -564,6 +572,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     if len(different_users) == 1 and self.username not in different_users:
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
                         self.play_sound(join_sound)
+                elif len(updated_participants) < len(participants_before) and self.username in updated_participants:
+                    user_left_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/leave_call_sound_effect.mp3'))
+                    self.play_sound(user_left_sound)
         self.call_dicts.append(updated_call_dict)
 
 

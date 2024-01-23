@@ -372,8 +372,13 @@ def thread_recv_messages(n, addr, username):
                     parts = data.split(":")
                     action = parts[1]
                     if action == "join":
-                        group_id = int(parts[2])
-                        Communication.add_user_to_group_call_by_id(User, group_id)
+                        if Communication.is_user_in_a_call(User):
+                            Communication.remove_user_from_call(User)
+                            group_id = int(parts[2])
+                            Communication.add_user_to_group_call_by_id(User, group_id)
+                        else:
+                            group_id = int(parts[2])
+                            Communication.add_user_to_group_call_by_id(User, group_id)
                     if action == "mute":
                         if parts[2] != "myself":
                             person_to_mute = parts[2]
