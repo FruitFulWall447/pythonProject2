@@ -810,9 +810,6 @@ class ChatBox(QWidget):
         /* Use a slightly darker shade for the border */
                         border-radius: 5px;""")
 
-        # label = QLabel(f"press x to clear selection", self)
-        # label.setStyleSheet("""color: white;font-size: 12px;""")
-        # label.move(starter_x+40, starter_y_of_border+17)
         label = QLabel(f"Select friends", self)
         label.setStyleSheet("""color: white;font-size: 20px;""")
         label.move(starter_x + 20, starter_y_of_border + 10)
