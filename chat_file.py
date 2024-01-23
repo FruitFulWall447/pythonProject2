@@ -416,37 +416,19 @@ class ChatBox(QWidget):
                 # if in chat where there is a group call gives option to join
                 if self.current_group_id:
                     if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
-                        self.join_call_button = QPushButton(self)
+
+                        icon_size = 60
                         y_of_label = 95
                         rings_to_x = 920
-                        # Set button styles
-                        button_size = QSize(50, 50)  # Adjust this to your desired button size
-                        self.join_call_button.setFixedSize(button_size)
                         icon = QIcon("discord_app_assets/accept_button.png")
-                        self.join_call_button.setIcon(icon)
-                        icon_size = QSize(65, 65)  # Set your desired icon size
-                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                        self.join_call_button.setIconSize(scaled_size)
-                        self.join_call_button.setObjectName("join_call_button")
-                        original_style_sheet = self.buttons_style_sheet
 
-                        # Define a more specific style for self.stop_calling_button
-                        specific_style = """
-                            QPushButton#stop_calling_button {
-                                border: none;
-                            }
-                        """
-
-                        # Append the specific style for self.stop_calling_button to the original style sheet
-                        modified_style_sheet = original_style_sheet + specific_style
-
-                        # Apply the modified style sheet to the button
-                        self.join_call_button.setStyleSheet(modified_style_sheet)
-                        self.join_call_button.move(rings_to_x + (35 // 2) - 15, y_of_label + 110)
-                        self.join_call_button.clicked.connect(self.join_call)
-
-
+                        join_button_x = rings_to_x + (35 // 2) + 15
+                        join_button_y = y_of_label + 110
+                        join_button_width_or_height = 50
+                        self.join_call_button = self.create_custom_in_call_button(join_button_width_or_height, join_button_width_or_height,
+                                                                                  join_button_x, join_button_y,  self.join_call)
+                        self.set_button_icon(self.join_call_button, icon, icon_size, icon_size)
+                        self.put_call_icons_on_the_screen()
 
             self.text_entry = QLineEdit(self)
             self.text_entry.setGeometry(10, 10, self.width_of_chat_box-70, 40)
@@ -1090,6 +1072,8 @@ class ChatBox(QWidget):
             if self.current_group_id:
                 if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
                     self.join_call_button.raise_()
+                    for profile_button in self.call_profiles_list:
+                        profile_button.raise_()
         except Exception as e:
             print(f"error in raising elements {e}")
 

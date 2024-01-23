@@ -550,6 +550,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 return True
         return False
 
+    def find_difference(self, list1, list2):
+        return list(set(list1) - set(list2))
+
     def update_call_dict_by_id(self, updated_call_dict):
         updated_participants = updated_call_dict.get("participants")
         for call_dict in self.call_dicts:
@@ -557,8 +560,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             if call_dict.get("call_id") == updated_call_dict.get("call_id"):
                 self.call_dicts.remove(call_dict)
                 if len(updated_participants) > len(participants_before) and self.username in updated_participants:
-                    join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
-                    self.play_sound(join_sound)
+                    different_users = self.find_difference(updated_participants, participants_before)
+                    if len(different_users) == 1 and self.username not in different_users:
+                        join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
+                        self.play_sound(join_sound)
         self.call_dicts.append(updated_call_dict)
 
 
