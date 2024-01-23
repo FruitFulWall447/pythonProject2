@@ -2354,7 +2354,7 @@ class Call:
 
     def send_to_everyone_call_accepted(self):
         for name, net in self.call_nets.items():
-            if net is not None:
+            if net is not None and name in self.participants:
                 net.send_str("call:accepted")
 
     def is_user_in_a_call(self, user):
