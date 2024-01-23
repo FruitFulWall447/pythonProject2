@@ -1054,9 +1054,40 @@ def clear_tables():
         if connection:
             connection.close()
 
+def create_messages_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SQL code to create the table
+        create_table_query = """
+            CREATE TABLE messages (
+                message_id INT AUTO_INCREMENT PRIMARY KEY,
+                sender_id VARCHAR(255),
+                receiver_id VARCHAR(255),
+                message_content TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                has_read TINYINT(1) DEFAULT 0
+            )
+        """
+        cursor.execute(create_table_query)
+        print("Table 'messages' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
 def connect_to_kevindb():
-
-
     return mysql.connector.connect(host="localhost", user="root", password="LingshUpper1208", database="kevindb")
 
 
