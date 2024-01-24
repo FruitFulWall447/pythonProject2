@@ -2224,11 +2224,39 @@ class FriendsBox(QWidget):
 
 
 class SettingsBox(QWidget):
-    def __init__(self, parent):
-        super().__init__()
+    def _init_(self, parent):
+        super()._init_()
         self.font_size = 60
         self.parent = parent
         self.Network = self.parent.Network
+        self.settings_button_height = 50
+
+        delta_of_main_buttons = 50
+
+        starter_x_of_main_buttons = 350
+        starter_y_of_main_buttons = 100
+        self.my_account_button = self.create_settings_main_buttons("My Account", self.my_account_pressed, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
+
+        starter_y_of_main_buttons += delta_of_main_buttons
+
+        self.user_profile_button = self.create_settings_main_buttons("User Profile", self.user_profile_pressed, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
+
+        starter_y_of_main_buttons += delta_of_main_buttons
+
+        self.appearance_button = self.create_settings_main_buttons("Appearance", self.user_profile_pressed, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
+
+        starter_y_of_main_buttons += delta_of_main_buttons
+
+        self.voice_video_button = self.create_settings_main_buttons("Voice & Video", self.user_profile_pressed, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
+
+        starter_y_of_main_buttons += delta_of_main_buttons
+
+        self.privacy_safety_button = self.create_settings_main_buttons("Privacy & Safety", self.user_profile_pressed, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
 
         try:
             if self.parent.selected_settings == "My Account":
@@ -2242,8 +2270,13 @@ class SettingsBox(QWidget):
                 self.name_value_label.move(start_x + self.name_label.width(), start_y)
                 self.change_name_button.move(start_x + 400, start_y)
 
-                self.image_label = QLabel("Image:")
-                # Add code for the image (e.g., QPixmap)
+                self.profile_image_label = QLabel(self)
+
+                icon_path = "discord_app_assets/regular_profile"
+                button_icon = QIcon(icon_path)
+                pixmap = button_icon.pixmap(120, 120)  # Adjust the size as needed
+                self.profile_image_label.setPixmap(pixmap)
+                self.profile_image_label.move(800, 200)
 
                 self.username_label = QLabel("Username:")
                 self.username_value_label = QLabel(username, self)
@@ -2262,7 +2295,7 @@ class SettingsBox(QWidget):
                 self.change_password_button.move(start_x, start_y + 150)
                 self.delete_account_button.move(start_x + 150, start_y + 150)
 
-            else:
+            elif self.parent.selected_settings == "Voice & Video":
                 self.volume_slider = QSlider(Qt.Horizontal, self)
                 self.volume_slider.setMinimum(0)
                 self.volume_slider.setMaximum(100)
@@ -2277,6 +2310,7 @@ class SettingsBox(QWidget):
 
                 self.color_combobox.move(400, 400)
                 self.volume_slider.move(500, 500)
+
 
         except Exception as e:
             print(e)
@@ -2295,8 +2329,64 @@ class SettingsBox(QWidget):
 
     def set_volume(self, value):
         # Set the volume of the QMediaPlayer
-        self.media_player.setVolume(value)
+        # self.media_player.setVolume(value)
+        print(value)
 
+    def my_account_pressed(self):
+        self.parent.selected_settings = "My Account"
+
+    def user_profile_pressed(self):
+        self.parent.selected_settings = "User Profile"
+
+    def appearance_pressed(self):
+        self.parent.selected_settings = "Appearance"
+
+    def voice_video_pressed(self):
+        self.parent.selected_settings = "Voice & Video"
+
+    def privacy_safety(self):
+        self.parent.selected_settings = "Privacy & Safety"
+
+    def create_settings_main_buttons(self, text, funcion, position):
+
+        button_text = text
+
+        button = QPushButton(self)
+        button.setText(button_text)
+        button.move(position[0], position[1])
+        button.setFixedHeight(self.settings_button_height)
+        button.clicked.connect(funcion)
+
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: #141c4b;
+                border: 2px solid #2980b9;
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: 35px;  /* Adjust the padding to move text to the right */
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+
+            QPushButton:hover {{
+                background-color: #2980b9;
+            }}
+
+            QPushButton:pressed {{
+                background-color: #202225;
+                border-color: #72767d;
+            }}
+        """)
+
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        button.setFixedWidth(350)
+        button.raise_()
+
+        return button
 
 from datetime import datetime
 
