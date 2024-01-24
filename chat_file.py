@@ -2224,8 +2224,8 @@ class FriendsBox(QWidget):
 
 
 class SettingsBox(QWidget):
-    def _init_(self, parent):
-        super()._init_()
+    def __init__(self, parent):
+        super().__init__()
         self.font_size = 60
         self.parent = parent
         self.Network = self.parent.Network
@@ -2250,12 +2250,12 @@ class SettingsBox(QWidget):
 
         starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.voice_video_button = self.create_settings_main_buttons("Voice & Video", self.user_profile_pressed, (
+        self.voice_video_button = self.create_settings_main_buttons("Voice && Video", self.user_profile_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
         starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.privacy_safety_button = self.create_settings_main_buttons("Privacy & Safety", self.user_profile_pressed, (
+        self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.user_profile_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
         try:
