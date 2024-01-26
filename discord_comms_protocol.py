@@ -551,7 +551,6 @@ class client_net:
             print(e)
 
     def intiate_rsa_protocol(self):
-        client_public_key, client_private_key = generate_rsa_key_pair()
         client_symmetric_key = generate_secure_symmetric_key()
 
         # the client receives the server Rsa public key
