@@ -96,6 +96,7 @@ class client_net:
         self.size = 0000000
         self.original_len = 7
         self.lock = threading.Lock()
+        self.aes_key = None
         self.initiate_rsa_protocol()
 
 
@@ -558,7 +559,7 @@ class client_net:
 
     def initiate_rsa_protocol(self):
         client_symmetric_key = generate_secure_symmetric_key()
-        print(client_symmetric_key)
+
 
         # the client receives the server Rsa public key
         received_serialized_server_public_key_bytes = self.recv_bytes()
@@ -575,14 +576,24 @@ class client_net:
         self.send_bytes(encrypted_symmetric_key.encode("utf-8"))
         encrypt_aes_key = self.recv_bytes()
         aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
-        print(aes_key)
-
+        self.aes_key = aes_key
+        self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
 
 class server_net:
-    def __init__(self, s):
+    def __init__(self, s, addr):
+        self.client_address = addr
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        # Create a StreamHandler with the desired format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+
         self.server = s
         self.size = 0000000
         self.original_len = 7
+        self.aes_key = None
         self.initiate_rsa_protocol()
 
 
@@ -875,8 +886,9 @@ class server_net:
         received_encrypted_symmetric_key_bytes = self.recv_bytes()
         if received_encrypted_symmetric_key_bytes is not None:
             decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
-            print(decrypted_symmetric_key)
             aes_key = generate_aes_key()
+            self.aes_key = aes_key
+            self.logger.info(f"Started to communicate with client {self.client_address}, with AES key {self.aes_key}")
             try:
                 print(aes_key)
                 encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)

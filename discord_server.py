@@ -444,7 +444,7 @@ def main():
         username1 = "0000"
         conn, addr = s.accept()
         logger.info(f"connect to: {addr}")
-        n = server_net(conn)
+        n = server_net(conn, addr)
         threading.Thread(target=thread_recv_messages, args=(n, addr, username1)).start()
         #Process(target=thread_recv_messages, args=(n, addr, username1)).start()
 
