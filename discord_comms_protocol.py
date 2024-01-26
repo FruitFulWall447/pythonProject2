@@ -12,6 +12,16 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.fernet import Fernet
+import secrets
+
+def generate_secure_symmetric_key():
+    symmetric_key = secrets.token_bytes(32)
+    return symmetric_key
+
+def generate_aes_key():
+    # Generate a random 256-bit (32-byte) key for AES-256
+    aes_key = secrets.token_bytes(32)
+    return aes_key
 
 
 def generate_rsa_key_pair():
@@ -31,7 +41,7 @@ def encrypt_with_rsa(public_key, data):
             label=None
         )
     )
-    return base64.b64encode(ciphertext).decode('utf-8')
+    return base64.b64encode(ciphertext).decode("utf-8")
 
 def decrypt_with_rsa(private_key, ciphertext):
     ciphertext = base64.b64decode(ciphertext)
@@ -45,10 +55,6 @@ def decrypt_with_rsa(private_key, ciphertext):
     )
     return plaintext
 
-def generate_secure_symmetric_key():
-    key = Fernet.generate_key()
-    print(key)
-    return key
 
 def encrypt_with_aes(key, data):
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
@@ -58,14 +64,14 @@ def encrypt_with_aes(key, data):
         data += b'\x00' * (16 - len(data) % 16)
 
     ciphertext = encryptor.update(data) + encryptor.finalize()
-    return base64.b64encode(ciphertext).decode('utf-8')
+    return base64.b64encode(ciphertext)
 
 def decrypt_with_aes(key, ciphertext):
     ciphertext = base64.b64decode(ciphertext)
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
-    return decrypted_data.rstrip(b'\x00').decode('utf-8')
+    return decrypted_data.rstrip(b'\x00')
 
 
 class client_net:
@@ -90,7 +96,7 @@ class client_net:
         self.size = 0000000
         self.original_len = 7
         self.lock = threading.Lock()
-        self.intiate_rsa_protocol()
+        self.initiate_rsa_protocol()
 
 
     def connect(self):
@@ -550,8 +556,9 @@ class client_net:
         except socket.error as e:
             print(e)
 
-    def intiate_rsa_protocol(self):
+    def initiate_rsa_protocol(self):
         client_symmetric_key = generate_secure_symmetric_key()
+        print(client_symmetric_key)
 
         # the client receives the server Rsa public key
         received_serialized_server_public_key_bytes = self.recv_bytes()
@@ -565,7 +572,10 @@ class client_net:
         encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
 
         # Use send_bytes to send the encrypted key as bytes
-        self.send_bytes(encrypted_symmetric_key.encode('utf-8'))
+        self.send_bytes(encrypted_symmetric_key.encode("utf-8"))
+        encrypt_aes_key = self.recv_bytes()
+        aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
+        print(aes_key)
 
 
 class server_net:
@@ -573,7 +583,7 @@ class server_net:
         self.server = s
         self.size = 0000000
         self.original_len = 7
-        self.intiate_rsa_protocol()
+        self.initiate_rsa_protocol()
 
 
     def receive_by_size(self, size, buffer_size=16384):
@@ -851,7 +861,7 @@ class server_net:
         except socket.error as e:
             print(e)
 
-    def intiate_rsa_protocol(self):
+    def initiate_rsa_protocol(self):
         server_public_key, server_private_key = generate_rsa_key_pair()
 
         # send the server_public_key to the client
@@ -866,5 +876,13 @@ class server_net:
         if received_encrypted_symmetric_key_bytes is not None:
             decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
             print(decrypted_symmetric_key)
+            aes_key = generate_aes_key()
+            try:
+                print(aes_key)
+                encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
+                self.send_bytes(encrypted_aes_key)
+            except Exception as e:
+                print(e)
+
         else:
             print("Error receiving the symmetric key.")
