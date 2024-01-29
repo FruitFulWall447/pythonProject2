@@ -397,6 +397,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     new_message_play_audio_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
+        self.background_color = "#141c4b"
+        self.standard_hover_color = "#2980b9"
+
         self.is_create_group_pressed = False
         self.size_error_label = False
         self.is_chat_box_full = False
@@ -477,10 +480,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         try:
             self.setGeometry(100, 100, 600, 400)
             self.setWindowTitle('Main Page')
-            self.setStyleSheet('''
-                QWidget {
-                    background-color: #141c4b;  /* Set your desired background color */
-                }
+            self.setStyleSheet(f'''
+                QWidget {{
+                    background-color: {self.background_color};
+                }}
             ''')
 
             # Create an instance of ChatBox
@@ -498,14 +501,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                                           requests_list=self.request_list, Network=n, username=self.username, parent=self)
             self.friends_box.hide()
 
-            self.setting_box = SettingsBox(parent=self)
-            self.setting_box.hide()
+            self.settings_box = SettingsBox(parent=self)
+            self.settings_box.hide()
             # Add some spacing between buttons and ChatBox
 
             # Add the ChatBox to the main layout
             self.stacked_widget = QStackedWidget(self)
             self.stacked_widget.addWidget(self.chat_box)
-            self.stacked_widget.addWidget(self.setting_box)  # Placeholder for the Settings page
+            self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
             self.stacked_widget.addWidget(self.friends_box)
 
             self.main_layout.addWidget(self.stacked_widget)
@@ -754,6 +757,16 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     self.stacked_widget.setCurrentIndex(2)
         except Exception as e:
             print(f"error in updating social page{e}")
+
+    def updated_settings_page(self):
+        try:
+            self.stacked_widget.removeWidget(self.settings_box)
+            self.settings_box = SettingsBox(parent=self)
+            self.stacked_widget.insertWidget(1, self.settings_box)
+            self.stacked_widget.setCurrentIndex(1)
+        except Exception as e:
+            print(e)
+
 
 
     def keyPressEvent(self, event):

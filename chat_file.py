@@ -2231,6 +2231,7 @@ class SettingsBox(QWidget):
         self.Network = self.parent.Network
         self.settings_button_height = 50
 
+
         delta_of_main_buttons = 50
 
         starter_x_of_main_buttons = 350
@@ -2296,12 +2297,14 @@ class SettingsBox(QWidget):
                 self.delete_account_button.move(start_x + 150, start_y + 150)
 
             elif self.parent.selected_settings == "Voice & Video":
+                print("here123")
                 self.volume_slider = QSlider(Qt.Horizontal, self)
                 self.volume_slider.setMinimum(0)
                 self.volume_slider.setMaximum(100)
                 self.volume_slider.setValue(50)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
-
+                self.volume_slider.move(500, 500)
+            elif self.parent.selected_settings == "Appearance":
                 self.color_combobox = QComboBox(self)
                 self.color_combobox.addItem("Select Color")
                 self.color_combobox.addItem("Red")
@@ -2309,7 +2312,6 @@ class SettingsBox(QWidget):
                 self.color_combobox.addItem("Blue")
 
                 self.color_combobox.move(400, 400)
-                self.volume_slider.move(500, 500)
 
 
         except Exception as e:
@@ -2334,18 +2336,23 @@ class SettingsBox(QWidget):
 
     def my_account_pressed(self):
         self.parent.selected_settings = "My Account"
+        self.parent.updated_settings_page()
 
     def user_profile_pressed(self):
         self.parent.selected_settings = "User Profile"
+        self.parent.updated_settings_page()
 
     def appearance_pressed(self):
         self.parent.selected_settings = "Appearance"
+        self.parent.updated_settings_page()
 
     def voice_video_pressed(self):
         self.parent.selected_settings = "Voice & Video"
+        self.parent.updated_settings_page()
 
     def privacy_safety(self):
         self.parent.selected_settings = "Privacy & Safety"
+        self.parent.updated_settings_page()
 
     def create_settings_main_buttons(self, text, funcion, position):
 
@@ -2387,6 +2394,33 @@ class SettingsBox(QWidget):
         button.raise_()
 
         return button
+
+    def generate_button_stylesheet(self, normal_color, hover_color, pressed_color):
+        return f"""
+            QPushButton {{
+                background-color: {normal_color};
+                border: 2px solid #2980b9;
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: 35px;  /* Adjust the padding to move text to the right */
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+
+            QPushButton:hover {{
+                background-color: {hover_color};
+            }}
+
+            QPushButton:pressed {{
+                background-color: {pressed_color};
+                border-color: #72767d;
+            }}
+        """
+
 
 from datetime import datetime
 
