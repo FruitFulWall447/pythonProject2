@@ -256,7 +256,7 @@ def thread_recv_messages(n, addr, username):
                         logger.info(f"security token from ({addr}) isn't valid")
                         n.send_security_token_invalid()
                     else:
-                        if not username in online_users:
+                        if username not in online_users:
                             n.send_security_token_valid()
                             User = username
                             n.send_username_to_client(username)
