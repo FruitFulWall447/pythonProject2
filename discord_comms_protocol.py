@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography.fernet import Fernet
 import secrets
 
@@ -60,18 +61,30 @@ def encrypt_with_aes(key, data):
     cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
     encryptor = cipher.encryptor()
 
-    if len(data) % 16 != 0:
-        data += b'\x00' * (16 - len(data) % 16)
+    # Use PKCS#7 padding
+    padder = aes_padding.PKCS7(128).padder()
+    padded_data = padder.update(data) + padder.finalize()
 
-    ciphertext = encryptor.update(data) + encryptor.finalize()
+    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
     return base64.b64encode(ciphertext)
 
 def decrypt_with_aes(key, ciphertext):
-    ciphertext = base64.b64decode(ciphertext)
-    cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
-    decryptor = cipher.decryptor()
-    decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
-    return decrypted_data.rstrip(b'\x00')
+    try:
+        ciphertext = base64.b64decode(ciphertext)
+        cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
+        decryptor = cipher.decryptor()
+
+        # Decrypt the ciphertext
+        decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
+
+        # Use PKCS#7 unpadding
+        unpadder = aes_padding.PKCS7(128).unpadder()
+        unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
+
+        return unpadded_data
+    except Exception as e:
+        print(f"Error in decryption: {e}")
+        return None
 
 
 class client_net:
@@ -111,14 +124,21 @@ class client_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
+            encoded_data = data.encode('utf-8')
+            encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
+
+            # Use the size of encoded_encrypted_data
+            size_str = str(len(encoded_encrypted_data))
+
+            # Padding adjustment
+            number_of_zero = self.original_len - len(size_str)
+            size = ("0" * number_of_zero) + size_str
+
             # Send the size as a string
             self.client.send(size.encode('utf-8'))
+
             # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.client.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
 
@@ -758,8 +778,10 @@ class server_net:
             size = int(size_str)
 
             # Receive the actual data based on the size
-            data = self.receive_by_size(size)
-            if data:
+            encrypted_data = self.receive_by_size(size)
+            print(encrypted_data)
+            if encrypted_data:
+                data = decrypt_with_aes(self.aes_key, encrypted_data)
                 message = json.loads(data)
                 format = message.get("format")
                 username = message.get("username")
@@ -789,6 +811,8 @@ class server_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
+                encrypted_data = data
+                data = decrypt_with_aes(self.aes_key, encrypted_data)
                 decoded_data = data.decode('utf-8')
                 return decoded_data
             except Exception as e:

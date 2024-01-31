@@ -269,7 +269,7 @@ def thread_recv_messages(n, addr, username):
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
                             logger.info(f"Blocked User from logging in from 2 devices")
 
-            except socket.error as e:
+            except Exception as e:
                 print(e)
         else:
             logger.debug(f"waiting for data...for {User}")
