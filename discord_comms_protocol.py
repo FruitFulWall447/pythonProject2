@@ -418,6 +418,8 @@ class client_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
+                encrypted_data = data
+                data = decrypt_with_aes(self.aes_key, encrypted_data)
                 decoded_data = data.decode('utf-8')
                 return decoded_data
             except Exception as e:
@@ -528,15 +530,21 @@ class server_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
+            encoded_data = data.encode('utf-8')
+            encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
+
+            # Use the size of encoded_encrypted_data
+            size_str = str(len(encoded_encrypted_data))
+
+            # Padding adjustment
+            number_of_zero = self.original_len - len(size_str)
+            size = ("0" * number_of_zero) + size_str
+
             # Send the size as a string
             self.server.send(size.encode('utf-8'))
-            # Send the actual data
-            self.server.send(data.encode('utf-8'))
 
+            # Send the actual data
+            self.server.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
 
