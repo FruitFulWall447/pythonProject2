@@ -399,6 +399,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         super().__init__()
         self.background_color = "#141c4b"
         self.standard_hover_color = "#2980b9"
+        self.color_design_options = ["Red", "Blue", "Black and White", "Green"]
 
         self.is_create_group_pressed = False
         self.size_error_label = False

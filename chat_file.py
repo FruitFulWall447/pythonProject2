@@ -2222,6 +2222,7 @@ class FriendsBox(QWidget):
         del self.requests_items[index:index + 3]
         self.parent.updated_requests()
 
+import pyaudio
 
 class SettingsBox(QWidget):
     def __init__(self, parent):
@@ -2261,6 +2262,30 @@ class SettingsBox(QWidget):
 
         background_color = self.parent.background_color
         hover_color = self.parent.standard_hover_color
+
+        self.combo_box_style_sheet = """
+                    QComboBox {
+                        background-color: %s;
+                        selection-background-color: %s;
+                        border: 1px solid #777;
+                        border-radius: 5px;
+                        padding: 1px 18px 1px 3px;
+                    }
+
+                    QComboBox::drop-down {
+                        subcontrol-origin: padding;
+                        subcontrol-position: top right;
+                        width: 20px;
+
+                        border-left-width: 1px;
+                        border-left-color: darkgray;
+                        border-left-style: solid; /* just a single line */
+                    }
+
+                    QComboBox::down-arrow {
+                        image: url(down-arrow.png);
+                    }
+                """ % (background_color, hover_color)
         try:
             if self.parent.selected_settings == "My Account":
                 start_y = 100
@@ -2300,6 +2325,25 @@ class SettingsBox(QWidget):
 
             elif self.parent.selected_settings == "Voice & Video":
                 self.volume_slider = QSlider(Qt.Horizontal, self)
+
+                p = pyaudio.PyAudio()
+
+                # Check if the device has input capability
+                input_devices = []
+                output_devices = []
+
+                for i in range(p.get_device_count()):
+                    device_info = p.get_device_info_by_index(i)
+                    device_name = device_info["name"].lower()
+
+                    # Check if the device has output capability and is a headset or speaker
+                    if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name):
+                        input_devices.append(device_info)
+
+                    # Check if the device has input capability and is a microphone
+                    if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
+                        output_devices.append(device_info)
+                print(len(input_devices) + len(output_devices))
                 style_sheet = """
                     QSlider::groove:horizontal {
                         border: 1px solid #bbb;
@@ -2332,43 +2376,27 @@ class SettingsBox(QWidget):
                 self.volume_slider.valueChanged.connect(self.set_volume)
                 self.volume_slider.move(800, 300)
             elif self.parent.selected_settings == "Appearance":
-                self.color_combobox = QComboBox(self)
-                self.color_combobox.addItem("Select Color")
-                self.color_combobox.addItem("Red")
-                self.color_combobox.addItem("Green")
-                self.color_combobox.addItem("Blue")
-                # Set style sheet for color combobox
-                style_sheet = """
-                    QComboBox {
-                        background-color: %s;
-                        selection-background-color: %s;
-                        border: 1px solid #777;
-                        border-radius: 5px;
-                        padding: 1px 18px 1px 3px;
-                    }
 
-                    QComboBox::drop-down {
-                        subcontrol-origin: padding;
-                        subcontrol-position: top right;
-                        width: 20px;
+                list_optional_colors = self.parent.color_design_options
+                width, height = (80, 50)
+                x, y = (800, 300)
+                self.color_combobox = self.create_option_box(width, height, x, y, list_optional_colors)
 
-                        border-left-width: 1px;
-                        border-left-color: darkgray;
-                        border-left-style: solid; /* just a single line */
-                    }
-
-                    QComboBox::down-arrow {
-                        image: url(down-arrow.png);
-                    }
-                """ % (background_color, hover_color)
-
-                self.color_combobox.setStyleSheet(style_sheet)
-
-                self.color_combobox.move(800, 300)
 
 
         except Exception as e:
             print(e)
+
+    def create_option_box(self, width, height, x, y, item_list):
+        color_combobox = QComboBox(self)
+        for i in item_list:
+            color_combobox.addItem(i)
+
+        color_combobox.setStyleSheet(self.combo_box_style_sheet)
+
+        color_combobox.setGeometry(x, y, width, height)
+        return color_combobox
+
 
     def change_username_function(self):
         # Implement the function for changing the username
