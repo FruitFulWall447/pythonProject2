@@ -558,11 +558,18 @@ class client_net:
             print(e)
 
     def initiate_rsa_protocol(self):
+        # create 256 bytes key
         client_symmetric_key = generate_secure_symmetric_key()
-
+        public_key_byte_sequence = br'\server:public-key'
 
         # the client receives the server Rsa public key
         received_serialized_server_public_key_bytes = self.recv_bytes()
+        if received_serialized_server_public_key_bytes.startswith(public_key_byte_sequence):
+            received_serialized_server_public_key_bytes = received_serialized_server_public_key_bytes.replace(public_key_byte_sequence, b'')
+        else:
+            print("did not expect message")
+            return
+
 
         # Deserialize the received public key
         server_public_key = serialization.load_pem_public_key(
@@ -570,11 +577,16 @@ class client_net:
             backend=default_backend()
         )
 
+
         encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
 
         # Use send_bytes to send the encrypted key as bytes
-        self.send_bytes(encrypted_symmetric_key.encode("utf-8"))
+        symmetric_key_byte_sequence = br'\server:symmetric-key'
+        self.send_bytes(symmetric_key_byte_sequence + encrypted_symmetric_key.encode("utf-8"))
+
         encrypt_aes_key = self.recv_bytes()
+        if encrypt_aes_key.startswith(symmetric_key_byte_sequence):
+            encrypt_aes_key = encrypt_aes_key.replace(symmetric_key_byte_sequence, b'')
         aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
         self.aes_key = aes_key
         self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
@@ -881,18 +893,25 @@ class server_net:
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        self.send_bytes(serialized_server_public_key)
+        public_key_byte_sequence = br'\server:public-key'
+        self.send_bytes(public_key_byte_sequence + serialized_server_public_key)
+
+        symmetric_key_byte_sequence = br'\server:symmetric-key'
 
         received_encrypted_symmetric_key_bytes = self.recv_bytes()
+        if received_encrypted_symmetric_key_bytes.startswith(symmetric_key_byte_sequence):
+            received_encrypted_symmetric_key_bytes = received_encrypted_symmetric_key_bytes.replace(symmetric_key_byte_sequence, b'')
+        else:
+            self.logger.critical("did not expect this kind of message")
+            return
         if received_encrypted_symmetric_key_bytes is not None:
             decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
             aes_key = generate_aes_key()
             self.aes_key = aes_key
             self.logger.info(f"Started to communicate with client {self.client_address}, with AES key {self.aes_key}")
             try:
-                print(aes_key)
                 encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
-                self.send_bytes(encrypted_aes_key)
+                self.send_bytes(symmetric_key_byte_sequence + encrypted_aes_key)
             except Exception as e:
                 print(e)
 
