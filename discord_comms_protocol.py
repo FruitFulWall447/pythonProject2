@@ -140,14 +140,7 @@ class client_net:
         data = f"call:ended"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
@@ -155,27 +148,13 @@ class client_net:
         encoded_list = json.dumps(group_members_list)
         full_message = "group:create:" + encoded_list
 
-        # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_calling_user(self, user_that_is_called):
         data = f"call:calling:{user_that_is_called}"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
@@ -183,14 +162,7 @@ class client_net:
         data = f"call:calling:stop!"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
         except socket.error as e:
             print(e)
@@ -199,14 +171,7 @@ class client_net:
         data = f"call:join:{group_id}"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
@@ -214,48 +179,21 @@ class client_net:
         data = f"call:accepted:{accepted_caller}"
         try:
             # Convert the length of the data to a string
-            if self.client.fileno() == -1:
-                self.logger.error("Socket is closed.")
-            else:
-                size_str = str(len(data.encode('utf-8')))
-                size = str(self.size + int(size_str))
-                number_of_zero = self.original_len - len(size)
-                size = ("0" * number_of_zero) + size
-                # Send the size as a string
-                self.client.send(size.encode('utf-8'))
-                # Send the actual data
-                self.client.send(data.encode('utf-8'))
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
     def send_reject_call_with(self, rejected_caller):
         data = f"call:rejected:{rejected_caller}"
         try:
-            # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
-
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
     def toggle_mute_for_myself(self):
         data = f"call:mute:myself"
         try:
-            # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
         except socket.error as e:
             print(e)
@@ -264,15 +202,7 @@ class client_net:
         data = f"call:deafen:myself"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
-
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
@@ -287,13 +217,7 @@ class client_net:
 
 
         # Convert the length of the data to a string
-        size_str = str(len(encoded_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(encoded_message.encode())
+        self.send_str(encoded_message)
 
     def send_sign_up_info(self, username, password, email):
         format = "sign up"
@@ -305,14 +229,7 @@ class client_net:
         encoded_message = json.dumps(message)
 
 
-        # Convert the length of the data to a string
-        size_str = str(len(encoded_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(encoded_message.encode())
+        self.send_str(encoded_message)
 
     def send_security_token(self, security_token):
         format = "security token"
@@ -320,16 +237,7 @@ class client_net:
                    "security_token": security_token,
                    }
         encoded_message = json.dumps(message)
-
-
-        # Convert the length of the data to a string
-        size_str = str(len(encoded_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(encoded_message.encode())
+        self.send_str(encoded_message)
 
     def send_username_and_email_froget_password(self, username, password, email):
         format = "forget password"
@@ -340,15 +248,7 @@ class client_net:
                    }
         encoded_message = json.dumps(message)
 
-
-        # Convert the length of the data to a string
-        size_str = str(len(encoded_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(encoded_message.encode())
+        self.send_str(encoded_message)
 
     def send_message(self, sender, receiver, content):
 
@@ -360,14 +260,7 @@ class client_net:
         encoded_message = json.dumps(message)
         full_message = "add_message:" + encoded_message
 
-        # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.client.send(size.encode('utf-8'))
-        self.client.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_vc_data(self, vc_data):
         try:
@@ -412,14 +305,7 @@ class client_net:
         data = f"friend_request:{username}:{friend_username}"
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
         except socket.error as e:
             print(e)
@@ -427,15 +313,7 @@ class client_net:
     def send_remove_friend(self, friend_username):
         data = f"friend_remove:{friend_username}"
         try:
-            # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
         except socket.error as e:
             print(e)
@@ -444,15 +322,7 @@ class client_net:
     def send_friends_request_rejection(self, rejected_user):
         data = f"friend_request_status:reject:{rejected_user}"
         try:
-            # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
         except socket.error as e:
             print(e)
@@ -460,16 +330,22 @@ class client_net:
     def send_friends_request_acception(self, accepted_user):
         data = f"friend_request_status:accept:{accepted_user}"
         try:
-            # Convert the length of the data to a string
-            size_str = str(len(data.encode('utf-8')))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data
-            self.client.send(data.encode('utf-8'))
+            self.send_str(data)
 
+        except socket.error as e:
+            print(e)
+
+    def ask_for_security_token(self):
+        data = "security_token:needed"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_sign_up_verification_code(self, code):
+        data = f"sign_up:verification_code:{code}"
+        try:
+            self.send_str(data)
         except socket.error as e:
             print(e)
 
@@ -664,27 +540,23 @@ class server_net:
         full_message = "messages_list:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_requests_list(self, list):
         encoded_list = json.dumps(list)
         full_message = "requests_list:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
+    def sent_code_to_mail(self):
+        data = f"code:sent:email"
+        try:
+            # Convert the length of the data to a string
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
 
     def send_vc_data(self, vc_data):
         try:
@@ -707,52 +579,28 @@ class server_net:
         full_message = "friends_list:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_online_users_list(self, online_users_list):
         encoded_list = json.dumps(online_users_list)
         full_message = "online_users:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_user_groups_list(self, group_list):
         encoded_list = json.dumps(group_list)
         full_message = "groups_list:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_user_chats_list(self, chats_list):
         encoded_list = json.dumps(chats_list)
         full_message = "chats_list:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def send_user_that_calling(self, user_that_is_calling):
         data = f"call:calling:{user_that_is_calling}"
@@ -767,31 +615,138 @@ class server_net:
         encoded_object = json.dumps(call_dict)
         full_message = "call:dict:" + encoded_object
 
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        # Convert the length of the data to a string
+        self.send_str(full_message)
 
     def send_call_list_of_dicts(self, call_dicts_list):
         encoded_list = json.dumps(call_dicts_list)
         full_message = "call:list_call_dicts:" + encoded_list
 
         # Convert the length of the data to a string
-        size_str = str(len(full_message.encode('utf-8')))
-        size = str(self.size + int(size_str))
-        number_of_zero = self.original_len - len(size)
-        size = ("0" * number_of_zero) + size
-        # Send the size as a string
-        self.server.send(size.encode('utf-8'))
-        self.server.send(full_message.encode())
+        self.send_str(full_message)
 
     def remove_call_to_user_of_id(self, call_id):
         data = f"call:remove_id:{call_id}"
         try:
             self.send_str(data)
 
+        except socket.error as e:
+            print(e)
+
+    def send_confirm_login(self):
+        data = f"login:confirm"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def send_invalid_login(self):
+        data = f"login:invalid"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def send_already_logged_in(self):
+        data = f"login:already_logged_in"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def send_sign_up_confirm(self):
+        data = f"sign_up:confirm"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def send_sign_up_invalid(self):
+        data = f"sign_up:invalid"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def send_sign_up_code_invalid(self):
+        data = f"sign_up:code:invalid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_sign_up_code_valid(self):
+        data = f"sign_up:code:valid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_security_token_to_client(self, security_token):
+        data = f"security_token:{security_token}"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_security_token_valid(self):
+        data = f"security_token:valid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_security_token_invalid(self):
+        data = f"security_token:invalid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_username_to_client_login_valid(self, username):
+        data = f"username:{username}:login:valid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_username_to_client_login_invalid(self, username):
+        data = f"username:{username}:login:invalid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_forget_password_info_valid(self):
+        data = f"forget_password:valid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_forget_password_info_invalid(self):
+        data = f"forget_password:invalid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_forget_password_code_valid(self):
+        data = f"forget_password:code:valid"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
+    def send_forget_password_code_invalid(self):
+        data = f"forget_password:code:invalid"
+        try:
+            self.send_str(data)
         except socket.error as e:
             print(e)
 

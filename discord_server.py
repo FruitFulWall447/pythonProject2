@@ -166,7 +166,7 @@ def thread_recv_messages(n, addr, username):
                     is_valid = database_func.login(username, password)
                     if is_valid:
                         if not username in Communication.online_users:
-                            n.send_str("Confirmed")
+                            n.send_confirm_login()
                             logger.info(f"Server sent Confirmed to client {username}")
                             logger.info(f"Client {username} logged in")
                             User = username
@@ -174,50 +174,55 @@ def thread_recv_messages(n, addr, username):
                             is_logged_in = True
                             threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                         else:
-                            n.send_str("already_logged_in")
+                            n.send_already_logged_in()
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
                     else:
                         logger.info(f"Server sent Invalid to address ({addr})")
-                        n.send_str("Invalid")
+                        n.send_invalid_login()
                 if format == "sign up":
                     is_valid = not database_func.username_exists(username)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
                         code = random.randint(100000, 999999)
                         send_code_to_client_email(code, email, username)
-                        n.send_str("Send code to email")
+                        n.sent_code_to_mail()
                         attempts_remaining = 3  # Set the maximum number of attempts
                         while attempts_remaining > 0:
-                            code_gotten = n.recv_str()
-                            if code_gotten is None:
-                                logger.info(f"lost connection with ({addr})")
-                                break
-                            code_gotten = int(code_gotten)
-                            logger.info(f"Server got {code_gotten} from ({addr})")
-                            if code_gotten == code:
-                                send_confirmation_to_client_email(email, username)
-                                logger.info(f"Server sent Confirmed to ({addr})")
-                                n.send_str("Confirmed")
-                                database_func.insert_user(username, password, email)
-                                logger.info(f"inserted: {username} to data base")
-                                break
-                            elif code_gotten == "Exit":
-                                logger.info(f"({addr}) existed code menu")
-                                break
-                            else:
-                                logger.info(f"Server sent Invalid to ({addr})")
-                                n.send_str("Invalid")
-                                attempts_remaining -= 1
+                            data = n.recv_str()
+                            if data.startswith("sign_up"):
+                                parts = data.split(":")
+                                action = parts[1]
+                                if action == "verification_code":
+                                    code_gotten = parts[2]
+                                    if code_gotten is None:
+                                        logger.info(f"lost connection with ({addr})")
+                                        break
+                                    code_gotten = int(code_gotten)
+                                    logger.info(f"Server got {code_gotten} from ({addr})")
+                                    if code_gotten == code:
+                                        send_confirmation_to_client_email(email, username)
+                                        logger.info(f"Server sent Confirmed to ({addr})")
+                                        n.send_sign_up_code_valid()
+                                        database_func.insert_user(username, password, email)
+                                        logger.info(f"inserted: {username} to data base")
+                                        break
+                                    elif code_gotten == "sign_up:cancel":
+                                        logger.info(f"({addr}) existed code menu")
+                                        break
+                                    else:
+                                        logger.info(f"Server sent sign up Invalid to ({addr})")
+                                        n.send_sign_up_code_invalid()
+                                        attempts_remaining -= 1
                     else:
                         logger.info(f"Server sent Invalid to ({addr})")
-                        n.send_str("Invalid")
+                        n.send_sign_up_invalid()
                 if format == "forget password":
                     is_valid = database_func.user_exists_with_email(username, email)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
                         code = random.randint(100000, 999999)
                         send_forget_password_code_to_email(code, email, username)
-                        n.send_str("Send code to email")
+                        n.send_forget_password_info_valid()
                         attempts_remaining = 3  # Set the maximum number of attempts
                         while attempts_remaining > 0:
                             code_gotten = n.recv_str()
@@ -229,7 +234,7 @@ def thread_recv_messages(n, addr, username):
                             logger.info(f"Server got {code_gotten} from ({addr})")
                             if code_gotten == code:
                                 logger.info(f"code gotten from {username} is correct")
-                                n.send_str("wait_for_password")
+                                n.send_forget_password_code_valid()
                                 new_password = n.recv_str()
                                 database_func.change_password(username, new_password)
                                 send_changed_password_to_email(email, username)
@@ -240,26 +245,27 @@ def thread_recv_messages(n, addr, username):
                                 break
                             else:
                                 logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
-                                n.send_str("Invalid")
+                                n.send_forget_password_code_invalid()
                                 attempts_remaining -= 1
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
-                        n.send_str("Invalid")
+                        n.send_forget_password_info_invalid()
                 if format == "security token":
                     username = database_func.check_security_token(security_token)
                     if not username:
                         logger.info(f"security token from ({addr}) isn't valid")
-                        n.send_str("Invalid")
+                        n.send_security_token_invalid()
                     else:
                         if not username in online_users:
+                            n.send_security_token_valid()
                             User = username
-                            n.send_str(f"username:{username}")
+                            n.send_username_to_client(username)
                             logger.info(f"{User} logged in")
                             Communication.user_online(User, n)
                             is_logged_in = True
                             threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                         else:
-                            n.send_str("already_logged_in")
+                            n.send_username_to_client_login_invalid(username)
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
                             logger.info(f"Blocked User from logging in from 2 devices")
 
@@ -276,10 +282,12 @@ def thread_recv_messages(n, addr, username):
                 Communication.user_offline(User)
                 break
             elif is_string(data):
-                if data == "I need my security token":
-                    user_security_token = database_func.get_security_token(User)
-                    n.send_str(f"security_token:{user_security_token}")
-                    logger.info(f"Sent security token to - {User} , {user_security_token}")
+                if data.startswith("security_token"):
+                    action = data.split(":")[1]
+                    if action == "needed":
+                        user_security_token = database_func.get_security_token(User)
+                        n.send_security_token_to_client(user_security_token)
+                        logger.info(f"Sent security token to - {User} , {user_security_token}")
                 if data.startswith("group:"):
                     parts = data.split(":")
                     if len(parts) == 3:

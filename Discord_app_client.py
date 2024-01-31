@@ -357,22 +357,33 @@ class SplashScreen(QWidget):
                 security_token = get_saved_token()
                 n.send_security_token(security_token)
                 data = n.recv_str()
-                if data != "Invalid":
-                    username = data.split(":")[1]
-                    self.loading_timer.stop()
-                    print("logged in successfully")
-                    self.hide()
-                    main_page.username = username
-                    main_page.update_values()
-                    main_page.showMaximized()
-                    is_logged_in = True
-                    threading.Thread(target=thread_recv_messages, args=()).start()
-                    self.close()
-                else:
-                    print("security token isn't valid")
-                    self.loading_timer.stop()
-                    login_page.showMaximized()
-                    self.close()
+                if data.startswith("security_token"):
+                    parts = data.split(":")
+                    server_answer = parts[1]
+                    if server_answer == "valid":
+                        data = n.recv_str()
+                        if data.startswith("username"):
+                            parts = data.split(":")
+                            username, action, action_state = parts[1], parts[2], parts[3]
+                            username = data.split(":")[1]
+                            if action == "login":
+                                if action_state == "valid":
+                                    self.loading_timer.stop()
+                                    print("logged in successfully")
+                                    self.hide()
+                                    main_page.username = username
+                                    main_page.update_values()
+                                    main_page.showMaximized()
+                                    is_logged_in = True
+                                    threading.Thread(target=thread_recv_messages, args=()).start()
+                                    self.close()
+                                elif action_state == "invalid":
+                                    print("username already logged in")
+                    elif server_answer == "invalid":
+                        print("security token isn't valid")
+                        self.loading_timer.stop()
+                        login_page.showMaximized()
+                        self.close()
 
 chat_clicked = True
 social_clicked = False
@@ -1061,18 +1072,24 @@ class Sign_up_page(QWidget):
         if is_info_valid:
             n.send_sign_up_info(username, password, email)
             data = n.recv_str()
-            if data == "Send code to email":
-                verification_code_page.showMaximized()
-                self.hide()
-            else:
-                self.username_already_used.show()
+            if data.startswith("code:"):
+                parts = data.split(":")
+                action, destination = parts[1], parts[2]
+                if action == "sent" and destination == "email":
+                    verification_code_page.showMaximized()
+                    self.hide()
+            elif data.startswith("sign_up"):
+                parts = data.split(":")
+                result = parts[1]
+                if result == "invalid":
+                    self.username_already_used.show()
 
     def return_button_pressed(self):
         global Last_page
         Last_page.showMaximized()
         self.hide()
 
-USERNAME = ''
+
 class Login_page(QWidget):
     def __init__(self):
         super().__init__()
@@ -1119,6 +1136,7 @@ class Login_page(QWidget):
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
         self.user_is_logged_in.move(1690//2+10, 333)
         self.user_is_logged_in.hide()
+
     def init_ui(self):
 
         label = QLabel("Welcome Back", self)
@@ -1219,39 +1237,40 @@ class Login_page(QWidget):
         else:
             self.remember_me_status = False
 
-
     def submit_form(self):
-        global n, username, is_logged_in, USERNAME
+        global n, is_logged_in
         self.incorrect_label.hide()
         self.user_is_logged_in.hide()
         username = self.username.text()
         password = self.password.text()
         n.send_login_info(username, password)
         data = n.recv_str()
-        if data == "Confirmed":
-            print("logged in successfully")
-            self.hide()
+        if data.startswith("login"):
+            result = data.split(":")[1]
+            if result == "confirm":
+                print("logged in successfully")
+                self.hide()
 
-            if self.remember_me_status:
-                n.send_str("I need my security token")
-                print("You will be remembered")
-                main_page.username = username
-                main_page.update_values()
-                main_page.showMaximized()
-                is_logged_in = True
-                threading.Thread(target=thread_recv_messages, args=()).start()
+                if self.remember_me_status:
+                    n.ask_for_security_token()
+                    print("You will be remembered")
+                    main_page.username = username
+                    main_page.update_values()
+                    main_page.showMaximized()
+                    is_logged_in = True
+                    threading.Thread(target=thread_recv_messages, args=()).start()
+                else:
+                    main_page.username = username
+                    main_page.update_values()
+                    main_page.showMaximized()
+                    is_logged_in = True
+                    threading.Thread(target=thread_recv_messages, args=()).start()
+            elif data == "already_logged_in":
+                print("User logged in from another device")
+                self.user_is_logged_in.show()
             else:
-                main_page.username = username
-                main_page.update_values()
-                main_page.showMaximized()
-                is_logged_in = True
-                threading.Thread(target=thread_recv_messages, args=()).start()
-        elif data == "already_logged_in":
-            print("User logged in from another device")
-            self.user_is_logged_in.show()
-        else:
-            print("login info isn't correct")
-            self.incorrect_label.show()
+                print("login info isn't correct")
+                self.incorrect_label.show()
 
     def forgot_password_clicked(self):
         global Last_page
@@ -1281,7 +1300,6 @@ class VideoClient(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
-
 
     def init_ui(self):
         self.central_widget = QWidget(self)
@@ -1454,13 +1472,16 @@ class Forget_password_page(QWidget):
             if is_email_valid(email) and len(username) > 0:
                 n.send_username_and_email_froget_password(username, None, email)
                 data = n.recv_str()
-                if data != "Invalid":
-                    print("Server send code to email")
-                    self.hide()
-                    verification_code_page.showMaximized()
-                    break
-                else:
-                    break
+                if data.startswith("forget_password"):
+                    parts = data.split(":")
+                    result = parts[1]
+                    if result == "valid":
+                        print("Server send code to email")
+                        self.hide()
+                        verification_code_page.showMaximized()
+                        break
+                    elif result == "invalid":
+                        break
 
     def resend_code_clicked(self):
         print(4)
@@ -1482,8 +1503,8 @@ class Verification_code_page(QWidget):
         self.info_label.setMouseTracking(True)
         self.info_label.installEventFilter(self)
         self.code = QLineEdit(self)
-        self.code .setMaxLength(6)
-        self.code .setValidator(QIntValidator())
+        self.code.setMaxLength(6)
+        self.code.setValidator(QIntValidator())
 
         # Set placeholder text and color
 
@@ -1617,16 +1638,31 @@ class Verification_code_page(QWidget):
         code = self.code.text()
         try:
             if len(code) == 6:
-                n.send_str(code)
-                print("Sent code to server")
+                n.send_sign_up_verification_code(code)
+                print("Sent verification code to server")
                 data = n.recv_str()
-                if data == "Confirmed":
-                    print("Server got the code")
-                    self.successfully_signed_up.show()
-                    self.image_button.show()
-                if data == "wait_for_password":
-                    self.hide()
-                    change_password_page.showMaximized()
+                if data.startswith("sign_up"):
+                    kind = data.split(":")[1]
+                    if kind == "code":
+                        result = data.split(":")[2]
+                        if result == "valid":
+                            print("Server got the code")
+                            self.successfully_signed_up.show()
+                            self.image_button.show()
+                        elif result == "invalid":
+                            pass
+                elif data.startswith("forget_password"):
+                    parts = data.split(":")
+                    kind = parts[1]
+                    result = parts[2]
+                    if kind == "code":
+                        if result == "valid":
+                            self.hide()
+                            change_password_page.showMaximized()
+                        elif result == "invalid":
+                            pass
+
+
         except Exception as e:
             print(e)
 
