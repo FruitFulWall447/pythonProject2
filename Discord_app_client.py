@@ -1828,6 +1828,4 @@ if __name__ == '__main__':
     splash_page.showMaximized()
     load_all_pages(n)
     app.exec_()
-    print(5)
-    print(flag_updates)
-    print(Flag_recv_messages)
+

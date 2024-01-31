@@ -565,7 +565,7 @@ class client_net:
         # the client receives the server Rsa public key
         received_serialized_server_public_key_bytes = self.recv_bytes()
         if received_serialized_server_public_key_bytes.startswith(public_key_byte_sequence):
-            received_serialized_server_public_key_bytes = received_serialized_server_public_key_bytes.replace(public_key_byte_sequence, b'')
+            received_serialized_server_public_key_bytes = received_serialized_server_public_key_bytes[len(public_key_byte_sequence):]
         else:
             print("did not expect message")
             return
@@ -586,7 +586,7 @@ class client_net:
 
         encrypt_aes_key = self.recv_bytes()
         if encrypt_aes_key.startswith(symmetric_key_byte_sequence):
-            encrypt_aes_key = encrypt_aes_key.replace(symmetric_key_byte_sequence, b'')
+            encrypt_aes_key = encrypt_aes_key[len(symmetric_key_byte_sequence):]
         aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
         self.aes_key = aes_key
         self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
@@ -885,7 +885,7 @@ class server_net:
 
         received_encrypted_symmetric_key_bytes = self.recv_bytes()
         if received_encrypted_symmetric_key_bytes.startswith(symmetric_key_byte_sequence):
-            received_encrypted_symmetric_key_bytes = received_encrypted_symmetric_key_bytes.replace(symmetric_key_byte_sequence, b'')
+            received_encrypted_symmetric_key_bytes = received_encrypted_symmetric_key_bytes[len(symmetric_key_byte_sequence):]
         else:
             self.logger.critical("did not expect this kind of message")
             return
