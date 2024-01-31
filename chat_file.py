@@ -2330,7 +2330,7 @@ class SettingsBox(QWidget):
                 self.volume_slider.setMaximum(100)
                 self.volume_slider.setValue(50)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
-                self.volume_slider.move(700, 400)
+                self.volume_slider.move(800, 300)
             elif self.parent.selected_settings == "Appearance":
                 self.color_combobox = QComboBox(self)
                 self.color_combobox.addItem("Select Color")
@@ -2364,7 +2364,7 @@ class SettingsBox(QWidget):
 
                 self.color_combobox.setStyleSheet(style_sheet)
 
-                self.color_combobox.move(700, 400)
+                self.color_combobox.move(800, 300)
 
 
         except Exception as e:
