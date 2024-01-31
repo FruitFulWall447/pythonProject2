@@ -2246,19 +2246,21 @@ class SettingsBox(QWidget):
 
         starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.appearance_button = self.create_settings_main_buttons("Appearance", self.user_profile_pressed, (
+        self.appearance_button = self.create_settings_main_buttons("Appearance", self.appearance_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
         starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.voice_video_button = self.create_settings_main_buttons("Voice && Video", self.user_profile_pressed, (
+        self.voice_video_button = self.create_settings_main_buttons("Voice && Video", self.voice_video_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
         starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.user_profile_pressed, (
+        self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.privacy_safety, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
+        background_color = self.parent.background_color
+        hover_color = self.parent.standard_hover_color
         try:
             if self.parent.selected_settings == "My Account":
                 start_y = 100
@@ -2297,21 +2299,72 @@ class SettingsBox(QWidget):
                 self.delete_account_button.move(start_x + 150, start_y + 150)
 
             elif self.parent.selected_settings == "Voice & Video":
-                print("here123")
                 self.volume_slider = QSlider(Qt.Horizontal, self)
+                style_sheet = """
+                    QSlider::groove:horizontal {
+                        border: 1px solid #bbb;
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                        height: 10px;
+                        margin: 0px;
+                    }
+
+                    QSlider::handle:horizontal {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                        border: 1px solid #777;
+                        width: 20px;
+                        margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                        border-radius: 5px;
+                    }
+
+                    QSlider::add-page:horizontal {
+                        background: #fff;
+                    }
+
+                    QSlider::sub-page:horizontal {
+                        background: #3498db; /* Change this color to the desired color for the left side */
+                    }
+                """
+
+                self.volume_slider.setStyleSheet(style_sheet)
                 self.volume_slider.setMinimum(0)
                 self.volume_slider.setMaximum(100)
                 self.volume_slider.setValue(50)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
-                self.volume_slider.move(500, 500)
+                self.volume_slider.move(700, 400)
             elif self.parent.selected_settings == "Appearance":
                 self.color_combobox = QComboBox(self)
                 self.color_combobox.addItem("Select Color")
                 self.color_combobox.addItem("Red")
                 self.color_combobox.addItem("Green")
                 self.color_combobox.addItem("Blue")
+                # Set style sheet for color combobox
+                style_sheet = """
+                    QComboBox {
+                        background-color: %s;
+                        selection-background-color: %s;
+                        border: 1px solid #777;
+                        border-radius: 5px;
+                        padding: 1px 18px 1px 3px;
+                    }
 
-                self.color_combobox.move(400, 400)
+                    QComboBox::drop-down {
+                        subcontrol-origin: padding;
+                        subcontrol-position: top right;
+                        width: 20px;
+
+                        border-left-width: 1px;
+                        border-left-color: darkgray;
+                        border-left-style: solid; /* just a single line */
+                    }
+
+                    QComboBox::down-arrow {
+                        image: url(down-arrow.png);
+                    }
+                """ % (background_color, hover_color)
+
+                self.color_combobox.setStyleSheet(style_sheet)
+
+                self.color_combobox.move(700, 400)
 
 
         except Exception as e:
@@ -2330,9 +2383,8 @@ class SettingsBox(QWidget):
         pass
 
     def set_volume(self, value):
-        # Set the volume of the QMediaPlayer
-        # self.media_player.setVolume(value)
-        print(value)
+        #print(value)
+        x = 5
 
     def my_account_pressed(self):
         self.parent.selected_settings = "My Account"
