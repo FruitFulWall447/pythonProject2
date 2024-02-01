@@ -2645,7 +2645,7 @@ class Call:
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
             if name != user and net is not None and name not in self.deafened and name in self.participants:
-                net.send_vc_data(vc_data)
+                net.send_vc_data(vc_data, user)
                 # self.logger.debug(f"Sent voice chat data to {name}")
 
     def is_a_group_a_call(self):

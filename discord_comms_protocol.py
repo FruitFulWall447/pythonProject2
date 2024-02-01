@@ -15,6 +15,10 @@ from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography.fernet import Fernet
 import secrets
 
+
+vc_data_sequence = br'\vc_data'
+share_screen_sequence = br'\share_screen_data'
+
 def generate_secure_symmetric_key():
     symmetric_key = secrets.token_bytes(32)
     return symmetric_key
@@ -418,6 +422,8 @@ class client_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
+                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
+                    return data
                 encrypted_data = data
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
                 decoded_data = data.decode('utf-8')
@@ -586,10 +592,12 @@ class server_net:
         except socket.error as e:
             print(e)
 
-    def send_vc_data(self, vc_data):
+    def send_vc_data(self, vc_data, speaker):
         try:
-            full_message = vc_data
-            full_message = zlib.compress(full_message)
+            compressed_vc_data = zlib.compress(vc_data)
+            sequence = br'\vc_data'  # Use raw string to treat backslash as a literal character
+            encoded_speaker = (speaker + ":").encode("utf-8")
+            full_message = sequence + encoded_speaker + compressed_vc_data
             # Convert the length of the data to a string
             size_str = str(len(full_message))
             size = str(self.size + int(size_str))
@@ -819,10 +827,13 @@ class server_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
-                encrypted_data = data
-                data = decrypt_with_aes(self.aes_key, encrypted_data)
-                decoded_data = data.decode('utf-8')
-                return decoded_data
+                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
+                    return data
+                else:
+                    encrypted_data = data
+                    data = decrypt_with_aes(self.aes_key, encrypted_data)
+                    decoded_data = data.decode('utf-8')
+                    return decoded_data
             except Exception as e:
                 # If decoding as UTF-8 fails, treat it as binary data
                 return data
