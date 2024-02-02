@@ -2264,28 +2264,35 @@ class SettingsBox(QWidget):
         hover_color = self.parent.standard_hover_color
 
         self.combo_box_style_sheet = """
-                    QComboBox {
-                        background-color: %s;
-                        selection-background-color: %s;
-                        border: 1px solid #777;
-                        border-radius: 5px;
-                        padding: 1px 18px 1px 3px;
-                    }
+            QComboBox {
+                background-color: %s;
+                selection-background-color: %s;
+                border: 1px solid %s;
+                border-radius: 5px;
+                padding: 2px 18px 2px 3px;
+                color: white;
+                min-width: 150px;  /* Adjust min-width as needed */
+                max-width: 500px;  /* Set max-width to accommodate longer text */
+                font-size: 14px;  /* Adjust font size as needed */
+            }
 
-                    QComboBox::drop-down {
-                        subcontrol-origin: padding;
-                        subcontrol-position: top right;
-                        width: 20px;
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;  /* Position the drop-down at the top right */
+                width: 20px;
+                border-left: 1px solid transparent;
+            }
 
-                        border-left-width: 1px;
-                        border-left-color: darkgray;
-                        border-left-style: solid; /* just a single line */
-                    }
+            QComboBox QAbstractItemView {
+                color: white;
+                background-color: %s;
+                selection-background-color: %s;
+                padding: 2px;
+                font-size: 14px;
+            }
 
-                    QComboBox::down-arrow {
-                        image: url(down-arrow.png);
-                    }
-                """ % (background_color, hover_color)
+        """ % (background_color, hover_color, hover_color, background_color, hover_color)
+
         try:
             if self.parent.selected_settings == "My Account":
                 start_y = 100
@@ -2378,7 +2385,7 @@ class SettingsBox(QWidget):
             elif self.parent.selected_settings == "Appearance":
 
                 list_optional_colors = self.parent.color_design_options
-                width, height = (80, 50)
+                width, height = (300, 45)
                 x, y = (800, 300)
                 self.color_combobox = self.create_option_box(width, height, x, y, list_optional_colors)
 
