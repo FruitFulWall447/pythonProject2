@@ -2336,12 +2336,14 @@ class SettingsBox(QWidget):
                     device_name = device_info["name"].lower()
 
                     # Check if the device has output capability and is a headset or speaker
-                    if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name):
-                        input_devices.append(device_name)
+                    if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name or "headphones" in device_name):
+                        if device_info["name"] not in input_devices:
+                            input_devices.append(device_info["name"])
 
                     # Check if the device has input capability and is a microphone
                     if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
-                        output_devices.append(device_name)
+                        if device_info["name"] not in output_devices:
+                            output_devices.append(device_info["name"])
                 style_sheet = """
                     QSlider::groove:horizontal {
                         border: 1px solid #bbb;
@@ -2403,6 +2405,7 @@ class SettingsBox(QWidget):
         icon_path = "discord_app_assets/down_arrow_icon.png"
         arrow_label = self.create_image_label(icon_path, 30, x + (width * 0.87), y + 10)
         color_combobox.visibility_changed.connect(lambda is_visible: self.handle_combobox_visibility_changed(is_visible, arrow_label))
+        arrow_label.mousePressEvent = lambda event: color_combobox.showPopup()
 
         return color_combobox
 
