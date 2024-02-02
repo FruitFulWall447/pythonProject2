@@ -2224,6 +2224,20 @@ class FriendsBox(QWidget):
 
 import pyaudio
 
+class CustomComboBox(QComboBox):
+    visibility_changed = pyqtSignal(bool)
+
+    def __init__(self, parent=None):
+        super(CustomComboBox, self).__init__(parent)
+
+    def showPopup(self):
+        super(CustomComboBox, self).showPopup()
+        self.visibility_changed.emit(True)
+
+    def hidePopup(self):
+        super(CustomComboBox, self).hidePopup()
+        self.visibility_changed.emit(False)
+
 class SettingsBox(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -2297,13 +2311,6 @@ class SettingsBox(QWidget):
             if self.parent.selected_settings == "My Account":
                 start_y = 100
                 start_x = 500
-                username = self.parent.username
-                self.name_label = QLabel("Name:")
-                self.name_value_label = QLabel(username, self)
-                self.change_name_button = QPushButton("Edit user profile", self)
-                self.name_label.move(start_x, start_y)
-                self.name_value_label.move(start_x + self.name_label.width(), start_y)
-                self.change_name_button.move(start_x + 400, start_y)
 
                 self.profile_image_label = QLabel(self)
 
@@ -2313,22 +2320,7 @@ class SettingsBox(QWidget):
                 self.profile_image_label.setPixmap(pixmap)
                 self.profile_image_label.move(800, 200)
 
-                self.username_label = QLabel("Username:")
-                self.username_value_label = QLabel(username, self)
-                self.change_username_button = QPushButton("Edit Username", self)
-                self.username_label.move(start_x, start_y + 50)
-                self.username_value_label.move(start_x + self.name_value_label.width(), start_y + 50)
-                self.change_username_button.move(start_x + 400, start_y + 50)
 
-                self.email_label = QLabel("Email:")
-                self.email_value_label = QLabel("user@example.com", self)
-                self.email_label.move(start_x + self.name_value_label.width(), start_y + 100)
-                self.email_value_label.move(start_x + 400, start_y + 50)
-
-                self.change_password_button = QPushButton("Change Password", self)
-                self.delete_account_button = QPushButton("Delete Account", self)
-                self.change_password_button.move(start_x, start_y + 150)
-                self.delete_account_button.move(start_x + 150, start_y + 150)
 
             elif self.parent.selected_settings == "Voice & Video":
                 self.volume_slider = QSlider(Qt.Horizontal, self)
@@ -2345,12 +2337,11 @@ class SettingsBox(QWidget):
 
                     # Check if the device has output capability and is a headset or speaker
                     if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name):
-                        input_devices.append(device_info)
+                        input_devices.append(device_name)
 
                     # Check if the device has input capability and is a microphone
                     if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
-                        output_devices.append(device_info)
-                print(len(input_devices) + len(output_devices))
+                        output_devices.append(device_name)
                 style_sheet = """
                     QSlider::groove:horizontal {
                         border: 1px solid #bbb;
@@ -2382,8 +2373,15 @@ class SettingsBox(QWidget):
                 self.volume_slider.setValue(50)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
                 self.volume_slider.move(800, 300)
-            elif self.parent.selected_settings == "Appearance":
 
+                width, height = (300, 45)
+                x, y = (800, 300)
+                self.output_combobox = self.create_option_box(width, height, x, y, output_devices)
+                x, y = (1200, 300)
+                self.output_combobox = self.create_option_box(width, height, x, y, input_devices)
+
+
+            elif self.parent.selected_settings == "Appearance":
                 list_optional_colors = self.parent.color_design_options
                 width, height = (300, 45)
                 x, y = (800, 300)
@@ -2395,15 +2393,35 @@ class SettingsBox(QWidget):
             print(e)
 
     def create_option_box(self, width, height, x, y, item_list):
-        color_combobox = QComboBox(self)
+        color_combobox = CustomComboBox(self)
         for i in item_list:
             color_combobox.addItem(i)
 
         color_combobox.setStyleSheet(self.combo_box_style_sheet)
 
         color_combobox.setGeometry(x, y, width, height)
+        icon_path = "discord_app_assets/down_arrow_icon.png"
+        arrow_label = self.create_image_label(icon_path, 30, x + (width * 0.87), y + 10)
+        color_combobox.visibility_changed.connect(lambda is_visible: self.handle_combobox_visibility_changed(is_visible, arrow_label))
+
         return color_combobox
 
+    def handle_combobox_visibility_changed(self, is_visible, arrow_label):
+        if is_visible:
+            arrow_label.setPixmap(
+                QPixmap("discord_app_assets/up_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
+        else:
+            arrow_label.setPixmap(
+                QPixmap("discord_app_assets/down_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
+
+    def create_image_label(self, image_path, size, x, y):
+        image_label = QLabel(self)
+        icon_path = image_path
+        button_icon = QIcon(icon_path)
+        pixmap = button_icon.pixmap(size, size)
+        image_label.setPixmap(pixmap)
+        image_label.move(x, y)
+        return image_label
 
     def change_username_function(self):
         # Implement the function for changing the username

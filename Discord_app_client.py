@@ -754,6 +754,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             setting_clicked = False
             social_clicked = True
 
+
     def updated_requests(self):
         global social_clicked
         try:
