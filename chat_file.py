@@ -2470,24 +2470,29 @@ class SettingsBox(QWidget):
         x = 5
 
     def my_account_pressed(self):
-        self.parent.selected_settings = "My Account"
-        self.parent.updated_settings_page()
+        if self.parent.selected_settings !="My Account":
+            self.parent.selected_settings = "My Account"
+            self.parent.updated_settings_page()
 
     def user_profile_pressed(self):
-        self.parent.selected_settings = "User Profile"
-        self.parent.updated_settings_page()
+        if self.parent.selected_settings != "User Profile":
+            self.parent.selected_settings = "User Profile"
+            self.parent.updated_settings_page()
 
     def appearance_pressed(self):
-        self.parent.selected_settings = "Appearance"
-        self.parent.updated_settings_page()
+        if self.parent.selected_settings != "Appearance":
+            self.parent.selected_settings = "Appearance"
+            self.parent.updated_settings_page()
 
     def voice_video_pressed(self):
-        self.parent.selected_settings = "Voice & Video"
-        self.parent.updated_settings_page()
+        if self.parent.selected_settings != "Voice & Video":
+            self.parent.selected_settings = "Voice & Video"
+            self.parent.updated_settings_page()
 
     def privacy_safety(self):
-        self.parent.selected_settings = "Privacy & Safety"
-        self.parent.updated_settings_page()
+        if self.parent.selected_settings != "Privacy & Safety":
+            self.parent.selected_settings = "Privacy & Safety"
+            self.parent.updated_settings_page()
 
     def create_settings_main_buttons(self, text, funcion, position):
 
