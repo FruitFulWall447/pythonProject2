@@ -2251,6 +2251,11 @@ class SettingsBox(QWidget):
 
         starter_x_of_main_buttons = 350
         starter_y_of_main_buttons = 100
+
+        label_height = 30
+        label_width = 300
+        self.default_labels_font_size = 11
+        user_settings_label = self.create_white_label(starter_x_of_main_buttons+10 , starter_y_of_main_buttons-40, 11,label_width, label_height, "USER SETTINGS")
         self.my_account_button = self.create_settings_main_buttons("My Account", self.my_account_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
@@ -2345,48 +2350,49 @@ class SettingsBox(QWidget):
                         if device_info["name"] not in output_devices:
                             output_devices.append(device_info["name"])
                 style_sheet = """
-                    QSlider::groove:horizontal {
-                        border: 1px solid #bbb;
-                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
-                        height: 10px;
-                        margin: 0px;
-                    }
+                       QSlider::groove:horizontal {
+                           border: 1px solid #bbb;
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                           height: 10px;
+                           margin: 0px;
+                       }
 
-                    QSlider::handle:horizontal {
-                        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
-                        border: 1px solid #777;
-                        width: 20px;
-                        margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-                        border-radius: 5px;
-                    }
+                       QSlider::handle:horizontal {
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                           border: 1px solid #777;
+                           width: 20px;
+                           margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                           border-radius: 5px;
+                       }
 
-                    QSlider::add-page:horizontal {
-                        background: #fff;
-                    }
+                       QSlider::add-page:horizontal {
+                           background: #fff;
+                       }
 
-                    QSlider::sub-page:horizontal {
-                        background: #3498db; /* Change this color to the desired color for the left side */
-                    }
-                """
-
+                       QSlider::sub-page:horizontal {
+                           background: #3498db; /* Change this color to the desired color for the left side */
+                       }
+                               """
                 self.volume_slider.setStyleSheet(style_sheet)
                 self.volume_slider.setMinimum(0)
                 self.volume_slider.setMaximum(100)
                 self.volume_slider.setValue(50)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
-                self.volume_slider.move(800, 300)
-
+                starter_y = 170
                 width, height = (300, 45)
-                x, y = (800, 300)
+                self.volume_slider.setGeometry(800, starter_y+80, width, height)
+
+                x, y = (800, starter_y)
                 self.output_combobox = self.create_option_box(width, height, x, y, output_devices)
-                x, y = (1200, 300)
+                x, y = (1150, starter_y)
                 self.output_combobox = self.create_option_box(width, height, x, y, input_devices)
 
 
             elif self.parent.selected_settings == "Appearance":
+                starter_y = 170
                 list_optional_colors = self.parent.color_design_options
                 width, height = (300, 45)
-                x, y = (800, 300)
+                x, y = (800, starter_y)
                 self.color_combobox = self.create_option_box(width, height, x, y, list_optional_colors)
 
 
@@ -2396,8 +2402,12 @@ class SettingsBox(QWidget):
 
     def create_option_box(self, width, height, x, y, item_list):
         color_combobox = CustomComboBox(self)
-        for i in item_list:
-            color_combobox.addItem(i)
+
+        if len(item_list) > 0:
+            for i in item_list:
+                color_combobox.addItem(i)
+        else:
+            color_combobox.setCurrentText("No Devices Found")
 
         color_combobox.setStyleSheet(self.combo_box_style_sheet)
 
@@ -2425,6 +2435,15 @@ class SettingsBox(QWidget):
         image_label.setPixmap(pixmap)
         image_label.move(x, y)
         return image_label
+
+    def create_white_label(self, x, y, font_size, width, height, text):
+        white_label = QLabel(text, self)
+        white_label.setGeometry(x, y, width, height)
+
+        # Set text color to white
+        white_label.setStyleSheet("color: white; font-size: {}pt;".format(font_size))
+
+        return white_label
 
     def change_username_function(self):
         # Implement the function for changing the username
