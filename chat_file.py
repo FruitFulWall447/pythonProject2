@@ -2254,8 +2254,8 @@ class SettingsBox(QWidget):
 
         label_height = 30
         label_width = 300
-        self.default_labels_font_size = 11
-        user_settings_label = self.create_white_label(starter_x_of_main_buttons+10 , starter_y_of_main_buttons-40, 11,label_width, label_height, "USER SETTINGS")
+        self.default_labels_font_size = 10
+        user_settings_label = self.create_white_label(starter_x_of_main_buttons+10 , starter_y_of_main_buttons-35, self.default_labels_font_size,label_width, label_height, "USER SETTINGS")
         self.my_account_button = self.create_settings_main_buttons("My Account", self.my_account_pressed, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
@@ -2281,6 +2281,10 @@ class SettingsBox(QWidget):
 
         background_color = self.parent.background_color
         hover_color = self.parent.standard_hover_color
+
+        self.label = QLabel(self)
+        self.label.setStyleSheet("border-right: 3px solid #2980b9; padding-left: 10px;")
+        self.label.setGeometry(starter_x_of_main_buttons + self.privacy_safety_button.width()-3, -20, 3, 1020)
 
         self.combo_box_style_sheet = """
             QComboBox {
@@ -2312,6 +2316,7 @@ class SettingsBox(QWidget):
 
         """ % (background_color, hover_color, hover_color, background_color, hover_color)
 
+        label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)
         try:
             if self.parent.selected_settings == "My Account":
                 start_y = 100
@@ -2413,7 +2418,7 @@ class SettingsBox(QWidget):
 
         color_combobox.setGeometry(x, y, width, height)
         icon_path = "discord_app_assets/down_arrow_icon.png"
-        arrow_label = self.create_image_label(icon_path, 30, x + (width * 0.87), y + 10)
+        arrow_label = self.create_image_label(icon_path, 30, x + (width * 0.87), x + (width * 0.87), y + 10)
         color_combobox.visibility_changed.connect(lambda is_visible: self.handle_combobox_visibility_changed(is_visible, arrow_label))
         arrow_label.mousePressEvent = lambda event: color_combobox.showPopup()
 
@@ -2427,18 +2432,21 @@ class SettingsBox(QWidget):
             arrow_label.setPixmap(
                 QPixmap("discord_app_assets/down_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
 
-    def create_image_label(self, image_path, size, x, y):
+    def create_image_label(self, image_path, height, width, x, y):
         image_label = QLabel(self)
         icon_path = image_path
         button_icon = QIcon(icon_path)
-        pixmap = button_icon.pixmap(size, size)
+        pixmap = button_icon.pixmap(width, height)
         image_label.setPixmap(pixmap)
         image_label.move(x, y)
         return image_label
 
     def create_white_label(self, x, y, font_size, width, height, text):
         white_label = QLabel(text, self)
-        white_label.setGeometry(x, y, width, height)
+        if width is None and height is None:
+            white_label.move(x, y)
+        else:
+            white_label.setGeometry(x, y, width, height)
 
         # Set text color to white
         white_label.setStyleSheet("color: white; font-size: {}pt;".format(font_size))
