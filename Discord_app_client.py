@@ -455,6 +455,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.deafen = False
 
         self.selected_settings = "My Account"
+        self.is_push_to_talk = False
+        self.push_to_talk_key = None
+        self.volume = 50
 
         self.online_users_list = []
         self.friends_list = []

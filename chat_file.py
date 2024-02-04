@@ -2223,6 +2223,8 @@ class FriendsBox(QWidget):
         self.parent.updated_requests()
 
 import pyaudio
+import cv2
+
 
 class CustomComboBox(QComboBox):
     visibility_changed = pyqtSignal(bool)
@@ -2237,6 +2239,44 @@ class CustomComboBox(QComboBox):
     def hidePopup(self):
         super(CustomComboBox, self).hidePopup()
         self.visibility_changed.emit(False)
+
+
+import concurrent.futures
+import warnings
+
+def check_camera(i):
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # Ignore OpenCV warnings
+            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            _, frame = cap.read()
+            cap.release()
+            return f"Camera {i}"
+    except Exception as e:
+        pass  # Handle any exceptions that may occur during camera check
+    return None
+
+def get_camera_names():
+    camera_names = []
+    i = 0
+    while True:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(check_camera, i) for i in range(i, i + 10)]
+
+            found_cameras = False
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                if result:
+                    camera_names.append(result)
+                    found_cameras = True
+
+            if not found_cameras:
+                break
+
+        i += 10
+
+    return camera_names
 
 class SettingsBox(QWidget):
     def __init__(self, parent):
@@ -2354,6 +2394,9 @@ class SettingsBox(QWidget):
                     if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
                         if device_info["name"] not in output_devices:
                             output_devices.append(device_info["name"])
+                camera_names_list = get_camera_names()
+
+
                 style_sheet = """
                        QSlider::groove:horizontal {
                            border: 1px solid #bbb;
@@ -2381,17 +2424,36 @@ class SettingsBox(QWidget):
                 self.volume_slider.setStyleSheet(style_sheet)
                 self.volume_slider.setMinimum(0)
                 self.volume_slider.setMaximum(100)
-                self.volume_slider.setValue(50)  # Set initial volume
+                self.volume_slider.setValue(self.parent.volume)  # Set initial volume
                 self.volume_slider.valueChanged.connect(self.set_volume)
                 starter_y = 170
+                volume_slider_y = starter_y+100
+                volume_slider_label_y = volume_slider_y - 15
+                volume_slider__x = 800
+                volume_slider_label_x = volume_slider__x
                 width, height = (300, 45)
-                self.volume_slider.setGeometry(800, starter_y+80, width, height)
+                self.volume_slider.setGeometry(800, volume_slider_y, width, height)
+                volume_slider_label = self.create_white_label(volume_slider_label_x, volume_slider_label_y, self.default_labels_font_size, None, None, "INPUT VOLUME")
+                self.volume_label = self.create_white_label(volume_slider_label_x + width + 10, volume_slider_y+7, self.default_labels_font_size, 100, 30, str(self.parent.volume))
 
-                x, y = (800, starter_y)
-                self.output_combobox = self.create_option_box(width, height, x, y, output_devices)
-                x, y = (1150, starter_y)
-                self.output_combobox = self.create_option_box(width, height, x, y, input_devices)
+                space_between_option_box_and_label = 30
+                output_x, output_y = (800, starter_y)
+                self.output_combobox = self.create_option_box(width, height, output_x, output_y, output_devices)
+                output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
 
+                input_x, input_y = (1150, starter_y)
+                self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
+                input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
+                                                       None, "INPUT DEVICES")
+                camera_x, camera_y = (800, 700)
+                self.camara_devices_combobox = self.create_option_box(width, height, camera_x, camera_y, camera_names_list)
+                camera_label = self.create_white_label(camera_x, camera_y - space_between_option_box_and_label, self.default_labels_font_size, None,
+                                                       None, "CAMERA")
+
+                input_mode_x, input_mode_y = (800, 370)
+                self.create_input_mode_select_button(input_mode_y, input_mode_x)
+                input_mode_label = self.create_white_label(input_mode_x, input_mode_y - space_between_option_box_and_label, self.default_labels_font_size, None,
+                                                       None, "INPUT MODE")
 
             elif self.parent.selected_settings == "Appearance":
                 starter_y = 170
@@ -2405,6 +2467,66 @@ class SettingsBox(QWidget):
         except Exception as e:
             print(e)
 
+    def change_input_mode(self):
+        if self.parent.is_push_to_talk:
+            self.parent.is_push_to_talk = False
+        else:
+            self.parent.is_push_to_talk = True
+        self.parent.updated_settings_page()
+
+    def create_colored_button(self, background_color, hover_color, x, y, width, height, text):
+        new_button = QPushButton(text, self)
+        new_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {background_color};
+                border: 2px solid {background_color};
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: 35px;  /* Adjust the padding to move text to the right */
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+            QPushButton:hover {{
+                background-color: {hover_color};
+            }}
+        """)
+        new_button.setGeometry(x, y, width, height)
+
+        return new_button
+
+    def create_input_mode_select_button(self, starter_y, buttons_x):
+        regular_blue = "#192549"
+        brighter_blue = self.parent.standard_hover_color
+        width_buttons = 620
+        height_buttons = 50
+        selected_path = "discord_app_assets/select_circle.png"
+        not_selected_path = "discord_app_assets/not_select_circle.png"
+        icons_size = 30
+        if not self.parent.is_push_to_talk:
+            text1 = "Voice Activity"
+            voice_activity_button = self.create_colored_button(brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            text2 = "Push to Talk"
+            second_button_y = starter_y + 60
+            push_to_talk_button = self.create_colored_button(regular_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            voice_activity_button.clicked.connect(self.change_input_mode)
+            push_to_talk_button.clicked.connect(self.change_input_mode)
+            selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, starter_y+10)
+            not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
+        else:
+            text1 = "Voice Activity"
+            voice_activity_button = self.create_colored_button(regular_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            text2 = "Push to Talk"
+            second_button_y = starter_y + 60
+            push_to_talk_button = self.create_colored_button(brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            voice_activity_button.clicked.connect(self.change_input_mode)
+            push_to_talk_button.clicked.connect(self.change_input_mode)
+            selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
+            not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, starter_y + 10)
+
     def create_option_box(self, width, height, x, y, item_list):
         color_combobox = CustomComboBox(self)
 
@@ -2412,7 +2534,7 @@ class SettingsBox(QWidget):
             for i in item_list:
                 color_combobox.addItem(i)
         else:
-            color_combobox.setCurrentText("No Devices Found")
+            color_combobox.addItem("No Devices Found")
 
         color_combobox.setStyleSheet(self.combo_box_style_sheet)
 
@@ -2434,6 +2556,7 @@ class SettingsBox(QWidget):
 
     def create_image_label(self, image_path, height, width, x, y):
         image_label = QLabel(self)
+        image_label.setStyleSheet("background-color: transparent;")
         icon_path = image_path
         button_icon = QIcon(icon_path)
         pixmap = button_icon.pixmap(width, height)
@@ -2449,7 +2572,7 @@ class SettingsBox(QWidget):
             white_label.setGeometry(x, y, width, height)
 
         # Set text color to white
-        white_label.setStyleSheet("color: white; font-size: {}pt;".format(font_size))
+        white_label.setStyleSheet("color: white; font-size: {}pt; font-weight: bold;".format(font_size))
 
         return white_label
 
@@ -2466,8 +2589,9 @@ class SettingsBox(QWidget):
         pass
 
     def set_volume(self, value):
-        #print(value)
-        x = 5
+        self.parent.volume = value
+        self.volume_label.setText(str(value))
+
 
     def my_account_pressed(self):
         if self.parent.selected_settings !="My Account":
