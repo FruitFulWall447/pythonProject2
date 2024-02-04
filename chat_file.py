@@ -2445,7 +2445,7 @@ class SettingsBox(QWidget):
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")
-                camera_x, camera_y = (800, 700)
+                camera_x, camera_y = (800, 670)
                 self.camara_devices_combobox = self.create_option_box(width, height, camera_x, camera_y, camera_names_list)
                 camera_label = self.create_white_label(camera_x, camera_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "CAMERA")
@@ -2454,6 +2454,11 @@ class SettingsBox(QWidget):
                 self.create_input_mode_select_button(input_mode_y, input_mode_x)
                 input_mode_label = self.create_white_label(input_mode_x, input_mode_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT MODE")
+                push_to_talk_select_x, push_to_talk_select_y = (800, 550)
+                push_to_talk_select = self.create_select_push_to_talk_key(push_to_talk_select_x, push_to_talk_select_y)
+                push_to_talk_select_label = self.create_white_label(push_to_talk_select_x, push_to_talk_select_y - space_between_option_box_and_label, self.default_labels_font_size, None,
+                                                       None, "Push to Talk Keybind")
+
 
             elif self.parent.selected_settings == "Appearance":
                 starter_y = 170
@@ -2497,6 +2502,90 @@ class SettingsBox(QWidget):
         new_button.setGeometry(x, y, width, height)
 
         return new_button
+
+    def create_colored_button(self, background_color, hover_color, x, y, width, height, text):
+        new_button = QPushButton(text, self)
+        new_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {background_color};
+                border: 2px solid {background_color};
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: 35px;  /* Adjust the padding to move text to the right */
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+            QPushButton:hover {{
+                background-color: {hover_color};
+            }}
+        """)
+        new_button.setGeometry(x, y, width, height)
+
+        return new_button
+
+    def create_select_push_to_talk_key(self, x, y):
+        red = "#FF0000"
+        if self.parent.is_editing_push_to_talk_button:
+            push_to_talk_label = self.push_to_talk_label(x, y, 20, 340, 50, self.parent.push_to_talk_key, "red", red)
+        else:
+            border_color = self.parent.standard_hover_color
+            push_to_talk_label = self.push_to_talk_label(x, y, 20, 340, 50, self.parent.push_to_talk_key, "white", border_color)
+
+        hover_red = "#CC0000"  # Slightly darker than red
+
+        grey = "#808080"
+        hover_grey = "#6e6e6e"  # slightly darker than grey
+
+        button_width = 160
+        button_height = 37
+
+        if self.parent.is_editing_push_to_talk_button:
+            record_keybind_button = self.create_colored_button(red, hover_red, x + 170, y+6, button_width, button_height, "Stop Recording")
+            record_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
+        else:
+            edit_keybind_button = self.create_colored_button(grey, hover_grey, x+170, y+6, button_width, button_height, "Edit Keybind")
+            edit_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
+
+    def handle_push_to_talk_selection_button_clicked(self):
+        if self.parent.is_editing_push_to_talk_button:
+            self.parent.is_editing_push_to_talk_button = False
+        else:
+            self.parent.is_editing_push_to_talk_button = True
+        self.parent.updated_settings_page()
+
+    def push_to_talk_label(self, x, y, font_size, width, height, text, color, border_color):
+        brighter_blue = self.parent.standard_hover_color
+        if text is None:
+            label = QLabel("None", self)
+        else:
+            label = QLabel(text, self)
+        if width is None and height is None:
+            label.move(x, y)
+        else:
+            label.setGeometry(x, y, width, height)
+
+
+        label.setStyleSheet(f"""
+            QLabel {{
+                background-color: {brighter_blue};
+                border: 2px solid {border_color};
+                border-radius: 5px;
+                padding: 8px 16px;
+                color: {color};
+                font-family: Arial, sans-serif;
+                font-size: {font_size}px;
+                font-weight: normal;
+                text-align: left;
+            }}
+
+        """)
+
+        return label
+
 
     def create_input_mode_select_button(self, starter_y, buttons_x):
         regular_blue = "#192549"

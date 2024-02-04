@@ -457,6 +457,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.selected_settings = "My Account"
         self.is_push_to_talk = False
         self.push_to_talk_key = None
+        self.is_editing_push_to_talk_button = False
+
         self.volume = 50
 
         self.online_users_list = []
@@ -842,6 +844,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     self.is_create_group_pressed = False
                     self.selected_group_members.clear()
                     self.updated_chat()
+        else:
+            if setting_clicked and self.is_editing_push_to_talk_button:
+                key = event.key()
+                key_string = chr(key) if 32 <= key <= 126 else f"UnknownKey_{key}"
+                self.push_to_talk_key = key_string
+                self.is_editing_push_to_talk_button = False
+                self.updated_settings_page()
+
 
     def wheelEvent(self, event):
         global chat_clicked
