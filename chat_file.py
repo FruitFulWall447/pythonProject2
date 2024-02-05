@@ -2361,15 +2361,24 @@ class SettingsBox(QWidget):
             if self.parent.selected_settings == "My Account":
                 start_y = 100
                 start_x = 500
+                dark_green = "#1e9644"
+                other_green = "#044f1c"
 
                 self.profile_image_label = QLabel(self)
 
-                icon_path = "discord_app_assets/regular_profile"
+                if self.parent.profile_pic is None:
+                    icon_path = "discord_app_assets/regular_profile"
                 button_icon = QIcon(icon_path)
                 pixmap = button_icon.pixmap(120, 120)  # Adjust the size as needed
                 self.profile_image_label.setPixmap(pixmap)
                 self.profile_image_label.move(800, 200)
 
+                label_name_next_to_image_x, label_name_next_to_image_y = (950, 240)
+                label_name_next_to_image = self.create_white_label(label_name_next_to_image_x, label_name_next_to_image_y, 20, None, None, self.parent.username)
+
+                button_edit_user_profile_x, button_edit_user_profile_y = (1250, 240)
+                button_width, button_height = (180, 50)
+                button_edit_user_profile = self.create_colored_button(dark_green, other_green, None, button_edit_user_profile_x, button_edit_user_profile_y, button_width , button_height, "Edit User Profile")
 
 
             elif self.parent.selected_settings == "Voice & Video":
@@ -2479,36 +2488,15 @@ class SettingsBox(QWidget):
             self.parent.is_push_to_talk = True
         self.parent.updated_settings_page()
 
-    def create_colored_button(self, background_color, hover_color, x, y, width, height, text):
+
+    def create_colored_button(self, background_color, hover_color, border_color, x, y, width, height, text):
         new_button = QPushButton(text, self)
+        if border_color is None:
+            border_color = "#00000000"
         new_button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {background_color};
-                border: 2px solid {background_color};
-                border-radius: 5px;
-                padding: 8px 16px;
-                padding-left: 35px;  /* Adjust the padding to move text to the right */
-                color: white;
-                font-family: Arial, sans-serif;
-                font-size: 14px;
-                font-weight: normal;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                text-align: left;
-            }}
-            QPushButton:hover {{
-                background-color: {hover_color};
-            }}
-        """)
-        new_button.setGeometry(x, y, width, height)
-
-        return new_button
-
-    def create_colored_button(self, background_color, hover_color, x, y, width, height, text):
-        new_button = QPushButton(text, self)
-        new_button.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {background_color};
-                border: 2px solid {background_color};
+                border: 2px solid {border_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 padding-left: 35px;  /* Adjust the padding to move text to the right */
@@ -2544,10 +2532,10 @@ class SettingsBox(QWidget):
         button_height = 37
 
         if self.parent.is_editing_push_to_talk_button:
-            record_keybind_button = self.create_colored_button(red, hover_red, x + 170, y+6, button_width, button_height, "Stop Recording")
+            record_keybind_button = self.create_colored_button(red, hover_red, red, x + 170, y+6, button_width, button_height, "Stop Recording")
             record_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
         else:
-            edit_keybind_button = self.create_colored_button(grey, hover_grey, x+170, y+6, button_width, button_height, "Edit Keybind")
+            edit_keybind_button = self.create_colored_button(grey, hover_grey, grey, x+170, y+6, button_width, button_height, "Edit Keybind")
             edit_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
 
     def handle_push_to_talk_selection_button_clicked(self):
@@ -2597,20 +2585,20 @@ class SettingsBox(QWidget):
         icons_size = 30
         if not self.parent.is_push_to_talk:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(brighter_blue, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(regular_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(regular_blue, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
             selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, starter_y+10)
             not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
         else:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(regular_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(regular_blue, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(brighter_blue, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
             selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
@@ -2824,6 +2812,7 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
+            "video_streams_list": self.video_streams_list,
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
