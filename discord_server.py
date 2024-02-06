@@ -96,24 +96,6 @@ def threaded_logged_in_client(n, User):
 
         if is_client_waits_for_message(User):
             message = get_and_remove_message_for_client(User)
-            if message == "call:rejected":
-                logger.info(f"Sent to {User} his call was rejected")
-                n.send_str(message)
-                flag_is_call_sent = False
-            if message == "call:accepted":
-                logger.info(f"Sent to {User} his call was accepted")
-                n.send_str(message)
-                flag_is_call_sent = False
-            if message == "call:ended":
-                logger.info(f"Sent to {User} call was hang up")
-                n.send_str(message)
-                flag_is_call_sent = False
-            if message == "call:timeout":
-                logger.info(f"Sent Call timeout passed to {User}")
-                n.send_str(message)
-                flag_is_call_sent = False
-            if message == "reset:is_call_sent_flag":
-                flag_is_call_sent = False
             if isinstance(message, list):
                 logger.info(f"Sent online users list to {User}")
                 friends_list = database_func.get_user_friends(User)
