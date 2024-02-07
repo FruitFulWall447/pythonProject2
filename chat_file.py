@@ -2800,6 +2800,20 @@ class Call:
         self.thread = threading.Thread(target=self.process_vc_data)
         self.thread.start()
 
+    def create_video_stream_of_user(self, user):
+        if self.is_group_call:
+            video_stream = VideoStream(self.parent, user, self, self.group_id)
+        else:
+            video_stream = VideoStream(self.parent, user, self, None)
+        self.video_streams_list.append(video_stream)
+        self.send_call_object_to_clients()
+
+    def close_video_stream_by_user(self, user):
+        for stream in self.video_streams_list:
+            if stream.streamer == user:
+                stream.end_stream()
+                self.video_streams_list.remove(stream)
+        self.send_call_object_to_clients()
 
     def get_call_group_members(self):
         temp_list = database_func.get_group_members(self.group_id)
@@ -2812,11 +2826,17 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
-            "video_streams_list": self.video_streams_list,
+            "video_streams_list": self.get_all_video_steamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
         return call_data
+
+    def get_all_video_steamers(self):
+        list_names = []
+        for video_stream in self.video_streams_list:
+            list_names.append(video_stream.streamer)
+        return list_names
 
     def send_call_object_to_clients(self):
         # Extract relevant attributes to send
@@ -3281,9 +3301,20 @@ class Communication:
                 ring.stop_ring_for_unanswered_users()
                 self.rings.remove(ring)
 
+    def create_video_stream_for_user_call(self, user):
+        for call in self.calls:
+            if user in call.participants:
+                call.create_video_stream_of_user(user)
+
+    def close_video_stream_for_user_call(self, user):
+        for call in self.calls:
+            if user in call.participants:
+                call.close_video_stream_by_user(user)
 
 class VideoStream:
-    def _init_(self, Comms_object, streamer, call_object, group_id=None):
+    def __init__(self, Comms_object, streamer, call_object, group_id=None):
+        self.call_parent = call_object
+        self.comms_parent = Comms_object
         self.logger = logging.getLogger(__name__)
         self.stream_id = str(uuid.uuid4())
         self.streamer = streamer
@@ -3292,26 +3323,16 @@ class VideoStream:
         else:
             self.is_group_stream = False
         self.spectators = []
-        self.spectators_nets = {}
         self.data_collection = []  # List of tuples containing user and vc_data
         self.stop_thread = threading.Event()  # Event for signaling the thread to stop
-        self.thread = threading.Thread(target=self.process_vc_data)
-
-    def add_spectator(self, user):
-        self.spectators.append(user)
-        self.add_specator_net_to_dict(user)
-        if len(self.spectators) == 1:
-            self.thread.start()
-
-    def add_specator_net_to_dict(self, specator):
-        specator_net = self.parent.get_net_by_name(specator)
-        self.spectators_nets[specator] = specator_net
-
-    def remove_user_net_from_dict(self, user):
-        x = 5
+        self.thread = threading.Thread(target=self.process_share_screen_data)
+        self.logger.info(f"Video Stream of id {self.stream_id} was created")
 
     def remove_spectator(self, user):
         self.spectators.remove(user)
+
+    def add_spectator(self, user):
+        self.spectators.append(user)
 
     def process_share_screen_data(self):
         while not self.stop_thread.is_set():
@@ -3327,9 +3348,13 @@ class VideoStream:
         self.thread.join()  # Wait for the thread to finish
 
     def send_share_screen_data_to_everyone_but_user(self, vc_data, user):
-        for name, net in self.spectators_nets.items():
+        for name, net in self.call_parent.call_nets:
             if name != user and net is not None:
                 net.send_share_screen_data(vc_data)
+
+    def end_stream(self):
+        self.stop_processing()
+        self.logger.info(f"Video Stream of id {self.stream_id} ended")
 
 
 

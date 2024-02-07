@@ -167,6 +167,20 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def start_stream(self):
+        try:
+            message = f"call:stream:start"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
+    def close_stream(self):
+        try:
+            message = f"call:stream:close"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
     def leave_call(self):
         data = f"call:ended"
         try:

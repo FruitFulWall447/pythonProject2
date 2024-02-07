@@ -361,6 +361,11 @@ def thread_recv_messages(n, addr, username):
                 if data.startswith("call:"):
                     parts = data.split(":")
                     action = parts[1]
+                    if action == "stream":
+                        if parts[2] == "start":
+                            Communication.create_video_stream_for_user_call(User)
+                        elif parts == "close":
+                            Communication.close_video_stream_for_user_call(User)
                     if action == "join":
                         if Communication.is_user_in_a_call(User):
                             Communication.remove_user_from_call(User)
