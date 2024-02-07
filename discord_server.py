@@ -302,12 +302,6 @@ def thread_recv_messages(n, addr, username):
                         for member in group_members:
                             add_message_for_client(member, f"got_new_message:{receiver}")
                         logger.info(f"Server got message: {message} from user {User}")
-
-                if data.startswith("get chat with"):
-                    get_chat_with = data.split(" with ")[1]
-                    list_messages = database_func.get_messages(User, get_chat_with)
-                    n.send_messages_list(list_messages)
-                    logger.info(f"Sent list ({list_messages}) to user {User}")
                 if data.startswith("friend_request:"):
                     num_of_parts = len(data.split(":"))
                     if num_of_parts != 2:
@@ -421,6 +415,7 @@ def thread_recv_messages(n, addr, username):
             elif data.startswith(share_screen_sequence):
                 rest_of_bytes = data[len(share_screen_sequence):]
                 share_screen_data = zlib.decompress(rest_of_bytes)
+
 
 
 Communication = Communication()

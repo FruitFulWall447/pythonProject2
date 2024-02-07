@@ -3261,6 +3261,13 @@ class Communication:
                 call.adding_vc_data_to_user_call_thread_queue(User, vc_data)
                 # call.send_vc_data_to_everyone_but_user(vc_data, User)
 
+    def send_share_screen_data_to_call(self, share_screen_data, User):
+        for call in self.calls:
+            if call.is_user_in_a_call(User):
+                for video_stream in call.video_streams_list:
+                    if video_stream.streamer == User:
+                        video_stream.adding_vc_data_to_user_call_thread_queue(User, share_screen_data)
+
     def add_user_to_group_call_by_id(self, User, id):
         for call in self.calls:
             if call.is_a_group_a_call:
@@ -3352,16 +3359,18 @@ class VideoStream:
         self.stop_thread.set()
         self.thread.join()  # Wait for the thread to finish
 
-    def send_share_screen_data_to_everyone_but_user(self, vc_data, user):
+    def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user):
         for name, net in self.call_parent.call_nets:
             if name != user and net is not None:
-                net.send_share_screen_data(vc_data)
+                net.send_share_screen_data(share_screen_data)
 
     def end_stream(self):
         self.stop_processing()
         self.logger.info(f"Video Stream of id {self.stream_id} ended")
 
-
+    def adding_vc_data_to_user_call_thread_queue(self, user, share_screen_data):
+        if len(self.spectators) > 0:
+            self.data_collection.append((user, share_screen_data))
 
 
 
