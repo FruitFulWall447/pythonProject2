@@ -70,9 +70,12 @@ def is_email_valid(email):
 def is_string(variable):
     return isinstance(variable, str)
 
+Flag_recv_messages = True
+vc_data_sequence = br'\vc_data'
+share_screen_sequence = br'\share_screen_data'
+
 def return_vc_bytes_parameters(vc_bytes):
     try:
-        vc_data_sequence = br'\vc_data'
         sequence_and_name = vc_bytes.split(b":")[0]
         encoded_name = sequence_and_name[len(vc_data_sequence):]
         compressed_vc_data = vc_bytes[len(sequence_and_name)+1:]
@@ -81,10 +84,16 @@ def return_vc_bytes_parameters(vc_bytes):
     except Exception as e:
         print(vc_bytes)
 
+def return_share_screen_bytes_parameters(vc_bytes):
+    try:
+        sequence_and_name = vc_bytes.split(b":")[0]
+        encoded_name = sequence_and_name[len(share_screen_sequence):]
+        compressed_share_screen_data = vc_bytes[len(sequence_and_name)+1:]
+        name_of_talker = encoded_name.decode("utf-8")
+        return name_of_talker, compressed_share_screen_data
+    except Exception as e:
+        print(vc_bytes)
 
-Flag_recv_messages = True
-vc_data_sequence = br'\vc_data'
-share_screen_sequence = br'\share_screen_data'
 
 def thread_recv_messages():
     global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag
@@ -237,6 +246,8 @@ def thread_recv_messages():
                     speaker, compressed_vc_data = return_vc_bytes_parameters(data)
                     vc_data = zlib.decompress(compressed_vc_data)
                     vc_data_queue.put(vc_data)
+                elif data.startswith(share_screen_sequence):
+                    x = 5
             except Exception as e:
                 print(f"error in getting byte data:{e}")
 

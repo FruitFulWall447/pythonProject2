@@ -295,13 +295,7 @@ class client_net:
             sequence = br'\vc_data'  # Use raw string to treat backslash as a literal character
             full_message = sequence + compressed_message
             # Convert the length of the data to a string
-            size_str = str(len(full_message))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            self.client.send(full_message)
+            self.send_bytes(full_message)
         except Exception as e:
             print(f"error is: {e}")
 
@@ -314,13 +308,7 @@ class client_net:
             sequence = br'\share_screen_data'  # Use raw string to treat backslash as a literal character
             full_message = sequence + compressed_message
             # Convert the length of the data to a string
-            size_str = str(len(full_message))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            self.client.send(full_message)
+            self.send_bytes(full_message)
         except Exception as e:
             print(f"error is: {e}")
 
@@ -599,16 +587,20 @@ class server_net:
             encoded_speaker = (speaker + ":").encode("utf-8")
             full_message = sequence + encoded_speaker + compressed_vc_data
             # Convert the length of the data to a string
-            size_str = str(len(full_message))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.server.send(size.encode('utf-8'))
-            self.server.send(full_message)
+            self.send_bytes(full_message)
         except Exception as e:
             print(f"error is: {e}")
 
+    def send_share_screen_data(self, share_screen_data, speaker):
+        try:
+            compressed_vc_data = zlib.compress(share_screen_data)
+            share_screen_sequence = br'\share_screen_data'
+            encoded_speaker = (speaker + ":").encode("utf-8")
+            full_message = share_screen_sequence + encoded_speaker + compressed_vc_data
+            # Convert the length of the data to a string
+            self.send_bytes(full_message)
+        except Exception as e:
+            print(f"error is: {e}")
 
     def send_friends_list(self, list):
         encoded_list = json.dumps(list)
