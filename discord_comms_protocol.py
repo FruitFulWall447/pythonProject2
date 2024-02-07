@@ -160,6 +160,13 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def updated_current_chat(self, current_chat):
+        try:
+            message = f"current_chat:{current_chat}"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
     def leave_call(self):
         data = f"call:ended"
         try:

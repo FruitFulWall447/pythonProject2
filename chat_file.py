@@ -1443,7 +1443,7 @@ class ChatBox(QWidget):
                 print(e)
             self.parent.selected_chat = name
             self.parent.chat_start_index = 0
-            self.Network.send_str(f"current_chat:{name}")
+            self.Network.updated_current_chat(name)
             self.image_too_big.hide()
             self.parent.size_error_label = False
             self.parent.image_to_send = None
