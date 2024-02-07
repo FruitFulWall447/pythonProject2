@@ -15,6 +15,8 @@ import base64
 import datetime
 import pickle
 import cv2
+import numpy as np
+import pyautogui
 import struct
 import re
 from queue import Queue, Empty
@@ -307,16 +309,21 @@ def thread_send_voice_chat_data():
     print("stopped voice chat thread....")
 
 def thread_send_share_screen_data():
-    global n
+    global main_page
     try:
-        while True:
+        while main_page.is_screen_shared:
             # Capture the screen using OpenCV
-            _, frame = cv2.VideoCapture(0).read()
+            screen = pyautogui.screenshot()  # Capture the screen using PyAutoGUI
+
+            # Convert the screenshot to an OpenCV image
+            frame = np.array(screen)
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
 
             # Send the frame to the server
             n.send_share_screen_data(frame)
 
-            time.sleep(0.1)  # Adjust the sleep time based on your needs
+            time.sleep(0.04)  # Adjust the sleep time based on your needs
+        print("send share screen data thread closed")
     except KeyboardInterrupt:
         print("Screen sharing stopped.")
 
@@ -517,6 +524,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.media_player.setMedia(self.ringtone)
+        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
         self.init_ui()
 
 
@@ -563,6 +571,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def start_share_screen_send_thread(self):
+        self.send_share_screen_thread.start()
+        print("Started Share screen thread")
 
     def get_group_manager_by_group_id(self, id):
         for group_dict in self.groups_list:

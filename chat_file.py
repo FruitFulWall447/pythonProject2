@@ -345,6 +345,7 @@ class ChatBox(QWidget):
                 self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
                                                                     share_screen_y, self.share_screen_and_unshare)
 
+
                 self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
                 self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
                 if self.parent.is_screen_shared:
@@ -682,7 +683,7 @@ class ChatBox(QWidget):
 
     # Layout
 
-    # Display friends
+
 
     def create_custom_in_call_button(self, width, height, x, y, click_function):
         button = QPushButton(self)
@@ -1231,9 +1232,13 @@ class ChatBox(QWidget):
         if self.parent.is_screen_shared:
             self.parent.is_screen_shared = False
             self.share_screen_button.setIcon(self.share_screen_off_icon)
+            self.Network.close_stream()
         else:
             self.parent.is_screen_shared = True
             self.share_screen_button.setIcon(self.share_screen_on_icon)
+            self.parent.start_share_screen_send_thread()
+            self.Network.start_stream()
+
 
 
     def accept_call(self):
