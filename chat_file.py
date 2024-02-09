@@ -3414,6 +3414,8 @@ class VideoStream:
         self.spectators.append(user)
         self.logger.info(f"{user} started watching stream of {self.streamer} with id {self.stream_id}")
         if len(self.spectators) == 1:
+            self.stop_thread = threading.Event()  # Event for signaling the thread to stop
+            self.thread = threading.Thread(target=self.process_share_screen_data)
             self.thread.start()
             self.logger.info(f"Started stream thread of id {self.stream_id}")
 
