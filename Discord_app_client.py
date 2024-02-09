@@ -100,6 +100,7 @@ def return_share_screen_bytes_parameters(vc_bytes):
 def thread_recv_messages():
     global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag
     print("receiving thread started running")
+    temp_count = 0
     while Flag_recv_messages:
         data = n.recv_str()
         if is_string(data):
@@ -251,7 +252,9 @@ def thread_recv_messages():
                     print("got share screen data")
                     streamer, compressed_share_screen_data = return_share_screen_bytes_parameters(data)
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    main_page.update_stream_screen_frame(share_screen_data)
+                    expected_shape = (1080, 1920, 3)
+                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(expected_shape)
+                    main_page.update_stream_screen_frame(decompressed_frame)
             except Exception as e:
                 print(f"error in getting byte data:{e}")
 
@@ -312,17 +315,17 @@ def thread_send_voice_chat_data():
 
 def thread_send_share_screen_data():
     global main_page
+    temp_count = 0
     try:
         while main_page.is_screen_shared:
-            # Capture the screen using OpenCV
-            screen = pyautogui.screenshot()  # Capture the screen using PyAutoGUI
+            # Capture the screen using PyAutoGUI
+            screen = pyautogui.screenshot()
 
-            # Convert the screenshot to an OpenCV image
+            # Convert the screenshot to a NumPy array
             frame = np.array(screen)
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
+            frame_bytes = frame.tobytes()
             # Send the frame to the server
-            n.send_share_screen_data(frame)
+            n.send_share_screen_data(frame_bytes)
 
             time.sleep(0.04)  # Adjust the sleep time based on your needs
         print("send share screen data thread closed")
