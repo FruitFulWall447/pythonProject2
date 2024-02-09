@@ -738,7 +738,7 @@ class ChatBox(QWidget):
         button.move(x, y)
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {self.parent.hover_color}; 
+                background-color: {self.parent.standard_hover_color}; 
                 color: white; /* Default font color */
                 border-radius: 15px; /* Adjust the radius as needed */
             }}
