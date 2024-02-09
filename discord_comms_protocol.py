@@ -458,6 +458,9 @@ class client_net:
             data = self.receive_by_size(size)
             try:
                 encrypted_data = data
+                if data is None:
+                    print("Received data is None")
+                    return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
                 if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
                     return data
@@ -886,6 +889,9 @@ class server_net:
             data = self.receive_by_size(size)
             try:
                 encrypted_data = data
+                if data is None:
+                    print("Received data is None")
+                    return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
                 if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
                     return data
