@@ -254,7 +254,7 @@ def thread_recv_messages(n, addr, username):
             except Exception as e:
                 print(e)
         else:
-            logger.debug(f"waiting for data...for {User}")
+            #logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
             if isinstance(data, str):
                 if len(data) < 50:
@@ -356,10 +356,16 @@ def thread_recv_messages(n, addr, username):
                     parts = data.split(":")
                     action = parts[1]
                     if action == "stream":
-                        if parts[2] == "start":
+                        stream_action = parts[2]
+                        if stream_action == "start":
                             Communication.create_video_stream_for_user_call(User)
-                        elif parts == "close":
+                        elif stream_action == "close":
                             Communication.close_video_stream_for_user_call(User)
+                        elif stream_action == "watch":
+                            streamer = parts[3]
+                            Communication.add_spectator_to_call_stream(User, streamer)
+                        elif stream_action == "stop_watch":
+                            Communication.remove_spectator_from_call_stream(User)
                     if action == "join":
                         if Communication.is_user_in_a_call(User):
                             Communication.remove_user_from_call(User)
@@ -415,6 +421,7 @@ def thread_recv_messages(n, addr, username):
             elif data.startswith(share_screen_sequence):
                 rest_of_bytes = data[len(share_screen_sequence):]
                 share_screen_data = zlib.decompress(rest_of_bytes)
+                Communication.send_share_screen_data_to_call(share_screen_data, User)
 
 
 

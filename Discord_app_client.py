@@ -241,7 +241,6 @@ def thread_recv_messages():
                 if action == "remove_id":
                     call_id_to_remove = parts[2]
                     main_page.remove_call_dict_by_id(call_id_to_remove)
-
         else:
             try:
                 if data.startswith(vc_data_sequence):
@@ -249,7 +248,10 @@ def thread_recv_messages():
                     vc_data = zlib.decompress(compressed_vc_data)
                     vc_data_queue.put(vc_data)
                 elif data.startswith(share_screen_sequence):
-                    x = 5
+                    print("got share screen data")
+                    streamer, compressed_share_screen_data = return_share_screen_bytes_parameters(data)
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    main_page.update_stream_screen_frame(share_screen_data)
             except Exception as e:
                 print(f"error in getting byte data:{e}")
 
@@ -575,6 +577,17 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     def start_share_screen_send_thread(self):
         self.send_share_screen_thread.start()
         print("Started Share screen thread")
+
+    def update_stream_screen_frame(self, frame):
+        try:
+            self.stream_screen.display_frame(frame)
+        except Exception as e:
+            print(e)
+
+    def start_watching_video_stream(self):
+        self.stream_screen = VideoClient()
+        self.hide()
+        self.stream_screen.showMaximized()
 
     def get_group_manager_by_group_id(self, id):
         for group_dict in self.groups_list:
@@ -1407,30 +1420,6 @@ class VideoClient(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setWindowTitle('Video Client')
 
-    def update_frame(self):
-        try:
-            # Receive the size of the incoming frame
-            data_size = self.client_socket.recv(struct.calcsize('<L'))
-            if not data_size:
-                return
-            frame_size = struct.unpack('<L', data_size)[0]
-
-            # Receive the actual frame data
-            frame_data = b''
-            while len(frame_data) < frame_size:
-                packet = self.client_socket.recv(frame_size - len(frame_data))
-                if not packet:
-                    return
-                frame_data += packet
-
-            # Deserialize the frame
-            frame = pickle.loads(frame_data)
-
-            # Display the frame in the Qt window
-            self.display_frame(frame)
-        except Exception as e:
-            print(f"Error: {e}")
-
     def display_frame(self, frame):
         height, width, channel = frame.shape
         bytes_per_line = 3 * width
@@ -1438,9 +1427,12 @@ class VideoClient(QMainWindow):
         pixmap = QPixmap.fromImage(q_image)
         self.image_label.setPixmap(pixmap)
 
-    def closeEvent(self, event):
-        self.client_socket.close()
-        event.accept()
+    def keyPressEvent(self, event):
+        global main_page
+        if event.key() == Qt.Key_Escape:
+            main_page.showMaximized()
+            main_page.Network.stop_watching_current_stream()
+            self.close()
 
 class Forget_password_page(QWidget):
     def __init__(self):

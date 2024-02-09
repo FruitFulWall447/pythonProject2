@@ -711,17 +711,55 @@ class ChatBox(QWidget):
 
     def put_call_icons_on_the_screen(self):
         if self.current_group_id:
-            dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
-            print(f"dict is {dict}")
+            current_call_dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
+            print(f"dict is {current_call_dict}")
         else:
-            dict = self.parent.get_call_dict_by_user(self.parent.username)
-            print(f"dict is {dict}")
-        numbers_of_users_in_call = len(dict.get("participants"))
+            current_call_dict = self.parent.get_call_dict_by_user(self.parent.username)
+            print(f"dict is {current_call_dict}")
+        numbers_of_users_in_call = len(current_call_dict.get("participants"))
         starts_x = 900+((numbers_of_users_in_call-2) * -70)
         y_of_profiles = 95
-        for name in dict.get("participants"):
-            self.create_profile_button(starts_x, y_of_profiles, name, dict)
-            starts_x += 105
+        try:
+            names = current_call_dict.get("participants")
+            for name in names:
+                self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
+                if name in current_call_dict.get("video_streamers"):
+                    self.create_watch_stream_button(starts_x, y_of_profiles-30, name)
+                starts_x += 105
+        except Exception as e:
+            print(f"error is {e} in icon management")
+
+    def create_watch_stream_button(self, x, y, name):
+        width, height = (70, 30)
+        button = QPushButton("Watch", self)
+        button_size = QSize(width, height)
+        button.setFixedSize(button_size)
+
+        button.move(x, y)
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: gray; 
+                color: white; /* Default font color */
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """)
+        button.clicked.connect(lambda: self.watch_stream_button_pressed(name))
+        self.call_profiles_list.append(button)
+
+    def watch_stream_button_pressed(self, name):
+        try:
+            if not self.parent.is_watching_screen:
+                self.parent.is_watching_screen = True
+                self.parent.watching_user = name
+                self.Network.watch_stream_of_user(name)
+                print(f"Started watching stream of {name}")
+                self.parent.start_watching_video_stream()
+            else:
+                print("does not suppose to happen")
+        except Exception as e:
+            print(f"Problem with watch button, error {e}")
 
     def create_profile_button(self, x, y, name, dict):
         button = QPushButton(self)
@@ -2831,7 +2869,7 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
-            "video_streams_list": self.get_all_video_steamers(),
+            "video_streamers": self.get_all_video_steamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
@@ -2851,6 +2889,7 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
+            "video_streamers": self.get_all_video_steamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
@@ -2955,6 +2994,16 @@ class Call:
             self.deafened.append(user)
             self.logger.info(f"{user} deafened himself in call of id {self.call_id}")
         self.send_call_object_to_clients()
+
+    def add_spectator_for_stream(self, spectator, streamer):
+        for stream in self.video_streams_list:
+            if stream.streamer == streamer:
+                stream.add_spectator(spectator)
+
+    def remove_spectator_for_stream(self, spectator):
+        for stream in self.video_streams_list:
+            if spectator in stream.spectators:
+                stream.remove_spectator(spectator)
 
 from discord_comms_protocol import server_net
 import threading
@@ -3323,6 +3372,16 @@ class Communication:
             if user in call.participants:
                 call.close_video_stream_by_user(user)
 
+    def add_spectator_to_call_stream(self, spectator, streamer):
+        for call in self.calls:
+            if (spectator and streamer) in call.participants:
+                call.add_spectator_for_stream(spectator, streamer)
+
+    def remove_spectator_from_call_stream(self, spectator):
+        for call in self.calls:
+            if spectator in call.participants:
+                call.remove_spectator_for_stream(spectator)
+
 class VideoStream:
     def __init__(self, Comms_object, streamer, call_object, group_id=None):
         self.call_parent = call_object
@@ -3342,11 +3401,20 @@ class VideoStream:
 
     def remove_spectator(self, user):
         self.spectators.remove(user)
+        self.logger.info(f"{user} stopped watching stream of {self.streamer} with id {self.stream_id}")
+        if len(self.spectators) == 0:
+            self.stop_processing()
+            self.data_collection.clear()
 
     def add_spectator(self, user):
         self.spectators.append(user)
+        self.logger.info(f"{user} started watching stream of {self.streamer} with id {self.stream_id}")
+        if len(self.spectators) == 1:
+            self.thread.start()
+            self.logger.info(f"Started stream thread of id {self.stream_id}")
 
     def process_share_screen_data(self):
+        print("got here")
         while not self.stop_thread.is_set():
             if self.data_collection:
                 user, share_screen = self.data_collection.pop(0)
@@ -3360,12 +3428,14 @@ class VideoStream:
         self.thread.join()  # Wait for the thread to finish
 
     def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user):
-        for name, net in self.call_parent.call_nets:
-            if name != user and net is not None:
+        for name, net in self.call_parent.call_nets.items():
+            if name != user and net is not None and name in self.spectators:
                 net.send_share_screen_data(share_screen_data)
+                self.logger.info(f"Sent share screen data to {user}")
 
     def end_stream(self):
-        self.stop_processing()
+        if len(self.spectators) > 0:
+            self.stop_processing()
         self.logger.info(f"Video Stream of id {self.stream_id} ended")
 
     def adding_vc_data_to_user_call_thread_queue(self, user, share_screen_data):

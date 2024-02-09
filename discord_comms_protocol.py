@@ -181,6 +181,20 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def watch_stream_of_user(self, user):
+        try:
+            message = f"call:stream:watch:{user}"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
+    def stop_watching_current_stream(self):
+        try:
+            message = f"call:stream:stop_watch"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
     def leave_call(self):
         data = f"call:ended"
         try:
