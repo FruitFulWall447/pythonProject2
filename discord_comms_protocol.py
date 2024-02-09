@@ -88,7 +88,7 @@ def decrypt_with_aes(key, ciphertext):
         return unpadded_data
     except Exception as e:
         print(f"Error in decryption: {e}")
-        return None
+        return 1
 
 
 class client_net:

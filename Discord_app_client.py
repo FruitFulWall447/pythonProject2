@@ -249,7 +249,6 @@ def thread_recv_messages():
                     vc_data = zlib.decompress(compressed_vc_data)
                     vc_data_queue.put(vc_data)
                 elif data.startswith(share_screen_sequence):
-                    print("got share screen data")
                     streamer, compressed_share_screen_data = return_share_screen_bytes_parameters(data)
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
                     expected_shape = (1080, 1920, 3)
@@ -1428,6 +1427,11 @@ class VideoClient(QMainWindow):
         bytes_per_line = 3 * width
         q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_image)
+
+        # Clear the existing pixmap
+        self.image_label.clear()
+
+        # Set the new pixmap
         self.image_label.setPixmap(pixmap)
 
     def keyPressEvent(self, event):

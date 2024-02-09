@@ -3431,7 +3431,7 @@ class VideoStream:
         for name, net in self.call_parent.call_nets.items():
             if name != user and net is not None and name in self.spectators:
                 net.send_share_screen_data(share_screen_data, user)
-                self.logger.info(f"Sent share screen data to {name}")
+                #self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):
         if len(self.spectators) > 0:
