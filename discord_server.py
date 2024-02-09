@@ -260,7 +260,7 @@ def thread_recv_messages(n, addr, username):
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
-            if isinstance(data, str) or isinstance(data, bytes):
+            if isinstance(data, str):
                 if isinstance(data, str):
                     if len(data) < 50:
                         logger.debug(f"got {data} from {User}")
@@ -418,7 +418,8 @@ def thread_recv_messages(n, addr, username):
                                 Communication.reject_ring_by_ringer(rejected_caller, User)
                         if action == "ended":
                             Communication.remove_user_from_call(User)
-                elif data.startswith(vc_data_sequence):
+            elif isinstance(data, bytes):
+                if data.startswith(vc_data_sequence):
                     rest_of_bytes = data[len(vc_data_sequence):]
                     vc_data = zlib.decompress(rest_of_bytes)
                     Communication.send_vc_data_to_call(vc_data, User)
