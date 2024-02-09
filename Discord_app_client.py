@@ -229,6 +229,10 @@ def thread_recv_messages():
                     call_dict = json.loads(json_str)
                     if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
                         main_page.update_call_dict_by_id(call_dict)
+                        if main_page.is_watching_screen:
+                            if main_page.username in call_dict.get("participants"):
+                                if main_page.watching_user not in call_dict.get("video_streamers"):
+                                    QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal", Qt.QueuedConnection)
                     else:
                         main_page.call_dicts.append(call_dict)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
@@ -314,7 +318,6 @@ def thread_send_voice_chat_data():
 
 def thread_send_share_screen_data():
     global main_page
-    temp_count = 0
     try:
         while main_page.is_screen_shared:
             # Capture the screen using PyAutoGUI
@@ -328,8 +331,8 @@ def thread_send_share_screen_data():
 
             time.sleep(0.04)  # Adjust the sleep time based on your needs
         print("send share screen data thread closed")
-    except KeyboardInterrupt:
-        print("Screen sharing stopped.")
+    except Exception as e:
+        print(f"Screen sharing error: {e}")
 
 
 class SplashScreen(QWidget):
@@ -445,6 +448,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     initiating_call_signal = pyqtSignal()
     reset_call_var_signal = pyqtSignal()
     new_message_play_audio_signal = pyqtSignal()
+    stop_watching_stream_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
         self.background_color = "#141c4b"
@@ -522,6 +526,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.initiating_call_signal.connect(self.initiate_call)
         self.reset_call_var_signal.connect(self.reset_call_var)
         self.new_message_play_audio_signal.connect(self.new_message_play_audio)
+        self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
         self.media_player = QMediaPlayer()
         self.media_player.stateChanged.connect(self.handle_state_changed)
         self.media_player.setVolume(70)
@@ -580,11 +585,20 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.send_share_screen_thread.start()
         print("Started Share screen thread")
 
+    def update_share_screen_thread(self):
+        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
+
     def update_stream_screen_frame(self, frame):
         try:
             self.stream_screen.display_frame(frame)
         except Exception as e:
             print(e)
+
+    def stop_watching_video_stream(self):
+        self.is_watching_screen = False
+        self.watching_user = ""
+        self.stream_screen.close()
+        self.showMaximized()
 
     def start_watching_video_stream(self):
         self.stream_screen = VideoClient()
@@ -1439,6 +1453,9 @@ class VideoClient(QMainWindow):
         if event.key() == Qt.Key_Escape:
             main_page.showMaximized()
             main_page.Network.stop_watching_current_stream()
+            print(f"stopped watching {main_page.watching_user} share screen")
+            main_page.is_watching_screen = False
+            main_page.watching_user = ""
             self.close()
 
 class Forget_password_page(QWidget):

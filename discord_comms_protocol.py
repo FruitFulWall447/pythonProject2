@@ -696,6 +696,14 @@ class server_net:
         except socket.error as e:
             print(e)
 
+    def send_stream_of_user_closed(self, user):
+        data = f"call:stream:stopped:{user}"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
     def send_confirm_login(self):
         data = f"login:confirm"
         try:

@@ -1267,15 +1267,19 @@ class ChatBox(QWidget):
             self.Network.toggle_deafen_for_myself()
 
     def share_screen_and_unshare(self):
-        if self.parent.is_screen_shared:
-            self.parent.is_screen_shared = False
-            self.share_screen_button.setIcon(self.share_screen_off_icon)
-            self.Network.close_stream()
-        else:
-            self.parent.is_screen_shared = True
-            self.share_screen_button.setIcon(self.share_screen_on_icon)
-            self.parent.start_share_screen_send_thread()
-            self.Network.start_stream()
+        try:
+            if self.parent.is_screen_shared:
+                self.parent.is_screen_shared = False
+                self.share_screen_button.setIcon(self.share_screen_off_icon)
+                self.Network.close_stream()
+                self.parent.update_share_screen_thread()
+            else:
+                self.parent.is_screen_shared = True
+                self.share_screen_button.setIcon(self.share_screen_on_icon)
+                self.parent.start_share_screen_send_thread()
+                self.Network.start_stream()
+        except Exception as e:
+            print(f"error in sharing or closing share screen error is: {e}")
 
 
 
@@ -3414,7 +3418,6 @@ class VideoStream:
             self.logger.info(f"Started stream thread of id {self.stream_id}")
 
     def process_share_screen_data(self):
-        print("got here")
         while not self.stop_thread.is_set():
             if self.data_collection:
                 user, share_screen = self.data_collection.pop(0)
@@ -3441,6 +3444,8 @@ class VideoStream:
     def adding_vc_data_to_user_call_thread_queue(self, user, share_screen_data):
         if len(self.spectators) > 0:
             self.data_collection.append((user, share_screen_data))
+
+
 
 
 
