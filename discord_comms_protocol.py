@@ -74,6 +74,7 @@ def encrypt_with_aes(key, data):
 
 def decrypt_with_aes(key, ciphertext):
     try:
+        # get ciphertext as bytes
         ciphertext = base64.b64decode(ciphertext)
         cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
         decryptor = cipher.decryptor()
@@ -84,7 +85,7 @@ def decrypt_with_aes(key, ciphertext):
         # Use PKCS#7 unpadding
         unpadder = aes_padding.PKCS7(128).unpadder()
         unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
-
+        # return type bytes
         return unpadded_data
     except Exception as e:
         print(f"Error in decryption: {e}")
@@ -149,14 +150,25 @@ class client_net:
     def send_bytes(self, data):
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.client.send(size.encode('utf-8'))
-            # Send the actual data as bytes
-            self.client.send(data)
+            if self.aes_key is None:
+                size_str = str(len(data))
+                size = str(self.size + int(size_str))
+                number_of_zero = self.original_len - len(size)
+                size = ("0" * number_of_zero) + size
+                # Send the size as a string
+                self.client.send(size.encode('utf-8'))
+                # Send the actual data as bytes
+                self.client.send(data)
+            else:
+                encrypted_data = encrypt_with_aes(self.aes_key, data)
+                size_str = str(len(encrypted_data))
+                size = str(self.size + int(size_str))
+                number_of_zero = self.original_len - len(size)
+                size = ("0" * number_of_zero) + size
+                # Send the size as a string
+                self.client.send(size.encode('utf-8'))
+                # Send the actual data as bytes
+                self.client.send(encrypted_data)
         except socket.error as e:
             print(e)
 
@@ -445,14 +457,14 @@ class client_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
-                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
-                    return data
                 encrypted_data = data
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
+                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
+                    return data
                 decoded_data = data.decode('utf-8')
                 return decoded_data
             except Exception as e:
-                # If decoding as UTF-8 fails, treat it as binary data
+                print(e)
                 return data
 
         except (socket.error, ValueError) as e:
@@ -580,14 +592,25 @@ class server_net:
     def send_bytes(self, data):
         try:
             # Convert the length of the data to a string
-            size_str = str(len(data))
-            size = str(self.size + int(size_str))
-            number_of_zero = self.original_len - len(size)
-            size = ("0" * number_of_zero) + size
-            # Send the size as a string
-            self.server.send(size.encode('utf-8'))
-            # Send the actual data as bytes
-            self.server.send(data)
+            if self.aes_key is None:
+                size_str = str(len(data))
+                size = str(self.size + int(size_str))
+                number_of_zero = self.original_len - len(size)
+                size = ("0" * number_of_zero) + size
+                # Send the size as a string
+                self.server.send(size.encode('utf-8'))
+                # Send the actual data as bytes
+                self.server.send(data)
+            else:
+                encrypted_data = encrypt_with_aes(self.aes_key, data)
+                size_str = str(len(encrypted_data))
+                size = str(self.size + int(size_str))
+                number_of_zero = self.original_len - len(size)
+                size = ("0" * number_of_zero) + size
+                # Send the size as a string
+                self.server.send(size.encode('utf-8'))
+                # Send the actual data as bytes
+                self.server.send(encrypted_data)
         except socket.error as e:
             print(e)
 
@@ -862,11 +885,11 @@ class server_net:
             # Receive the actual data based on the size
             data = self.receive_by_size(size)
             try:
+                encrypted_data = data
+                data = decrypt_with_aes(self.aes_key, encrypted_data)
                 if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
                     return data
                 else:
-                    encrypted_data = data
-                    data = decrypt_with_aes(self.aes_key, encrypted_data)
                     decoded_data = data.decode('utf-8')
                     return decoded_data
             except Exception as e:
@@ -925,11 +948,11 @@ class server_net:
         if received_encrypted_symmetric_key_bytes is not None:
             decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
             aes_key = generate_aes_key()
-            self.aes_key = aes_key
-            self.logger.info(f"Started to communicate with client {self.client_address}, with AES key {self.aes_key}")
+            self.logger.info(f"Started to communicate with client {self.client_address}, with AES key {aes_key}")
             try:
                 encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
                 self.send_bytes(symmetric_key_byte_sequence + encrypted_aes_key)
+                self.aes_key = aes_key
             except Exception as e:
                 print(e)
 
