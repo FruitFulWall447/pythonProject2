@@ -736,14 +736,15 @@ class ChatBox(QWidget):
         button.setFixedSize(button_size)
 
         button.move(x, y)
-        button.setStyleSheet("""
-            QPushButton {
-                background-color: gray; 
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.parent.hover_color}; 
                 color: white; /* Default font color */
-            }
-            QPushButton:hover {
+                border-radius: 15px; /* Adjust the radius as needed */
+            }}
+            QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
         """)
         button.clicked.connect(lambda: self.watch_stream_button_pressed(name))
         self.call_profiles_list.append(button)
