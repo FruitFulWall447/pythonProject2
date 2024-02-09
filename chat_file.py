@@ -177,7 +177,6 @@ class ChatBox(QWidget):
                 height_of_around_name = start_height_of_around_name + self.around_name_delta
             else:
                 print(self.parent.call_dicts)
-                print(f"couldn't find call for group of {self.current_group_id}")
 
         self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
         self.around_name.move(around_name_x, around_name_y)
@@ -679,6 +678,7 @@ class ChatBox(QWidget):
         if self.parent.is_create_group_pressed:
             self.display_create_group_box()
 
+
         self.raise_needed_elements()
 
     # Layout
@@ -837,6 +837,128 @@ class ChatBox(QWidget):
 
         # Create Group button
 
+    def display_add_users_to_group_box(self):
+        starter_x = self.create_group_open_x
+        starter_y_of_border = self.create_group_open_y + 50
+        adding_border_height = 400
+        adding_border_width = 300
+        border_of_adding = QLabel(self)
+        border_of_adding.setGeometry(starter_x, starter_y_of_border, adding_border_width, adding_border_height)
+        border_of_adding.raise_()
+        border_of_adding.setStyleSheet("""border: 2px solid black;  
+        /* Use a slightly darker shade for the border */
+                        border-radius: 5px;""")
+
+        label = QLabel(f"Select friends", self)
+        label.setStyleSheet("""color: white;font-size: 20px;""")
+        label.move(starter_x + 20, starter_y_of_border + 10)
+
+        label = QLabel(
+            f"You can add {(self.parent.group_max_members - 1) - len(self.parent.selected_group_members)} more friends",
+            self)
+        label.setStyleSheet("""color: white;font-size: 14px;""")
+        label.move(starter_x + 20, starter_y_of_border + 45)
+
+        Page = 0
+        if len(self.parent.friends_list) > 0:
+            Page = self.parent.add_users_to_group_index + 1
+        label = QLabel(f"Page({Page}/"
+                       f"{calculate_division_value(len(self.parent.friends_list))})"
+                       f"     "
+                       f"Selected({len(self.parent.selected_group_members)})", self)
+        label.setStyleSheet("""color: white;font-size: 12px;""")
+        label.move(starter_x + 40, starter_y_of_border + 75)
+
+        style_sheet = """
+        QPushButton {
+            color: white;
+            font-size: 16px;
+            background-color: rgba(0, 0, 0, 0); /* Transparent background */
+            border: 2px solid #2980b9; /* Use a slightly darker shade for the border */
+            border-radius: 5px;
+            }
+                        QPushButton:hover {
+                background-color: #2980b9;
+            }
+        """
+        scroll_up_button = QPushButton("↑", self)
+        scroll_up_button.move(starter_x + 230, starter_y_of_border + 25)
+        scroll_up_button.clicked.connect(lambda: self.handle_create_group_index("up"))
+        scroll_up_button.setFixedWidth(50)
+        scroll_up_button.setStyleSheet(style_sheet)
+
+        scroll_down_button = QPushButton("↓", self)
+        scroll_down_button.move(starter_x + 230, starter_y_of_border + 55)
+        scroll_down_button.clicked.connect(lambda: self.handle_create_group_index("down"))
+        scroll_down_button.setFixedWidth(50)
+        scroll_down_button.setStyleSheet(style_sheet)
+
+        starter_x = self.create_group_open_x
+        starter_y = self.create_group_open_y + 150
+        i = 0
+        for friend in self.parent.friends_list:
+            # self.parent.create_group_index default value is 0
+            if i >= self.parent.add_users_to_group_index * 5:
+                friend_label = QPushButton(friend, self)
+                friend_label.friend_name = friend
+                friend_label.setStyleSheet('''
+                    color: white;
+                    font-size: 18px;
+                    border: 2px solid #2980b9;
+                    border-radius: 5px;
+                    padding: 5px;
+                    margin-bottom: 18px;
+                    text-align: left; /* Align text to the left */
+                }
+
+                QPushButton:hover {
+                    background-color: #3498db; /* Bluish hover color */
+                }
+                ''')
+                friend_label.clicked.connect(self.toggle_checkbox)
+                friend_checkbox = QCheckBox(self)
+                if friend in self.parent.selected_group_members:
+                    friend_checkbox.setChecked(True)
+                friend_checkbox.friend_name = friend  # Store friend's name as an attribute
+                friend_checkbox.stateChanged.connect(self.friend_checkbox_changed)
+                height = friend_label.height() + 30
+                friend_label.setGeometry(starter_x + 10, starter_y, adding_border_width - 20, height)
+                friend_checkbox.move(starter_x + 260, starter_y + 15)
+                starter_y += friend_label.height() - 20
+                friend_label.raise_()
+                friend_checkbox.raise_()
+            i += 1
+        button = QPushButton("Create DM", self)
+        button.move(starter_x + 15, starter_y_of_border + adding_border_height - 80)
+        button.setFixedHeight(self.friends_button_height)
+        button.clicked.connect(self.create_dm_pressed)
+
+        button.setStyleSheet("""
+            QPushButton {
+                background-color: #141c4b;
+                border: 2px solid #2980b9;
+                border-radius: 5px;
+                padding: 8px 16px;
+                color: #b9c0c7;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+
+            QPushButton:pressed {
+                background-color: #202225;
+                border-color: #72767d;
+            }
+        """)
+
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        button.setFixedWidth(adding_border_width - 30)
+
     def display_create_group_box(self):
         starter_x = self.create_group_open_x
         starter_y_of_border = self.create_group_open_y + 50
@@ -897,6 +1019,7 @@ class ChatBox(QWidget):
         starter_y = self.create_group_open_y + 150
         i = 0
         for friend in self.parent.friends_list:
+            # self.parent.create_group_index default value is 0
             if i >= self.parent.create_group_index * 5:
                 friend_label = QPushButton(friend, self)
                 friend_label.friend_name = friend

@@ -456,6 +456,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.color_design_options = ["Red", "Blue", "Black and White", "Green"]
 
         self.is_create_group_pressed = False
+        self.is_rename_group_pressed = False
+        self.is_add_users_to_group_pressed = False
+
         self.size_error_label = False
         self.is_chat_box_full = False
         self.is_friends_box_full = False
@@ -506,6 +509,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
         self.selected_group_members = []
         self.create_group_index = 0
+        self.add_users_to_group_index = 0
         self.group_max_members = 10
 
         self.blocked_list = []
