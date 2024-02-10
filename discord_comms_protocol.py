@@ -917,10 +917,12 @@ class server_net:
                     discarded_data = self.server.recv(4096)
                     if not discarded_data:
                         break  # No more data to receive
+                return 1
             except socket.error as e:
                 self.logger.error(f"Error while clearing socket buffer: {e}")
 
-            return None  # Return None to indicate failure due to unexpected data
+                return None  # Return None to indicate failure due to unexpected data
+
 
     def recv_bytes(self):
         try:
@@ -978,6 +980,7 @@ class server_net:
                 self.aes_key = aes_key
             except Exception as e:
                 print(e)
+
 
         else:
             print("Error receiving the symmetric key.")

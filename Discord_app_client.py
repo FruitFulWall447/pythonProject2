@@ -689,6 +689,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.deafen = False
             self.stop_sound()
             self.updated_chat()
+            self.is_screen_shared = False
+            self.watching_user = ""
+            if self.is_watching_screen:
+                self.stop_watching_video_stream()
+            self.is_watching_screen = False
         except Exception as e:
             print(e)
 

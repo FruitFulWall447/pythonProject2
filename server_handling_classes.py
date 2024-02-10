@@ -99,11 +99,16 @@ class Call:
             if net is not None:
                 net.send_str("call:ended")
                 net.remove_call_to_user_of_id(self.call_id)
+        self.close_all_video_streams()
         self.logger.info(f"Call of id {self.call_id} ended")
         call_time = datetime.now() - self.initiated_time
         self.logger.info(f"Call was up for {call_time}")
         self.parent.cancel_ring_by_id(self.call_id)
         self.stop_processing()
+
+    def close_all_video_streams(self):
+        for stream in self.video_streams_list:
+            stream.end_stream()
 
     def send_to_everyone_call_accepted(self):
         for name, net in self.call_nets.items():
