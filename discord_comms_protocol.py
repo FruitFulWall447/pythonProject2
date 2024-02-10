@@ -367,7 +367,6 @@ class client_net:
         except Exception as e:
             print(f"error is: {e}")
 
-
     def send_friend_request(self, username, friend_username):
         data = f"friend_request:{username}:{friend_username}"
         try:
@@ -384,7 +383,6 @@ class client_net:
 
         except socket.error as e:
             print(e)
-
 
     def send_friends_request_rejection(self, rejected_user):
         data = f"friend_request_status:reject:{rejected_user}"
@@ -415,7 +413,6 @@ class client_net:
             self.send_str(data)
         except socket.error as e:
             print(e)
-
 
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()
@@ -540,6 +537,7 @@ class client_net:
         aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
         self.aes_key = aes_key
         self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
+
 
 class server_net:
     def __init__(self, s, addr):
@@ -911,7 +909,18 @@ class server_net:
                 return data
 
         except (socket.error, ValueError) as e:
-            print(f"error...{e}")
+            self.logger.error(f"Error: {e}")
+            self.logger.info("Clearing socket buffer...")
+            # Clear the socket buffer by receiving and discarding remaining data
+            try:
+                while True:
+                    discarded_data = self.server.recv(4096)
+                    if not discarded_data:
+                        break  # No more data to receive
+            except socket.error as e:
+                self.logger.error(f"Error while clearing socket buffer: {e}")
+
+            return None  # Return None to indicate failure due to unexpected data
 
     def recv_bytes(self):
         try:
