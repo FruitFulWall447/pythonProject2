@@ -131,7 +131,13 @@ class Call:
     def remove_user_from_call(self, user):
         self.participants.remove(user)
         self.gets_call_nets_from_dict()
+        for stream in self.video_streams_list:
+            if stream.streamer == user:
+                stream.end_stream()
+            if user in stream.spectators:
+                stream.remove_spectator(user)
         self.send_call_object_to_clients()
+
         self.logger.info(f"{user} left call by id {self.call_id}")
 
     def add_user_to_call(self, user):
@@ -392,6 +398,8 @@ class Communication:
         self.remove_net_by_name(user)
         self.update_nets_for_child_class()
         self.update_online_list_for_users_friends(user)
+        if self.is_user_in_a_call(user):
+            self.remove_user_from_call(user)
 
     def add_net(self, name, obj):
         self.nets_dict[name] = obj

@@ -2447,6 +2447,7 @@ def get_camera_names():
 
     return camera_names
 
+
 class SettingsBox(QWidget):
     def __init__(self, parent):
         super().__init__()
@@ -2548,7 +2549,7 @@ class SettingsBox(QWidget):
                 button_edit_user_profile_x, button_edit_user_profile_y = (1250, 240)
                 button_width, button_height = (180, 50)
                 button_edit_user_profile = self.create_colored_button(dark_green, other_green, None, button_edit_user_profile_x, button_edit_user_profile_y, button_width , button_height, "Edit User Profile")
-
+                button_edit_user_profile.clicked.connect(self.user_profile_pressed)
 
             elif self.parent.selected_settings == "Voice & Video":
                 self.volume_slider = QSlider(Qt.Horizontal, self)
@@ -2640,15 +2641,23 @@ class SettingsBox(QWidget):
 
             elif self.parent.selected_settings == "Appearance":
                 starter_y = 170
+                space_between_option_box_and_label = 30
                 list_optional_colors = self.parent.color_design_options
                 width, height = (300, 45)
-                x, y = (800, starter_y)
-                self.color_combobox = self.create_option_box(width, height, x, y, list_optional_colors)
+                appearance_select_box_x, appearance_select_box_y = (800, starter_y)
+                self.color_combobox = self.create_option_box(width, height, appearance_select_box_x, appearance_select_box_y, list_optional_colors)
+                appearance_select_box_label = self.create_white_label(appearance_select_box_x, appearance_select_box_y - space_between_option_box_and_label, self.default_labels_font_size, None,
+                                                       None, "THEME COLOR")
+
 
 
 
         except Exception as e:
             print(e)
+
+    def create_my_account_labels(self, x, y, font_size, text1, text2):
+        label1 = self.create_white_label(x, y, font_size, None, None, text1)
+        label2 = self.create_white_label(x, y, font_size, None, None, text2)
 
     def change_input_mode(self):
         if self.parent.is_push_to_talk:
@@ -2811,16 +2820,26 @@ class SettingsBox(QWidget):
         return image_label
 
     def create_white_label(self, x, y, font_size, width, height, text):
-        white_label = QLabel(text, self)
-        if width is None and height is None:
-            white_label.move(x, y)
-        else:
-            white_label.setGeometry(x, y, width, height)
-
-        # Set text color to white
-        white_label.setStyleSheet("color: white; font-size: {}pt; font-weight: bold;".format(font_size))
-
+        white_label = self.create_custom_label(x, y, font_size, width, height, text, "white", True)
         return white_label
+
+    def create_custom_label(self, x, y, font_size, width, height, text, color=None, is_bold=False):
+        custom_label = QLabel(text, self)
+        if width is None and height is None:
+            custom_label.move(x, y)
+        else:
+            custom_label.setGeometry(x, y, width, height)
+
+        # Set text color
+        if color is None:
+            color = "white"  # Default color is white if not specified
+        custom_label.setStyleSheet("color: {}; font-size: {}pt;".format(color, font_size))
+
+        # Set text weight to bold if specified
+        if is_bold:
+            custom_label.setStyleSheet(custom_label.styleSheet() + "font-weight: bold;")
+
+        return custom_label
 
     def change_username_function(self):
         # Implement the function for changing the username
