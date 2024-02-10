@@ -3,6 +3,9 @@ import time
 import uuid
 import database_func
 import copy
+from discord_comms_protocol import server_net
+import threading
+
 
 class Call:
     def __init__(self, parent, participants, nets, group_id=None):
@@ -143,7 +146,6 @@ class Call:
         self.send_call_object_to_clients()
         self.logger.info(f"{user} joined call by id {self.call_id}")
 
-
     def process_vc_data(self):
         while not self.stop_thread.is_set():
             if self.data_collection:
@@ -197,9 +199,6 @@ class Call:
             if spectator in stream.spectators:
                 stream.remove_spectator(spectator)
 
-from discord_comms_protocol import server_net
-import threading
-from multiprocessing import Process
 
 class Ring:
     def __init__(self, Parent, ringer, nets, ringing_to=None, group_id=None):
@@ -574,6 +573,7 @@ class Communication:
             if spectator in call.participants:
                 call.remove_spectator_for_stream(spectator)
 
+
 class VideoStream:
     def __init__(self, Comms_object, streamer, call_object, group_id=None):
         self.call_parent = call_object
@@ -624,7 +624,7 @@ class VideoStream:
         for name, net in self.call_parent.call_nets.items():
             if name != user and net is not None and name in self.spectators:
                 net.send_share_screen_data(share_screen_data, user)
-                #self.logger.info(f"Sent share screen data to {name}")
+                # self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):
         if len(self.spectators) > 0:

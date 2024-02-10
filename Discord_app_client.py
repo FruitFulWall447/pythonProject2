@@ -877,6 +877,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                             self.chat_box.text_entry.setFocus()
                 if self.image_to_send:
                     print(len(self.image_to_send))
+                    # Compresses the byte representation of an image using zlib,
+                    # encodes the compressed data as base64, and then decodes
+                    # it into a UTF-8 string for transmission or storage.
                     compressed_base64_image = base64.b64encode(zlib.compress(self.image_to_send)).decode()
                     print(len(compressed_base64_image))
                     current_time = datetime.datetime.now()
@@ -1934,7 +1937,7 @@ class Change_password_page(QWidget):
         self.changed_password_label.hide()
         while flag_change_password:
             if len(self.new_password.text()) >= 8:
-                n.send_str(self.new_password.text())
+                n.send_new_password(self.new_password.text())
                 print("Password changed")
                 self.changed_password_label.show()
                 self.status = True

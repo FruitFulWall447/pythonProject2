@@ -215,6 +215,14 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_new_password(self, new_password):
+        data = f"password:new:{new_password}"
+        try:
+            # Convert the length of the data to a string
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
     def create_group(self, group_members_list):
         encoded_list = json.dumps(group_members_list)
         full_message = "group:create:" + encoded_list

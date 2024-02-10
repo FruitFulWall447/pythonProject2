@@ -2,7 +2,7 @@ import socket
 import threading
 from discord_comms_protocol import server_net
 from email_send_code import *
-from Server_side_handling_classes import Communication, Call
+from server_handling_classes import Communication, Call
 import database_func
 import re
 import random
@@ -217,11 +217,16 @@ def thread_recv_messages(n, addr, username):
                             if code_gotten == code:
                                 logger.info(f"code gotten from {username} is correct")
                                 n.send_forget_password_code_valid()
-                                new_password = n.recv_str()
-                                database_func.change_password(username, new_password)
-                                send_changed_password_to_email(email, username)
-                                logger.info(f"{username} changed password")
-                                break
+                                data = n.recv_str()
+                                parts = data.split(":")
+                                if len(parts) > 0:
+                                    if parts[0] == "password":
+                                        if parts[1] == "new":
+                                            new_password = parts[2]
+                                            database_func.change_password(username, new_password)
+                                            send_changed_password_to_email(email, username)
+                                            logger.info(f"{username} changed password")
+                                            break
                             elif code_gotten == "Exit":
                                 logger.info(f"({addr}) existed code menu")
                                 break

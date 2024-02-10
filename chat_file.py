@@ -1495,9 +1495,9 @@ class ChatBox(QWidget):
             if self.parent.chat_start_index <= index:
                 if index == len(self.parent.list_messages) - 1:
                     self.parent.is_last_message_on_screen = True
-                if not self.is_base64_encoded(i[0]) or len(str(i[0])) < 100:
+                if not self.is_base64_encoded(i[0]) or len(str(i[0])) < 200:
 
-                    # first parts = contant
+                    # first parts = content
                     message = i[0]
                     label = self.create_temp_message_label(message)
                     label.move(x_pos, y)
@@ -1514,11 +1514,10 @@ class ChatBox(QWidget):
                     y -= 20
                     if index != len(self.parent.list_messages) - 1:
                         self.parent.is_last_message_on_screen = False
-
                 else:
                     try:
-                        image_bytes = base64.b64decode(i[0])
-                        image_bytes = zlib.decompress(image_bytes)
+                        compressed_image_bytes = base64.b64decode(i[0])
+                        image_bytes = zlib.decompress(compressed_image_bytes)
                         label1 = QLabel(self)
                         self.load_image_from_bytes(image_bytes, label1)
                         if y - label1.height() - 10 < end_y_pos:
