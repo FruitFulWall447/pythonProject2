@@ -2,7 +2,7 @@ import socket
 import threading
 from discord_comms_protocol import server_net
 from email_send_code import *
-from chat_file import Communication, Call
+from Server_side_handling_classes import Communication, Call
 import database_func
 import re
 import random
