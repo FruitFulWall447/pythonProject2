@@ -723,7 +723,7 @@ class ChatBox(QWidget):
             names = current_call_dict.get("participants")
             for name in names:
                 self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
-                if name in current_call_dict.get("video_streamers"):
+                if name in current_call_dict.get("video_streamers") and name != self.parent.username:
                     self.create_watch_stream_button(starts_x, y_of_profiles-30, name)
                 starts_x += 105
         except Exception as e:
