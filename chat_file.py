@@ -340,6 +340,14 @@ class ChatBox(QWidget):
                 share_screen_button_width = 45
                 share_screen_x = 905
                 share_screen_y = 215
+
+
+
+
+                share_screen_height = 45
+                share_screen_button_width = 45
+                share_screen_x = 905
+                share_screen_y = 215
                 self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
                                                                     share_screen_y, self.share_screen_and_unshare)
 
@@ -2731,12 +2739,12 @@ class SettingsBox(QWidget):
 
     def create_slider(self, min_value, max_value, value, connected_function, x, y, width, height, style_sheet):
         volume_slider = QSlider(Qt.Horizontal, self)
-        volume_slider.setStyleSheet(style_sheet)
         volume_slider.setMinimum(min_value)
         volume_slider.setMaximum(max_value)
         volume_slider.setValue(value)  # Set initial volume
         volume_slider.valueChanged.connect(connected_function)
         volume_slider.setGeometry(x, y, width, height)
+        volume_slider.setStyleSheet(style_sheet)
         return volume_slider
 
     def handle_push_to_talk_selection_button_clicked(self):
