@@ -490,6 +490,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.profile_pic = None
 
         self.volume = 50
+        self.font_size = 12
 
         self.online_users_list = []
         self.friends_list = []

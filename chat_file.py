@@ -2526,6 +2526,31 @@ class SettingsBox(QWidget):
 
         """ % (background_color, hover_color, hover_color, background_color, hover_color)
 
+        self.volume_slider_style_sheet = """
+                       QSlider::groove:horizontal {
+                           border: 1px solid #bbb;
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                           height: 10px;
+                           margin: 0px;
+                       }
+
+                       QSlider::handle:horizontal {
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                           border: 1px solid #777;
+                           width: 20px;
+                           margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                           border-radius: 5px;
+                       }
+
+                       QSlider::add-page:horizontal {
+                           background: #fff;
+                       }
+
+                       QSlider::sub-page:horizontal {
+                           background: #3498db; /* Change this color to the desired color for the left side */
+                       }
+                               """
+
         label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)
         try:
             if self.parent.selected_settings == "My Account":
@@ -2552,7 +2577,6 @@ class SettingsBox(QWidget):
                 button_edit_user_profile.clicked.connect(self.user_profile_pressed)
 
             elif self.parent.selected_settings == "Voice & Video":
-                self.volume_slider = QSlider(Qt.Horizontal, self)
 
                 p = pyaudio.PyAudio()
 
@@ -2575,43 +2599,17 @@ class SettingsBox(QWidget):
                             output_devices.append(device_info["name"])
                 camera_names_list = get_camera_names()
 
-
-                style_sheet = """
-                       QSlider::groove:horizontal {
-                           border: 1px solid #bbb;
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
-                           height: 10px;
-                           margin: 0px;
-                       }
-
-                       QSlider::handle:horizontal {
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
-                           border: 1px solid #777;
-                           width: 20px;
-                           margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-                           border-radius: 5px;
-                       }
-
-                       QSlider::add-page:horizontal {
-                           background: #fff;
-                       }
-
-                       QSlider::sub-page:horizontal {
-                           background: #3498db; /* Change this color to the desired color for the left side */
-                       }
-                               """
-                self.volume_slider.setStyleSheet(style_sheet)
-                self.volume_slider.setMinimum(0)
-                self.volume_slider.setMaximum(100)
-                self.volume_slider.setValue(self.parent.volume)  # Set initial volume
-                self.volume_slider.valueChanged.connect(self.set_volume)
                 starter_y = 170
                 volume_slider_y = starter_y+100
                 volume_slider_label_y = volume_slider_y - 15
                 volume_slider__x = 800
                 volume_slider_label_x = volume_slider__x
                 width, height = (300, 45)
-                self.volume_slider.setGeometry(800, volume_slider_y, width, height)
+                slider_min_value = 0
+                slider_max_value = 100
+                self.volume_slider = self.create_slider(slider_min_value, slider_max_value, self.parent.volume, self.set_volume, volume_slider__x, volume_slider_y
+                                                        , width, height, self.volume_slider_style_sheet)
+
                 volume_slider_label = self.create_white_label(volume_slider_label_x, volume_slider_label_y, self.default_labels_font_size, None, None, "INPUT VOLUME")
                 self.volume_label = self.create_white_label(volume_slider_label_x + width + 10, volume_slider_y+7, self.default_labels_font_size, 100, 30, str(self.parent.volume))
 
@@ -2638,7 +2636,6 @@ class SettingsBox(QWidget):
                 push_to_talk_select_label = self.create_white_label(push_to_talk_select_x, push_to_talk_select_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "Push to Talk Keybind")
 
-
             elif self.parent.selected_settings == "Appearance":
                 starter_y = 170
                 space_between_option_box_and_label = 30
@@ -2648,10 +2645,26 @@ class SettingsBox(QWidget):
                 self.color_combobox = self.create_option_box(width, height, appearance_select_box_x, appearance_select_box_y, list_optional_colors)
                 appearance_select_box_label = self.create_white_label(appearance_select_box_x, appearance_select_box_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "THEME COLOR")
+                font_size_slider_x, font_size_slider_y = 800, starter_y+100
+                font_size_slider_style_sheet = self.volume_slider_style_sheet
+                font_size_slider_width, font_size_slider_height = (300, 50)
+                font_size_slider_min_value, font_size_slider_max_value = (6, 20)
+
+                self.font_size_slider = self.create_slider(font_size_slider_min_value, font_size_slider_max_value, self.parent.font_size,
+                                                           self.font_size_changed, font_size_slider_x, font_size_slider_y
+                , font_size_slider_width, font_size_slider_height, font_size_slider_style_sheet)
 
 
 
 
+
+        except Exception as e:
+            print(e)
+
+    def font_size_changed(self, font):
+        try:
+            self.parent.font_size = int(font)
+            self.parent.updated_chat()
         except Exception as e:
             print(e)
 
@@ -2715,6 +2728,16 @@ class SettingsBox(QWidget):
         else:
             edit_keybind_button = self.create_colored_button(grey, hover_grey, grey, x+170, y+6, button_width, button_height, "Edit Keybind")
             edit_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
+
+    def create_slider(self, min_value, max_value, value, connected_function, x, y, width, height, style_sheet):
+        volume_slider = QSlider(Qt.Horizontal, self)
+        volume_slider.setStyleSheet(style_sheet)
+        volume_slider.setMinimum(min_value)
+        volume_slider.setMaximum(max_value)
+        volume_slider.setValue(value)  # Set initial volume
+        volume_slider.valueChanged.connect(connected_function)
+        volume_slider.setGeometry(x, y, width, height)
+        return volume_slider
 
     def handle_push_to_talk_selection_button_clicked(self):
         if self.parent.is_editing_push_to_talk_button:
