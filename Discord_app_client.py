@@ -519,6 +519,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_screen_shared = False
         self.is_watching_screen = False
         self.watching_user = ""
+        self.is_camera_shared = False
+
 
         self.chat_start_index_max = float('inf')
         self.current_chat_box_search = False
