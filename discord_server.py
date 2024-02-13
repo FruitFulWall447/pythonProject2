@@ -367,7 +367,6 @@ def thread_recv_messages(n, addr, username):
                         parts = data.split(":")
                         action = parts[1]
                         if action == "stream":
-                            print(parts)
                             if len(parts) == 4 or len(parts) == 5:
                                 stream_type = parts[2]
                                 stream_action = parts[3]
@@ -378,8 +377,6 @@ def thread_recv_messages(n, addr, username):
                                 elif stream_action == "watch":
                                     if len(parts) == 5:
                                         streamer = parts[4]
-                                        logger.critical(
-                                            f"got into stream_action == watch {User, streamer, stream_type}")
                                         Communication.add_spectator_to_call_stream(User, streamer, stream_type)
                             elif len(parts) == 3:
                                 stream_action = parts[2]
