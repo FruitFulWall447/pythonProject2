@@ -343,17 +343,18 @@ class ChatBox(QWidget):
                 self.share_camera_off_icon = QIcon("discord_app_assets/no_camera_icon.png")
                 self.share_camera_on_icon = QIcon("discord_app_assets/camera_icon.png")
                 self.share_camera_button = self.create_custom_in_call_button(share_camera_height, share_camera_button_width, share_camera_x,
-                                                                    share_camera_y, self.share_screen_and_unshare)
-
-
-
+                                                                    share_camera_y, self.share_camera_and_unshare)
                 share_screen_height = 45
                 share_screen_button_width = 45
                 share_screen_x = 905
                 share_screen_y = 215
                 self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
                                                                     share_screen_y, self.share_screen_and_unshare)
-
+                if self.parent.is_camera_shared:
+                    self.set_button_icon(self.share_camera_button, self.share_camera_on_icon, share_camera_height, share_camera_button_width)
+                else:
+                    self.set_button_icon(self.share_camera_button, self.share_camera_off_icon, share_camera_height,
+                                         share_camera_button_width)
 
                 self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
                 self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
@@ -1405,14 +1406,12 @@ class ChatBox(QWidget):
         try:
             if self.parent.is_camera_shared:
                 self.parent.is_camera_shared = False
-                self.share_screen_button.setIcon(self.share_camera_off_icon)
-                self.parent.update_share_screen_thread()
+                self.share_camera_button.setIcon(self.share_camera_off_icon)
             else:
                 self.parent.is_camera_shared = True
-                self.share_screen_button.setIcon(self.share_camera_on_icon)
-                self.parent.start_share_screen_send_thread()
+                self.share_camera_button.setIcon(self.share_camera_on_icon)
         except Exception as e:
-            print(f"error in sharing or closing share screen error is: {e}")
+            print(f"error in sharing or closing share camera error is: {e}")
 
     def share_screen_and_unshare(self):
         try:
