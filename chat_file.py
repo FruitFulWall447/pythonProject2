@@ -1425,7 +1425,7 @@ class ChatBox(QWidget):
                 self.parent.is_screen_shared = True
                 self.share_screen_button.setIcon(self.share_screen_on_icon)
                 self.parent.start_share_screen_send_thread()
-                self.Network.start_stream_stream()
+                self.Network.start_screen_stream()
         except Exception as e:
             print(f"error in sharing or closing share screen error is: {e}")
 

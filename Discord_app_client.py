@@ -231,7 +231,7 @@ def thread_recv_messages():
                         main_page.update_call_dict_by_id(call_dict)
                         if main_page.is_watching_screen:
                             if main_page.username in call_dict.get("participants"):
-                                if main_page.watching_user not in call_dict.get("video_streamers"):
+                                if main_page.watching_user not in call_dict.get("screen_streamers") and main_page.watching_user not in call_dict.get("camera_streamers"):
                                     QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal", Qt.QueuedConnection)
                     else:
                         main_page.call_dicts.append(call_dict)

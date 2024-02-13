@@ -209,10 +209,12 @@ class Call:
             self.logger.info(f"{user} deafened himself in call of id {self.call_id}")
         self.send_call_object_to_clients()
 
-    def add_spectator_for_stream(self, spectator, streamer):
+    def add_spectator_for_stream(self, spectator, streamer, stream_type):
         for stream in self.video_streams_list:
-            if stream.streamer == streamer:
+            if stream.streamer == streamer and stream.stream_type == stream_type:
                 stream.add_spectator(spectator)
+                return
+        self.logger.error(f"couldn't add spectator to stream")
 
     def remove_spectator_for_stream(self, spectator):
         for stream in self.video_streams_list:
@@ -578,17 +580,17 @@ class Communication:
     def create_video_stream_for_user_call(self, user, type):
         for call in self.calls:
             if user in call.participants:
-                call.create_video_stream_of_user(user)
+                call.create_video_stream_of_user(user, type)
 
     def close_video_stream_for_user_call(self, user, type):
         for call in self.calls:
             if user in call.participants:
-                call.close_video_stream_by_user(user)
+                call.close_video_stream_by_user(user, type)
 
-    def add_spectator_to_call_stream(self, spectator, streamer):
+    def add_spectator_to_call_stream(self, spectator, streamer, stream_type):
         for call in self.calls:
             if (spectator and streamer) in call.participants:
-                call.add_spectator_for_stream(spectator, streamer)
+                call.add_spectator_for_stream(spectator, streamer, stream_type)
 
     def remove_spectator_from_call_stream(self, spectator):
         for call in self.calls:
@@ -613,7 +615,7 @@ class VideoStream:
         self.data_collection = []  # List of tuples containing user and vc_data
         self.stop_thread = threading.Event()  # Event for signaling the thread to stop
         self.thread = threading.Thread(target=self.process_share_screen_data)
-        self.logger.info(f"Video Stream of id {self.stream_id} was created")
+        self.logger.info(f"Video Stream of id {self.stream_id} and type {self.stream_type} was created")
 
     def remove_spectator(self, user):
         self.spectators.remove(user)
