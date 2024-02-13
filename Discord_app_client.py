@@ -334,6 +334,36 @@ def thread_send_share_screen_data():
     except Exception as e:
         print(f"Screen sharing error: {e}")
 
+def thread_send_share_camera_data():
+    global main_page
+    try:
+        # Initialize the camera
+        cap = cv2.VideoCapture(0)  # Use 0 for default camera, change as needed
+
+        while main_page.is_camera_shared:
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            if not ret:
+                print("Error: Couldn't capture frame from camera.")
+                break
+
+            # Convert the frame to a NumPy array
+            frame_np = np.asarray(frame)
+
+            # Convert the NumPy array to bytes
+            frame_bytes = frame_np.tobytes()
+
+            # Send the frame to the server
+            n.send_share_camera_data(frame_bytes)
+
+            time.sleep(0.04)  # Adjust the sleep time based on your needs
+
+        # Release the camera and close thread
+        cap.release()
+        print("send share camera data thread closed")
+    except Exception as e:
+        print(f"Camera sharing error: {e}")
+
 
 class SplashScreen(QWidget):
     def __init__(self):

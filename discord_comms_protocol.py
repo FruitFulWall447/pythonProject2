@@ -367,6 +367,16 @@ class client_net:
         except Exception as e:
             print(f"error is: {e}")
 
+    def send_share_camera_data(self, share_camera_data):
+        try:
+            compressed_share_camera_data = zlib.compress(share_camera_data)
+            share_camera_sequence = br'\share_camera_data'
+            full_message = share_camera_sequence + compressed_share_camera_data
+            # Convert the length of the data to a string
+            self.send_bytes(full_message)
+        except Exception as e:
+            print(f"error is: {e}")
+
     def send_friend_request(self, username, friend_username):
         data = f"friend_request:{username}:{friend_username}"
         try:
@@ -660,10 +670,21 @@ class server_net:
 
     def send_share_screen_data(self, share_screen_data, speaker):
         try:
-            compressed_vc_data = zlib.compress(share_screen_data)
+            compressed_share_screen_data = zlib.compress(share_screen_data)
             share_screen_sequence = br'\share_screen_data'
             encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = share_screen_sequence + encoded_speaker + compressed_vc_data
+            full_message = share_screen_sequence + encoded_speaker + compressed_share_screen_data
+            # Convert the length of the data to a string
+            self.send_bytes(full_message)
+        except Exception as e:
+            print(f"error is: {e}")
+
+    def send_share_camera_data(self, share_screen_data, speaker):
+        try:
+            compressed_share_camera_data = zlib.compress(share_screen_data)
+            share_camera_sequence = br'\share_camera_data'
+            encoded_speaker = (speaker + ":").encode("utf-8")
+            full_message = share_camera_sequence + encoded_speaker + compressed_share_camera_data
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
