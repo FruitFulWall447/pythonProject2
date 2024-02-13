@@ -766,8 +766,12 @@ class ChatBox(QWidget):
             if not self.parent.is_watching_screen:
                 self.parent.is_watching_screen = True
                 self.parent.watching_user = name
-                self.Network.watch_screen_stream_of_user(name)
-                print(f"Started watching stream of {name}")
+                self.parent.watching_type = stream_type
+                if stream_type == "ScreenStream":
+                    self.Network.watch_screen_stream_of_user(name)
+                else:
+                    self.Network.watch_camera_stream_of_user(name)
+                print(f"Started watching stream of {name} of type: {stream_type}")
                 self.parent.start_watching_video_stream()
             else:
                 print("does not suppose to happen")

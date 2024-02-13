@@ -231,8 +231,13 @@ def thread_recv_messages():
                         main_page.update_call_dict_by_id(call_dict)
                         if main_page.is_watching_screen:
                             if main_page.username in call_dict.get("participants"):
-                                if main_page.watching_user not in call_dict.get("screen_streamers") and main_page.watching_user not in call_dict.get("camera_streamers"):
-                                    QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal", Qt.QueuedConnection)
+                                if main_page.watching_type == "ScreenStream":
+                                    if main_page.watching_user not in call_dict.get("screen_streamers"):
+                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal", Qt.QueuedConnection)
+                                else:
+                                    if main_page.watching_user not in call_dict.get("camera_streamers"):
+                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                                                                 Qt.QueuedConnection)
                     else:
                         main_page.call_dicts.append(call_dict)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
@@ -549,6 +554,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_screen_shared = False
         self.is_watching_screen = False
         self.watching_user = ""
+        self.watching_type = None
         self.is_camera_shared = False
 
 
@@ -634,6 +640,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     def stop_watching_video_stream(self):
         self.is_watching_screen = False
         self.watching_user = ""
+        self.watching_type = None
         self.stream_screen.close()
         self.showMaximized()
 
@@ -1501,6 +1508,7 @@ class VideoClient(QMainWindow):
             print(f"stopped watching {main_page.watching_user} share screen")
             main_page.is_watching_screen = False
             main_page.watching_user = ""
+            main_page.watching_type = None
             self.close()
 
 class Forget_password_page(QWidget):
