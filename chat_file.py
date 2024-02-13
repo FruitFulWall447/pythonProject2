@@ -734,13 +734,14 @@ class ChatBox(QWidget):
             names = current_call_dict.get("participants")
             for name in names:
                 self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
-                if name in current_call_dict.get("video_streamers") and name != self.parent.username:
-                    self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name)
+                if name in current_call_dict.get("screen_streamers") and name != self.parent.username:
+                    stream_type = "ScreenStream"
+                    self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
                 starts_x += 105
         except Exception as e:
             print(f"error is {e} in icon management")
 
-    def create_watch_stream_button(self, x, y, name):
+    def create_watch_stream_button(self, x, y, name, stream_type):
         width, height = (70, 30)
         button = QPushButton("Watch", self)
         button_size = QSize(width, height)
@@ -757,15 +758,15 @@ class ChatBox(QWidget):
                 background-color: #2980b9;
             }}
         """)
-        button.clicked.connect(lambda: self.watch_stream_button_pressed(name))
+        button.clicked.connect(lambda: self.watch_stream_button_pressed(name, stream_type))
         self.call_profiles_list.append(button)
 
-    def watch_stream_button_pressed(self, name):
+    def watch_stream_button_pressed(self, name, stream_type):
         try:
             if not self.parent.is_watching_screen:
                 self.parent.is_watching_screen = True
                 self.parent.watching_user = name
-                self.Network.watch_stream_of_user(name)
+                self.Network.watch_screen_stream_of_user(name)
                 print(f"Started watching stream of {name}")
                 self.parent.start_watching_video_stream()
             else:
@@ -1418,13 +1419,13 @@ class ChatBox(QWidget):
             if self.parent.is_screen_shared:
                 self.parent.is_screen_shared = False
                 self.share_screen_button.setIcon(self.share_screen_off_icon)
-                self.Network.close_stream()
+                self.Network.close_screen_stream()
                 self.parent.update_share_screen_thread()
             else:
                 self.parent.is_screen_shared = True
                 self.share_screen_button.setIcon(self.share_screen_on_icon)
                 self.parent.start_share_screen_send_thread()
-                self.Network.start_stream()
+                self.Network.start_stream_stream()
         except Exception as e:
             print(f"error in sharing or closing share screen error is: {e}")
 

@@ -38,17 +38,17 @@ class Call:
         self.thread = threading.Thread(target=self.process_vc_data)
         self.thread.start()
 
-    def create_video_stream_of_user(self, user):
+    def create_video_stream_of_user(self, user, type_of_stream):
         if self.is_group_call:
-            video_stream = VideoStream(self.parent, user, self, self.group_id)
+            video_stream = VideoStream(self.parent, user, self, type_of_stream, self.group_id)
         else:
-            video_stream = VideoStream(self.parent, user, self, None)
+            video_stream = VideoStream(self.parent, user, self, type_of_stream, None)
         self.video_streams_list.append(video_stream)
         self.send_call_object_to_clients()
 
-    def close_video_stream_by_user(self, user):
+    def close_video_stream_by_user(self, user, type_of_stream):
         for stream in self.video_streams_list:
-            if stream.streamer == user:
+            if stream.streamer == user and stream.stream_type == type_of_stream:
                 stream.end_stream()
                 self.video_streams_list.remove(stream)
         self.send_call_object_to_clients()
@@ -64,16 +64,25 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
-            "video_streamers": self.get_all_video_steamers(),
+            "screen_streamers": self.get_all_video_screen_streamers(),
+            "camera_streamers": self.get_all_video_camera_streamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
         return call_data
 
-    def get_all_video_steamers(self):
+    def get_all_video_screen_streamers(self):
         list_names = []
         for video_stream in self.video_streams_list:
-            list_names.append(video_stream.streamer)
+            if video_stream.stream_type == "ScreenStream":
+                list_names.append(video_stream.streamer)
+        return list_names
+
+    def get_all_video_camera_streamers(self):
+        list_names = []
+        for video_stream in self.video_streams_list:
+            if video_stream.stream_type == "ScreenStream":
+                list_names.append(video_stream.streamer)
         return list_names
 
     def send_call_object_to_clients(self):
@@ -84,7 +93,7 @@ class Call:
             "participants": self.participants,
             "muted": self.muted,
             "deafened": self.deafened,
-            "video_streamers": self.get_all_video_steamers(),
+            "screen_streamers": self.get_all_video_screen_streamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
@@ -566,12 +575,12 @@ class Communication:
                 ring.stop_ring_for_unanswered_users()
                 self.rings.remove(ring)
 
-    def create_video_stream_for_user_call(self, user):
+    def create_video_stream_for_user_call(self, user, type):
         for call in self.calls:
             if user in call.participants:
                 call.create_video_stream_of_user(user)
 
-    def close_video_stream_for_user_call(self, user):
+    def close_video_stream_for_user_call(self, user, type):
         for call in self.calls:
             if user in call.participants:
                 call.close_video_stream_by_user(user)
@@ -588,12 +597,14 @@ class Communication:
 
 
 class VideoStream:
-    def __init__(self, Comms_object, streamer, call_object, group_id=None):
+    def __init__(self, Comms_object, streamer, call_object, stream_type, group_id=None):
         self.call_parent = call_object
         self.comms_parent = Comms_object
         self.logger = logging.getLogger(__name__)
         self.stream_id = str(uuid.uuid4())
         self.streamer = streamer
+        # stream_type is either CameraStream or ScreenStream
+        self.stream_type = stream_type
         if group_id:
             self.is_group_stream = True
         else:

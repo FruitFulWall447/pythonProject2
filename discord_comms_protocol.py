@@ -179,23 +179,34 @@ class client_net:
         except socket.error as e:
             print(e)
 
-    def start_stream(self):
+    def start_screen_stream(self):
         try:
-            message = f"call:stream:start"
+            stream_type = "ScreenStream"
+            message = f"call:stream:{stream_type}:start"
             self.send_str(message)
         except socket.error as e:
             print(e)
 
-    def close_stream(self):
+    def close_screen_stream(self):
         try:
-            message = f"call:stream:close"
+            stream_type = "ScreenStream"
+            message = f"call:stream:{stream_type}:close"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+    # watch_stream_of_user
+    def watch_screen_stream_of_user(self, user):
+        try:
+            stream_type = "ScreenStream"
+            message = f"call:stream:watch:{stream_type}:{user}"
             self.send_str(message)
         except socket.error as e:
             print(e)
 
-    def watch_stream_of_user(self, user):
+    def watch_camera_stream_of_user(self, user):
         try:
-            message = f"call:stream:watch:{user}"
+            stream_type = "ScreenStream"
+            message = f"call:stream:watch:{stream_type}:{user}"
             self.send_str(message)
         except socket.error as e:
             print(e)

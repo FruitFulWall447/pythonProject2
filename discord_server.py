@@ -367,16 +367,20 @@ def thread_recv_messages(n, addr, username):
                         parts = data.split(":")
                         action = parts[1]
                         if action == "stream":
-                            stream_action = parts[2]
-                            if stream_action == "start":
-                                Communication.create_video_stream_for_user_call(User)
-                            elif stream_action == "close":
-                                Communication.close_video_stream_for_user_call(User)
-                            elif stream_action == "watch":
-                                streamer = parts[3]
-                                Communication.add_spectator_to_call_stream(User, streamer)
-                            elif stream_action == "stop_watch":
-                                Communication.remove_spectator_from_call_stream(User)
+                            if len(parts) == 4:
+                                stream_type = parts[2]
+                                stream_action = parts[3]
+                                if stream_action == "start":
+                                    Communication.create_video_stream_for_user_call(User, stream_type)
+                                elif stream_action == "close":
+                                    Communication.close_video_stream_for_user_call(User, stream_type)
+                                elif stream_action == "watch":
+                                    streamer = parts[3]
+                                    Communication.add_spectator_to_call_stream(User, streamer)
+                            else:
+                                stream_action = parts[2]
+                                if stream_action == "stop_watch":
+                                    Communication.remove_spectator_from_call_stream(User)
                         if action == "join":
                             if Communication.is_user_in_a_call(User):
                                 Communication.remove_user_from_call(User)
