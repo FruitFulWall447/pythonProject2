@@ -11,6 +11,7 @@ from io import BytesIO
 import base64
 import binascii
 import zlib
+import wmi
 
 
 def calculate_font_size(text):
@@ -2457,23 +2458,10 @@ def check_camera(i):
 
 def get_camera_names():
     camera_names = []
-    i = 0
-    while True:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [executor.submit(check_camera, i) for i in range(i, i + 10)]
-
-            found_cameras = False
-            for future in concurrent.futures.as_completed(futures):
-                result = future.result()
-                if result:
-                    camera_names.append(result)
-                    found_cameras = True
-
-            if not found_cameras:
-                break
-
-        i += 10
-
+    c = wmi.WMI()
+    for camera in c.Win32_PnPEntity():
+        if 'camera' in camera.Description.lower():
+            camera_names.append(camera.Description)
     return camera_names
 
 
