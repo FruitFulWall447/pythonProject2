@@ -11,8 +11,7 @@ from io import BytesIO
 import base64
 import binascii
 import zlib
-import wmi
-
+import pygetwindow
 
 def calculate_font_size(text):
     # You can adjust the coefficients for the linear relationship
@@ -2458,10 +2457,9 @@ def check_camera(i):
 
 def get_camera_names():
     camera_names = []
-    c = wmi.WMI()
-    for camera in c.Win32_PnPEntity():
-        if 'camera' in camera.Description.lower():
-            camera_names.append(camera.Description)
+    for window in pygetwindow.getAllTitles():
+        if 'camera' in window.lower():
+            camera_names.append(window)
     return camera_names
 
 
