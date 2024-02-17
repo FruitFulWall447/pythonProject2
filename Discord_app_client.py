@@ -86,15 +86,16 @@ def return_vc_bytes_parameters(vc_bytes):
     except Exception as e:
         print(vc_bytes)
 
-def return_share_screen_bytes_parameters(vc_bytes):
+def return_share_screen_bytes_parameters(share_screen_data):
     try:
-        sequence_and_name = vc_bytes.split(b":")[0]
+        sequence_and_name = share_screen_data.split(b":")[0]
+        frame_shape_bytes = share_screen_data.split(b":")[-1]
         encoded_name = sequence_and_name[len(share_screen_sequence):]
-        compressed_share_screen_data = vc_bytes[len(sequence_and_name)+1:]
+        compressed_share_screen_data = share_screen_data[len(sequence_and_name)+1:]
         name_of_talker = encoded_name.decode("utf-8")
-        return name_of_talker, compressed_share_screen_data
+        return name_of_talker, compressed_share_screen_data, frame_shape_bytes
     except Exception as e:
-        print(vc_bytes)
+        print(share_screen_data)
 
 
 def thread_recv_messages():
@@ -258,10 +259,11 @@ def thread_recv_messages():
                     vc_data = zlib.decompress(compressed_vc_data)
                     vc_data_queue.put(vc_data)
                 elif data.startswith(share_screen_sequence):
-                    streamer, compressed_share_screen_data = return_share_screen_bytes_parameters(data)
+                    streamer, compressed_share_screen_data, frame_shape_bytes = return_share_screen_bytes_parameters(data)
+                    frame_shape = struct.unpack('III', frame_shape_bytes)
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
                     expected_shape = (1080, 1920, 3)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(expected_shape)
+                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
                     main_page.update_stream_screen_frame(decompressed_frame)
             except Exception as e:
                 print(f"error in getting byte data:{e}")

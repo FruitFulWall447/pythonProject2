@@ -679,12 +679,12 @@ class server_net:
         except Exception as e:
             print(f"error is: {e}")
 
-    def send_share_screen_data(self, share_screen_data, speaker):
+    def send_share_screen_data(self, share_screen_data, speaker, shape_of_frame_bytes):
         try:
             compressed_share_screen_data = zlib.compress(share_screen_data)
             share_screen_sequence = br'\share_screen_data'
             encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = share_screen_sequence + encoded_speaker + compressed_share_screen_data
+            full_message = share_screen_sequence + encoded_speaker + compressed_share_screen_data + b":" + shape_of_frame_bytes
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:

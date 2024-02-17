@@ -525,12 +525,12 @@ class Communication:
                 call.adding_vc_data_to_user_call_thread_queue(User, vc_data)
                 # call.send_vc_data_to_everyone_but_user(vc_data, User)
 
-    def send_share_screen_data_to_call(self, share_screen_data, User):
+    def send_share_screen_data_to_call(self, share_screen_data, shape_bytes_of_frame, User):
         for call in self.calls:
             if call.is_user_in_a_call(User):
                 for video_stream in call.video_streams_list:
                     if video_stream.streamer == User:
-                        video_stream.adding_vc_data_to_user_call_thread_queue(User, share_screen_data)
+                        video_stream.adding_share_screen_data_to_user_call_thread_queue(User, share_screen_data, shape_bytes_of_frame)
 
     def add_user_to_group_call_by_id(self, User, id):
         for call in self.calls:
@@ -636,8 +636,8 @@ class VideoStream:
     def process_share_screen_data(self):
         while not self.stop_thread.is_set():
             if self.data_collection:
-                user, share_screen = self.data_collection.pop(0)
-                self.send_share_screen_data_to_everyone_but_user(share_screen, user)
+                user, share_screen, share_screen_frame_shape_bytes = self.data_collection.pop(0)
+                self.send_share_screen_data_to_everyone_but_user(share_screen, user, share_screen_frame_shape_bytes)
             else:
                 # Sleep or perform other tasks if the data collection is empty
                 time.sleep(0.1)
@@ -646,10 +646,10 @@ class VideoStream:
         self.stop_thread.set()
         self.thread.join()  # Wait for the thread to finish
 
-    def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user):
+    def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user, share_screen_frame_shape_bytes):
         for name, net in self.call_parent.call_nets.items():
             if name != user and net is not None and name in self.spectators:
-                net.send_share_screen_data(share_screen_data, user)
+                net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
                 # self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):
@@ -657,6 +657,6 @@ class VideoStream:
             self.stop_processing()
         self.logger.info(f"Video Stream of id {self.stream_id} ended")
 
-    def adding_vc_data_to_user_call_thread_queue(self, user, share_screen_data):
+    def adding_share_screen_data_to_user_call_thread_queue(self, user, share_screen_data, shape_bytes_of_frame):
         if len(self.spectators) > 0:
-            self.data_collection.append((user, share_screen_data))
+            self.data_collection.append((user, share_screen_data, shape_bytes_of_frame))
