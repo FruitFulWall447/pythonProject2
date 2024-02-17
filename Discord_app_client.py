@@ -332,7 +332,7 @@ def thread_send_share_screen_data():
             frame = np.array(screen)
             frame_bytes = frame.tobytes()
             # Send the frame to the server
-            n.send_share_screen_data(frame_bytes)
+            n.send_share_screen_data(frame_bytes, frame.shape)
 
             time.sleep(0.04)  # Adjust the sleep time based on your needs
         print("send share screen data thread closed")

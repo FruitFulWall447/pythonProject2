@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography.fernet import Fernet
 import secrets
-
+import struct
 
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
@@ -365,14 +365,14 @@ class client_net:
         except Exception as e:
             print(f"error is: {e}")
 
-    def send_share_screen_data(self, share_screen_data):
+    def send_share_screen_data(self, share_screen_data, shape_of_frame):
         try:
             full_message = share_screen_data
             compressed_message = zlib.compress(full_message)
-
+            shape_of_frame_bytes = b":" + struct.pack('III', *shape_of_frame)
             # Add a specific sequence of bytes at the beginning
             sequence = br'\share_screen_data'  # Use raw string to treat backslash as a literal character
-            full_message = sequence + compressed_message
+            full_message = sequence + compressed_message + shape_of_frame_bytes
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
