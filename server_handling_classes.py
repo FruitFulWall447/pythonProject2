@@ -81,7 +81,7 @@ class Call:
     def get_all_video_camera_streamers(self):
         list_names = []
         for video_stream in self.video_streams_list:
-            if video_stream.stream_type == "ScreenStream":
+            if video_stream.stream_type == "CameraStream":
                 list_names.append(video_stream.streamer)
         return list_names
 
@@ -94,6 +94,7 @@ class Call:
             "muted": self.muted,
             "deafened": self.deafened,
             "screen_streamers": self.get_all_video_screen_streamers(),
+            "camera_streamers": self.get_all_video_camera_streamers(),
             "group_id": self.group_id if self.is_group_call else None,
             # Add more attributes as needed
         }
