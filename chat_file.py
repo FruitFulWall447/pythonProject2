@@ -1429,6 +1429,8 @@ class ChatBox(QWidget):
                     self.share_camera_button.setIcon(self.share_camera_on_icon)
                     self.Network.start_camera_stream()
                     self.parent.start_camera_data_thread()
+                else:
+                    print("tried share camera but no camera is connected")
         except Exception as e:
             print(f"error in sharing or closing share camera error is: {e}")
 
