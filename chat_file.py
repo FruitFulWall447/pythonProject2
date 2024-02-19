@@ -2484,9 +2484,13 @@ def check_camera(i):
 
 def get_camera_names():
     camera_names = []
-    for window in pygetwindow.getAllTitles():
-        if 'camera' in window.lower():
-            camera_names.append(window)
+    for i in range(10):  # You can adjust the range according to your needs
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            camera_names.append(f"Camera {i}")
+            cap.release()
+        else:
+            break
     return camera_names
 
 
