@@ -195,6 +195,22 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def start_camera_stream(self):
+        try:
+            stream_type = "CameraStream"
+            message = f"call:stream:{stream_type}:start"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
+    def close_camera_stream(self):
+        try:
+            stream_type = "CameraStream"
+            message = f"call:stream:{stream_type}:close"
+            self.send_str(message)
+        except socket.error as e:
+            print(e)
+
     def watch_screen_stream_of_user(self, user):
         try:
             stream_type = "ScreenStream"

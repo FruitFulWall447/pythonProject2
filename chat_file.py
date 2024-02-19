@@ -13,6 +13,15 @@ import binascii
 import zlib
 import pygetwindow
 
+def check_active_cameras():
+    cap = cv2.VideoCapture(0)
+    if cap.isOpened():
+        cap.release()
+        return True
+    else:
+        return False
+
+
 def calculate_font_size(text):
     # You can adjust the coefficients for the linear relationship
     base_size = 28
@@ -1412,9 +1421,14 @@ class ChatBox(QWidget):
             if self.parent.is_camera_shared:
                 self.parent.is_camera_shared = False
                 self.share_camera_button.setIcon(self.share_camera_off_icon)
+                self.Network.close_camera_stream()
+                self.parent.update_share_camera_thread()
             else:
-                self.parent.is_camera_shared = True
-                self.share_camera_button.setIcon(self.share_camera_on_icon)
+                if check_active_cameras():
+                    self.parent.is_camera_shared = True
+                    self.share_camera_button.setIcon(self.share_camera_on_icon)
+                    self.Network.start_camera_stream()
+                    self.parent.start_camera_data_thread()
         except Exception as e:
             print(f"error in sharing or closing share camera error is: {e}")
 

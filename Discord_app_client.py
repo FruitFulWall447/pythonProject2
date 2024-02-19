@@ -361,7 +361,7 @@ def thread_send_share_camera_data():
             frame_bytes = frame_np.tobytes()
 
             # Send the frame to the server
-            n.send_share_camera_data(frame_bytes)
+            n.send_share_screen_data(frame_bytes, frame_np.shape)
 
             time.sleep(0.04)  # Adjust the sleep time based on your needs
 
@@ -579,6 +579,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.media_player.setMedia(self.ringtone)
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
         self.init_ui()
 
 
@@ -630,8 +631,15 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.send_share_screen_thread.start()
         print("Started Share screen thread")
 
+    def start_camera_data_thread(self):
+        self.send_camera_data_thread.start()
+        print("Started Share camera thread")
+
     def update_share_screen_thread(self):
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
+
+    def update_share_camera_thread(self):
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
 
     def update_stream_screen_frame(self, frame):
         try:
