@@ -14,11 +14,15 @@ import zlib
 import pygetwindow
 
 def check_active_cameras():
-    cap = cv2.VideoCapture(0)
-    if cap.isOpened():
-        cap.release()
-        return True
-    else:
+    try:
+        cap = cv2.VideoCapture(0)
+        if cap.isOpened():
+            cap.release()
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"could not find active camera, error: {e}")
         return False
 
 
@@ -752,7 +756,14 @@ class ChatBox(QWidget):
 
     def create_watch_stream_button(self, x, y, name, stream_type):
         width, height = (70, 30)
-        button = QPushButton("Watch", self)
+        if stream_type == "ScreenStream":
+            button = QPushButton("Watch", self)
+        else:
+            y -= 50
+            button = QPushButton("Watch", self)
+            image_icon = QIcon(QPixmap("discord_app_assets/camera_watch_icon.jpg"))
+            image_icon.setIconSize(QSize(width, height))
+            button.setIcon(image_icon)
         button_size = QSize(width, height)
         button.setFixedSize(button_size)
 
