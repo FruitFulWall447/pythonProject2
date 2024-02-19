@@ -1232,7 +1232,7 @@ class ChatBox(QWidget):
                 self.chats_buttons_list.append((chat, button))
                 friend_starter_y += self.friends_button_height
             except Exception as e:
-                print(e)
+                print(f"error in drew friends button {e}")
         self.raise_needed_elements()
 
     def raise_needed_elements(self):
