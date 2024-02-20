@@ -750,6 +750,9 @@ class ChatBox(QWidget):
                 if name in current_call_dict.get("screen_streamers") and name != self.parent.username:
                     stream_type = "ScreenStream"
                     self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
+                if name in current_call_dict.get("camera_streamers") and name != self.parent.username:
+                    stream_type = "CameraStream"
+                    self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
                 starts_x += 105
         except Exception as e:
             print(f"error is {e} in icon management")
@@ -762,7 +765,6 @@ class ChatBox(QWidget):
             y -= 50
             button = QPushButton("Watch", self)
             image_icon = QIcon(QPixmap("discord_app_assets/camera_watch_icon.jpg"))
-            image_icon.setIconSize(QSize(width, height))
             button.setIcon(image_icon)
         button_size = QSize(width, height)
         button.setFixedSize(button_size)

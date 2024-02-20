@@ -118,7 +118,7 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print("Updated the messages list")
                 except Exception as e:
-                    print(e)
+                    print(f"error in messages_list {e}")
             if data.startswith("groups_list:"):
                 try:
                     temp = data.split("groups_list:", 1)[1]
@@ -126,7 +126,7 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print("Updated the Groups list")
                 except Exception as e:
-                    print(e)
+                    print(f"error in groups_list {e}")
             if data.startswith("chats_list:"):
                 try:
                     temp = data.split("chats_list:", 1)[1]
@@ -135,7 +135,7 @@ def thread_recv_messages():
                     print("Updated the chats list")
                     print(f"chats list is: {main_page.chats_list}")
                 except Exception as e:
-                    print(e)
+                    print(f"error in chats_list {e}")
             if data.startswith('list_status:'):
                 print(f"got ({data}) from server")
             if data.startswith("friend_request:"):
@@ -157,7 +157,7 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
                     print("Updated the requests list")
                 except Exception as e:
-                    print(e)
+                    print(f"error in requests_list {e}")
             if data.startswith("online_users"):
                 try:
                     online_users_list = data.split("online_users:", 1)[1]
@@ -167,7 +167,7 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print(f"Got online users list: {online_users_list}")
                 except Exception as e:
-                    print(e)
+                    print(f"error in online_users error:{e}")
             if data.startswith("friends_list:"):
                 try:
                     friends_list = data.split("friends_list:", 1)[1]
@@ -195,7 +195,7 @@ def thread_recv_messages():
                             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                             QMetaObject.invokeMethod(main_page, "getting_call_signal", Qt.QueuedConnection)
                         except Exception as e:
-                            print(e)
+                            print(f"error in action calling error:{e}")
                 if main_page.is_getting_called or main_page.is_calling or main_page.is_joining_call:
                     if action == "rejected":
                         print(f"call was rejected")
@@ -645,7 +645,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         try:
             self.stream_screen.display_frame(frame)
         except Exception as e:
-            print(e)
+            print(f"update_stream_screen_frame: {e}")
 
     def stop_watching_video_stream(self):
         self.is_watching_screen = False
@@ -745,14 +745,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 self.stop_watching_video_stream()
             self.is_watching_screen = False
         except Exception as e:
-            print(e)
+            print(f"reset_call_var error: {e}")
 
     def end_current_call(self):
         try:
             self.Network.leave_call()
             print(f"client hang up call123...")
         except Exception as e:
-            print(e)
+            print(f"end_current_call error: {e}")
 
     def parse_group_caller_format(self, input_format):
         # Define a regular expression pattern to capture the information
@@ -912,7 +912,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.stacked_widget.insertWidget(1, self.settings_box)
             self.stacked_widget.setCurrentIndex(1)
         except Exception as e:
-            print(e)
+            print(f"error in updated_settings_page error:{e}")
 
     def keyPressEvent(self, event):
         global n, chat_clicked, social_clicked
@@ -1046,7 +1046,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     self.friends_box_index -= 1
                     self.updated_requests()
             except Exception as e:
-                print(e)
+                print(f"error in social_clicked scrolling error:{e}")
 
     def hide_chat(self):
         self.main_layout.addSpacerItem(self.spacer)
@@ -1063,13 +1063,16 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             try:
                 text = self.chat_box.text_entry.text()
             except Exception as e:
-                print(e)
+                print(f"error in updated chat {e}")
             has_had_focus_of_search_bar = self.chat_box.find_contact_text_entry.hasFocus()
             self.stacked_widget.removeWidget(self.chat_box)
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
-            self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
-                               parent=self, Network=n)  # Set the parent widget        self.stacked_widget.removeWidget(self.stacked_widget.currentWidget())
+            try:
+                self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
+                                   parent=self, Network=n)
+            except Exception as e:
+                print(f"error in creating chat_box on updated_chat_func : {e}")
             if self.chat_box.messages_list is None:
                 self.chat_start_index = 0
 
@@ -1086,7 +1089,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             if chat_clicked:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
-            print(e)
+            print(f"error in updated chat {e}")
 
 
     def update_values(self):
@@ -1833,10 +1836,8 @@ class Verification_code_page(QWidget):
                             change_password_page.showMaximized()
                         elif result == "invalid":
                             pass
-
-
         except Exception as e:
-            print(e)
+            print(f"error in submit_form verification code {e}")
 
     def Resend_code_clicked(self, link):
         if link == "resend":
