@@ -763,7 +763,7 @@ class ChatBox(QWidget):
             button = QPushButton("Watch", self)
         else:
             y -= 50
-            button = QPushButton("Watch", self)
+            button = QPushButton(self)
             image_icon = QIcon(QPixmap("discord_app_assets/camera_watch_icon.jpg"))
             button.setIcon(image_icon)
         button_size = QSize(width, height)

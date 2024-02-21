@@ -1504,8 +1504,12 @@ class VideoClient(QMainWindow):
     def display_frame(self, frame):
         height, width, channel = frame.shape
         bytes_per_line = 3 * width
-        q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(q_image)
+        screen_size = QApplication.primaryScreen().size()
+        screen_width = screen_size.width()
+        screen_height = screen_size.height()
+
+        q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+        pixmap = QPixmap.fromImage(q_image).scaled(screen_width, screen_height)
 
         # Clear the existing pixmap
         self.image_label.clear()
