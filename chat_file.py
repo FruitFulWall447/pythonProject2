@@ -26,6 +26,18 @@ def check_active_cameras():
         return False
 
 
+def set_button_icon(button, icon_path, width, height):
+    try:
+        icon = QIcon(icon_path)
+        button.setIcon(icon)
+        icon_size = QSize(width, height)
+
+        # Use the provided width and height to scale the icon
+        scaled_size = icon.pixmap(icon_size).size()
+        button.setIconSize(scaled_size)
+    except Exception as e:
+        print(f"Error in setting button icon: {e}")
+
 def calculate_font_size(text):
     # You can adjust the coefficients for the linear relationship
     base_size = 28
@@ -236,53 +248,56 @@ class ChatBox(QWidget):
             self.send_image_button.clicked.connect(self.open_image_file_dialog)
 
             if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
-                y_of_label = 95
-                rings_to_x = 920
-                if self.parent.selected_chat.startswith("("):
-                    text = f"Ringing Group..."
-                else:
-                    text = f"Ringing User..."
-                self.ringing_to_label = QLabel(text, self)
-                self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
-                self.ringing_to_label.move(rings_to_x, y_of_label)
-                text_1_width = self.ringing_to_label.width()
+                try:
+                    y_of_label = 95
+                    rings_to_x = 920
+                    if self.parent.selected_chat.startswith("("):
+                        text = f"Ringing Group..."
+                    else:
+                        text = f"Ringing User..."
+                    self.ringing_to_label = QLabel(text, self)
+                    self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
+                    self.ringing_to_label.move(rings_to_x, y_of_label)
+                    text_1_width = self.ringing_to_label.width()
 
-                text = f"{self.parent.calling_to}"
-                self.calling_to_label = QLabel(text, self)
-                self.calling_to_label.setStyleSheet("color: white; font-size: 25px; margin: 10px;")
-                text_2_width = self.calling_to_label.width()
-                self.calling_to_label.move(rings_to_x + (text_1_width - text_2_width), y_of_label + 20)
+                    text = f"{self.parent.calling_to}"
+                    self.calling_to_label = QLabel(text, self)
+                    self.calling_to_label.setStyleSheet("color: white; font-size: 25px; margin: 10px;")
+                    text_2_width = self.calling_to_label.width()
+                    self.calling_to_label.move(rings_to_x + (text_1_width - text_2_width), y_of_label + 20)
 
-                self.stop_calling_button = QPushButton(self)
+                    self.stop_calling_button = QPushButton(self)
 
-                # Set button styles
-                button_size = QSize(50, 50)  # Adjust this to your desired button size
-                self.stop_calling_button.setFixedSize(button_size)
-                icon_size = QSize(35, 35)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                icon = QIcon("discord_app_assets/reject_button.png")
-                self.stop_calling_button.setIcon(icon)
-                icon_size = QSize(65, 65)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                self.stop_calling_button.setIconSize(scaled_size)
-                self.stop_calling_button.setObjectName("stop_calling_button")
-                original_style_sheet = self.buttons_style_sheet
+                    # Set button styles
+                    button_size = QSize(50, 50)  # Adjust this to your desired button size
+                    self.stop_calling_button.setFixedSize(button_size)
+                    icon_size = QSize(35, 35)  # Set your desired icon size
+                    icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                    icon = QIcon("discord_app_assets/reject_button.png")
+                    self.stop_calling_button.setIcon(icon)
+                    icon_size = QSize(65, 65)  # Set your desired icon size
+                    icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                    scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+                    self.stop_calling_button.setIconSize(scaled_size)
+                    self.stop_calling_button.setObjectName("stop_calling_button")
+                    original_style_sheet = self.buttons_style_sheet
 
-                # Define a more specific style for self.stop_calling_button
-                specific_style = """
-                    QPushButton#stop_calling_button {
-                        border: none;
-                    }
-                """
+                    # Define a more specific style for self.stop_calling_button
+                    specific_style = """
+                        QPushButton#stop_calling_button {
+                            border: none;
+                        }
+                    """
 
-                # Append the specific style for self.stop_calling_button to the original style sheet
-                modified_style_sheet = original_style_sheet + specific_style
+                    # Append the specific style for self.stop_calling_button to the original style sheet
+                    modified_style_sheet = original_style_sheet + specific_style
 
-                # Apply the modified style sheet to the button
-                self.stop_calling_button.setStyleSheet(modified_style_sheet)
-                self.stop_calling_button.move(rings_to_x + (text_1_width // 2) - 15, y_of_label + 110)
-                self.stop_calling_button.clicked.connect(self.stop_calling)
+                    # Apply the modified style sheet to the button
+                    self.stop_calling_button.setStyleSheet(modified_style_sheet)
+                    self.stop_calling_button.move(rings_to_x + (text_1_width // 2) - 15, y_of_label + 110)
+                    self.stop_calling_button.clicked.connect(self.stop_calling)
+                except Exception as e:
+                    print(f"error in showing calling {e}")
 
             if self.parent.is_getting_called:
                 pop_up_x = 850
@@ -349,74 +364,89 @@ class ChatBox(QWidget):
                 self.accept_button.clicked.connect(self.accept_call)
                 self.reject_button.clicked.connect(self.reject_call)
             if self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with:
-                share_camera_height = 45
-                share_camera_button_width = 45
-                share_camera_x = 840
-                share_camera_y = 215
-                self.share_camera_off_icon = QIcon("discord_app_assets/no_camera_icon.png")
-                self.share_camera_on_icon = QIcon("discord_app_assets/camera_icon.png")
-                self.share_camera_button = self.create_custom_in_call_button(share_camera_height, share_camera_button_width, share_camera_x,
-                                                                    share_camera_y, self.share_camera_and_unshare)
-                share_screen_height = 45
-                share_screen_button_width = 45
-                share_screen_x = 905
-                share_screen_y = 215
-                self.share_screen_button = self.create_custom_in_call_button(share_screen_height, share_screen_button_width, share_screen_x,
-                                                                    share_screen_y, self.share_screen_and_unshare)
-                if self.parent.is_camera_shared:
-                    self.set_button_icon(self.share_camera_button, self.share_camera_on_icon, share_camera_height, share_camera_button_width)
-                else:
-                    self.set_button_icon(self.share_camera_button, self.share_camera_off_icon, share_camera_height,
-                                         share_camera_button_width)
+                try:
+                    share_camera_height = 45
+                    share_camera_button_width = 45
+                    share_camera_x = 840
+                    share_camera_y = 215
+                    self.share_camera_off_icon = QIcon("discord_app_assets/no_camera_icon.png")
+                    self.share_camera_on_icon = QIcon("discord_app_assets/camera_icon.png")
+                    self.share_camera_button = self.create_custom_in_call_button(share_camera_height, share_camera_button_width, share_camera_x,
+                                                                        share_camera_y, self.share_camera_and_unshare)
+                    share_screen_height = 45
+                    share_screen_button_width = 45
+                    share_screen_x = 905
+                    share_screen_y = 215
+                    self.share_screen_button = self.create_custom_in_call_button(share_screen_height,
+                                                                                 share_screen_button_width,
+                                                                                 share_screen_x,
+                                                                                 share_screen_y,
+                                                                                 self.share_screen_and_unshare)
+                    try:
+                        try:
+                            if self.parent.is_camera_shared:
+                                set_button_icon(self.share_camera_button, self.share_camera_on_icon, share_camera_height, share_camera_button_width)
+                            else:
+                                set_button_icon(self.share_camera_button, self.share_camera_off_icon, share_camera_height,
+                                                     share_camera_button_width)
+                        except Exception as e:
+                            print(f"error in setting camera icon {e}")
 
-                self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
-                self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
-                if self.parent.is_screen_shared:
-                    self.set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
-                else:
-                    self.set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
-                                         share_screen_button_width)
+                        self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
+                        self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
+                        try:
+                            if self.parent.is_screen_shared:
+                                set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
+                            else:
+                                set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
+                                                     share_screen_button_width)
+                        except Exception as e:
+                            print(f"error in setting icon for share screen button{e}")
+                    except Exception as e:
+                        print(f"error in creating shares buttons {e}")
 
-                deafen_button_height = 45
-                deafen_button_width = 45
-                self.deafened_icon = QIcon("discord_app_assets/deafened.png")
-                self.not_deafened_icon = QIcon("discord_app_assets/not_deafened.png")
-                deafen_x = share_screen_x + 65
-                deafen_y = share_screen_y
-                self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
-                if self.parent.deafen:
-                    self.set_button_icon(self.deafen_button, self.deafened_icon, deafen_button_width, deafen_button_height)
-                else:
-                    self.set_button_icon(self.deafen_button, self.not_deafened_icon, deafen_button_width,
-                                         deafen_button_height)
+                    deafen_button_height = 45
+                    deafen_button_width = 45
+                    self.deafened_icon = QIcon("discord_app_assets/deafened.png")
+                    self.not_deafened_icon = QIcon("discord_app_assets/not_deafened.png")
+                    deafen_x = share_screen_x + 65
+                    deafen_y = share_screen_y
+                    self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
+                    if self.parent.deafen:
+                        set_button_icon(self.deafen_button, self.deafened_icon, deafen_button_width, deafen_button_height)
+                    else:
+                        set_button_icon(self.deafen_button, self.not_deafened_icon, deafen_button_width,
+                                             deafen_button_height)
 
 
-                mic_button_height = 45
-                mic_button_width = 45
-                self.unmuted_mic_icon = QIcon("discord_app_assets/mic_not_muted_icon.png")
-                self.muted_mic_icon = QIcon("discord_app_assets/mic_muted_icon.png")
-                mic_x = deafen_x + 65
-                mic_button_y = share_screen_y
-                self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
-                if self.parent.mute:
-                    self.set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
-                else:
-                    self.set_button_icon(self.mic_button, self.unmuted_mic_icon, mic_button_width, mic_button_height)
+                    mic_button_height = 45
+                    mic_button_width = 45
+                    self.unmuted_mic_icon = QIcon("discord_app_assets/mic_not_muted_icon.png")
+                    self.muted_mic_icon = QIcon("discord_app_assets/mic_muted_icon.png")
+                    mic_x = deafen_x + 65
+                    mic_button_y = share_screen_y
+                    self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
+                    if self.parent.mute:
+                        set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
+                    else:
+                        set_button_icon(self.mic_button, self.unmuted_mic_icon, mic_button_width, mic_button_height)
 
-                self.end_call_button = QPushButton(self)
+                    self.end_call_button = QPushButton(self)
 
-                # Set button styles
-                call_button_height = 70
-                call_button_width = 70
-                button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
-                self.end_call_button.setFixedSize(button_size)
-                self.set_button_icon(self.end_call_button, "discord_app_assets/reject_button.png", call_button_width, call_button_height)
-                self.end_call_button.setStyleSheet(self.call_button_style_sheet)
-                end_call_button_x = mic_x + 55
-                self.end_call_button.move(end_call_button_x,
-                                          share_screen_y-15)
-                self.end_call_button.clicked.connect(self.end_current_call)
-                self.put_call_icons_on_the_screen()
+                    # Set button styles
+                    call_button_height = 70
+                    call_button_width = 70
+                    button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
+                    self.end_call_button.setFixedSize(button_size)
+                    set_button_icon(self.end_call_button, "discord_app_assets/reject_button.png", call_button_width, call_button_height)
+                    self.end_call_button.setStyleSheet(self.call_button_style_sheet)
+                    end_call_button_x = mic_x + 55
+                    self.end_call_button.move(end_call_button_x,
+                                              share_screen_y-15)
+                    self.end_call_button.clicked.connect(self.end_current_call)
+                    self.put_call_icons_on_the_screen()
+                except Exception as e:
+                    print(f"error in incall func {e}")
 
 
             # Load an image and set it as the button's icon
@@ -451,7 +481,7 @@ class ChatBox(QWidget):
                         join_button_width_or_height = 50
                         self.join_call_button = self.create_custom_in_call_button(join_button_width_or_height, join_button_width_or_height,
                                                                                   join_button_x, join_button_y,  self.join_call)
-                        self.set_button_icon(self.join_call_button, icon, icon_size, icon_size)
+                        set_button_icon(self.join_call_button, icon, icon_size, icon_size)
                         self.put_call_icons_on_the_screen()
 
             self.text_entry = QLineEdit(self)
@@ -734,16 +764,17 @@ class ChatBox(QWidget):
         return button
 
     def put_call_icons_on_the_screen(self):
-        if self.current_group_id:
-            current_call_dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
-            print(f"dict is {current_call_dict}")
-        else:
-            current_call_dict = self.parent.get_call_dict_by_user(self.parent.username)
-            print(f"dict is {current_call_dict}")
-        numbers_of_users_in_call = len(current_call_dict.get("participants"))
-        starts_x = 900+((numbers_of_users_in_call-2) * -70)
-        y_of_profiles = 95
         try:
+            if self.current_group_id:
+                current_call_dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
+                print(f"dict is {current_call_dict}")
+            else:
+                current_call_dict = self.parent.get_call_dict_by_user(self.parent.username)
+                print(f"dict is {current_call_dict}")
+            numbers_of_users_in_call = len(current_call_dict.get("participants"))
+            starts_x = 900+((numbers_of_users_in_call-2) * -70)
+            y_of_profiles = 95
+
             names = current_call_dict.get("participants")
             for name in names:
                 self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
@@ -824,11 +855,11 @@ class ChatBox(QWidget):
         deafened = dict.get("deafened")
         muted = dict.get("muted")
         if name in dict.get("deafened"):
-            self.set_button_icon(button, deafened_icon, width, height)
+            set_button_icon(button, deafened_icon, width, height)
         elif name in dict.get("muted"):
-            self.set_button_icon(button, muted_icon, width, height)
+            set_button_icon(button, muted_icon, width, height)
         else:
-            self.set_button_icon(button, regular_icon, width, height)
+            set_button_icon(button, regular_icon, width, height)
         self.call_profiles_list.append(button)
         return button
 
@@ -850,16 +881,8 @@ class ChatBox(QWidget):
                 background-color: #2980b9;
             }
         """)
-        self.set_button_icon(button, icon_path, width, height)
+        set_button_icon(button, icon_path, width, height)
         return button
-
-    def set_button_icon(self, button, icon_path, width, height):
-        icon = QIcon(icon_path)
-        button.setIcon(icon)
-        icon_size = QSize(width, height)
-        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-        button.setIconSize(scaled_size)
 
 
     def stop_calling(self):

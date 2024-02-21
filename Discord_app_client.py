@@ -262,7 +262,6 @@ def thread_recv_messages():
                     streamer, compressed_share_screen_data, frame_shape_bytes = return_share_screen_bytes_parameters(data)
                     frame_shape = struct.unpack('III', frame_shape_bytes)
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    expected_shape = (1080, 1920, 3)
                     decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
                     main_page.update_stream_screen_frame(decompressed_frame)
             except Exception as e:
@@ -740,9 +739,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.stop_sound()
             self.updated_chat()
             self.is_screen_shared = False
+            self.is_camera_shared = False
             self.watching_user = ""
             if self.is_watching_screen:
                 self.stop_watching_video_stream()
+
             self.is_watching_screen = False
         except Exception as e:
             print(f"reset_call_var error: {e}")
