@@ -195,9 +195,15 @@ def set_icon_from_bytes_to_label(label, image_bytes):
     # Load the image from bytes
     pixmap = QPixmap()
     pixmap.loadFromData(image_bytes)
-
     # Set the icon to the label with the exact width and height of the label
-    label.setPixmap(pixmap.scaledToWidth(label.width()).scaledToHeight(label.height()))
+    image_aspect_ratio = pixmap.width() / pixmap.height()
+    if image_aspect_ratio <= 0.5:
+        x = pixmap.scaledToWidth(label.width())
+    elif image_aspect_ratio >= 1.5:
+        x = pixmap.scaledToHeight(label.height())
+    else:
+        x = pixmap.scaledToWidth(label.width()).scaledToHeight(label.height())
+    label.setPixmap(x)
     label.setAlignment(Qt.AlignCenter)
 
 
