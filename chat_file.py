@@ -13,7 +13,137 @@ import base64
 import binascii
 import zlib
 import pygetwindow
+import numpy as np
+from PIL import Image, ImageDraw
+import webbrowser
 
+
+def open_image_bytes(image_bytes):
+    """Opens an image from bytes using the default image viewer application.
+
+    Args:
+        image_bytes (bytes): The image data as bytes.
+
+    Returns:
+        bool: True if the image was opened successfully, False otherwise.
+    """
+    try:
+        # Create a temporary file to save the image bytes
+        with open("temp_image.png", "wb") as f:
+            f.write(image_bytes)
+
+        # Open the temporary file using the default image viewer application
+        webbrowser.open("temp_image.png")
+
+        return True
+
+    except Exception as e:
+        print(f"Error opening image: {e}")
+        return False
+
+def make_circular_image1(image_path_or_bytes):
+    """Converts an image to a circular image.
+
+    Args:
+        image_path_or_bytes (str or bytes): Path to the image file or image data as bytes.
+
+    Returns:
+        bytes: The circular image as bytes.
+    """
+    try:
+        # Load the image using Pillow
+        if isinstance(image_path_or_bytes, str):
+            with open(image_path_or_bytes, 'rb') as f:
+                image_data = f.read()
+            # Determine file format from file extension
+            file_extension = image_path_or_bytes.split('.')[-1].upper()
+            format = 'JPEG' if file_extension in ['JPG', 'JPEG'] else file_extension
+        else:
+            image_data = image_path_or_bytes
+            format = None
+
+        # Open the image using BytesIO
+        with BytesIO(image_data) as image_buffer:
+            image = Image.open(image_buffer)
+
+            # Convert the image to RGBA mode (if not already)
+            if image.mode != 'RGBA':
+                image = image.convert('RGBA')
+
+            # Determine the maximum circular area based on image dimensions
+            width, height = image.size
+            max_radius = min(width // 2, height // 2)
+
+            # Create a mask with a transparent circle
+            mask = Image.new('L', (width, height), 0)  # Create a black mask
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse(((width - max_radius * 2) // 2, (height - max_radius * 2) // 2,
+                        (width + max_radius * 2) // 2, (height + max_radius * 2) // 2), fill=255)
+
+            # Apply the mask to the image
+            circular_image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+            circular_image.paste(image, mask=mask)
+
+            # Convert the circular image to bytes
+            output_buffer = BytesIO()
+            circular_image.save(output_buffer, format=format)
+            circular_image_bytes = output_buffer.getvalue()
+
+        return circular_image_bytes
+
+    except Exception as e:
+        print(f"Error converting image: {e}")
+        return None
+
+def make_circular_image(image_path_or_bytes):
+    """Converts an image to a circular image.
+
+    Args:
+        image_path_or_bytes (str or bytes): Path to the image file or image data as bytes.
+
+    Returns:
+        bytes: The circular image as bytes.
+    """
+    try:
+        # Load the image using Pillow
+        if isinstance(image_path_or_bytes, str):
+            with open(image_path_or_bytes, 'rb') as f:
+                image_data = f.read()
+        else:
+            image_data = image_path_or_bytes
+
+        # Determine the file format from the provided bytes
+        with BytesIO(image_data) as image_buffer:
+            image = Image.open(image_buffer)
+
+            # Convert the image to RGBA mode (if not already)
+            if image.mode != 'RGBA':
+                image = image.convert('RGBA')
+
+            # Determine the maximum circular area based on image dimensions
+            width, height = image.size
+            max_radius = min(width // 2, height // 2)
+
+            # Create a mask with a transparent circle
+            mask = Image.new('L', (width, height), 0)  # Create a black mask
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse(((width - max_radius * 2) // 2, (height - max_radius * 2) // 2,
+                        (width + max_radius * 2) // 2, (height + max_radius * 2) // 2), fill=255)
+
+            # Apply the mask to the image
+            circular_image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
+            circular_image.paste(image, mask=mask)
+
+            # Convert the circular image to bytes
+            output_buffer = BytesIO()
+            circular_image.save(output_buffer, format='PNG')  # Save as PNG format
+            circular_image_bytes = output_buffer.getvalue()
+
+        return circular_image_bytes
+
+    except Exception as e:
+        print(f"Error converting image: {e}")
+        return None
 
 def create_custom_circular_label(width, height, parent):
     label = QLabel(parent)
@@ -61,13 +191,14 @@ def check_active_cameras():
         return False
 
 
-def set_icon_from_bytes_to_label(label, image_bytes, width=None, height=None):
+def set_icon_from_bytes_to_label(label, image_bytes):
     # Load the image from bytes
     pixmap = QPixmap()
     pixmap.loadFromData(image_bytes)
 
-    # Set the icon to the label with the specified width and height
-    set_icon_to_label(label, pixmap, width, height)
+    # Set the icon to the label with the exact width and height of the label
+    label.setPixmap(pixmap.scaledToWidth(label.width()).scaledToHeight(label.height()))
+    label.setAlignment(Qt.AlignCenter)
 
 
 def set_icon_to_label(label, icon_path, width=None, height=None):
@@ -2744,7 +2875,10 @@ class SettingsBox(QWidget):
                 profile_image_x, profile_image_y = (800, 200)
                 if self.parent.profile_pic is None:
                     icon_path = "discord_app_assets/regular_profile.png"
-                    set_icon_to_label(self.profile_image_label , icon_path, width, height)
+                    set_icon_to_label(self.profile_image_label, icon_path, width, height)
+                else:
+                    circular_pic_bytes = make_circular_image(self.parent.profile_pic)
+                    set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
 
                 label_name_next_to_image_x, label_name_next_to_image_y = (950, 240)
@@ -2881,7 +3015,10 @@ class SettingsBox(QWidget):
                 profile_image_x, profile_image_y = (800, 200)
                 if self.parent.profile_pic is None:
                     icon_path = "discord_app_assets/regular_profile.png"
-                    set_icon_to_label(self.profile_image_label , icon_path, width, height)
+                    set_icon_to_label(self.profile_image_label, icon_path, width, height)
+                else:
+                    circular_pic_bytes = make_circular_image(self.parent.profile_pic)
+                    set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
                 change_profile_pic_button = self.create_colored_button(dark_green, other_green, None,
                                                                       800,
@@ -2903,11 +3040,15 @@ class SettingsBox(QWidget):
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             if selected_files:
+                file_path = selected_files[0]
                 image_bytes = image_to_bytes(selected_files[0])
                 if is_valid_image(image_bytes):
                     self.parent.profile_pic = image_bytes
                     self.parent.activateWindow()
-                    set_icon_to_circular_label(self.profile_image_label, image_bytes, width, height)
+                    circular_pic = make_circular_image(file_path)
+                    if circular_pic is not None:
+                        open_image_bytes(circular_pic)
+                        set_icon_from_bytes_to_label(self.profile_image_label, circular_pic)
 
 
     def font_size_changed(self, font_size):
