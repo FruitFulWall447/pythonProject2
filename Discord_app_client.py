@@ -105,6 +105,11 @@ def thread_recv_messages():
     while Flag_recv_messages:
         data = n.recv_str()
         if is_string(data):
+            if data.startswith("error"):
+                parts = data.split(":")
+                if parts[1] == "disconnect":
+                    print(f"lost connection with the server")
+                    QMetaObject.invokeMethod(main_page, "disconnect_signal", Qt.QueuedConnection)
             if data == "new_message":
                 QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
                 print("got new message")
@@ -484,6 +489,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     initiating_call_signal = pyqtSignal()
     reset_call_var_signal = pyqtSignal()
     new_message_play_audio_signal = pyqtSignal()
+    disconnect_signal = pyqtSignal()
     stop_watching_stream_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
@@ -571,6 +577,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.reset_call_var_signal.connect(self.reset_call_var)
         self.new_message_play_audio_signal.connect(self.new_message_play_audio)
         self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
+        self.disconnect_signal.connect(self.quit_application)
         self.media_player = QMediaPlayer()
         self.media_player.stateChanged.connect(self.handle_state_changed)
         self.media_player.setVolume(70)

@@ -960,16 +960,19 @@ class server_net:
             self.logger.error(f"Error: {e}")
             self.logger.info("Clearing socket buffer...")
             # Clear the socket buffer by receiving and discarding remaining data
-            try:
-                while True:
-                    discarded_data = self.server.recv(4096)
-                    if not discarded_data:
-                        break  # No more data to receive
-                return 1
-            except socket.error as e:
-                self.logger.error(f"Error while clearing socket buffer: {e}")
-
-                return None  # Return None to indicate failure due to unexpected data
+            data = "error:disconnect"
+            self.send_str(data)
+            return None
+            # try:
+            #     while True:
+            #         discarded_data = self.server.recv(4096)
+            #         if not discarded_data:
+            #             break  # No more data to receive
+            #     return 1
+            # except socket.error as e:
+            #     self.logger.error(f"Error while clearing socket buffer: {e}")
+            #
+            #     return None  # Return None to indicate failure due to unexpected data
 
 
     def recv_bytes(self):

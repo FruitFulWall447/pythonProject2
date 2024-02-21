@@ -792,15 +792,15 @@ class ChatBox(QWidget):
         width, height = (70, 30)
         if stream_type == "ScreenStream":
             button = QPushButton("Watch", self)
+            button_size = QSize(width, height)
+            button.setFixedSize(button_size)
         else:
             y -= 50
             button = QPushButton(self)
-            image_icon = QIcon(QPixmap("discord_app_assets/camera_watch_icon.jpg"))
-            button.setIcon(image_icon)
-        button_size = QSize(width, height)
-        button.setFixedSize(button_size)
-
-        button.move(x, y)
+            button_size = QSize(width, height)
+            button.setFixedSize(button_size)
+            image_icon = "discord_app_assets/camera_watch_icon"
+            set_button_icon(button, image_icon, width, height)  # Corrected function call
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.parent.standard_hover_color}; 
@@ -811,6 +811,8 @@ class ChatBox(QWidget):
                 background-color: #2980b9;
             }}
         """)
+        button.move(x, y)
+
         button.clicked.connect(lambda: self.watch_stream_button_pressed(name, stream_type))
         self.call_profiles_list.append(button)
 
