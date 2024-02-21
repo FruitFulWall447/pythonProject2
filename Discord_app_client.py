@@ -501,6 +501,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_rename_group_pressed = False
         self.is_add_users_to_group_pressed = False
 
+        self.phone_number = None
+        self.email = None
+        self.messages_font_size = 12
+
         self.size_error_label = False
         self.is_chat_box_full = False
         self.is_friends_box_full = False

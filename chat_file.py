@@ -5,6 +5,7 @@ from functools import partial
 from discord_comms_protocol import client_net
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt, QSize, QUrl
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PIL import Image
 from io import BytesIO
@@ -12,6 +13,40 @@ import base64
 import binascii
 import zlib
 import pygetwindow
+
+
+def create_custom_circular_label(width, height, parent):
+    label = QLabel(parent)
+
+    label_size = QSize(width, height)
+    label.setFixedSize(label_size)
+
+    label.setStyleSheet("""
+        QLabel {
+            border-radius: """ + str(height // 2) + """px; /* Set to half of the label height */
+        }
+    """)
+
+    return label
+
+
+def is_valid_image(image_bytes):
+    try:
+        # Use Pillow to try opening the image from bytes
+        image = Image.open(BytesIO(image_bytes))
+        # If successful, it's a valid image
+        return True
+    except Exception as e:
+        # If there is an exception, it's not a valid image
+        print(f"Error: {e}")
+        return False
+
+
+def image_to_bytes(file_path):
+    with open(file_path, "rb") as file:
+        image_bytes = file.read()
+        return image_bytes
+
 
 def check_active_cameras():
     try:
@@ -26,6 +61,72 @@ def check_active_cameras():
         return False
 
 
+def set_icon_from_bytes_to_label(label, image_bytes, width=None, height=None):
+    # Load the image from bytes
+    pixmap = QPixmap()
+    pixmap.loadFromData(image_bytes)
+
+    # Set the icon to the label with the specified width and height
+    set_icon_to_label(label, pixmap, width, height)
+
+
+def set_icon_to_label(label, icon_path, width=None, height=None):
+    # Create QIcon object from the provided icon path
+    icon = QIcon(icon_path)
+
+    # Get the size of the icon
+    icon_size = icon.availableSizes()[0]  # Get the size of the icon
+    icon_width = width if width is not None else icon_size.width()
+    icon_height = height if height is not None else icon_size.height()
+
+    # Set the icon to the label
+    label.setPixmap(icon.pixmap(icon_width, icon_height))
+
+
+def set_icon_to_circular_label(label, icon_path, width=None, height=None):
+    # Create QIcon object from the provided icon path
+    icon = QIcon(icon_path)
+
+    # Get the size of the icon
+    icon_size = icon.availableSizes()[0]
+    icon_width = width if width is not None else icon_size.width()
+    icon_height = height if height is not None else icon_size.height()
+
+    # Load the icon pixmap
+    pixmap = icon.pixmap(icon_width, icon_height)
+
+    # Create a transparent QImage with the same size as the icon
+    image = QImage(pixmap.size(), QImage.Format_ARGB32)
+    image.fill(Qt.transparent)
+
+    # Create a QPainter to draw on the image
+    painter = QPainter(image)
+    painter.setRenderHint(QPainter.Antialiasing)
+
+    # Create a circular path
+    path = QPainterPath()
+    path.addEllipse(image.rect())
+
+    # Set the painter to use the circular path as a clipping path
+    painter.setClipPath(path)
+
+    # Draw the icon onto the circular area
+    painter.drawPixmap(0, 0, pixmap)
+
+    # End painting
+    painter.end()
+
+    # Set the circular icon to the label
+    label.setPixmap(QPixmap.fromImage(image))
+
+
+def set_icon_to_circular_label_from_bytes(label, image_bytes, width=None, height=None):
+    # Create QIcon object from the provided icon path
+    pixmap = QPixmap()
+    pixmap.loadFromData(image_bytes)
+    set_icon_to_circular_label(label, pixmap, width, height)
+
+
 def set_button_icon(button, icon_path, width, height):
     try:
         icon = QIcon(icon_path)
@@ -37,6 +138,7 @@ def set_button_icon(button, icon_path, width, height):
         button.setIconSize(scaled_size)
     except Exception as e:
         print(f"Error in setting button icon: {e}")
+
 
 def calculate_font_size(text):
     # You can adjust the coefficients for the linear relationship
@@ -791,15 +893,17 @@ class ChatBox(QWidget):
     def create_watch_stream_button(self, x, y, name, stream_type):
         width, height = (70, 30)
         if stream_type == "ScreenStream":
-            button = QPushButton("Watch", self)
+            button = QPushButton(self)
             button_size = QSize(width, height)
             button.setFixedSize(button_size)
+            image_icon = f"discord_app_assets/monitor_icon.png"
+            set_button_icon(button, image_icon, width, height)  # Corrected function call
         else:
             y -= 50
             button = QPushButton(self)
             button_size = QSize(width, height)
             button.setFixedSize(button_size)
-            image_icon = "discord_app_assets/camera_watch_icon"
+            image_icon = "discord_app_assets/camera_watch_icon.png"
             set_button_icon(button, image_icon, width, height)  # Corrected function call
         button.setStyleSheet(f"""
             QPushButton {{
@@ -2528,7 +2632,9 @@ class SettingsBox(QWidget):
         self.parent = parent
         self.Network = self.parent.Network
         self.settings_button_height = 50
-
+        self.file_dialog = QFileDialog(self)
+        self.file_dialog.setFileMode(QFileDialog.ExistingFile)
+        self.file_dialog.setNameFilter("Image files (*.png)")
 
         delta_of_main_buttons = 50
 
@@ -2626,20 +2732,20 @@ class SettingsBox(QWidget):
 
         label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)
         try:
+            dark_green = "#1e9644"
+            other_green = "#044f1c"
             if self.parent.selected_settings == "My Account":
                 start_y = 100
                 start_x = 500
                 dark_green = "#1e9644"
                 other_green = "#044f1c"
-
-                self.profile_image_label = QLabel(self)
-
+                width, height = (120, 120)
+                self.profile_image_label = create_custom_circular_label(width, height, self)
+                profile_image_x, profile_image_y = (800, 200)
                 if self.parent.profile_pic is None:
-                    icon_path = "discord_app_assets/regular_profile"
-                button_icon = QIcon(icon_path)
-                pixmap = button_icon.pixmap(120, 120)  # Adjust the size as needed
-                self.profile_image_label.setPixmap(pixmap)
-                self.profile_image_label.move(800, 200)
+                    icon_path = "discord_app_assets/regular_profile.png"
+                    set_icon_to_label(self.profile_image_label , icon_path, width, height)
+                self.profile_image_label.move(profile_image_x, profile_image_y)
 
                 label_name_next_to_image_x, label_name_next_to_image_y = (950, 240)
                 label_name_next_to_image = self.create_white_label(label_name_next_to_image_x, label_name_next_to_image_y, 20, None, None, self.parent.username)
@@ -2648,6 +2754,35 @@ class SettingsBox(QWidget):
                 button_width, button_height = (180, 50)
                 button_edit_user_profile = self.create_colored_button(dark_green, other_green, None, button_edit_user_profile_x, button_edit_user_profile_y, button_width , button_height, "Edit User Profile")
                 button_edit_user_profile.clicked.connect(self.user_profile_pressed)
+
+                first_account_label_y = label_name_next_to_image_y+120
+                account_label_x = label_name_next_to_image_x-135
+                self.create_my_account_labels(account_label_x, first_account_label_y, self.default_labels_font_size+2, "USERNAME", self.parent.username)
+                y = first_account_label_y + 80
+                text = self.parent.email
+                if text is None:
+                    text = "None"
+                self.create_my_account_labels(account_label_x, y, self.default_labels_font_size+2,
+                                              "EMAIL", text)
+                y = y + 80
+                text = self.parent.phone_number
+                if text is None:
+                    text = "None"
+                self.create_my_account_labels(account_label_x, y, self.default_labels_font_size+2,
+                                              "PHONE NUMBER", text)
+                change_password_button_x, change_password_button_y = account_label_x-30, y+120
+                change_password_button = self.create_colored_button(dark_green, other_green, None,
+                                                                      change_password_button_x,
+                                                                      change_password_button_y, button_width,
+                                                                      button_height, "Change Password")
+                red_hex = "#9e0817"
+                dark_red_hex = "#690d16"
+                delete_account_button_x, delete_account_button_y = change_password_button_x, change_password_button_y+100
+                delete_account_button = self.create_colored_button(red_hex, dark_red_hex, None,
+                                                                      delete_account_button_x,
+                                                                      delete_account_button_y, button_width,
+                                                                      button_height, "Delete Account")
+
 
             elif self.parent.selected_settings == "Voice & Video":
 
@@ -2723,10 +2858,36 @@ class SettingsBox(QWidget):
                 font_size_slider_width, font_size_slider_height = (300, 50)
                 font_size_slider_min_value, font_size_slider_max_value = (6, 20)
 
+                font_slider_label = self.create_white_label(font_size_slider_x, font_size_slider_y-15,
+                                                              self.default_labels_font_size, None, None, "FONT SIZE")
                 self.font_size_slider = self.create_slider(font_size_slider_min_value, font_size_slider_max_value, self.parent.font_size,
                                                            self.font_size_changed, font_size_slider_x, font_size_slider_y
                 , font_size_slider_width, font_size_slider_height, font_size_slider_style_sheet)
+                font_size_label = self.create_white_label(font_size_slider_x + font_size_slider_width + 10, font_size_slider_y + 7,
+                                                            self.default_labels_font_size, 100, 30,
+                                                            str(self.parent.messages_font_size))
+            elif self.parent.selected_settings == "User Profile":
+                width, height = (120, 120)
+                self.profile_image_label = create_custom_circular_label(width, height, self)
+                self.profile_image_label.setStyleSheet("""
+                    QLabel {
+                    border-radius: """ + str(height // 2) + """px; /* Set to half of the label height */
+                    }
+                    QLabel:hover {
+                        background-color: #2980b9; /* Change background color on hover */
+                    }
+                """)
 
+                profile_image_x, profile_image_y = (800, 200)
+                if self.parent.profile_pic is None:
+                    icon_path = "discord_app_assets/regular_profile.png"
+                    set_icon_to_label(self.profile_image_label , icon_path, width, height)
+                self.profile_image_label.move(profile_image_x, profile_image_y)
+                change_profile_pic_button = self.create_colored_button(dark_green, other_green, None,
+                                                                      800,
+                                                                      400, 100,
+                                                                      30, "Change Avatar")
+                change_profile_pic_button.clicked.connect(self.edit_profile_pic_pressed)
 
 
 
@@ -2734,16 +2895,32 @@ class SettingsBox(QWidget):
         except Exception as e:
             print(e)
 
-    def font_size_changed(self, font):
+    def edit_profile_pic_pressed(self):
+        self.open_file_dialog()
+
+    def open_file_dialog(self):
+        width, height = (120, 120)
+        if self.file_dialog.exec_():
+            selected_files = self.file_dialog.selectedFiles()
+            if selected_files:
+                image_bytes = image_to_bytes(selected_files[0])
+                if is_valid_image(image_bytes):
+                    self.parent.profile_pic = image_bytes
+                    self.parent.activateWindow()
+                    set_icon_to_circular_label(self.profile_image_label, image_bytes, width, height)
+
+
+    def font_size_changed(self, font_size):
         try:
-            self.parent.font_size = int(font)
+            self.parent.font_size = int(font_size)
+            self.font_size_label.setText(str(font_size))
             self.parent.updated_chat()
         except Exception as e:
             print(e)
 
     def create_my_account_labels(self, x, y, font_size, text1, text2):
-        label1 = self.create_white_label(x, y, font_size, None, None, text1)
-        label2 = self.create_white_label(x, y, font_size, None, None, text2)
+        label1 = self.create_custom_label(x, y, font_size, None, None, text1, "grey", False)
+        label2 = self.create_custom_label(x, y+font_size+15, font_size, None, None, text2, "white", False)
 
     def change_input_mode(self):
         if self.parent.is_push_to_talk:
