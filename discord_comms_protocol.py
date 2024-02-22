@@ -387,7 +387,7 @@ class client_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error in send vc data is: {e}")
 
     def send_share_screen_data(self, share_screen_data, shape_of_frame):
         try:
@@ -400,7 +400,7 @@ class client_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error is in send share screen data: {e}")
 
     def send_share_camera_data(self, share_camera_data):
         try:
@@ -410,7 +410,7 @@ class client_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error is send share camera data: {e}")
 
     def send_friend_request(self, username, friend_username):
         data = f"friend_request:{username}:{friend_username}"
@@ -521,7 +521,7 @@ class client_net:
                 return data
 
         except (socket.error, ValueError) as e:
-            print(f"error is:{e}")
+            print(f"error is in recv_str:{e}")
 
     def recv_bytes(self):
         try:
@@ -701,7 +701,7 @@ class server_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error in send vc data is: {e}")
 
     def send_share_screen_data(self, share_screen_data, speaker, shape_of_frame_bytes):
         try:
@@ -712,7 +712,7 @@ class server_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error in send share screen data is: {e}")
 
     def send_share_camera_data(self, share_screen_data, speaker):
         try:
@@ -723,7 +723,7 @@ class server_net:
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
-            print(f"error is: {e}")
+            print(f"error in send camera data is: {e}")
 
     def send_friends_list(self, list):
         encoded_list = json.dumps(list)
