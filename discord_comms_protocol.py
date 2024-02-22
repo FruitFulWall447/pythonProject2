@@ -18,6 +18,7 @@ import struct
 
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
+share_camera_sequence = br'\share_camera_data'
 
 def generate_secure_symmetric_key():
     symmetric_key = secrets.token_bytes(32)
@@ -515,7 +516,7 @@ class client_net:
                     print("Received data is None")
                     return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
-                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
+                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence) or data.startswith(share_camera_sequence):
                     return data
                 decoded_data = data.decode('utf-8')
                 return decoded_data
