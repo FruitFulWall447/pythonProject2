@@ -413,18 +413,18 @@ class ChatBox(QWidget):
         ringing_square_label_width = 240
         self.ringing_square_label = QLabel(self)
         self.ringing_square_label.setGeometry(ringing_square_label_x, 200, ringing_square_label_width, 400)
-        self.ringing_square_label.setStyleSheet(f"background-color: {'#141c4b'}; border: 5px #2980b9;")
+        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px #2980b9;")
         self.ringing_square_label.move(ringing_square_label_x, 220)
 
         self.square_pos = (600, 0)
         self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
                                       self.height_of_chat_box)
-        self.square_label.setStyleSheet("background-color: #141c4b; border: 5px solid #2980b9;")
+        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px solid #2980b9;")
 
         around_name_y = self.square_pos[1]
         around_name_x = self.square_pos[0]
         self.around_name = QLabel(self)
-        self.around_name.setStyleSheet("background-color: #141c4b; border: 5px solid #2980b9;")
+        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px solid #2980b9;")
         start_height_of_around_name = 50
         height_of_around_name = 50
         self.around_name_delta = 220
@@ -1238,9 +1238,9 @@ class ChatBox(QWidget):
         button.setFixedHeight(self.friends_button_height)
         button.clicked.connect(self.create_dm_pressed)
 
-        button.setStyleSheet("""
-            QPushButton {
-                background-color: #141c4b;
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.parent.background_color};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -1249,16 +1249,16 @@ class ChatBox(QWidget):
                 font-size: 14px;
                 font-weight: normal;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            }
+            }}
 
-            QPushButton:hover {
+            QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
 
-            QPushButton:pressed {
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }
+            }}
         """)
 
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -1360,9 +1360,9 @@ class ChatBox(QWidget):
         button.setFixedHeight(self.friends_button_height)
         button.clicked.connect(self.create_dm_pressed)
 
-        button.setStyleSheet("""
-            QPushButton {
-                background-color: #141c4b;
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.parent.background_color};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -1371,16 +1371,16 @@ class ChatBox(QWidget):
                 font-size: 14px;
                 font-weight: normal;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            }
+            }}
 
-            QPushButton:hover {
+            QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
 
-            QPushButton:pressed {
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }
+            }}
         """)
 
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -1571,7 +1571,7 @@ class ChatBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: #141c4b;
+                background-color: {self.parent.background_color};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -2002,9 +2002,9 @@ class FriendsBox(QWidget):
         # Optional: Adjust the spacing between the icon and text
         self.friends_label.setIconSize(QSize(50, 50))  # Adjust size as needed
 
-        selecting_buttons_stylesheet = ("""
-            QPushButton {
-                background-color: #141c4b;  /* Use your desired blue color */
+        selecting_buttons_stylesheet = (f"""
+            QPushButton {{
+                background-color: {self.parent.background_color};  /* Use your desired blue color */
                 border: 2px solid #2980b9;  /* Use a slightly darker shade for the border */
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -2013,16 +2013,16 @@ class FriendsBox(QWidget):
                 font-size: 14px;
                 font-weight: normal;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            }
+            }}
 
-            QPushButton:hover {
+            QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
 
-            QPushButton:pressed {
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }
+            }}
         """)
 
         selecting_button_pressed_stylesheet = ("""
@@ -3315,7 +3315,7 @@ class SettingsBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: #141c4b;
+                background-color: {self.parent.background_color};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
