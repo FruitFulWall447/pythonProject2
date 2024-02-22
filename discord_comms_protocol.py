@@ -520,7 +520,7 @@ class client_net:
                 decoded_data = data.decode('utf-8')
                 return decoded_data
             except Exception as e:
-                print(e)
+                print(f"error in receiving data: {e}")
                 return data
 
         except (socket.error, ValueError) as e:
@@ -973,6 +973,7 @@ class server_net:
                     return decoded_data
             except Exception as e:
                 # If decoding as UTF-8 fails, treat it as binary data
+                print(f"error in receiving data: {e}")
                 return data
 
         except (socket.error, ValueError) as e:
