@@ -599,6 +599,7 @@ class server_net:
         self.size = 0000000
         self.original_len = 7
         self.aes_key = None
+        self.sending_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
 
 
@@ -625,6 +626,7 @@ class server_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
+            self.sending_data_lock.acquire()
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
@@ -642,10 +644,13 @@ class server_net:
             self.server.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
+        finally:
+            # Release the lock
+            self.sending_data_lock.release()
 
     def send_bytes(self, data):
         try:
-            # Convert the length of the data to a string
+            self.sending_data_lock.acquire()
             if self.aes_key is None:
                 size_str = str(len(data))
                 size = str(self.size + int(size_str))
@@ -667,6 +672,9 @@ class server_net:
                 self.server.send(encrypted_data)
         except socket.error as e:
             print(e)
+        finally:
+            # Release the lock
+            self.sending_data_lock.release()
 
     def send_messages_list(self, list):
 
