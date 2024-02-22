@@ -642,6 +642,7 @@ class VideoStream:
             else:
                 # Sleep or perform other tasks if the data collection is empty
                 time.sleep(0.1)
+        self.logger.info(f"stopped thread of video stream of id {self.stream_id} for sssssure")
 
     def stop_processing(self):
         self.stop_thread.set()
@@ -651,7 +652,10 @@ class VideoStream:
     def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user, share_screen_frame_shape_bytes):
         for name, net in self.call_parent.call_nets.items():
             if name != user and net is not None and name in self.spectators:
-                net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                if self.stream_type == "CameraStream":
+                    net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                else:
+                    net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
                 # self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):

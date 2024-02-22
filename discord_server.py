@@ -134,6 +134,9 @@ def threaded_logged_in_client(n, User):
 
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
+share_camera_sequence = br'\share_camera_data'
+
+
 def thread_recv_messages(n, addr, username):
     global ringing_list, online_users, current_calls_list
     User = ""
@@ -437,6 +440,11 @@ def thread_recv_messages(n, addr, username):
                 elif data.startswith(share_screen_sequence):
                     shape_bytes = data.split(b":")[-1]
                     rest_of_bytes = data[len(share_screen_sequence):len(data)-len(shape_bytes)-1]
+                    share_screen_data = zlib.decompress(rest_of_bytes)
+                    Communication.send_share_screen_data_to_call(share_screen_data, shape_bytes, User)
+                elif data.startswith(share_camera_sequence):
+                    shape_bytes = data.split(b":")[-1]
+                    rest_of_bytes = data[len(share_camera_sequence):len(data)-len(shape_bytes)-1]
                     share_screen_data = zlib.decompress(rest_of_bytes)
                     Communication.send_share_screen_data_to_call(share_screen_data, shape_bytes, User)
 

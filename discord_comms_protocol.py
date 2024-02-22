@@ -402,11 +402,14 @@ class client_net:
         except Exception as e:
             print(f"error is in send share screen data: {e}")
 
-    def send_share_camera_data(self, share_camera_data):
+    def send_share_camera_data(self, share_camera_data, shape_of_frame):
         try:
-            compressed_share_camera_data = zlib.compress(share_camera_data)
-            share_camera_sequence = br'\share_camera_data'
-            full_message = share_camera_sequence + compressed_share_camera_data
+            full_message = share_camera_data
+            compressed_message = zlib.compress(full_message)
+            shape_of_frame_bytes = b":" + struct.pack('III', *shape_of_frame)
+            # Add a specific sequence of bytes at the beginning
+            sequence = br'\share_camera_data'  # Use raw string to treat backslash as a literal character
+            full_message = sequence + compressed_message + shape_of_frame_bytes
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:
@@ -722,12 +725,12 @@ class server_net:
         except Exception as e:
             print(f"error in send share screen data is: {e}")
 
-    def send_share_camera_data(self, share_screen_data, speaker):
+    def send_share_camera_data(self, share_camera_data, speaker, shape_of_frame_bytes):
         try:
-            compressed_share_camera_data = zlib.compress(share_screen_data)
+            compressed_share_screen_data = zlib.compress(share_camera_data)
             share_camera_sequence = br'\share_camera_data'
             encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = share_camera_sequence + encoded_speaker + compressed_share_camera_data
+            full_message = share_camera_sequence + encoded_speaker + compressed_share_screen_data + b":" + shape_of_frame_bytes
             # Convert the length of the data to a string
             self.send_bytes(full_message)
         except Exception as e:

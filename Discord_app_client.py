@@ -75,6 +75,7 @@ def is_string(variable):
 Flag_recv_messages = True
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
+share_camera_sequence = br'\share_camera_data'
 
 def return_vc_bytes_parameters(vc_bytes):
     try:
@@ -96,6 +97,18 @@ def return_share_screen_bytes_parameters(share_screen_data):
         return name_of_talker, compressed_share_screen_data, frame_shape_bytes
     except Exception as e:
         print(share_screen_data)
+
+
+def return_share_camera_bytes_parameters(share_camera_data):
+    try:
+        sequence_and_name = share_camera_data.split(b":")[0]
+        frame_shape_bytes = share_camera_data.split(b":")[-1]
+        encoded_name = sequence_and_name[len(share_camera_sequence):]
+        compressed_share_screen_data = share_camera_data[len(sequence_and_name)+1:]
+        name_of_talker = encoded_name.decode("utf-8")
+        return name_of_talker, compressed_share_screen_data, frame_shape_bytes
+    except Exception as e:
+        print(share_camera_data)
 
 
 def thread_recv_messages():
@@ -269,6 +282,12 @@ def thread_recv_messages():
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
                     decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
                     main_page.update_stream_screen_frame(decompressed_frame)
+                elif data.startswith(share_camera_sequence):
+                    streamer, compressed_share_camera_data, frame_shape_bytes = return_share_camera_bytes_parameters(data)
+                    frame_shape = struct.unpack('III', frame_shape_bytes)
+                    share_screen_data = zlib.decompress(compressed_share_camera_data)
+                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
+                    main_page.update_stream_screen_frame(decompressed_frame)
             except Exception as e:
                 print(f"error in getting byte data:{e}")
 
@@ -327,6 +346,7 @@ def thread_send_voice_chat_data():
     input_stream.close()
     print("stopped voice chat thread....")
 
+
 def thread_send_share_screen_data():
     global main_page
     try:
@@ -344,6 +364,7 @@ def thread_send_share_screen_data():
         print("send share screen data thread closed")
     except Exception as e:
         print(f"Screen sharing error: {e}")
+
 
 def thread_send_share_camera_data():
     global main_page
@@ -365,7 +386,7 @@ def thread_send_share_camera_data():
             frame_bytes = frame_np.tobytes()
 
             # Send the frame to the server
-            n.send_share_screen_data(frame_bytes, frame_np.shape)
+            n.send_share_camera_data(frame_bytes, frame_np.shape)
 
             time.sleep(0.04)  # Adjust the sleep time based on your needs
 
