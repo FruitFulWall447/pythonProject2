@@ -526,11 +526,11 @@ class Communication:
                 call.adding_vc_data_to_user_call_thread_queue(User, vc_data)
                 # call.send_vc_data_to_everyone_but_user(vc_data, User)
 
-    def send_share_screen_data_to_call(self, share_screen_data, shape_bytes_of_frame, User):
+    def send_share_screen_data_to_call(self, share_screen_data, shape_bytes_of_frame, User, stream_type):
         for call in self.calls:
             if call.is_user_in_a_call(User):
                 for video_stream in call.video_streams_list:
-                    if video_stream.streamer == User:
+                    if video_stream.streamer == User and video_stream.stream_type == stream_type:
                         video_stream.adding_share_screen_data_to_user_call_thread_queue(User, share_screen_data, shape_bytes_of_frame)
 
     def add_user_to_group_call_by_id(self, User, id):
