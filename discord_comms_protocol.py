@@ -116,6 +116,7 @@ class client_net:
         self.lock = threading.Lock()
         self.aes_key = None
         self.initiate_rsa_protocol()
+        self.sending_data_lock = threading.Lock()
 
 
     def connect(self):
@@ -129,6 +130,7 @@ class client_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
+            #self.sending_data_lock.acquire()
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
@@ -146,6 +148,9 @@ class client_net:
             self.client.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
+        #finally:
+            # Release the lock
+            #self.sending_data_lock.release()
 
     def send_bytes(self, data):
         try:
