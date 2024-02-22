@@ -974,6 +974,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
                     info = (compressed_base64_image, self.username, str(formatted_time))
                     self.list_messages.insert(0, info)
+                    # add here that the type of the message is sent as well
                     n.send_message(self.username, self.selected_chat, compressed_base64_image)
                     self.image_to_send = None
                     self.image_file_name = ""
@@ -1384,6 +1385,8 @@ class Login_page(QWidget):
         sign_up_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         sign_up_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
         sign_up_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
+        sign_up_label.linkActivated.connect(self.move_to_sign_up_page)
+        sign_up_label.move(1690//2-30, 535)
 
         checkbox = QCheckBox('Keep me signed in', self)
         checkbox.setStyleSheet("QCheckBox { color: white; font-size: 12px}")
@@ -1392,8 +1395,6 @@ class Login_page(QWidget):
         # Connect the linkActivated signal to a custom slot
         forgot_password_label.linkActivated.connect(self.forgot_password_clicked)
         forgot_password_label.move(1690//2+10, 445)
-        sign_up_label.linkActivated.connect(self.move_to_sign_up_page)
-        sign_up_label.move(1690//2-30, 535)
         label.move(1690//2+10, 192)
 
 

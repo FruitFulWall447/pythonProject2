@@ -1786,7 +1786,7 @@ class ChatBox(QWidget):
             # If decoding fails, it's not a valid Base64 string
             return False
 
-    def load_image_from_bytes(self, image_bytes, label):
+    def load_image_from_bytes_to_label(self, image_bytes, label):
         pixmap = QPixmap()
         pixmap.loadFromData(image_bytes)
 
@@ -1801,6 +1801,27 @@ class ChatBox(QWidget):
         pixmap = pixmap.scaled(self.image_width, target_height, Qt.KeepAspectRatio)
         label.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
         label.setPixmap(pixmap)
+
+    def load_image_from_bytes_button(self, image_bytes, button):
+        pixmap = QPixmap()
+        pixmap.loadFromData(image_bytes)
+
+        if pixmap.width() == 0 or pixmap.height() == 0:
+            print("There is an error with image_bytes")
+            return
+
+        # Calculate the scaled size while maintaining the aspect ratio
+        aspect_ratio = pixmap.width() / pixmap.height()
+        target_width = self.image_width
+        target_height = int(target_width / aspect_ratio)
+
+        # Scale the image to the target size
+        pixmap = pixmap.scaled(target_width, target_height, Qt.KeepAspectRatio)
+
+        # Set the button's icon
+        button.setIconSize(pixmap.size())
+        button.setIcon(QIcon(pixmap))
+        button.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
 
     def show_messages_on_screen(self, list_messages):
         # can show up to 33 message in the chat
@@ -1843,7 +1864,7 @@ class ChatBox(QWidget):
                         compressed_image_bytes = base64.b64decode(i[0])
                         image_bytes = zlib.decompress(compressed_image_bytes)
                         label1 = QLabel(self)
-                        self.load_image_from_bytes(image_bytes, label1)
+                        self.load_image_from_bytes_to_label(image_bytes, label1)
                         if y - label1.height() - 10 < end_y_pos:
                             self.parent.is_chat_box_full = True
                             if index != len(self.parent.list_messages) - 1:
