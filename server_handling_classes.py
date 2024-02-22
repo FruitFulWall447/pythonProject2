@@ -646,6 +646,7 @@ class VideoStream:
     def stop_processing(self):
         self.stop_thread.set()
         self.thread.join()  # Wait for the thread to finish
+        self.logger.info(f"stopped thread of video stream of id {self.stream_id}")
 
     def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user, share_screen_frame_shape_bytes):
         for name, net in self.call_parent.call_nets.items():

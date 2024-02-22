@@ -113,10 +113,9 @@ class client_net:
         self.id = self.connect()
         self.size = 0000000
         self.original_len = 7
-        self.lock = threading.Lock()
         self.aes_key = None
-        self.initiate_rsa_protocol()
         self.sending_data_lock = threading.Lock()
+        self.initiate_rsa_protocol()
 
 
     def connect(self):
@@ -130,7 +129,7 @@ class client_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
-            #self.sending_data_lock.acquire()
+            self.sending_data_lock.acquire()
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
@@ -148,13 +147,14 @@ class client_net:
             self.client.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
-        #finally:
+        finally:
             # Release the lock
-            #self.sending_data_lock.release()
+            self.sending_data_lock.release()
 
     def send_bytes(self, data):
         try:
             # Convert the length of the data to a string
+            self.sending_data_lock.acquire()
             if self.aes_key is None:
                 size_str = str(len(data))
                 size = str(self.size + int(size_str))
@@ -176,6 +176,9 @@ class client_net:
                 self.client.send(encrypted_data)
         except socket.error as e:
             print(e)
+        finally:
+            # Release the lock
+            self.sending_data_lock.release()
 
     def updated_current_chat(self, current_chat):
         try:
