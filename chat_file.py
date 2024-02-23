@@ -172,7 +172,7 @@ def is_valid_image(image_bytes):
         return False
 
 
-def image_to_bytes(file_path):
+def file_to_bytes(file_path):
     with open(file_path, "rb") as file:
         image_bytes = file.read()
         return image_bytes
@@ -426,7 +426,7 @@ class ChatBox(QWidget):
         self.around_name = QLabel(self)
         self.around_name.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px solid #2980b9;")
         start_height_of_around_name = 50
-        height_of_around_name = 50
+        height_of_around_name = start_height_of_around_name
         self.around_name_delta = 220
         if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
                 (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
@@ -1623,7 +1623,7 @@ class ChatBox(QWidget):
             if selected_files:
                 self.parent.image_file_name = selected_files[0].split("/")[-1]
                 print(f"Selected file: {self.parent.image_file_name}")
-                image_bytes = self.image_to_bytes(selected_files[0])
+                image_bytes = self.file_to_bytes(selected_files[0])
 
                 if self.is_valid_image(image_bytes):
                     self.parent.image_to_send = image_bytes
@@ -1639,7 +1639,7 @@ class ChatBox(QWidget):
     def open_image_file_dialog(self):
         self.open_file_dialog()
 
-    def image_to_bytes(self, file_path):
+    def file_to_bytes(self, file_path):
         with open(file_path, "rb") as file:
             image_bytes = file.read()
             max_size_kb = 40
@@ -1827,6 +1827,7 @@ class ChatBox(QWidget):
     def show_messages_on_screen(self, list_messages):
         # can show up to 33 message in the chat
         # Delete existing message labels
+        space_between_messages = self.parent.font_size + 13
         self.delete_message_labels()
         x_pos = 620
         starter = 850
@@ -1834,7 +1835,12 @@ class ChatBox(QWidget):
             starter_y_pos = starter
         else:
             starter_y_pos = starter + 50
-        end_y_pos = 50
+
+        if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
+                (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
+            end_y_pos = 50 + self.around_name_delta
+        else:
+            end_y_pos = 50
         y = starter_y_pos
         index = 0
         for i in list_messages:
@@ -1847,19 +1853,20 @@ class ChatBox(QWidget):
                     self.parent.is_last_message_on_screen = True
                 if not message_content or message_type == "string":
 
-                    label = self.create_temp_message_label(message_content)
-                    label.move(x_pos, y)
-                    self.message_labels.append(label)
-                    y -= 20
+                    content_label = self.create_temp_message_label(message_content)
+                    content_label.move(x_pos, y)
+                    self.message_labels.append(content_label)
+                    y -= content_label.height()
 
                     # second part = Name + timestamp
-                    label2 = QLabel()
-                    label2 = self.create_temp_message_label("")
-                    label2.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{message_sender}</span>'
-                                   f'<span style="font-size: 9px; color: gray;"> {message_time}</span>')
-                    self.message_labels.append(label2)
-                    label2.move(x_pos, y)
-                    y -= 20
+                    title_label = QLabel()
+                    title_label = self.create_temp_message_label("")
+                    title_label.setText(
+                        f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                        f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    self.message_labels.append(title_label)
+                    title_label.move(x_pos, y)
+                    y -= title_label.height()
                     if index != len(self.parent.list_messages) - 1:
                         self.parent.is_last_message_on_screen = False
                 elif message_type == "image":
@@ -1883,14 +1890,14 @@ class ChatBox(QWidget):
                         y -= image_label.height()
                         image_label.move(x_pos, y)
                         image_label.raise_()
-                        y -= 20
+                        y -= space_between_messages
                         message = ""
                         label = self.create_temp_message_label(message)
-                        label.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{message_sender}</span>'
-                                      f'<span style="font-size: 9px; color: gray;"> {message_time}</span>')
+                        label.setText(f'<span style="font-size: {self.parent.font_size+2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                                      f'<span style="font-size: {self.parent.font_size-3}px; color: gray;"> {message_time}</span>')
                         label.move(x_pos, y)
                         self.message_labels.append(label)
-                        y -= 20
+                        y -= label.height()
                     except Exception as e:
                         print(f"error in show messages is:{e}")
                     if y < end_y_pos:
@@ -1930,7 +1937,7 @@ class ChatBox(QWidget):
         label = QLabel(message, self)
         label.setStyleSheet("color: white;")
         font = label.font()
-        font.setPointSize(12)
+        font.setPixelSize(self.parent.font_size)
         label.setFont(font)
 
         return label
@@ -3033,7 +3040,8 @@ class SettingsBox(QWidget):
                 self.font_size_slider = self.create_slider(font_size_slider_min_value, font_size_slider_max_value, self.parent.font_size,
                                                            self.font_size_changed, font_size_slider_x, font_size_slider_y
                 , font_size_slider_width, font_size_slider_height, font_size_slider_style_sheet)
-                font_size_label = self.create_white_label(font_size_slider_x + font_size_slider_width + 10, font_size_slider_y + 7,
+
+                self.font_size_label = self.create_white_label(font_size_slider_x + font_size_slider_width + 10, font_size_slider_y + 7,
                                                             self.default_labels_font_size, 100, 30,
                                                             str(self.parent.messages_font_size))
             elif self.parent.selected_settings == "User Profile":
@@ -3077,7 +3085,7 @@ class SettingsBox(QWidget):
             selected_files = self.file_dialog.selectedFiles()
             if selected_files:
                 file_path = selected_files[0]
-                image_bytes = image_to_bytes(selected_files[0])
+                image_bytes = file_to_bytes(selected_files[0])
                 if is_valid_image(image_bytes):
                     self.parent.profile_pic = image_bytes
                     self.parent.activateWindow()

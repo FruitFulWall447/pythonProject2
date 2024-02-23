@@ -977,7 +977,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         global n, chat_clicked, social_clicked
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
-                if chat_clicked and self.chat_box.chat_name_label.text() != "":
+                if chat_clicked and self.chat_box.chat_name_label.text() != "" or setting_clicked:
                     if self.chat_box.check_editing_status():
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
