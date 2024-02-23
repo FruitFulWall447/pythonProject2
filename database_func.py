@@ -1093,6 +1093,7 @@ def create_messages_table():
                 sender_id VARCHAR(255),
                 receiver_id VARCHAR(255),
                 message_content TEXT,
+                message_content_bytes LONGBLOB,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 has_read TINYINT(1) DEFAULT 0,
                 type VARCHAR(255),
