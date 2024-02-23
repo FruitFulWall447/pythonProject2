@@ -18,6 +18,12 @@ from PIL import Image, ImageDraw
 import webbrowser
 import io
 import tempfile
+import os
+
+
+def make_q_object_clear(object):
+    object.setStyleSheet("background-color: transparent; border: none;")
+
 
 def extract_first_frame(video_bytes):
     try:
@@ -863,16 +869,28 @@ class ChatBox(QWidget):
 
         self.filename_label = QLabel(self)
         self.filename_label.move(620, 830)
-        self.filename_label.setGeometry(620, 830, 200, 50)  # Adjust the size as needed
+        file_name_y = 860
+        file_name_x = 620
+        file_name_width = 300
+        self.filename_label.setGeometry(file_name_x, file_name_y, file_name_width, 50)  # Adjust the size as needed
         self.filename_label.setWordWrap(True)  # Enable word wrap
         self.filename_label.raise_()
         self.filename_label.setStyleSheet(
             "background-color: #333333; color: white; font-size: 16px;"
         )
         self.filename_label.hide()
+        self.garbage_button = QPushButton(self)
+        garbage_icon_path = "discord_app_assets/garbage_icon.png"
+        garbage_icon_width, garbage_icon_height = (35, 35)
+        set_button_icon(self.garbage_button, garbage_icon_path, garbage_icon_width, garbage_icon_height)
+        self.garbage_button.setGeometry(file_name_x + file_name_width - 50, file_name_y+8, garbage_icon_width, garbage_icon_height)
+        self.garbage_button.hide()
+        self.garbage_button.clicked.connect(self.garbage_button_clicked)
+        make_q_object_clear(self.garbage_button)
         if self.parent.image_file_name != "":
             self.filename_label.setText(self.parent.image_file_name + " is loaded")
             self.filename_label.show()
+            self.garbage_button.show()
         else:
             self.filename_label.setText(self.parent.image_file_name)
 
@@ -1662,7 +1680,8 @@ class ChatBox(QWidget):
     def open_file_dialog(self):
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
-            if selected_files:
+            file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
+            if selected_files and file_types[0] in ["png", "jpg"]:
                 self.parent.image_file_name = selected_files[0].split("/")[-1]
                 print(f"Selected file: {self.parent.image_file_name}")
                 image_bytes = file_to_bytes(selected_files[0])
@@ -1677,6 +1696,7 @@ class ChatBox(QWidget):
                 else:
                     print("couldn't load image")
                 # You can add additional processing here
+
 
     def open_image_file_dialog(self):
         self.open_file_dialog()
@@ -1994,6 +2014,11 @@ class ChatBox(QWidget):
 
     def updated_chatbox(self, updated_list):
         self.messages_list = updated_list
+
+    def garbage_button_clicked(self):
+        self.parent.image_to_send = None
+        self.parent.image_file_name = ""
+        self.parent.updated_chat()
 
     def selected_chat_changed(self, name):
         if name != self.parent.selected_chat:
