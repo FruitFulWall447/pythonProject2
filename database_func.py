@@ -317,11 +317,11 @@ def add_message(sender_name, receiver_name, message_content, message_type):
 
             # SQL query to insert a message into the 'messages' table
             if message_type in ("video", "image"):
+                encoded_base64_bytes = message_content
+                message_content = base64.b64decode(encoded_base64_bytes)
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type) VALUES (%s, %s, %s, %s)"
                 data = (sender_name, receiver_name, message_content, message_type)
             else:
-                encoded_base64_bytes = message_content
-                message_content = base64.b64decode(encoded_base64_bytes)
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
                 data = (sender_name, receiver_name, message_content, message_type)
 
@@ -333,7 +333,7 @@ def add_message(sender_name, receiver_name, message_content, message_type):
 
 
     except Exception as e:
-        print("Error:", e)
+        print("Error in adding message:", e)
 
     finally:
         # Close the database connection
@@ -390,8 +390,11 @@ def get_messages(sender, receiver):
             query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type FROM messages WHERE receiver_id LIKE '{0}%'".format(
                 id_format.replace('\'', '\'\''))
         else:
-            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
-                sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
+            query = """
+                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type 
+                FROM messages
+                WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')
+            """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
         cursor.execute(query)
 
         # Fetch all the results into a list of tuples
@@ -401,11 +404,11 @@ def get_messages(sender, receiver):
         # Convert each tuple to a list and include timestamp
         formatted_messages = []
         for message in messages:
-            if isinstance(message[0], bytes):
+            if message[3] != "string":
                 # If content is bytes, encode it as a Base64 string
                 content = base64.b64encode(message[0]).decode('utf-8')
             else:
-                content = message[0]
+                content = message[0].decode('utf-8')
             message_dict = {
                 "content": content,
                 "sender_id": message[1],
