@@ -1802,7 +1802,7 @@ class ChatBox(QWidget):
         label.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
         label.setPixmap(pixmap)
 
-    def load_image_from_bytes_button(self, image_bytes, button):
+    def load_image_from_bytes_to_button(self, image_bytes, button):
         pixmap = QPixmap()
         pixmap.loadFromData(image_bytes)
 
@@ -1822,6 +1822,30 @@ class ChatBox(QWidget):
         button.setIconSize(pixmap.size())
         button.setIcon(QIcon(pixmap))
         button.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
+
+
+    def open_image_bytes(self, image_bytes):
+        """Opens an image from bytes using the default image viewer application.
+
+        Args:
+            image_bytes (bytes): The image data as bytes.
+
+        Returns:
+            bool: True if the image was opened successfully, False otherwise.
+        """
+        try:
+            # Create a temporary file to save the image bytes
+            with open("temp_image.png", "wb") as f:
+                f.write(image_bytes)
+
+            # Open the temporary file using the default image viewer application
+            webbrowser.open("temp_image.png")
+
+            return True
+
+        except Exception as e:
+            print(f"Error opening image: {e}")
+            return False
 
     def show_messages_on_screen(self, list_messages):
         # can show up to 33 message in the chat
@@ -1863,17 +1887,23 @@ class ChatBox(QWidget):
                     try:
                         compressed_image_bytes = base64.b64decode(i[0])
                         image_bytes = zlib.decompress(compressed_image_bytes)
-                        label1 = QLabel(self)
-                        self.load_image_from_bytes_to_label(image_bytes, label1)
-                        if y - label1.height() - 10 < end_y_pos:
+                        #label1 = QLabel(self)
+
+                        image_label = QPushButton(self)
+                        image_label.setStyleSheet("background-color: transparent; border: none;")
+                        #self.load_image_from_bytes_to_label(image_bytes, label1)
+
+                        self.load_image_from_bytes_to_button(image_bytes, image_label)
+                        image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+                        if y - image_label.height() - 10 < end_y_pos:
                             self.parent.is_chat_box_full = True
                             if index != len(self.parent.list_messages) - 1:
                                 self.parent.is_last_message_on_screen = False
 
-                        self.message_labels.append(label1)
-                        y -= label1.height()
-                        label1.move(x_pos, y)
-                        label1.raise_()
+                        self.message_labels.append(image_label)
+                        y -= image_label.height()
+                        image_label.move(x_pos, y)
+                        image_label.raise_()
                         y -= 20
                         message = ""
                         label = self.create_temp_message_label(message)
