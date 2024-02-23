@@ -5,6 +5,7 @@ import hashlib
 import secrets
 import json
 from datetime import datetime
+import base64
 
 pepper = "c5b97dce"
 
@@ -305,6 +306,7 @@ def is_table_exist(table_name):
     # Return True if the table exists, False if it doesn't
     return result is not None
 
+
 def add_message(sender_name, receiver_name, message_content, message_type):
     try:
         # Establish a connection to the MySQL server
@@ -314,8 +316,14 @@ def add_message(sender_name, receiver_name, message_content, message_type):
             cursor = connection.cursor()
 
             # SQL query to insert a message into the 'messages' table
-            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
-            data = (sender_name, receiver_name, message_content, message_type)
+            if message_type in ("video", "image"):
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type) VALUES (%s, %s, %s, %s)"
+                data = (sender_name, receiver_name, message_content, message_type)
+            else:
+                encoded_base64_bytes = message_content
+                message_content = base64.b64decode(encoded_base64_bytes)
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
+                data = (sender_name, receiver_name, message_content, message_type)
 
             # Execute the query
             cursor.execute(sql_query, data)
@@ -379,10 +387,10 @@ def get_messages(sender, receiver):
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT message_content, sender_id, timestamp, type FROM messages WHERE receiver_id LIKE '{0}%'".format(
+            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type FROM messages WHERE receiver_id LIKE '{0}%'".format(
                 id_format.replace('\'', '\'\''))
         else:
-            query = "SELECT message_content, sender_id, timestamp, type FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
+            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
                 sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
         cursor.execute(query)
 
@@ -393,8 +401,13 @@ def get_messages(sender, receiver):
         # Convert each tuple to a list and include timestamp
         formatted_messages = []
         for message in messages:
+            if isinstance(message[0], bytes):
+                # If content is bytes, encode it as a Base64 string
+                content = base64.b64encode(message[0]).decode('utf-8')
+            else:
+                content = message[0]
             message_dict = {
-                "content": message[0],
+                "content": content,
                 "sender_id": message[1],
                 "timestamp": str(message[2]),
                 "message_type": message[3]
