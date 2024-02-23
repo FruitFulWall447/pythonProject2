@@ -17,6 +17,36 @@ import numpy as np
 from PIL import Image, ImageDraw
 import webbrowser
 import io
+import tempfile
+
+def extract_first_frame(video_bytes):
+    try:
+        # Write video bytes to a temporary file
+        temp_video_path = tempfile.NamedTemporaryFile(delete=False)
+        temp_video_path.write(video_bytes)
+        temp_video_path.close()
+
+        # Open the temporary video file
+        cap = cv2.VideoCapture(temp_video_path.name)
+
+        # Read the first frame
+        ret, frame = cap.read()
+
+        # Release the video capture object and delete the temporary file
+        cap.release()
+        cv2.destroyAllWindows()
+        temp_video_path.close()
+
+        # Convert the first frame to bytes
+        retval, buffer = cv2.imencode('.png', frame)
+        if retval:
+            return buffer.tobytes()
+        else:
+            return None
+
+    except Exception as e:
+        print(f"Error extracting first frame: {e}")
+        return None
 
 
 def open_image_bytes(image_bytes):
