@@ -127,8 +127,8 @@ def threaded_logged_in_client(n, User):
                     database_func.add_chat_to_user(User, client_current_chat)
                     logger.info(f"added new chat to {User}")
             if isinstance(message, str) and message.startswith("update_chat_list"):
-                list_messages = database_func.get_messages(User, client_current_chat)
-                n.send_messages_list(list_messages)
+                list_dict_of_messages = database_func.get_messages(User, client_current_chat)
+                n.send_messages_list(list_dict_of_messages)
 
 
 
@@ -305,11 +305,12 @@ def thread_recv_messages(n, addr, username):
                         sender = message.get("sender")
                         receiver = message.get("receiver")
                         content = message.get("content")
-                        database_func.add_message(sender, receiver, content)
+                        message_type = message.get("type")
+                        database_func.add_message(sender, receiver, content, message_type)
                         if not receiver.startswith("("):
                             add_message_for_client(receiver, f"got_new_message:{sender}")
                             logger.info(f"Server got message: {message} from user {User}")
-                        else: # means its a group therefore need to add message for every member of group
+                        else: # means its a group therefore need to update message for every member of group
                             group_name, group_id = gets_group_attributes_from_format(receiver)
                             group_members = database_func.get_group_members(group_id)
                             group_members.remove(User)

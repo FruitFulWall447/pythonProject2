@@ -20,9 +20,11 @@ vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
+
 def generate_secure_symmetric_key():
     symmetric_key = secrets.token_bytes(32)
     return symmetric_key
+
 
 def generate_aes_key():
     # Generate a random 256-bit (32-byte) key for AES-256
@@ -38,6 +40,7 @@ def generate_rsa_key_pair():
     )
     return private_key.public_key(), private_key
 
+
 def encrypt_with_rsa(public_key, data):
     ciphertext = public_key.encrypt(
         data,
@@ -48,6 +51,7 @@ def encrypt_with_rsa(public_key, data):
         )
     )
     return base64.b64encode(ciphertext).decode("utf-8")
+
 
 def decrypt_with_rsa(private_key, ciphertext):
     ciphertext = base64.b64decode(ciphertext)
@@ -73,6 +77,7 @@ def encrypt_with_aes(key, data):
     ciphertext = encryptor.update(padded_data) + encryptor.finalize()
     return base64.b64encode(ciphertext)
 
+
 def decrypt_with_aes(key, ciphertext):
     try:
         # get ciphertext as bytes
@@ -91,6 +96,33 @@ def decrypt_with_aes(key, ciphertext):
     except Exception as e:
         print(f"Error in decryption: {e}")
         return 1
+
+
+def send_data_in_chunks(sock, data):
+    """Send data over a socket in chunks.
+
+    Args:
+        sock (socket.socket): The socket object for sending data.
+        data (bytes): The data to be sent.
+
+    Returns:
+        bool: True if the data was sent successfully, False otherwise.
+    """
+    try:
+        # Define the chunk size
+        chunk_size = 4096  # Adjust this based on your requirements
+
+        # Send data in chunks
+        bytes_sent = 0
+        while bytes_sent < len(data):
+            chunk = data[bytes_sent:bytes_sent + chunk_size]
+            bytes_sent += sock.send(chunk)
+
+        return True
+
+    except Exception as e:
+        print(f"Error sending data: {e}")
+        return False
 
 
 class client_net:
@@ -131,6 +163,7 @@ class client_net:
         try:
             # Convert the length of the data to a string
             self.sending_data_lock.acquire()
+            encoded_data = data.encode('utf-8')
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
@@ -365,11 +398,14 @@ class client_net:
 
         self.send_str(encoded_message)
 
-    def send_message(self, sender, receiver, content):
-
+    def send_message(self, sender, receiver, content, type):
+        if isinstance(content, bytes):
+            # If content is bytes, encode it as a Base64 string
+            content = base64.b64encode(content).decode('utf-8')
         message = {"sender": sender,
                    "receiver": receiver,
                    "content": content,
+                   "type": type,
 
                    }
         encoded_message = json.dumps(message)

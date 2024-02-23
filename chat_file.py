@@ -1824,29 +1824,6 @@ class ChatBox(QWidget):
         button.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
 
 
-    def open_image_bytes(self, image_bytes):
-        """Opens an image from bytes using the default image viewer application.
-
-        Args:
-            image_bytes (bytes): The image data as bytes.
-
-        Returns:
-            bool: True if the image was opened successfully, False otherwise.
-        """
-        try:
-            # Create a temporary file to save the image bytes
-            with open("temp_image.png", "wb") as f:
-                f.write(image_bytes)
-
-            # Open the temporary file using the default image viewer application
-            webbrowser.open("temp_image.png")
-
-            return True
-
-        except Exception as e:
-            print(f"Error opening image: {e}")
-            return False
-
     def show_messages_on_screen(self, list_messages):
         # can show up to 33 message in the chat
         # Delete existing message labels
@@ -1861,14 +1838,16 @@ class ChatBox(QWidget):
         y = starter_y_pos
         index = 0
         for i in list_messages:
+            message_content = i.get("content")
+            message_time = i.get("timestamp")
+            message_sender = i.get("sender_id")
+            message_type = i.get("message_type")
             if self.parent.chat_start_index <= index:
                 if index == len(self.parent.list_messages) - 1:
                     self.parent.is_last_message_on_screen = True
-                if not self.is_base64_encoded(i[0]) or len(str(i[0])) < 200:
+                if not message_content or message_type == "string":
 
-                    # first parts = content
-                    message = i[0]
-                    label = self.create_temp_message_label(message)
+                    label = self.create_temp_message_label(message_content)
                     label.move(x_pos, y)
                     self.message_labels.append(label)
                     y -= 20
@@ -1876,17 +1855,17 @@ class ChatBox(QWidget):
                     # second part = Name + timestamp
                     label2 = QLabel()
                     label2 = self.create_temp_message_label("")
-                    label2.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{i[1]}</span>'
-                                   f'<span style="font-size: 9px; color: gray;"> {i[2]}</span>')
+                    label2.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{message_sender}</span>'
+                                   f'<span style="font-size: 9px; color: gray;"> {message_time}</span>')
                     self.message_labels.append(label2)
                     label2.move(x_pos, y)
                     y -= 20
                     if index != len(self.parent.list_messages) - 1:
                         self.parent.is_last_message_on_screen = False
-                else:
+                elif message_type == "image":
                     try:
-                        compressed_image_bytes = base64.b64decode(i[0])
-                        image_bytes = zlib.decompress(compressed_image_bytes)
+                        decoded_compressed_image_bytes = base64.b64decode(message_content)
+                        image_bytes = zlib.decompress(decoded_compressed_image_bytes)
                         #label1 = QLabel(self)
 
                         image_label = QPushButton(self)
@@ -1907,13 +1886,13 @@ class ChatBox(QWidget):
                         y -= 20
                         message = ""
                         label = self.create_temp_message_label(message)
-                        label.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{i[1]}</span>'
-                                      f'<span style="font-size: 9px; color: gray;"> {i[2]}</span>')
+                        label.setText(f'<span style="font-size: 14px; color: white; font-weight: bold;">{message_sender}</span>'
+                                      f'<span style="font-size: 9px; color: gray;"> {message_time}</span>')
                         label.move(x_pos, y)
                         self.message_labels.append(label)
                         y -= 20
                     except Exception as e:
-                        print(f"error here is:{e}")
+                        print(f"error in show messages is:{e}")
                     if y < end_y_pos:
                         self.parent.is_chat_box_full = True
                         if index != self.parent.list_messages:

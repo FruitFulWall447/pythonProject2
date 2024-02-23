@@ -305,7 +305,7 @@ def is_table_exist(table_name):
     # Return True if the table exists, False if it doesn't
     return result is not None
 
-def add_message(sender_name, receiver_name, message_content):
+def add_message(sender_name, receiver_name, message_content, message_type):
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
@@ -314,8 +314,8 @@ def add_message(sender_name, receiver_name, message_content):
             cursor = connection.cursor()
 
             # SQL query to insert a message into the 'messages' table
-            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content) VALUES (%s, %s, %s)"
-            data = (sender_name, receiver_name, message_content)
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
+            data = (sender_name, receiver_name, message_content, message_type)
 
             # Execute the query
             cursor.execute(sql_query, data)
@@ -379,10 +379,10 @@ def get_messages(sender, receiver):
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT message_content, sender_id, timestamp FROM messages WHERE receiver_id LIKE '{0}%'".format(
+            query = "SELECT message_content, sender_id, timestamp, type FROM messages WHERE receiver_id LIKE '{0}%'".format(
                 id_format.replace('\'', '\'\''))
         else:
-            query = "SELECT message_content, sender_id, timestamp FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
+            query = "SELECT message_content, sender_id, timestamp, type FROM messages WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')".format(
                 sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
         cursor.execute(query)
 
@@ -391,7 +391,15 @@ def get_messages(sender, receiver):
         messages.reverse()
 
         # Convert each tuple to a list and include timestamp
-        formatted_messages = [(content, sender_id, str(timestamp)) for content, sender_id, timestamp in messages]
+        formatted_messages = []
+        for message in messages:
+            message_dict = {
+                "content": message[0],
+                "sender_id": message[1],
+                "timestamp": str(message[2]),
+                "message_type": message[3]
+            }
+            formatted_messages.append(message_dict)
 
         return formatted_messages
 
@@ -1070,7 +1078,8 @@ def create_messages_table():
                 receiver_id VARCHAR(255),
                 message_content TEXT,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                has_read TINYINT(1) DEFAULT 0
+                has_read TINYINT(1) DEFAULT 0,
+                type VARCHAR(255),
             )
         """
         cursor.execute(create_table_query)

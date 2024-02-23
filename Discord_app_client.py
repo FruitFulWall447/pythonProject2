@@ -27,6 +27,7 @@ email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "ma
 ]
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
+
 def save_token(token):
     settings = QSettings("Connectify_App", "Connectify")
     settings.setValue("saved_security_token", token)
@@ -36,14 +37,17 @@ def are_token_saved():
     settings = QSettings("Connectify_App", "Connectify")
     return settings.value("saved_security_token") is not None
 
+
 def get_saved_token():
     settings = QSettings("Connectify_App", "Connectify")
     token = settings.value("saved_security_token")
     return token
 
+
 def delete_saved_token():
     settings = QSettings("Connectify_App", "Connectify")
     settings.remove("saved_security_token")
+
 
 def is_email_provider_in_list(email):
     global email_providers
@@ -52,6 +56,26 @@ def is_email_provider_in_list(email):
             return True
     return False
 
+
+def create_message_dict(content, sender_id, timestamp, message_type):
+    """Creates a dictionary representing a message.
+
+    Args:
+        content (str): The content of the message.
+        sender_id (str): The ID of the sender.
+        timestamp (str): The timestamp of the message.
+        message_type (str): The type of the message.
+
+    Returns:
+        dict: A dictionary representing the message.
+    """
+    message_dict = {
+        "content": content,
+        "sender_id": sender_id,
+        "timestamp": str(timestamp),
+        "message_type": message_type
+    }
+    return message_dict
 
 
 def is_email_valid(email):
@@ -68,6 +92,7 @@ def is_email_valid(email):
     if len(parts) < 2 or parts[1] == "":
         return False
     return True
+
 
 def is_string(variable):
     return isinstance(variable, str)
@@ -131,6 +156,7 @@ def thread_recv_messages():
                 save_token(security_token)
             if data.startswith("messages_list:"):
                 try:
+                    # list messages is a list of dicts where each dict is a message
                     temp = data.split("messages_list:", 1)[1]
                     main_page.list_messages = json.loads(temp)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
@@ -956,9 +982,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
                             formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                            info = (self.chat_box.text_entry.text(), self.username, str(formatted_time))
-                            self.list_messages.insert(0, info)
-                            n.send_message(self.username, self.selected_chat, info[0])
+                            message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username, str(formatted_time), "string")
+                            self.list_messages.insert(0, message_dict)
+                            n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string")
                             print("Sent message to server")
                             self.updated_chat()
                             self.chat_box.text_entry.setText("")
@@ -968,14 +994,17 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     # Compresses the byte representation of an image using zlib,
                     # encodes the compressed data as base64, and then decodes
                     # it into a UTF-8 string for transmission or storage.
-                    compressed_base64_image = base64.b64encode(zlib.compress(self.image_to_send)).decode()
-                    print(len(compressed_base64_image))
+                    compressed_byte_image = zlib.compress(self.image_to_send)
+                    compressed_base64_image = base64.b64encode(compressed_byte_image).decode()
+                    #print(len(compressed_base64_image))
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                    info = (compressed_base64_image, self.username, str(formatted_time))
-                    self.list_messages.insert(0, info)
+
+                    message_dict = create_message_dict(compressed_base64_image, self.username,
+                                                       str(formatted_time), "image")
+                    self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
-                    n.send_message(self.username, self.selected_chat, compressed_base64_image)
+                    n.send_message(self.username, self.selected_chat, compressed_base64_image, "image")
                     self.image_to_send = None
                     self.image_file_name = ""
                     self.updated_chat()
