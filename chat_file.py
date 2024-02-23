@@ -405,7 +405,8 @@ class ChatBox(QWidget):
         self.height_of_chat_box = 1000
         self.file_dialog = QFileDialog(self)
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
-        self.file_dialog.setNameFilter("Image files (*.png);;Video files (*.mp4)")
+        filter_str = "All files (*)"
+        self.file_dialog.setNameFilter(filter_str)
         self.image_file_name = ""
         self.image_height = 100 * 3
         self.image_width = 100 * 2.3
@@ -1940,11 +1941,9 @@ class ChatBox(QWidget):
                     try:
                         decoded_compressed_image_bytes = base64.b64decode(message_content)
                         image_bytes = zlib.decompress(decoded_compressed_image_bytes)
-                        #label1 = QLabel(self)
 
                         image_label = QPushButton(self)
                         image_label.setStyleSheet("background-color: transparent; border: none;")
-                        #self.load_image_from_bytes_to_label(image_bytes, label1)
 
                         self.load_image_from_bytes_to_button(image_bytes, image_label)
                         image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
@@ -1971,6 +1970,41 @@ class ChatBox(QWidget):
                         self.parent.is_chat_box_full = True
                         if index != self.parent.list_messages:
                             self.parent.is_last_message_on_screen = False
+                elif message_type == "video":
+                    try:
+                        decoded_compressed_video_bytes = base64.b64decode(message_content)
+                        video_bytes = zlib.decompress(decoded_compressed_video_bytes)
+
+                        video_label = QPushButton(self)
+                        video_label.setStyleSheet("background-color: transparent; border: none;")
+                        first_video_frame_bytes = extract_first_frame(video_bytes)
+                        self.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
+
+                        #video_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+                        if y - video_label.height() - 10 < end_y_pos:
+                            self.parent.is_chat_box_full = True
+                            if index != len(self.parent.list_messages) - 1:
+                                self.parent.is_last_message_on_screen = False
+                        self.message_labels.append(video_label)
+                        y -= video_label.height()
+                        video_label.move(x_pos, y)
+                        video_label.raise_()
+                        y -= space_between_messages
+                        message = ""
+                        label = self.create_temp_message_label(message)
+                        label.setText(
+                            f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                            f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                        label.move(x_pos, y)
+                        self.message_labels.append(label)
+                        y -= label.height()
+                    except Exception as e:
+                        print(f"error in show messages is:{e}")
+                    if y < end_y_pos:
+                        self.parent.is_chat_box_full = True
+                        if index != self.parent.list_messages:
+                            self.parent.is_last_message_on_screen = False
+
                 if y - 15 < end_y_pos:
                     self.parent.is_chat_box_full = True
                     break
