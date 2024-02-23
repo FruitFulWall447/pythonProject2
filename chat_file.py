@@ -16,6 +16,7 @@ import pygetwindow
 import numpy as np
 from PIL import Image, ImageDraw
 import webbrowser
+import io
 
 
 def open_image_bytes(image_bytes):
@@ -40,6 +41,27 @@ def open_image_bytes(image_bytes):
     except Exception as e:
         print(f"Error opening image: {e}")
         return False
+
+
+def calculate_image_size_in_kb(image_bytes):
+    try:
+        # Create a BytesIO object from the image bytes
+        image_stream = io.BytesIO(image_bytes)
+
+        # Open the image using PIL
+        with Image.open(image_stream) as img:
+            # Get the size of the image in bytes
+            image_size_bytes = img.tell()
+
+            # Convert bytes to kilobytes
+            image_size_kb = image_size_bytes / 1024
+
+            return image_size_kb
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
 
 def make_circular_image1(image_path_or_bytes):
     """Converts an image to a circular image.
