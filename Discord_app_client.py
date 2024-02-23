@@ -651,27 +651,19 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     background-color: {self.background_color};
                 }}
             ''')
-
             # Create an instance of ChatBox
             if chat_clicked:
                 self.chat_box = ChatBox(self.selected_chat, self.list_messages, self.friends_list, parent=self, Network=n)   # Set the parent widget
 
-
-            # Create layouts
             buttons_layout = QHBoxLayout()
             self.main_layout = QVBoxLayout(self)
             self.main_layout.addSpacing(30)
             self.main_layout.addLayout(buttons_layout)
-
             self.friends_box = FriendsBox(friends_list=self.friends_list,
                                           requests_list=self.request_list, Network=n, username=self.username, parent=self)
             self.friends_box.hide()
-
             self.settings_box = SettingsBox(parent=self)
             self.settings_box.hide()
-            # Add some spacing between buttons and ChatBox
-
-            # Add the ChatBox to the main layout
             self.stacked_widget = QStackedWidget(self)
             self.stacked_widget.addWidget(self.chat_box)
             self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
@@ -679,7 +671,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
             self.main_layout.addWidget(self.stacked_widget)
 
-            # Set the layout
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")

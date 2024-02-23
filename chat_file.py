@@ -1987,8 +1987,17 @@ class ChatBox(QWidget):
                                 self.parent.is_last_message_on_screen = False
                         self.message_labels.append(video_label)
                         y -= video_label.height()
+                        play_button = QPushButton(self)
+                        play_button_icon_path = "discord_app_assets/play_video_icon.png"
+                        play_button_size = (50, 50)
+                        set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
+                        self.message_labels.append(play_button)
+
+                        make_q_object_clear(play_button)
                         video_label.move(x_pos, y)
+                        play_button.move(x_pos + (0.5 * video_label.width() - 0.5 * play_button_size[0]), y + (0.5 * video_label.height() - 0.5 * play_button_size[1]))
                         video_label.raise_()
+                        play_button.raise_()
                         y -= space_between_messages
                         message = ""
                         label = self.create_temp_message_label(message)
