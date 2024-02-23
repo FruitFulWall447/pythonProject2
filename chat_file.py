@@ -1606,16 +1606,6 @@ class ChatBox(QWidget):
     def raise_around_name_label(self):
         self.around_name.raise_()
 
-    def is_valid_image(self, image_bytes):
-        try:
-            # Use Pillow to try opening the image from bytes
-            image = Image.open(BytesIO(image_bytes))
-            # If successful, it's a valid image
-            return True
-        except Exception as e:
-            # If there is an exception, it's not a valid image
-            print(f"Error: {e}")
-            return False
 
     def open_file_dialog(self):
         if self.file_dialog.exec_():
@@ -1623,9 +1613,9 @@ class ChatBox(QWidget):
             if selected_files:
                 self.parent.image_file_name = selected_files[0].split("/")[-1]
                 print(f"Selected file: {self.parent.image_file_name}")
-                image_bytes = self.file_to_bytes(selected_files[0])
+                image_bytes = file_to_bytes(selected_files[0])
 
-                if self.is_valid_image(image_bytes):
+                if is_valid_image(image_bytes):
                     self.parent.image_to_send = image_bytes
                     print("image to send defined")
                     self.filename_label.setText(self.parent.image_file_name + " is loaded")
