@@ -405,7 +405,7 @@ class ChatBox(QWidget):
         self.height_of_chat_box = 1000
         self.file_dialog = QFileDialog(self)
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
-        self.file_dialog.setNameFilter("Image files (*.png)")
+        self.file_dialog.setNameFilter("Image files (*.png);;Video files (*.mp4)")
         self.image_file_name = ""
         self.image_height = 100 * 3
         self.image_width = 100 * 2.3
@@ -1681,13 +1681,12 @@ class ChatBox(QWidget):
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
+            self.parent.image_file_name = selected_files[0].split("/")[-1]
             if selected_files and file_types[0] in ["png", "jpg"]:
-                self.parent.image_file_name = selected_files[0].split("/")[-1]
-                print(f"Selected file: {self.parent.image_file_name}")
                 image_bytes = file_to_bytes(selected_files[0])
 
                 if is_valid_image(image_bytes):
-                    self.parent.image_to_send = image_bytes
+                    self.parent.file_to_send = image_bytes
                     print("image to send defined")
                     self.filename_label.setText(self.parent.image_file_name + " is loaded")
                     self.filename_label.show()
@@ -1695,7 +1694,13 @@ class ChatBox(QWidget):
                     self.parent.activateWindow()
                 else:
                     print("couldn't load image")
-                # You can add additional processing here
+            elif selected_files and file_types[0] in ["mp4"]:
+                video_bytes = file_to_bytes(selected_files[0])
+                self.parent.file_to_send = video_bytes
+                self.filename_label.setText(self.parent.image_file_name + " is loaded")
+                self.filename_label.show()
+                self.parent.updated_chat()
+                self.parent.activateWindow()
 
 
     def open_image_file_dialog(self):
@@ -2016,7 +2021,7 @@ class ChatBox(QWidget):
         self.messages_list = updated_list
 
     def garbage_button_clicked(self):
-        self.parent.image_to_send = None
+        self.parent.file_to_send = None
         self.parent.image_file_name = ""
         self.parent.updated_chat()
 
@@ -2043,7 +2048,7 @@ class ChatBox(QWidget):
             self.Network.updated_current_chat(name)
             self.image_too_big.hide()
             self.parent.size_error_label = False
-            self.parent.image_to_send = None
+            self.parent.file_to_send = None
             self.parent.image_file_name = ""
             self.parent.updated_chat()
 

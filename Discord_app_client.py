@@ -590,7 +590,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         # friend_box_page could be online, add friend, blocked, all, pending
         self.friends_box_page = "online"
         self.chats_list = []
-        self.image_to_send = None
+        self.file_to_send = None
         self.image_file_name = ""
         self.chat_start_index = 0
         self.Network = Netwrok
@@ -989,23 +989,29 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                             self.updated_chat()
                             self.chat_box.text_entry.setText("")
                             self.chat_box.text_entry.setFocus()
-                if self.image_to_send:
-                    print(len(self.image_to_send))
+                if self.file_to_send:
+                    print(len(self.file_to_send))
                     # Compresses the byte representation of an image using zlib,
                     # encodes the compressed data as base64, and then decodes
                     # it into a UTF-8 string for transmission or storage.
-                    compressed_byte_image = zlib.compress(self.image_to_send)
-                    compressed_base64_image = base64.b64encode(compressed_byte_image).decode()
+                    compressed_byte_file = zlib.compress(self.file_to_send)
+                    compressed_base64_file = base64.b64encode(compressed_byte_file).decode()
                     #print(len(compressed_base64_image))
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-
-                    message_dict = create_message_dict(compressed_base64_image, self.username,
-                                                       str(formatted_time), "image")
+                    file_type = ""
+                    if self.image_file_name.endswith("png"):
+                        file_type = "image"
+                    elif self.image_file_name.endswith("mp4"):
+                        file_type = "video"
+                    else:
+                        file_type = "string"
+                    message_dict = create_message_dict(compressed_base64_file, self.username,
+                                                       str(formatted_time), file_type)
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
-                    n.send_message(self.username, self.selected_chat, compressed_base64_image, "image")
-                    self.image_to_send = None
+                    n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type)
+                    self.file_to_send = None
                     self.image_file_name = ""
                     self.updated_chat()
                 elif social_clicked:
