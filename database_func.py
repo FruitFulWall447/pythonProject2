@@ -311,12 +311,12 @@ def add_message(sender_name, receiver_name, message_content, message_type):
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
-
+        basic_files_types = ["xlsk", "py", "docx", "pptx", "txt", "pdf", "video", "mp3", "image"]
         if connection.is_connected():
             cursor = connection.cursor()
 
             # SQL query to insert a message into the 'messages' table
-            if message_type in ("video", "image", "txt", "pptx", "docx", "py", "mp3"):
+            if message_type in basic_files_types:
                 encoded_base64_bytes = message_content
                 message_content = base64.b64decode(encoded_base64_bytes)
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type) VALUES (%s, %s, %s, %s)"
