@@ -1860,7 +1860,7 @@ class ChatBox(QWidget):
                     self.parent.activateWindow()
                 else:
                     print("couldn't load image")
-            elif selected_files and file_types[0] in ["mp4"]:
+            elif selected_files and file_types[0] in ["mp4", "mov"]:
                 video_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = video_bytes
                 self.filename_label.setText(self.parent.file_name + " is loaded")

@@ -1029,7 +1029,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     file_type = ""
                     if self.file_name.endswith("png"):
                         file_type = "image"
-                    elif self.file_name.endswith("mp4"):
+                    elif self.file_name.endswith(("mp4", "mov")):
                         file_type = "video"
                     elif self.file_name.endswith("mp3"):
                         file_type = "audio"
