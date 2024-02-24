@@ -3571,7 +3571,6 @@ class VideoPlayer(QWidget):
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.stateChanged.connect(self.handle_state_change)
 
-
     def stop_watching(self):
         self.media_player.stop()
         self.parent.stop_watching_video()
@@ -3612,6 +3611,9 @@ class VideoPlayer(QWidget):
         duration_time = QTime(0, 0).addMSecs(self.media_player.duration()).toString("mm:ss")
         # Update the duration label text
         self.duration_label.setText(f"{position_time} / {duration_time}")
+        if position >= self.media_player.duration() - 10:  # Check if less than 100 milliseconds remain
+            self.media_player.pause()
+            self.media_player.setPosition(0)  # Rewind to the beginning for replay
 
 
     def handle_state_change(self, new_state):
