@@ -1032,6 +1032,16 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         file_type = "video"
                     elif self.file_name.endswith("txt"):
                         file_type = "txt"
+                    elif self.file_name.endswith("pdf"):
+                        file_type = "pdf"
+                    elif self.file_name.endswith("pptx"):
+                        file_type = "pptx"
+                    elif self.file_name.endswith("docx"):
+                        file_type = "docx"
+                    elif self.file_name.endswith("py"):
+                        file_type = "py"
+                    elif self.file_name.endswith("xlsk"):
+                        file_type = "xlsk"
                     message_dict = create_message_dict(compressed_base64_file, self.username,
                                                        str(formatted_time), file_type)
                     self.list_messages.insert(0, message_dict)

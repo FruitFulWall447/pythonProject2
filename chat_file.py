@@ -23,6 +23,51 @@ import os
 import math
 import subprocess
 
+
+def open_pptx_from_bytes(pptx_bytes):
+    temp_file_path = save_bytes_to_temp_file(pptx_bytes, 'pptx')
+    open_file_with_default_app(temp_file_path)
+
+
+def open_docx_from_bytes(docx_bytes):
+    temp_file_path = save_bytes_to_temp_file(docx_bytes, 'docx')
+    open_file_with_default_app(temp_file_path)
+
+
+def open_xlsx_from_bytes(xlsx_bytes):
+    temp_file_path = save_bytes_to_temp_file(xlsx_bytes, 'xlsx')
+    open_file_with_default_app(temp_file_path)
+
+
+def open_py_from_bytes(py_bytes):
+    temp_file_path = save_bytes_to_temp_file(py_bytes, 'py')
+    open_file_with_default_app(temp_file_path)
+
+
+def open_pdf_from_bytes(pdf_bytes):
+    temp_file_path = save_bytes_to_temp_file(pdf_bytes, 'pdf')
+    open_file_with_default_app(temp_file_path)
+
+
+def save_bytes_to_temp_file(file_bytes, extension):
+    temp_file = tempfile.NamedTemporaryFile(suffix='.' + extension, delete=False)
+    temp_file.write(file_bytes)
+    temp_file.close()
+    return temp_file.name
+
+
+def open_file_with_default_app(file_path):
+    try:
+        if os.name == 'nt':
+            os.startfile(file_path)
+        elif os.name == 'posix':
+            subprocess.run(['xdg-open', file_path])
+        else:
+            print("Unsupported operating system.")
+    except Exception as e:
+        print(f"Error opening file: {e}")
+
+
 def open_text_file_from_bytes(file_bytes):
     try:
         # Create a temporary file
@@ -1744,6 +1789,7 @@ class ChatBox(QWidget):
 
 
     def open_file_dialog(self):
+        basic_files_types = ["xlsk", "py", "docx", "pptx", "txt", "pdf"]
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
@@ -1767,7 +1813,7 @@ class ChatBox(QWidget):
                 self.filename_label.show()
                 self.parent.updated_chat()
                 self.parent.activateWindow()
-            elif selected_files and file_types[0] in ["txt", "pdf", "docx", "pptx"]:
+            elif selected_files and file_types[0] in basic_files_types:
                 file_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = file_bytes
                 self.filename_label.setText(self.parent.file_name + " is loaded")
@@ -1983,6 +2029,7 @@ class ChatBox(QWidget):
             end_y_pos = 50
         y = starter_y_pos
         index = 0
+        basic_files_types = ["xlsk", "py", "docx", "pptx", "txt", "pdf"]
         for i in list_messages:
             message_content = i.get("content")
             message_time = i.get("timestamp")
@@ -2088,14 +2135,30 @@ class ChatBox(QWidget):
                         self.parent.is_chat_box_full = True
                         if index != self.parent.list_messages:
                             self.parent.is_last_message_on_screen = False
-                elif message_type == "txt":
+                elif message_type in basic_files_types:
                     try:
                         decoded_compressed_file_bytes = base64.b64decode(message_content)
                         file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
                         link_label = QPushButton(f"{message_type} File", self)
                         link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white;")
-                        link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
+                        if message_type == "txt":
+                            link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
+                        elif message_type == "pptx":
+                            link_label.clicked.connect(
+                                lambda _, file_bytes=file_bytes: open_pptx_from_bytes(file_bytes))
+                        elif message_type == "py":
+                            link_label.clicked.connect(
+                                lambda _, file_bytes=file_bytes: open_py_from_bytes(file_bytes))
+                        elif message_type == "docx":
+                            link_label.clicked.connect(
+                                lambda _, file_bytes=file_bytes: open_docx_from_bytes(file_bytes))
+                        elif message_type == "xlsx":
+                            link_label.clicked.connect(
+                                lambda _, file_bytes=file_bytes: open_xlsx_from_bytes(file_bytes))
+                        elif message_type == "pdf":
+                            link_label.clicked.connect(
+                                lambda _, file_bytes=file_bytes: open_pdf_from_bytes(file_bytes))
                         y -= link_label.height()
                         link_label.setGeometry(x_pos, y, 300, 40)
                         if y - link_label.height() - 10 < end_y_pos:
