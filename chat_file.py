@@ -60,6 +60,7 @@ def download_file_from_bytes(file_bytes, file_extension):
     except Exception as e:
         print(f"Error downloading file: {e}")
 
+
 def play_mp3_from_bytes(mp3_bytes, media_player):
     try:
         # Save MP3 bytes to a temporary file
@@ -139,6 +140,7 @@ def open_text_file_from_bytes(file_bytes):
             # On macOS, you might use: subprocess.Popen(['open', file_path])
     except Exception as e:
         print(f"Error opening text file: {e}")
+
 
 def create_link_label(text, click_function, parent=None):
     label = QLabel(text, parent)
@@ -250,6 +252,27 @@ def calculate_image_size_in_kb(image_bytes):
 
             # Convert bytes to kilobytes
             image_size_kb = image_size_bytes / 1024
+
+            return image_size_kb
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+
+
+def calculate_image_size_in_mb(image_bytes):
+    try:
+        # Create a BytesIO object from the image bytes
+        image_stream = io.BytesIO(image_bytes)
+
+        # Open the image using PIL
+        with Image.open(image_stream) as img:
+            # Get the size of the image in bytes
+            image_size_bytes = img.tell()
+
+            # Convert bytes to kilobytes
+            image_size_kb = image_size_bytes / (1024 * 1000)
 
             return image_size_kb
 
@@ -1848,6 +1871,13 @@ class ChatBox(QWidget):
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
             self.parent.file_name = selected_files[0].split("/")[-1]
+            file_path = selected_files[0]  # Get the file path
+            file_size = os.path.getsize(file_path)  # Get the file size in bytes
+
+            # Check if the file size is greater than 10 MB (10 * 1024 * 1024 bytes)
+            if file_size > 10 * 1024 * 1024:
+                print("File size exceeds the limit (10 MB).")
+                return
             if selected_files and file_types[0] in ["png", "jpg"]:
                 image_bytes = file_to_bytes(selected_files[0])
 

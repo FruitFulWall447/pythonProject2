@@ -309,14 +309,13 @@ def thread_recv_messages(n, addr, username):
                         database_func.add_message(sender, receiver, content, message_type)
                         if not receiver.startswith("("):
                             add_message_for_client(receiver, f"got_new_message:{sender}")
-                            logger.info(f"Server got message: {message} from user {User}")
                         else: # means its a group therefore need to update message for every member of group
                             group_name, group_id = gets_group_attributes_from_format(receiver)
                             group_members = database_func.get_group_members(group_id)
                             group_members.remove(User)
                             for member in group_members:
                                 add_message_for_client(member, f"got_new_message:{receiver}")
-                            logger.info(f"Server got message: {message} from user {User}")
+                        logger.info(f"added new message from {User} to {receiver}")
                     if data.startswith("friend_request:"):
                         num_of_parts = len(data.split(":"))
                         if num_of_parts != 2:
