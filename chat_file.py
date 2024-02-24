@@ -3550,7 +3550,7 @@ class VideoPlayer(QWidget):
         exit_watch_button = QPushButton(self)
         exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y)
         make_q_object_clear(exit_watch_button)
-        exit_watch_button.clicked.connect(self.parent.stop_watching_video)
+        exit_watch_button.clicked.connect(self.stop_watching)
 
         icon_path = "discord_app_assets/exit_button.png"
         button_size = (30, 30)
@@ -3571,6 +3571,10 @@ class VideoPlayer(QWidget):
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.stateChanged.connect(self.handle_state_change)
 
+
+    def stop_watching(self):
+        self.media_player.stop()
+        self.parent.stop_watching_video()
 
     def play_video(self):
         try:
