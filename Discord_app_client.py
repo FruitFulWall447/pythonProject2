@@ -636,6 +636,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
         self.disconnect_signal.connect(self.quit_application)
         self.media_player = QMediaPlayer()
+
+        self.mp3_message_media_player = QMediaPlayer()
         self.media_player.stateChanged.connect(self.handle_state_changed)
         self.media_player.setVolume(70)
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
@@ -696,8 +698,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             widget_to_remove = self.stacked_widget.currentWidget()  # Get the currently displayed widget
             self.stacked_widget.removeWidget(widget_to_remove)
             self.set_page_index_by_clicked()
-            print(self.stacked_widget.count())
-            print("stopped video")
+            print("exited video")
             self.setFocus()
         except Exception as e:
             print(f"error in stopping video: {e}")
@@ -1030,6 +1031,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         file_type = "image"
                     elif self.file_name.endswith("mp4"):
                         file_type = "video"
+                    elif self.file_name.endswith("mp3"):
+                        file_type = "audio"
                     elif self.file_name.endswith("txt"):
                         file_type = "txt"
                     elif self.file_name.endswith("pdf"):

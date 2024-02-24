@@ -23,6 +23,23 @@ import os
 import math
 import subprocess
 
+def play_mp3_from_bytes(mp3_bytes, media_player):
+    try:
+        # Save MP3 bytes to a temporary file
+        media_player.stop()
+        temp_file_path = save_bytes_to_temp_file(mp3_bytes, 'mp3')
+
+        # Create QMediaContent object with the URL pointing to the temporary file
+        media_content = QMediaContent(QUrl.fromLocalFile(temp_file_path))
+
+        # Create QMediaPlayer instance and set the media content
+        media_player.setMedia(media_content)
+
+        # Play the media
+        media_player.play()
+    except Exception as e:
+        print(f"Error playing MP3: {e}")
+
 
 def open_pptx_from_bytes(pptx_bytes):
     temp_file_path = save_bytes_to_temp_file(pptx_bytes, 'pptx')
@@ -1813,6 +1830,13 @@ class ChatBox(QWidget):
                 self.filename_label.show()
                 self.parent.updated_chat()
                 self.parent.activateWindow()
+            elif selected_files and file_types[0] in ["mp3"]:
+                audio_bytes = file_to_bytes(selected_files[0])
+                self.parent.file_to_send = audio_bytes
+                self.filename_label.setText(self.parent.file_name + " is loaded")
+                self.filename_label.show()
+                self.parent.updated_chat()
+                self.parent.activateWindow()
             elif selected_files and file_types[0] in basic_files_types:
                 file_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = file_bytes
@@ -2135,6 +2159,42 @@ class ChatBox(QWidget):
                         self.parent.is_chat_box_full = True
                         if index != self.parent.list_messages:
                             self.parent.is_last_message_on_screen = False
+                elif message_type == "audio":
+                    decoded_compressed_audio_bytes = base64.b64decode(message_content)
+                    audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
+
+                    audio_label = QPushButton(f"{message_type} File", self)
+                    audio_label.setStyleSheet(
+                        f"background-color: {self.parent.standard_hover_color}; border: none; color: white;")
+
+
+
+                    y -= audio_label.height()
+                    play_button = QPushButton(self)
+                    play_button_icon_path = "discord_app_assets/play_video_icon.png"
+                    play_button_size = (50, 50)
+                    set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
+                    play_button.clicked.connect(
+                        lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes, self.parent.mp3_message_media_player))
+                    audio_label.setGeometry(x_pos, y, 300, 40)
+                    make_q_object_clear(play_button)
+                    play_button.move(x_pos + (0.5 * audio_label.width() - 0.5 * play_button_size[0]),
+                                     y + (0.5 * audio_label.height() - 0.5 * play_button_size[1]))
+
+                    if y - audio_label.height() - 10 < end_y_pos:
+                        self.parent.is_chat_box_full = True
+                        if index != len(self.parent.list_messages) - 1:
+                            self.parent.is_last_message_on_screen = False
+                    self.message_labels.append(audio_label)
+                    y -= space_between_messages
+                    message = ""
+                    label = self.create_temp_message_label(message)
+                    label.setText(
+                        f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                        f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    label.move(x_pos, y)
+                    self.message_labels.append(label)
+                    y -= label.height()
                 elif message_type in basic_files_types:
                     try:
                         decoded_compressed_file_bytes = base64.b64decode(message_content)
