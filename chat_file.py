@@ -4,9 +4,10 @@ from PyQt5.QtCore import pyqtSignal
 from functools import partial
 from discord_comms_protocol import client_net
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
-from PyQt5.QtCore import Qt, QSize, QUrl
+from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PIL import Image
 from io import BytesIO
 import base64
@@ -3525,6 +3526,89 @@ class SettingsBox(QWidget):
             }}
         """
 
+
+class VideoPlayer(QWidget):
+    def __init__(self, video_bytes, parent):
+        super().__init__()
+        self.parent = parent
+        self.video_bytes = video_bytes
+        self.setWindowTitle("Video Player")
+
+        self.media_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        self.video_widget = QVideoWidget(self)
+        screen = QDesktopWidget().screenGeometry()
+        # Extract the screen width and height
+        screen_width = screen.width()
+        screen_height = screen.height()
+        self.video_widget.setGeometry(0, 0, screen_width, int(screen_height*0.83))
+
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.sliderReleased.connect(self.set_position)
+        slider_x, slider_y, slider_width, slider_height = int(screen_width*0.1), int(screen_height*0.85), int(screen_width*0.8), int(screen_height*0.05)
+        self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
+
+        exit_watch_button = QPushButton(self)
+        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y)
+        make_q_object_clear(exit_watch_button)
+        exit_watch_button.clicked.connect(self.parent.stop_watching_video)
+
+        icon_path = "discord_app_assets/exit_button.png"
+        button_size = (30, 30)
+        set_button_icon(exit_watch_button, icon_path, button_size[0], button_size[1])
+        exit_watch_button.setGeometry(exit_watch_button_x, exit_watch_button_y, button_size[0], button_size[1])
+
+        self.duration_label = QLabel(self)
+        self.duration_label.setStyleSheet("background-color: transparent; color: white;")
+        duration_label_x, duration_label_y = int(screen_width*0.05), int(screen_height*0.85)
+        self.duration_label.move(duration_label_x, duration_label_y)
+
+
+
+
+        # Set media player to use video widget
+        self.media_player.setVideoOutput(self.video_widget)
+        self.media_player.durationChanged.connect(self.update_duration)
+        self.media_player.positionChanged.connect(self.update_position)
+
+    def play_video(self):
+        try:
+            # Create a temporary file in memory
+            temp_file = QTemporaryFile()
+            if temp_file.open():
+                # Write the video bytes to the temporary file
+                temp_file.write(self.video_bytes)
+                # Flush the data to ensure it's written
+                temp_file.flush()
+
+                # Create a QMediaContent object with the QUrl pointing to the temporary file
+                url = QUrl.fromLocalFile(temp_file.fileName())
+                media_content = QMediaContent(url)
+
+                # Set the media content to the media player and play
+                self.media_player.setMedia(media_content)
+                self.media_player.play()
+            else:
+                print("Failed to create temporary file")
+        except Exception as e:
+            print(e)
+
+    def update_duration(self, duration):
+        self.slider.setMaximum(duration)
+        self.duration_label.setText("Duration: " + QTime(0, 0).addMSecs(duration).toString("mm:ss"))
+
+    def update_position(self, position):
+        self.slider.setValue(position)
+
+    def set_position(self):
+        position = self.slider.value()
+        self.media_player.setPosition(position)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.media_player.state() == QMediaPlayer.PlayingState:
+                self.media_player.pause()
+            elif self.media_player.state() == QMediaPlayer.PausedState:
+                self.media_player.play()
 
 
 
