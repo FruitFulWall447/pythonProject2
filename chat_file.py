@@ -22,6 +22,43 @@ import tempfile
 import os
 import math
 import subprocess
+import platform
+import random
+import string
+
+def generate_random_filename(extension):
+    # Generate a random string of characters
+    random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    return f"file_{random_string}.{extension}"
+
+
+def download_file_from_bytes(file_bytes, file_extension):
+    try:
+        # Get the path to the user's downloads directory
+        if platform.system() == 'Windows':
+            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+        elif platform.system() == 'Darwin':
+            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+        else:
+            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+
+
+        # Generate a random file name with the same extension
+        random_filename = generate_random_filename(file_extension)
+
+        # Prompt the user to choose a file name and location
+        file_path, _ = QFileDialog.getSaveFileName(None, "Save File", os.path.join(downloads_dir, random_filename))
+
+        if file_path:
+            # Write the file bytes to disk
+            with open(file_path, 'wb') as file:
+                file.write(file_bytes)
+
+            print(f"File downloaded successfully to '{file_path}'.")
+        else:
+            print("Download canceled by user.")
+    except Exception as e:
+        print(f"Error downloading file: {e}")
 
 def play_mp3_from_bytes(mp3_bytes, media_player):
     try:
@@ -2209,10 +2246,6 @@ class ChatBox(QWidget):
                         elif message_type == "py":
                             link_label.clicked.connect(
                                 lambda _, file_bytes=file_bytes: open_py_from_bytes(file_bytes))
-                            link_label.setContextMenuPolicy(Qt.CustomContextMenu)
-                            link_label.customContextMenuRequested.connect(lambda pos, button=link_label: self.show_context_menu(pos, button))
-
-
                         elif message_type == "docx":
                             link_label.clicked.connect(
                                 lambda _, file_bytes=file_bytes: open_docx_from_bytes(file_bytes))
@@ -2222,6 +2255,10 @@ class ChatBox(QWidget):
                         elif message_type == "pdf":
                             link_label.clicked.connect(
                                 lambda _, file_bytes=file_bytes: open_pdf_from_bytes(file_bytes))
+                        link_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                        link_label.customContextMenuRequested.connect(
+                            lambda pos, file_bytes=file_bytes, button=link_label, type=message_type: self.show_context_menu(pos, button,
+                                                                                                         file_bytes, type))
                         y -= link_label.height()
                         link_label.setGeometry(x_pos, y, 300, 40)
                         if y - link_label.height() - 10 < end_y_pos:
@@ -2258,20 +2295,16 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"error in showing messages on screen: {e}")
 
-    def show_context_menu(self, pos, button):
-        print("Right-clicked")  # Check if this prints
+    def show_context_menu(self, pos, button, file_bytes, type):
         menu = QMenu(self)
         download_action = menu.addAction("Download")
-        download_action.triggered.connect(self.download_file)
+        download_action.triggered.connect(lambda: download_file_from_bytes(file_bytes, type))
 
         # Use the position of the button as the reference for menu placement
         global_pos = button.mapToGlobal(pos)
 
         # Show the context menu at the adjusted position
         menu.exec_(global_pos)
-
-    def download_file(self):
-        print("File downloading...")
 
 
     def on_button_clicked(self, label):
