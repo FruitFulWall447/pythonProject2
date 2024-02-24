@@ -3559,7 +3559,7 @@ class VideoPlayer(QWidget):
 
         self.duration_label = QLabel(self)
         self.duration_label.setStyleSheet("background-color: transparent; color: white;")
-        duration_label_x, duration_label_y = int(screen_width*0.05), int(screen_height*0.85)
+        duration_label_x, duration_label_y = int(screen_width*0.03), int(screen_height*0.865)
         self.duration_label.move(duration_label_x, duration_label_y)
 
 
@@ -3569,6 +3569,8 @@ class VideoPlayer(QWidget):
         self.media_player.setVideoOutput(self.video_widget)
         self.media_player.durationChanged.connect(self.update_duration)
         self.media_player.positionChanged.connect(self.update_position)
+        self.media_player.stateChanged.connect(self.handle_state_change)
+
 
     def play_video(self):
         try:
@@ -3596,8 +3598,23 @@ class VideoPlayer(QWidget):
         self.slider.setMaximum(duration)
         self.duration_label.setText("Duration: " + QTime(0, 0).addMSecs(duration).toString("mm:ss"))
 
+        self.duration_label.adjustSize()
+        self.duration_label.raise_()
+
     def update_position(self, position):
         self.slider.setValue(position)
+        # Format the position and duration to MM:SS format
+        position_time = QTime(0, 0).addMSecs(position).toString("mm:ss")
+        duration_time = QTime(0, 0).addMSecs(self.media_player.duration()).toString("mm:ss")
+        # Update the duration label text
+        self.duration_label.setText(f"{position_time} / {duration_time}")
+
+
+    def handle_state_change(self, new_state):
+        if new_state == QMediaPlayer.EndOfMedia:
+            # If video reaches the end, pause instead of finishing
+            self.play_video()
+            self.media_player.pause()
 
     def set_position(self):
         position = self.slider.value()
