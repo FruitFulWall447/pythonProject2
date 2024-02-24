@@ -1789,7 +1789,7 @@ class ChatBox(QWidget):
 
 
     def open_file_dialog(self):
-        basic_files_types = ["xlsk", "py", "docx", "pptx", "txt", "pdf"]
+        basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
@@ -2029,7 +2029,7 @@ class ChatBox(QWidget):
             end_y_pos = 50
         y = starter_y_pos
         index = 0
-        basic_files_types = ["xlsk", "py", "docx", "pptx", "txt", "pdf"]
+        basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
         for i in list_messages:
             message_content = i.get("content")
             message_time = i.get("timestamp")
