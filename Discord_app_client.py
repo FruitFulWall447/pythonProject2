@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
-from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl
+from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
 from chat_file import ChatBox, FriendsBox, SettingsBox
@@ -20,6 +20,9 @@ import pyautogui
 import struct
 import re
 from queue import Queue, Empty
+from PyQt5.QtMultimediaWidgets import QVideoWidget
+
+
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
                    "tutanota", "icloud", "rackspace","mailchimp",
@@ -2071,6 +2074,72 @@ class Change_password_page(QWidget):
 
     def resend_code_clicked(self):
         print(4)
+
+
+class VideoPlayer(QWidget):
+    def __init__(self, video_bytes):
+        super().__init__()
+        self.video_bytes = video_bytes
+        self.setWindowTitle("Video Player")
+
+        self.media_player = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        self.video_widget = QVideoWidget(self)
+
+        self.video_widget.setGeometry(0, 0, 1920, 1000)
+
+        self.slider = QSlider(Qt.Horizontal, self)
+        self.slider.sliderReleased.connect(self.set_position)
+        self.slider.setGeometry(0, 950, 1920, 50)
+
+        self.duration_label = QLabel()
+
+
+
+
+        # Set media player to use video widget
+        self.media_player.setVideoOutput(self.video_widget)
+        self.media_player.durationChanged.connect(self.update_duration)
+        self.media_player.positionChanged.connect(self.update_position)
+
+    def play_video(self):
+        try:
+            # Create a temporary file in memory
+            temp_file = QTemporaryFile()
+            if temp_file.open():
+                # Write the video bytes to the temporary file
+                temp_file.write(self.video_bytes)
+                # Flush the data to ensure it's written
+                temp_file.flush()
+
+                # Create a QMediaContent object with the QUrl pointing to the temporary file
+                url = QUrl.fromLocalFile(temp_file.fileName())
+                media_content = QMediaContent(url)
+
+                # Set the media content to the media player and play
+                self.media_player.setMedia(media_content)
+                self.media_player.play()
+            else:
+                print("Failed to create temporary file")
+        except Exception as e:
+            print(e)
+
+    def update_duration(self, duration):
+        self.slider.setMaximum(duration)
+        self.duration_label.setText("Duration: " + QTime(0, 0).addMSecs(duration).toString("mm:ss"))
+
+    def update_position(self, position):
+        self.slider.setValue(position)
+
+    def set_position(self):
+        position = self.slider.value()
+        self.media_player.setPosition(position)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            if self.media_player.state() == QMediaPlayer.PlayingState:
+                self.media_player.pause()
+            elif self.media_player.state() == QMediaPlayer.PausedState:
+                self.media_player.play()
 
 def load_all_pages(n):
     global sign_up_page, forget_password_page, login_page, verification_code_page, main_page, change_password_page
