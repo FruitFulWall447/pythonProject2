@@ -145,7 +145,7 @@ class client_net:
         self.logger.debug(f"trying to connect to addr: {self.addr}")
         self.id = self.connect()
         self.size = 0000000
-        self.original_len = 7
+        self.original_len = 10
         self.aes_key = None
         self.sending_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
@@ -637,7 +637,7 @@ class server_net:
 
         self.server = s
         self.size = 0000000
-        self.original_len = 7
+        self.original_len = 10
         self.aes_key = None
         self.sending_data_lock = threading.Lock()
         self.initiate_rsa_protocol()

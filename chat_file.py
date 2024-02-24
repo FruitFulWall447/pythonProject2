@@ -3674,14 +3674,19 @@ class VideoPlayer(QWidget):
         duration_label_x, duration_label_y = int(screen_width*0.03), int(screen_height*0.865)
         self.duration_label.move(duration_label_x, duration_label_y)
 
-
-
+        self.video_widget.mousePressEvent = self.toggle_play_pause
 
         # Set media player to use video widget
         self.media_player.setVideoOutput(self.video_widget)
         self.media_player.durationChanged.connect(self.update_duration)
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.stateChanged.connect(self.handle_state_change)
+
+    def toggle_play_pause(self, event):
+        if self.media_player.state() == QMediaPlayer.PlayingState:
+            self.media_player.pause()
+        else:
+            self.media_player.play()
 
     def stop_watching(self):
         self.media_player.stop()
