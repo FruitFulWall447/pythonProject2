@@ -20,6 +20,38 @@ import webbrowser
 import io
 import tempfile
 import os
+import math
+
+
+def format_label_text_by_row(label, text, num_rows):
+    try:
+        # Calculate the total number of characters per row, including the possibility of a shorter last row
+        chars_per_row = len(text) // num_rows
+        extra_chars = len(text) % num_rows
+
+        # Initialize variables for storing formatted text and the starting index
+        formatted_text = ""
+        start_index = 0
+
+        # Iterate through each row
+        for row in range(num_rows):
+            # Calculate the end index for this row
+            end_index = start_index + chars_per_row
+
+            # Add an extra character to this row if needed
+            if row < extra_chars:
+                end_index += 1
+
+            # Add the substring to the formatted text with a newline character
+            formatted_text += text[start_index:end_index] + "\n"
+
+            # Update the starting index for the next row
+            start_index = end_index
+
+        # Set the formatted text to the label
+        label.setText(formatted_text)
+    except Exception as e:
+        print(f" error in creating formated label by rows: {e}")
 
 
 def make_q_object_clear(object):
@@ -397,13 +429,16 @@ class ChatBox(QWidget):
 
     def __init__(self, chat_name, messages_list, friends_list, Network, parent=None):
         super().__init__()
-
+        screen = QDesktopWidget().screenGeometry()
+        # Extract the screen width and height
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
         self.Network = Network
         self.parent = parent
         self.is_getting_called = self.parent.is_getting_called
         self.square_label = QLabel(self)
-        self.width_of_chat_box = 800
-        self.height_of_chat_box = 1000
+        self.width_of_chat_box = int(self.screen_width * 0.416)
+        self.height_of_chat_box = int(self.screen_height * 0.926)
         self.file_dialog = QFileDialog(self)
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
         filter_str = "All files (*)"
@@ -435,6 +470,8 @@ class ChatBox(QWidget):
                 filter: brightness(80%); /* Adjust the brightness to make it darker */
             }
         """
+
+        self.draw_message_start_x = int(self.screen_width * 0.323)
 
         self.create_group_open = QPushButton(self)
 
@@ -1899,7 +1936,7 @@ class ChatBox(QWidget):
         space_between_messages = self.parent.font_size + 13
         self.delete_message_labels()
         x_pos = 620
-        starter = 850
+        starter = 845
         if self.filename_label.text() != "":
             starter_y_pos = starter
         else:
@@ -1923,9 +1960,10 @@ class ChatBox(QWidget):
                 if not message_content or message_type == "string":
 
                     content_label = self.create_temp_message_label(message_content)
+                    y -= (content_label.height()-30)
                     content_label.move(x_pos, y)
                     self.message_labels.append(content_label)
-                    y -= content_label.height()
+                    y -= 30
 
                     # second part = Name + timestamp
                     title_label = QLabel()
@@ -2046,14 +2084,26 @@ class ChatBox(QWidget):
         return button
 
     def create_temp_message_label(self, message):
-        x_pos = 620
-        label = QLabel(message, self)
-        label.setStyleSheet("color: white;")
-        font = label.font()
-        font.setPixelSize(self.parent.font_size)
-        label.setFont(font)
+        try:
+            x_pos = self.draw_message_start_x
+            width_of_chat_box = self.width_of_chat_box
 
-        return label
+
+            label = QLabel(message, self)
+            label.setStyleSheet("color: white;")
+            font = label.font()
+            font.setPixelSize(self.parent.font_size)
+            label.setFont(font)
+            print(f"len message: {len(message)}")
+            number_of_rows = math.floor(len(message) / 160) + 1
+            print(f"height before: {label.height()}")
+            if len(message) > 0 and number_of_rows > 1:
+                format_label_text_by_row(label, message, number_of_rows)
+                label.adjustSize()
+            print(f"height after: {label.height()}")
+            return label
+        except Exception as e:
+            print(f"error in creating message label {e}")
 
     def delete_message_labels(self):
         for label in self.message_labels:
