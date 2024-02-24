@@ -21,7 +21,7 @@ import io
 import tempfile
 import os
 import math
-
+import subprocess
 
 def open_text_file_from_bytes(file_bytes):
     try:
@@ -34,13 +34,12 @@ def open_text_file_from_bytes(file_bytes):
             # Get the path to the temporary file
             file_path = temp_file.name
 
-            # Open the temporary file using Notepad
-            os.system(f'notepad {file_path}')
+            # Open the temporary file using Notepad asynchronously
+            subprocess.Popen(['notepad', file_path])
 
-            # On macOS, you might use: os.system(f'open {file_path}')
+            # On macOS, you might use: subprocess.Popen(['open', file_path])
     except Exception as e:
         print(f"Error opening text file: {e}")
-
 
 def create_link_label(text, click_function, parent=None):
     label = QLabel(text, parent)
