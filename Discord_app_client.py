@@ -588,6 +588,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.volume = 50
         self.font_size = 12
 
+        self.is_watching_video = False
+
         self.online_users_list = []
         self.friends_list = []
         # friend_box_page could be online, add friend, blocked, all, pending
@@ -677,6 +679,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def start_watching_video(self, video_bytes):
+        self.is_watching_video = True
+        video_player = VideoPlayer(video_bytes)
+        number_of_widgets = self.stacked_widget.count()
+        self.stacked_widget.addWidget(video_player)
+        self.stacked_widget.setCurrentIndex(number_of_widgets)
+
 
     def start_share_screen_send_thread(self):
         self.send_share_screen_thread.start()

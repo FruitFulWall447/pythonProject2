@@ -1980,7 +1980,7 @@ class ChatBox(QWidget):
                         first_video_frame_bytes = extract_first_frame(video_bytes)
                         self.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
 
-                        #video_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+                        video_label.clicked.connect(lambda _, video_bytes=video_bytes: self.parent.start_watching_video(video_bytes))
                         if y - video_label.height() - 10 < end_y_pos:
                             self.parent.is_chat_box_full = True
                             if index != len(self.parent.list_messages) - 1:
@@ -1990,6 +1990,8 @@ class ChatBox(QWidget):
                         play_button = QPushButton(self)
                         play_button_icon_path = "discord_app_assets/play_video_icon.png"
                         play_button_size = (50, 50)
+                        play_button.clicked.connect(
+                            lambda _, video_bytes=video_bytes: self.parent.start_watching_video(video_bytes))
                         set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
                         self.message_labels.append(play_button)
 
