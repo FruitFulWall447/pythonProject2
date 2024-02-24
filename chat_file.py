@@ -2164,21 +2164,20 @@ class ChatBox(QWidget):
                     audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
 
                     audio_label = QPushButton(f"{message_type} File", self)
-                    audio_label.setStyleSheet(
-                        f"background-color: {self.parent.standard_hover_color}; border: none; color: white;")
+                    audio_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
 
 
 
                     y -= audio_label.height()
                     play_button = QPushButton(self)
                     play_button_icon_path = "discord_app_assets/play_video_icon.png"
-                    play_button_size = (50, 50)
+                    play_button_size = (25, 25)
                     set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
                     play_button.clicked.connect(
                         lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes, self.parent.mp3_message_media_player))
                     audio_label.setGeometry(x_pos, y, 300, 40)
                     make_q_object_clear(play_button)
-                    play_button.move(x_pos + (0.5 * audio_label.width() - 0.5 * play_button_size[0]),
+                    play_button.move(x_pos + (0.1 * audio_label.width()),
                                      y + (0.5 * audio_label.height() - 0.5 * play_button_size[1]))
 
                     if y - audio_label.height() - 10 < end_y_pos:
@@ -2201,7 +2200,7 @@ class ChatBox(QWidget):
                         file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
                         link_label = QPushButton(f"{message_type} File", self)
-                        link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white;")
+                        link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
                         if message_type == "txt":
                             link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
                         elif message_type == "pptx":
@@ -2210,6 +2209,10 @@ class ChatBox(QWidget):
                         elif message_type == "py":
                             link_label.clicked.connect(
                                 lambda _, file_bytes=file_bytes: open_py_from_bytes(file_bytes))
+                            link_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                            link_label.customContextMenuRequested.connect(lambda pos, button=link_label: self.show_context_menu(pos, button))
+
+
                         elif message_type == "docx":
                             link_label.clicked.connect(
                                 lambda _, file_bytes=file_bytes: open_docx_from_bytes(file_bytes))
@@ -2254,6 +2257,21 @@ class ChatBox(QWidget):
             self.chat_name_label.raise_()
         except Exception as e:
             print(f"error in showing messages on screen: {e}")
+
+    def show_context_menu(self, pos, button):
+        print("Right-clicked")  # Check if this prints
+        menu = QMenu(self)
+        download_action = menu.addAction("Download")
+        download_action.triggered.connect(self.download_file)
+
+        # Use the position of the button as the reference for menu placement
+        global_pos = button.mapToGlobal(pos)
+
+        # Show the context menu at the adjusted position
+        menu.exec_(global_pos)
+
+    def download_file(self):
+        print("File downloading...")
 
 
     def on_button_clicked(self, label):

@@ -311,7 +311,7 @@ def add_message(sender_name, receiver_name, message_content, message_type):
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
-        basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "mp3", "image"]
+        basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
         if connection.is_connected():
             cursor = connection.cursor()
 
