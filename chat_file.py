@@ -23,6 +23,34 @@ import os
 import math
 
 
+def open_text_file_from_bytes(file_bytes):
+    try:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
+            # Write the bytes to the temporary file
+            temp_file.write(file_bytes)
+            temp_file.flush()
+
+            # Get the path to the temporary file
+            file_path = temp_file.name
+
+            # Open the temporary file using Notepad
+            os.system(f'notepad {file_path}')
+
+            # On macOS, you might use: os.system(f'open {file_path}')
+    except Exception as e:
+        print(f"Error opening text file: {e}")
+
+
+def create_link_label(text, click_function, parent=None):
+    label = QLabel(text, parent)
+    label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+    label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
+    label.setStyleSheet("color: blue; font-size: 12px;")
+    label.linkActivated.connect(click_function)
+    return label
+
+
 def format_label_text_by_row(label, text, num_rows):
     try:
         # Calculate the total number of characters per row, including the possibility of a shorter last row
@@ -443,7 +471,7 @@ class ChatBox(QWidget):
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
         filter_str = "All files (*)"
         self.file_dialog.setNameFilter(filter_str)
-        self.image_file_name = ""
+        self.file_name = ""
         self.image_height = 100 * 3
         self.image_width = 100 * 2.3
         self.chats_buttons_list = []
@@ -926,12 +954,12 @@ class ChatBox(QWidget):
         self.garbage_button.hide()
         self.garbage_button.clicked.connect(self.garbage_button_clicked)
         make_q_object_clear(self.garbage_button)
-        if self.parent.image_file_name != "":
-            self.filename_label.setText(self.parent.image_file_name + " is loaded")
+        if self.parent.file_name != "":
+            self.filename_label.setText(self.parent.file_name + " is loaded")
             self.filename_label.show()
             self.garbage_button.show()
         else:
-            self.filename_label.setText(self.parent.image_file_name)
+            self.filename_label.setText(self.parent.file_name)
 
         self.image_too_big = QLabel(self)
         self.image_too_big.move(620, 830)
@@ -1720,14 +1748,14 @@ class ChatBox(QWidget):
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
-            self.parent.image_file_name = selected_files[0].split("/")[-1]
+            self.parent.file_name = selected_files[0].split("/")[-1]
             if selected_files and file_types[0] in ["png", "jpg"]:
                 image_bytes = file_to_bytes(selected_files[0])
 
                 if is_valid_image(image_bytes):
                     self.parent.file_to_send = image_bytes
                     print("image to send defined")
-                    self.filename_label.setText(self.parent.image_file_name + " is loaded")
+                    self.filename_label.setText(self.parent.file_name + " is loaded")
                     self.filename_label.show()
                     self.parent.updated_chat()
                     self.parent.activateWindow()
@@ -1736,7 +1764,14 @@ class ChatBox(QWidget):
             elif selected_files and file_types[0] in ["mp4"]:
                 video_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = video_bytes
-                self.filename_label.setText(self.parent.image_file_name + " is loaded")
+                self.filename_label.setText(self.parent.file_name + " is loaded")
+                self.filename_label.show()
+                self.parent.updated_chat()
+                self.parent.activateWindow()
+            elif selected_files and file_types[0] in ["txt", "pdf", "docx", "pptx"]:
+                file_bytes = file_to_bytes(selected_files[0])
+                self.parent.file_to_send = file_bytes
+                self.filename_label.setText(self.parent.file_name + " is loaded")
                 self.filename_label.show()
                 self.parent.updated_chat()
                 self.parent.activateWindow()
@@ -2054,6 +2089,36 @@ class ChatBox(QWidget):
                         self.parent.is_chat_box_full = True
                         if index != self.parent.list_messages:
                             self.parent.is_last_message_on_screen = False
+                elif message_type == "txt":
+                    try:
+                        decoded_compressed_file_bytes = base64.b64decode(message_content)
+                        file_bytes = zlib.decompress(decoded_compressed_file_bytes)
+
+                        link_label = QPushButton(f"{message_type} File", self)
+                        link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white;")
+                        link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
+                        y -= link_label.height()
+                        link_label.setGeometry(x_pos, y, 300, 40)
+                        if y - link_label.height() - 10 < end_y_pos:
+                            self.parent.is_chat_box_full = True
+                            if index != len(self.parent.list_messages) - 1:
+                                self.parent.is_last_message_on_screen = False
+                        self.message_labels.append(link_label)
+                        y -= space_between_messages
+                        message = ""
+                        label = self.create_temp_message_label(message)
+                        label.setText(
+                            f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                            f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                        label.move(x_pos, y)
+                        self.message_labels.append(label)
+                        y -= label.height()
+                    except Exception as e:
+                        print(f"error in show messages is:{e}")
+                    if y < end_y_pos:
+                        self.parent.is_chat_box_full = True
+                        if index != self.parent.list_messages:
+                            self.parent.is_last_message_on_screen = False
 
                 if y - 15 < end_y_pos:
                     self.parent.is_chat_box_full = True
@@ -2067,6 +2132,7 @@ class ChatBox(QWidget):
             self.chat_name_label.raise_()
         except Exception as e:
             print(f"error in showing messages on screen: {e}")
+
 
     def on_button_clicked(self, label):
         self.button_clicked_signal.emit(label)
@@ -2094,13 +2160,10 @@ class ChatBox(QWidget):
             font = label.font()
             font.setPixelSize(self.parent.font_size)
             label.setFont(font)
-            print(f"len message: {len(message)}")
             number_of_rows = math.floor(len(message) / 160) + 1
-            print(f"height before: {label.height()}")
             if len(message) > 0 and number_of_rows > 1:
                 format_label_text_by_row(label, message, number_of_rows)
                 label.adjustSize()
-            print(f"height after: {label.height()}")
             return label
         except Exception as e:
             print(f"error in creating message label {e}")
@@ -2118,7 +2181,7 @@ class ChatBox(QWidget):
 
     def garbage_button_clicked(self):
         self.parent.file_to_send = None
-        self.parent.image_file_name = ""
+        self.parent.file_name = ""
         self.parent.updated_chat()
 
     def selected_chat_changed(self, name):
@@ -2145,7 +2208,7 @@ class ChatBox(QWidget):
             self.image_too_big.hide()
             self.parent.size_error_label = False
             self.parent.file_to_send = None
-            self.parent.image_file_name = ""
+            self.parent.file_name = ""
             self.parent.updated_chat()
 
     def is_mouse_on_chat_box(self, mouse_pos):

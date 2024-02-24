@@ -316,7 +316,7 @@ def add_message(sender_name, receiver_name, message_content, message_type):
             cursor = connection.cursor()
 
             # SQL query to insert a message into the 'messages' table
-            if message_type in ("video", "image"):
+            if message_type in ("video", "image", "txt", "pptx", "docx", "py", "mp3"):
                 encoded_base64_bytes = message_content
                 message_content = base64.b64decode(encoded_base64_bytes)
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type) VALUES (%s, %s, %s, %s)"

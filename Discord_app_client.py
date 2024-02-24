@@ -597,7 +597,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.friends_box_page = "online"
         self.chats_list = []
         self.file_to_send = None
-        self.image_file_name = ""
+        self.file_name = ""
         self.chat_start_index = 0
         self.Network = Netwrok
         self.chat_box_chats_index = 0
@@ -1026,19 +1026,19 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
                     file_type = ""
-                    if self.image_file_name.endswith("png"):
+                    if self.file_name.endswith("png"):
                         file_type = "image"
-                    elif self.image_file_name.endswith("mp4"):
+                    elif self.file_name.endswith("mp4"):
                         file_type = "video"
-                    else:
-                        file_type = "string"
+                    elif self.file_name.endswith("txt"):
+                        file_type = "txt"
                     message_dict = create_message_dict(compressed_base64_file, self.username,
                                                        str(formatted_time), file_type)
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
                     n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type)
                     self.file_to_send = None
-                    self.image_file_name = ""
+                    self.file_name = ""
                     self.updated_chat()
                 elif social_clicked:
                     self.friends_box.send_friend_request()
