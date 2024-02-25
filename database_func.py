@@ -8,11 +8,19 @@ from datetime import datetime
 import base64
 
 pepper = "c5b97dce"
+basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
+
+
+def decode_base64(message):
+    message_content = base64.b64decode(message)
+    return message_content
+
 
 def generate_random_salt(length=8):
 
     salt = binascii.hexlify(os.urandom(length)).decode('utf-8')
     return salt
+
 
 def generate_token(length=16):
     """
@@ -26,6 +34,7 @@ def generate_token(length=16):
     """
     return secrets.token_hex(length // 2)
 
+
 def hash_sha2(string):
     # Create a new SHA-256 hash object
     sha256_hash = hashlib.sha256()
@@ -37,6 +46,7 @@ def hash_sha2(string):
     hashed_string = sha256_hash.hexdigest()
 
     return hashed_string
+
 
 def retrieve_salt_by_username(username):
     try:
@@ -64,7 +74,8 @@ def retrieve_salt_by_username(username):
         print(f"MySQL Error: {e}")
         return None
 
-# Create a connection
+
+
 def login(username, password):
     try:
         # Create a connection
@@ -103,6 +114,7 @@ def login(username, password):
         print(f"MySQL Error: {e}")
         return False
 
+
 def username_exists(username):
     try:
         # Create a connection
@@ -135,6 +147,7 @@ def username_exists(username):
         print(f"MySQL Error: {e}")
         return False
 
+
 def user_exists_with_email(username, email):
     try:
         # Create a connection
@@ -165,6 +178,7 @@ def user_exists_with_email(username, email):
         # Handle exceptions (print, log, or raise as needed)
         print(f"Error: {e}")
         return False
+
 
 def check_security_token(token):
     try:
@@ -199,6 +213,7 @@ def check_security_token(token):
         print(f"MySQL Error: {e}")
         return False
 
+
 def get_security_token(username):
     try:
         # Establish a connection to the database
@@ -231,6 +246,7 @@ def get_security_token(username):
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         return None
+
 
 def insert_user(username, password, email):
     try:
@@ -266,6 +282,34 @@ def insert_user(username, password, email):
         print(f"MySQL Error: {e}")
         print("Failed to insert user.")
 
+
+def update_profile_pic(username, profile_pic_encoded):
+    try:
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
+
+        profile_pic = decode_base64(profile_pic_encoded)
+
+        table_name = "Sign_Up_Table"
+
+        update_query = f"UPDATE {table_name} SET profile_pic_bytes = %s WHERE username = %s"
+
+        # Execute the INSERT statement with parameterized values
+        cursor.execute(update_query, (profile_pic, username))
+
+        # Commit the changes to the database
+        connection.commit()
+
+        # Close the cursor and connection when done
+        cursor.close()
+        connection.close()
+
+        print("User inserted successfully.")
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        print("Failed to insert user.")
+
+
 def change_password(username, new_password):
     try:
         connection = connect_to_kevindb()
@@ -293,6 +337,7 @@ def change_password(username, new_password):
         print(f"MySQL Error: {e}")
         print("Failed to change password.")
 
+
 def is_table_exist(table_name):
     connection = connect_to_kevindb()
 
@@ -311,7 +356,6 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
-        basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
         if connection.is_connected():
             cursor = connection.cursor()
 
@@ -341,6 +385,7 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
             cursor.close()
             connection.close()
 
+
 def mark_messages_as_read(receiver, sender):
     try:
         connection = connect_to_kevindb()
@@ -361,6 +406,7 @@ def mark_messages_as_read(receiver, sender):
         if connection.is_connected():
             cursor.close()
             connection.close()
+
 
 def gets_group_attributes_from_format(group_format):
     if "(" not in group_format:
@@ -431,6 +477,7 @@ def get_messages(sender, receiver):
         if connection:
             connection.close()
 
+
 def are_friends(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
@@ -449,6 +496,7 @@ def are_friends(username, friend_username):
     # Return True if they are friends, False otherwise
     return result and result[0] == 'accepted'
 
+
 def is_active_request(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
@@ -466,6 +514,7 @@ def is_active_request(username, friend_username):
 
     # Return True if they are pending, False otherwise
     return result and result[0] == 'pending'
+
 
 def send_friend_request(username, friend_username):
     # Assuming you have a MySQL database connection
@@ -491,6 +540,7 @@ def send_friend_request(username, friend_username):
     cursor.close()
     connection.close()
 
+
 def handle_friend_request(username, friend_username, accept):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
@@ -514,6 +564,7 @@ def handle_friend_request(username, friend_username, accept):
 
     cursor.close()
     connection.close()
+
 
 def remove_friend(username, friend_username):
     # Assuming you have a MySQL database connection
@@ -539,6 +590,7 @@ def remove_friend(username, friend_username):
     cursor.close()
     connection.close()
 
+
 def get_friend_requests(username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
@@ -558,6 +610,7 @@ def get_friend_requests(username):
     friend_requests_list = [request[0] for request in friend_requests]
 
     return friend_requests_list
+
 
 def get_user_friends(username):
     # Assuming you have a MySQL database connection
@@ -585,6 +638,7 @@ def get_user_friends(username):
     friends_list = [friend[0] for friend in friends]
 
     return friends_list
+
 
 def add_chat_to_user(username, new_chat_name):
     try:
@@ -630,6 +684,7 @@ def add_chat_to_user(username, new_chat_name):
             cursor.close()
         if connection:
             connection.close()
+
 
 def get_user_chats(username):
     try:
@@ -712,6 +767,7 @@ def remove_chat_from_user(username, chat_to_remove):
         if connection:
             connection.close()
 
+
 def create_group(group_name, group_manager, group_members_list=None):
     new_chat_name = ""
     try:
@@ -751,6 +807,7 @@ def create_group(group_name, group_manager, group_members_list=None):
         for member in group_members_list:
             add_chat_to_user(member, new_chat_name)
 
+
 def change_group_manager(group_id, new_manager):
     try:
         # Connect to the MySQL database
@@ -776,6 +833,7 @@ def change_group_manager(group_id, new_manager):
             cursor.close()
         if connection:
             connection.close()
+
 
 def get_group_name_by_id(group_id):
     try:
@@ -846,6 +904,7 @@ def remove_group_member(group_id, group_member):
         if connection:
             connection.close()
 
+
 def get_group_members(group_id):
     try:
         # Connect to the MySQL database
@@ -876,6 +935,7 @@ def get_group_members(group_id):
             cursor.close()
         if connection:
             connection.close()
+
 
 def append_group_member(group_id, group_member):
     try:
@@ -910,6 +970,7 @@ def append_group_member(group_id, group_member):
             cursor.close()
         if connection:
             connection.close()
+
 
 def rename_group(group_id, new_group_name):
     try:
@@ -1050,6 +1111,7 @@ def get_latest_chats(username):
         if connection:
             connection.close()
 
+
 def clear_tables():
     try:
         # Connect to the MySQL database
@@ -1078,6 +1140,7 @@ def clear_tables():
             cursor.close()
         if connection:
             connection.close()
+
 
 def create_messages_table():
     try:
@@ -1113,6 +1176,7 @@ def create_messages_table():
         if 'connection' in locals() and connection.is_connected():
             connection.close()
             print("Connection closed.")
+
 
 def connect_to_kevindb():
     return mysql.connector.connect(host="localhost", user="root", password="LingshUpper1208", database="kevindb")
