@@ -1365,11 +1365,11 @@ class ChatBox(QWidget):
         status_button.setFixedSize(button_size)
 
         button.move(x, y)
-        status_button.move(x+button.width(), y+button.height())
 
+        regular_icon_path = r"discord_app_assets/regular_profile.png"
         muted_icon = QIcon("discord_app_assets/mic_muted_icon.png")
         deafened_icon = QIcon("discord_app_assets/deafened.png")
-        regular_icon = QIcon("discord_app_assets/regular_profile.png")
+        regular_icon = QIcon(regular_icon_path)
         deafened = dict.get("deafened")
         muted = dict.get("muted")
 
@@ -1381,9 +1381,10 @@ class ChatBox(QWidget):
             circular_image = make_circular_image(self.parent.profile_pic)
             set_icon_from_bytes_to_label(button, circular_image)
         else:
-            regular_icon_bytes = file_to_bytes(regular_icon)
+            regular_icon_bytes = file_to_bytes(regular_icon_path)
             circular_image = make_circular_image(regular_icon_bytes)
             set_icon_from_bytes_to_label(button, circular_image)
+        status_button.move(x + (0.5* button.width()), y+ (0.5* button.height()))
         self.call_profiles_list.append(button)
         self.call_profiles_list.append(status_button)
         return button
