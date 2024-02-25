@@ -434,6 +434,7 @@ def check_active_cameras():
         return False
 
 
+# works very well for a circular labels
 def set_icon_from_bytes_to_label(label, image_bytes):
     # Load the image from bytes
     pixmap = QPixmap()
