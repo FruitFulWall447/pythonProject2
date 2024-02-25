@@ -1380,7 +1380,9 @@ class ChatBox(QWidget):
             circular_image = make_circular_image(self.parent.profile_pic)
             set_icon_from_bytes_to_label(button, circular_image)
         else:
-            set_icon_to_label(button, regular_icon)
+            regular_icon_bytes = file_to_bytes(regular_icon)
+            circular_image = make_circular_image(regular_icon_bytes)
+            set_icon_from_bytes_to_label(button, circular_image)
         self.call_profiles_list.append(button)
         self.call_profiles_list.append(status_button)
         return button
