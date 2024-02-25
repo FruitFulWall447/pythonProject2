@@ -450,6 +450,24 @@ def set_icon_from_bytes_to_label(label, image_bytes):
     label.setAlignment(Qt.AlignCenter)
 
 
+def set_icon_from_bytes_to_button(button, image_bytes):
+    # Load the image from bytes
+    pixmap = QPixmap()
+    pixmap.loadFromData(image_bytes)
+    # Set the icon to the button with the exact width and height of the button
+    image_aspect_ratio = pixmap.width() / pixmap.height()
+    if image_aspect_ratio <= 0.5:
+        x = pixmap.scaledToWidth(button.width())
+    elif image_aspect_ratio >= 1.5:
+        x = pixmap.scaledToHeight(button.height())
+    else:
+        x = pixmap.scaledToWidth(button.width()).scaledToHeight(button.height())
+    button.setIcon(QIcon(x))
+    button.setIconSize(button.size())
+    button.setStyleSheet("border: none;")  # Optional: Remove border around the icon
+    button.setAlignment(Qt.AlignCenter)
+
+
 def set_icon_to_label(label, icon_path, width=None, height=None):
     # Create QIcon object from the provided icon path
     icon = QIcon(icon_path)
@@ -1336,35 +1354,35 @@ class ChatBox(QWidget):
             print(f"Problem with watch button, error {e}")
 
     def create_profile_button(self, x, y, name, dict):
-        button = QPushButton(self)
         width, height = (90, 90)
+        button = create_custom_circular_label(width, height, self)
+
+        status_button = QPushButton(self)
+        make_q_object_clear(status_button)
+        width, height = (30, 30)
         button_size = QSize(width, height)
-        button.setFixedSize(button_size)
+        status_button.setFixedSize(button_size)
 
         button.move(x, y)
-        button.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                background-repeat: no-repeat;
-                background-position: center;
-                border-radius: """ + str(height // 2) + """px;  /* Set to half of the button height */
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """)
-        muted_icon = QIcon("discord_app_assets/muted_profile.png")
-        deafened_icon = QIcon("discord_app_assets/deafened_profile.png")
+        status_button.move(x+button.width(), y+button.height())
+
+        muted_icon = QIcon("discord_app_assets/mic_muted_icon.png")
+        deafened_icon = QIcon("discord_app_assets/deafened.png")
         regular_icon = QIcon("discord_app_assets/regular_profile.png")
         deafened = dict.get("deafened")
         muted = dict.get("muted")
+
         if name in dict.get("deafened"):
-            set_button_icon(button, deafened_icon, width, height)
+            set_button_icon(status_button, deafened_icon, width, height)
         elif name in dict.get("muted"):
-            set_button_icon(button, muted_icon, width, height)
+            set_button_icon(status_button, muted_icon, width, height)
+        if self.parent.profile_pic and name == self.parent.username:
+            circular_image = make_circular_image(self.parent.profile_pic)
+            set_icon_from_bytes_to_label(button, circular_image)
         else:
-            set_button_icon(button, regular_icon, width, height)
+            set_icon_to_label(button, regular_icon)
         self.call_profiles_list.append(button)
+        self.call_profiles_list.append(status_button)
         return button
 
     def create_top_page_button(self, x, y, icon_path):
