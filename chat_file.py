@@ -2126,6 +2126,7 @@ class ChatBox(QWidget):
             message_time = i.get("timestamp")
             message_sender = i.get("sender_id")
             message_type = i.get("message_type")
+            file_name = i.get("file_name")
             if self.parent.chat_start_index <= index:
                 if index == len(self.parent.list_messages) - 1:
                     self.parent.is_last_message_on_screen = True
@@ -2230,7 +2231,7 @@ class ChatBox(QWidget):
                     decoded_compressed_audio_bytes = base64.b64decode(message_content)
                     audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
 
-                    audio_label = QPushButton(f"{message_type} File", self)
+                    audio_label = QPushButton(f"{file_name}", self)
                     audio_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
 
 
@@ -2266,7 +2267,7 @@ class ChatBox(QWidget):
                         decoded_compressed_file_bytes = base64.b64decode(message_content)
                         file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
-                        link_label = QPushButton(f"{message_type} File", self)
+                        link_label = QPushButton(f"{file_name}", self)
                         link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
                         if message_type == "txt":
                             link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
