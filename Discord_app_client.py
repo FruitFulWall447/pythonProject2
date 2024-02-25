@@ -61,7 +61,7 @@ def is_email_provider_in_list(email):
     return False
 
 
-def create_message_dict(content, sender_id, timestamp, message_type):
+def create_message_dict(content, sender_id, timestamp, message_type, file_name):
     """Creates a dictionary representing a message.
 
     Args:
@@ -77,7 +77,8 @@ def create_message_dict(content, sender_id, timestamp, message_type):
         "content": content,
         "sender_id": sender_id,
         "timestamp": str(timestamp),
-        "message_type": message_type
+        "message_type": message_type,
+        "file_name": file_name
     }
     return message_dict
 
@@ -1009,9 +1010,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
                             formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                            message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username, str(formatted_time), "string")
+                            message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username, str(formatted_time), "string", None)
                             self.list_messages.insert(0, message_dict)
-                            n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string")
+                            n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string", None)
                             print("Sent message to server")
                             self.updated_chat()
                             self.chat_box.text_entry.setText("")
@@ -1046,10 +1047,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     elif self.file_name.endswith("xlsx"):
                         file_type = "xlsx"
                     message_dict = create_message_dict(compressed_base64_file, self.username,
-                                                       str(formatted_time), file_type)
+                                                       str(formatted_time), file_type, self.file_name)
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
-                    n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type)
+                    n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type, self.file_name)
                     self.file_to_send = None
                     self.file_name = ""
                     self.updated_chat()

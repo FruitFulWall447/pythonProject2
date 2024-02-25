@@ -398,7 +398,7 @@ class client_net:
 
         self.send_str(encoded_message)
 
-    def send_message(self, sender, receiver, content, type):
+    def send_message(self, sender, receiver, content, type, file_name):
         if isinstance(content, bytes):
             # If content is bytes, encode it as a Base64 string
             content = base64.b64encode(content).decode('utf-8')
@@ -406,6 +406,7 @@ class client_net:
                    "receiver": receiver,
                    "content": content,
                    "type": type,
+                   "file_name": file_name
 
                    }
         encoded_message = json.dumps(message)

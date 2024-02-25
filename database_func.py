@@ -307,7 +307,7 @@ def is_table_exist(table_name):
     return result is not None
 
 
-def add_message(sender_name, receiver_name, message_content, message_type):
+def add_message(sender_name, receiver_name, message_content, message_type, file_name):
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
@@ -319,8 +319,8 @@ def add_message(sender_name, receiver_name, message_content, message_type):
             if message_type in basic_files_types:
                 encoded_base64_bytes = message_content
                 message_content = base64.b64decode(encoded_base64_bytes)
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type) VALUES (%s, %s, %s, %s)"
-                data = (sender_name, receiver_name, message_content, message_type)
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type, file_name) VALUES (%s, %s, %s, %s, %s)"
+                data = (sender_name, receiver_name, message_content, message_type, file_name)
             else:
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
                 data = (sender_name, receiver_name, message_content, message_type)
@@ -387,11 +387,11 @@ def get_messages(sender, receiver):
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type FROM messages WHERE receiver_id LIKE '{0}%'".format(
+            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%'".format(
                 id_format.replace('\'', '\'\''))
         else:
             query = """
-                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type 
+                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type, file_name 
                 FROM messages
                 WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')
             """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
@@ -413,7 +413,8 @@ def get_messages(sender, receiver):
                 "content": content,
                 "sender_id": message[1],
                 "timestamp": str(message[2]),
-                "message_type": message[3]
+                "message_type": message[3],
+                "file_name": message[4]
             }
             formatted_messages.append(message_dict)
 

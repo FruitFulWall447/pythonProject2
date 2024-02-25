@@ -306,7 +306,8 @@ def thread_recv_messages(n, addr, username):
                         receiver = message.get("receiver")
                         content = message.get("content")
                         message_type = message.get("type")
-                        database_func.add_message(sender, receiver, content, message_type)
+                        file_name = message.get("file_name")
+                        database_func.add_message(sender, receiver, content, message_type, file_name)
                         if not receiver.startswith("("):
                             add_message_for_client(receiver, f"got_new_message:{sender}")
                         else: # means its a group therefore need to update message for every member of group
