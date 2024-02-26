@@ -337,7 +337,6 @@ def get_profile_pic_by_name(username):
 
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
-        print("Failed to insert user.")
 
 
 def change_password(username, new_password):
