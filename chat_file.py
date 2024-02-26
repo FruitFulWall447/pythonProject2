@@ -2257,7 +2257,7 @@ class ChatBox(QWidget):
                     audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
 
                     audio_label = QPushButton(f"{file_name}", self)
-                    audio_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
+                    audio_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px; padding-left: 50%;")
 
 
 
@@ -2293,7 +2293,7 @@ class ChatBox(QWidget):
                         file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
                         link_label = QPushButton(f"{file_name}", self)
-                        link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px;")
+                        link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px; padding-left: 50%;")
                         if message_type == "txt":
                             link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
                         elif message_type == "pptx":
