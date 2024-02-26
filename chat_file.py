@@ -1379,7 +1379,8 @@ class ChatBox(QWidget):
             set_button_icon(status_button, deafened_icon, width, height)
         elif name in dict.get("muted"):
             set_button_icon(status_button, muted_icon, width, height)
-        if self.parent.profile_pic and name == self.parent.username:
+        user_profile_pic = self.parent.get_profile_pic_by_username(name)
+        if user_profile_pic:
             circular_image = make_circular_image(self.parent.profile_pic)
             set_icon_from_bytes_to_label(button, circular_image)
         else:

@@ -151,7 +151,7 @@ def thread_recv_messages():
         data = n.recv_str()
         if is_string(data):
             if data.startswith("profile_dicts:"):
-                list_of_profile_dicts = json.loads(data.split(":")[0])
+                list_of_profile_dicts = json.loads(data.split(":")[1])
                 main_page.list_profile_pic_dicts = list_of_profile_dicts
                 print("got list of profile dictionaries")
             if data.startswith("error"):
@@ -689,6 +689,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def get_profile_pic_by_username(self, username):
+        for profile_dict in self.list_profile_pic_dicts:
+            if profile_dict.get("username") == username:
+                return base64.b64decode(profile_dict.get("encoded_image_bytes"))
 
     def set_page_index_by_clicked(self):
         global chat_clicked, setting_clicked, social_clicked
