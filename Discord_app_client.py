@@ -1050,7 +1050,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                                                        str(formatted_time), file_type, self.file_name)
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
-                    n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type, self.file_name)
+                    try:
+                        n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type, self.file_name)
+                    except Exception as e:
+                        print(f"error in sending message")
                     self.file_to_send = None
                     self.file_name = ""
                     self.updated_chat()
