@@ -9,8 +9,9 @@ import base64
 
 
 def create_profile_pic_dict(username, image_bytes_encoded):
-    if type(image_bytes_encoded, bytes):
-        image_bytes_encoded = base64.b64encode(image_bytes_encoded)
+    if isinstance(image_bytes_encoded, bytes):
+        image_bytes_encoded = base64.b64encode(image_bytes_encoded).decode('utf-8')
+
     current_dict = {
         "username": username,
         "encoded_image_bytes": image_bytes_encoded,
