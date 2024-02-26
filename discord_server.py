@@ -33,12 +33,24 @@ online_users = []
 list_vc_data_sending = []
 
 
+def is_json_serialized(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            json.load(file)
+        return True
+    except json.JSONDecodeError:
+        return False
+    except FileNotFoundError:
+        return False
+
+
 def is_string(variable):
     return isinstance(variable, str)
 
 
 def is_dict(variable):
     return isinstance(variable, dict)
+
 
 def is_zlib_compressed(data):
     try:
@@ -268,16 +280,18 @@ def thread_recv_messages(n, addr, username):
         else:
             logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
+            logger.debug(f"data: {data}")
             if data is None:
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
-            if is_dict(data):
-                message_type = data.get("client_message_type")
-                if message_type == "profile_pic":
-                    profile_pic_encoded = data.get("encoded_image_bytes")
-                    database_func.update_profile_pic(User, profile_pic_encoded)
-                    print("updated client profile pic")
+            if is_json_serialized(data):
+                if is_dict(data):
+                    message_type = data.get("client_message_type")
+                    if message_type == "profile_pic":
+                        profile_pic_encoded = data.get("encoded_image_bytes")
+                        database_func.update_profile_pic(User, profile_pic_encoded)
+                        logger.info(f"updated client profile pic of {User}")
             if isinstance(data, str):
                 if isinstance(data, str):
                     if len(data) < 50:

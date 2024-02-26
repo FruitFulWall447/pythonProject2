@@ -3549,6 +3549,7 @@ class SettingsBox(QWidget):
                 if is_valid_image(image_bytes):
                     self.parent.profile_pic = image_bytes
                     self.Network.send_profile_pic(image_bytes)
+                    print("send profile pic to server")
                     self.parent.activateWindow()
                     circular_pic = make_circular_image(file_path)
                     if circular_pic is not None:
