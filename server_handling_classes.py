@@ -404,7 +404,7 @@ class Communication:
         total_groups_participants = []
         for group in user_groups:
             total_groups_participants.append(group.get("participants"))
-        total_needed_profile_names = self.find_common_elements(total_groups_participants + user_friends)
+        total_needed_profile_names = self.find_common_elements(total_groups_participants, user_friends)
         for name in total_needed_profile_names:
             profile_pic_bytes = database_func.get_profile_pic_by_name(name)
             current_dict = create_profile_pic_dict(name,profile_pic_bytes)
