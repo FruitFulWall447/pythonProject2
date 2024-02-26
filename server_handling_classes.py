@@ -5,6 +5,17 @@ import database_func
 import copy
 from discord_comms_protocol import server_net
 import threading
+import base64
+
+
+def create_profile_pic_dict(username, image_bytes_encoded):
+    if type(image_bytes_encoded, bytes):
+        image_bytes_encoded = base64.b64encode(image_bytes_encoded)
+    current_dict = {
+        "username": username,
+        "encoded_image_bytes": image_bytes_encoded,
+    }
+    return current_dict
 
 
 class Call:
@@ -380,6 +391,25 @@ class Communication:
         list_call_dicts = self.get_list_of_calls_for_user(User)
         net.send_call_list_of_dicts(list_call_dicts)
         self.logger.info(f"Sent list of call dicts list to user {User}")
+
+        list_profile_dicts = self.get_list_of_needed_profile_dict(User)
+        net.send_profile_list_of_dicts(list_profile_dicts)
+        self.logger.info(f"Sent list of cprofile dicts list to user {User}")
+
+
+    def get_list_of_needed_profile_dict(self, user):
+        list_needed_profile_dicts = []
+        user_friends = database_func.get_user_friends(user)
+        user_groups = database_func.get_user_groups(user)
+        total_groups_participants = []
+        for group in user_groups:
+            total_groups_participants.append(group.get("participants"))
+        total_needed_profile_names = self.find_common_elements(total_groups_participants + user_friends)
+        for name in total_needed_profile_names:
+            profile_pic_bytes = database_func.get_profile_pic_by_name(name)
+            current_dict = create_profile_pic_dict(name,profile_pic_bytes)
+            list_needed_profile_dicts.append(current_dict)
+        return list_needed_profile_dicts
 
     def get_list_of_calls_for_user(self, user):
         list_of_calls_dicts = []

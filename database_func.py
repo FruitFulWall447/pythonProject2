@@ -309,6 +309,37 @@ def update_profile_pic(username, profile_pic_encoded):
         print("Failed to insert user.")
 
 
+def get_profile_pic_by_name(username):
+    try:
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
+
+
+        table_name = "Sign_Up_Table"
+
+        update_query = f"SELECT profile_pic_bytes FROM {table_name} WHERE username = %s"
+
+        # Execute the SELECT statement with the parameterized value
+        cursor.execute(update_query, (username,))
+
+        # Fetch the result
+        result = cursor.fetchone()
+
+        # Close the cursor and connection when done
+        cursor.close()
+        connection.close()
+
+        if result:
+            return result[0]
+        else:
+            # If username not found, return None or any other suitable value
+            return None
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        print("Failed to insert user.")
+
+
 def change_password(username, new_password):
     try:
         connection = connect_to_kevindb()

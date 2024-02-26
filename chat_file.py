@@ -26,6 +26,7 @@ import platform
 import random
 import string
 
+
 def generate_random_filename(extension):
     # Generate a random string of characters
     random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -263,7 +264,6 @@ def calculate_image_size_in_kb(image_bytes):
         return None
 
 
-
 def calculate_image_size_in_mb(image_bytes):
     try:
         # Create a BytesIO object from the image bytes
@@ -338,6 +338,7 @@ def make_circular_image1(image_path_or_bytes):
         print(f"Error converting image: {e}")
         return None
 
+
 def make_circular_image(image_path_or_bytes):
     """Converts an image to a circular image.
 
@@ -387,6 +388,7 @@ def make_circular_image(image_path_or_bytes):
     except Exception as e:
         print(f"Error converting image: {e}")
         return None
+
 
 def create_custom_circular_label(width, height, parent):
     label = QLabel(parent)

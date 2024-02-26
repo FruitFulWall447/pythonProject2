@@ -834,6 +834,13 @@ class server_net:
         # Convert the length of the data to a string
         self.send_str(full_message)
 
+    def send_profile_list_of_dicts(self, call_dicts_list):
+        encoded_list = json.dumps(call_dicts_list)
+        full_message = "profile_dicts:" + encoded_list
+
+        # Convert the length of the data to a string
+        self.send_str(full_message)
+
     def remove_call_to_user_of_id(self, call_id):
         data = f"call:remove_id:{call_id}"
         try:

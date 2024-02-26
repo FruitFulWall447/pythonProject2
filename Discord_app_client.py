@@ -107,6 +107,7 @@ vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
+
 def return_vc_bytes_parameters(vc_bytes):
     try:
         sequence_and_name = vc_bytes.split(b":")[0]
@@ -116,6 +117,7 @@ def return_vc_bytes_parameters(vc_bytes):
         return name_of_talker, compressed_vc_data
     except Exception as e:
         print(vc_bytes)
+
 
 def return_share_screen_bytes_parameters(share_screen_data):
     try:
@@ -148,6 +150,10 @@ def thread_recv_messages():
     while Flag_recv_messages:
         data = n.recv_str()
         if is_string(data):
+            if data.startswith("profile_dicts:"):
+                list_of_profile_dicts = json.loads(data.split(":")[0])
+                main_page.list_profile_pic_dicts = list_of_profile_dicts
+                print("got list of profile dictionaries")
             if data.startswith("error"):
                 parts = data.split(":")
                 if parts[1] == "disconnect":
@@ -336,6 +342,7 @@ vc_play_flag = False
 accumulated_data = []
 vc_data_queue = Queue()
 
+
 def thread_play_vc_data():
     global vc_data_queue
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
@@ -348,6 +355,7 @@ def thread_play_vc_data():
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
     output_stream.close()
+
 
 def thread_send_voice_chat_data():
     global n, main_page
@@ -526,12 +534,9 @@ setting_clicked = False
 friends_list = []
 list_last_messages = []
 chat_messages_max = 33
-
-
-
-
 request_list = []
 is_logged_in = False
+
 
 class MainPage(QWidget): # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
@@ -586,7 +591,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.push_to_talk_key = None
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
-        self.profile_pic_dicts = None
+        self.list_profile_pic_dicts = None
 
         self.volume = 50
         self.font_size = 12
@@ -1219,6 +1224,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         flag_updates = False
         print("closing app...")
         app.quit()
+
 
 class Sign_up_page(QWidget):
     def __init__(self):

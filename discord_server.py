@@ -67,9 +67,11 @@ def is_client_waits_for_message(client):
     # Use the 'in' operator to check if the client is in the dictionary keys
     return client in messages_to_clients_dict
 
+
 def add_message_for_client(client, message):
     global messages_to_clients_dict
     messages_to_clients_dict[client] = message
+
 
 def get_and_remove_message_for_client(client):
     global messages_to_clients_dict
@@ -83,6 +85,7 @@ def gets_group_attributes_from_format(group_format):
     id = parts[0][1]
     name = parts[1]
     return name, id
+
 
 def parse_group_caller_format(input_format):
     # Define a regular expression pattern to capture the information
@@ -101,6 +104,7 @@ def parse_group_caller_format(input_format):
     else:
         # Return None if no match is found
         return None
+
 
 def threaded_logged_in_client(n, User):
     global list_vc_data_sending
