@@ -694,7 +694,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     def get_profile_pic_by_username(self, username):
         for profile_dict in self.list_profile_pic_dicts:
             if profile_dict.get("username") == username:
-                return base64.b64decode(profile_dict.get("encoded_image_bytes"))
+                image_bytes_encoded = profile_dict.get("encoded_image_bytes")
+                if image_bytes_encoded is not None:
+                    return base64.b64decode(image_bytes_encoded)
+                else:
+                    return None
 
     def set_page_index_by_clicked(self):
         global chat_clicked, setting_clicked, social_clicked
