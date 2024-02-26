@@ -151,7 +151,8 @@ def thread_recv_messages():
         data = n.recv_str()
         if is_string(data):
             if data.startswith("profile_dicts:"):
-                list_of_profile_dicts = json.loads(data.split(":")[1])
+                split_data = data.split(":", 1)
+                list_of_profile_dicts = json.loads(split_data[1])
                 main_page.list_profile_pic_dicts = list_of_profile_dicts
                 print("got list of profile dictionaries")
             if data.startswith("error"):
