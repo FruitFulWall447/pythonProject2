@@ -154,6 +154,7 @@ def thread_recv_messages():
                 split_data = data.split(":", 1)
                 list_of_profile_dicts = json.loads(split_data[1])
                 main_page.list_profile_pic_dicts = list_of_profile_dicts
+                QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
                 print("got list of profile dictionaries")
             if data.startswith("error"):
                 parts = data.split(":")
@@ -549,6 +550,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     new_message_play_audio_signal = pyqtSignal()
     disconnect_signal = pyqtSignal()
     stop_watching_stream_signal = pyqtSignal()
+    updated_settings_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
         self.background_color = "#141c4b"
@@ -636,6 +638,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updated_chat_signal.connect(self.updated_chat)
         self.updated_requests_signal.connect(self.updated_requests)
+        self.updated_settings_signal.connect(self.updated_settings_page)
         self.getting_call_signal.connect(self.getting_a_call)
         self.stop_sound_signal.connect(self.stop_sound)
         self.initiating_call_signal.connect(self.initiate_call)
