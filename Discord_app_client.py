@@ -708,9 +708,9 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         if chat_clicked:
             self.stacked_widget.setCurrentIndex(0)
         elif social_clicked:
-            self.stacked_widget.setCurrentIndex(1)
-        elif setting_clicked:
             self.stacked_widget.setCurrentIndex(2)
+        elif setting_clicked:
+            self.stacked_widget.setCurrentIndex(1)
 
     def stop_watching_video(self):
         try:
@@ -1016,7 +1016,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.stacked_widget.removeWidget(self.settings_box)
             self.settings_box = SettingsBox(parent=self)
             self.stacked_widget.insertWidget(1, self.settings_box)
-            self.stacked_widget.setCurrentIndex(1)
+
+            self.set_page_index_by_clicked()
         except Exception as e:
             print(f"error in updated_settings_page error:{e}")
 
