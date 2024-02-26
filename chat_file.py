@@ -3520,11 +3520,12 @@ class SettingsBox(QWidget):
                 """)
 
                 profile_image_x, profile_image_y = (800, 200)
-                if self.parent.profile_pic is None:
+                user_image = self.parent.get_profile_pic_by_username(self.parent.username)
+                if user_image is None:
                     icon_path = "discord_app_assets/regular_profile.png"
                     set_icon_to_label(self.profile_image_label, icon_path, width, height)
                 else:
-                    circular_pic_bytes = make_circular_image(self.parent.profile_pic)
+                    circular_pic_bytes = make_circular_image(user_image)
                     set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
                 change_profile_pic_button = self.create_colored_button(dark_green, other_green, None,
