@@ -586,6 +586,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.push_to_talk_key = None
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
+        self.profile_pic_dicts = None
 
         self.volume = 50
         self.font_size = 12

@@ -36,6 +36,10 @@ list_vc_data_sending = []
 def is_string(variable):
     return isinstance(variable, str)
 
+
+def is_dict(variable):
+    return isinstance(variable, dict)
+
 def is_zlib_compressed(data):
     try:
         # Attempt to decompress the data using zlib
@@ -268,6 +272,12 @@ def thread_recv_messages(n, addr, username):
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
+            if is_dict(data):
+                message_type = data.get("client_message_type")
+                if message_type == "profile_pic":
+                    profile_pic_encoded = data.get("encoded_image_bytes")
+                    database_func.update_profile_pic(User, profile_pic_encoded)
+                    print("updated client profile pic")
             if isinstance(data, str):
                 if isinstance(data, str):
                     if len(data) < 50:
