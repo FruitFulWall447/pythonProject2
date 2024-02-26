@@ -415,16 +415,13 @@ class client_net:
         self.send_str(full_message)
 
     def send_profile_pic(self, profile_pic):
-        message_type = "profile_pic"
         if isinstance(profile_pic, bytes):
             # If content is bytes, encode it as a Base64 string
             content = base64.b64encode(profile_pic).decode('utf-8')
-        message = {"client_message_type": message_type,
-                   "encoded_image_bytes": content,
-                   }
-        encoded_message = json.dumps(message)
 
-        self.send_str(encoded_message)
+        full_message = "update_profile_pic:" + content
+
+        self.send_str(full_message)
 
     def send_vc_data(self, vc_data):
         try:

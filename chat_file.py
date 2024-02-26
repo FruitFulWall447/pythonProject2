@@ -3553,7 +3553,6 @@ class SettingsBox(QWidget):
                     self.parent.activateWindow()
                     circular_pic = make_circular_image(file_path)
                     if circular_pic is not None:
-                        open_image_bytes(circular_pic)
                         set_icon_from_bytes_to_label(self.profile_image_label, circular_pic)
 
 

@@ -304,7 +304,6 @@ def update_profile_pic(username, profile_pic_encoded):
         cursor.close()
         connection.close()
 
-        print("User inserted successfully.")
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         print("Failed to insert user.")

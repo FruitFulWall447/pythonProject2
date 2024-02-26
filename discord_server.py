@@ -280,18 +280,10 @@ def thread_recv_messages(n, addr, username):
         else:
             logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
-            logger.debug(f"data: {data}")
             if data is None:
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
-            if is_json_serialized(data):
-                if is_dict(data):
-                    message_type = data.get("client_message_type")
-                    if message_type == "profile_pic":
-                        profile_pic_encoded = data.get("encoded_image_bytes")
-                        database_func.update_profile_pic(User, profile_pic_encoded)
-                        logger.info(f"updated client profile pic of {User}")
             if isinstance(data, str):
                 if isinstance(data, str):
                     if len(data) < 50:
@@ -302,6 +294,10 @@ def thread_recv_messages(n, addr, username):
                     Communication.user_offline(User)
                     break
                 elif is_string(data):
+                    if data.startswith("update_profile_pic"):
+                        profile_pic_encoded = data.split(":")[1]
+                        database_func.update_profile_pic(User, profile_pic_encoded)
+                        logger.info(f"updated client profile pic of {User}")
                     if data.startswith("security_token"):
                         action = data.split(":")[1]
                         if action == "needed":
