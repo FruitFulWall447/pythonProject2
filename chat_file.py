@@ -3915,12 +3915,24 @@ class VideoPlayer(QWidget):
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.stateChanged.connect(self.handle_state_change)
 
+        self.position_timer = QTimer(self)
+        self.position_timer.timeout.connect(self.update_slider_position)
+
+        # Start the position update timer with a short interval (e.g., 100 milliseconds)
+        self.position_timer.start(1)
+
+    def update_slider_position(self):
+        # Update the slider position based on the current media player position
+        position = self.media_player.position()
+        self.slider.setValue(position)
+
     def toggle_play_pause(self, event):
         if self.media_player.state() == QMediaPlayer.PlayingState:
             self.media_player.pause()
+            self.position_timer.stop()
         else:
             self.media_player.play()
-
+            self.position_timer.start()
     def stop_watching(self):
         self.media_player.stop()
         self.parent.stop_watching_video()
@@ -3980,8 +3992,10 @@ class VideoPlayer(QWidget):
         if event.key() == Qt.Key_Space:
             if self.media_player.state() == QMediaPlayer.PlayingState:
                 self.media_player.pause()
+                self.position_timer.stop()
             elif self.media_player.state() == QMediaPlayer.PausedState:
                 self.media_player.play()
+                self.position_timer.start()
 
 
 
