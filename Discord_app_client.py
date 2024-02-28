@@ -22,7 +22,7 @@ import struct
 import re
 from queue import Queue, Empty
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-
+from server_handling_classes import create_profile_pic_dict
 
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
@@ -696,10 +696,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
-
     def update_profile_pic_dicts_list(self, name, new_image):
-
-
+        for profile_pic in self.list_profile_pic_dicts:
+            if profile_pic.get("name") == name:
+                profile_dict = profile_pic
+                new_profile_dict = create_profile_pic_dict(name, new_image)
 
     def get_profile_pic_by_username(self, username):
         for profile_dict in self.list_profile_pic_dicts:
