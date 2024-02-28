@@ -3371,6 +3371,8 @@ class SettingsBox(QWidget):
         try:
             dark_green = "#1e9644"
             other_green = "#044f1c"
+            red_hex = "#9e0817"
+            dark_red_hex = "#690d16"
             if self.parent.selected_settings == "My Account":
                 start_y = 100
                 start_x = 500
@@ -3416,8 +3418,6 @@ class SettingsBox(QWidget):
                                                                       change_password_button_x,
                                                                       change_password_button_y, button_width,
                                                                       button_height, "Change Password")
-                red_hex = "#9e0817"
-                dark_red_hex = "#690d16"
                 delete_account_button_x, delete_account_button_y = change_password_button_x, change_password_button_y+100
                 delete_account_button = self.create_colored_button(red_hex, dark_red_hex, None,
                                                                       delete_account_button_x,
@@ -3446,7 +3446,7 @@ class SettingsBox(QWidget):
                     if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
                         if device_info["name"] not in output_devices:
                             output_devices.append(device_info["name"])
-                camera_names_list = get_camera_names()
+                camera_names_list = self.parent.camera_devices_names
 
                 starter_y = 170
                 volume_slider_y = starter_y+100
@@ -3526,24 +3526,33 @@ class SettingsBox(QWidget):
                     circular_pic_bytes = make_circular_image(user_image)
                     set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
-                width_change_profile_pic, height_change_profile_pic = (200, 30)
+                width_change_profile_pic, height_change_profile_pic = (160, 40)
+                x_change_profile_pic, y_change_profile_pic = (800, 400)
                 change_profile_pic_button = self.create_colored_button(dark_green, other_green, None,
-                                                                      800,
-                                                                      400, width_change_profile_pic,
+                                                                      x_change_profile_pic,
+                                                                      y_change_profile_pic, width_change_profile_pic,
                                                                       height_change_profile_pic, "Change Avatar")
                 change_profile_pic_button.clicked.connect(self.edit_profile_pic_pressed)
-
+                x_remove_profile_pic, y_remove_profile_pic = (1000, 400)
+                remove_profile_pic_button = self.create_colored_button(red_hex, dark_red_hex, None,
+                                                                      x_remove_profile_pic,
+                                                                      y_remove_profile_pic, width_change_profile_pic,
+                                                                      height_change_profile_pic, "Remove Avatar")
+                remove_profile_pic_button.clicked.connect(self.remove_profile_pic)
 
 
 
         except Exception as e:
             print(e)
 
+    def remove_profile_pic(self):
+        self.parent.profile_pic = None
+        self.Network.send_profile_pic(None)
+
     def edit_profile_pic_pressed(self):
         self.open_file_dialog()
 
     def open_file_dialog(self):
-        width, height = (120, 120)
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             if selected_files:

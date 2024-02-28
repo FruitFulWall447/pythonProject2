@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
     QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer
+from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names
 import pyaudio
 import random
 import json
@@ -585,6 +585,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
         self.selected_chat = ""
         self.is_current_chat_a_group = False
+
+        self.camera_devices_names = get_camera_names()
 
         self.mute = False
         self.deafen = False
