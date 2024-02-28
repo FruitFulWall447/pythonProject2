@@ -3526,10 +3526,11 @@ class SettingsBox(QWidget):
                     circular_pic_bytes = make_circular_image(user_image)
                     set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
+                width_change_profile_pic, height_change_profile_pic = (200, 30)
                 change_profile_pic_button = self.create_colored_button(dark_green, other_green, None,
                                                                       800,
-                                                                      400, 100,
-                                                                      30, "Change Avatar")
+                                                                      400, width_change_profile_pic,
+                                                                      height_change_profile_pic, "Change Avatar")
                 change_profile_pic_button.clicked.connect(self.edit_profile_pic_pressed)
 
 
