@@ -696,6 +696,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
+
+    def update_profile_pic_dicts_list(self, name, new_image):
+
+
+
     def get_profile_pic_by_username(self, username):
         for profile_dict in self.list_profile_pic_dicts:
             if profile_dict.get("username") == username:
