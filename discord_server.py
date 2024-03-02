@@ -288,7 +288,6 @@ def thread_recv_messages(n, addr, username):
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
-            print(data)
             if isinstance(data, str):
                 if data is None:
                     logger.info(f"lost connection with {User}")
