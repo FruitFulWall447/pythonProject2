@@ -155,6 +155,7 @@ def thread_recv_messages():
                 list_of_profile_dicts = json.loads(split_data[1])
                 main_page.list_profile_pic_dicts = list_of_profile_dicts
                 QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print("got list of profile dictionaries")
             if data.startswith("error"):
                 parts = data.split(":")
@@ -698,7 +699,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
     def update_profile_pic_dicts_list(self, name, new_image):
         for profile_pic in self.list_profile_pic_dicts:
-            if profile_pic.get("name") == name:
+            if profile_pic.get("username") == name:
                 profile_pic["encoded_image_bytes"] = base64.b64encode(new_image).decode()
                 print("updated the profile dictionary list")
 

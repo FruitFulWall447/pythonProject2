@@ -298,6 +298,7 @@ def thread_recv_messages(n, addr, username):
                         profile_pic_encoded = data.split(":")[1]
                         database_func.update_profile_pic(User, profile_pic_encoded)
                         logger.info(f"updated client profile pic of {User}")
+                        Communication.update_profiles_list_for_everyone_by_user(User)
                     if data.startswith("security_token"):
                         action = data.split(":")[1]
                         if action == "needed":

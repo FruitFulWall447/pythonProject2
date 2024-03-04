@@ -26,15 +26,18 @@ def remove_duplicates(input_list):
             unique_elements.append(item)
     return unique_elements
 
-
-def get_list_of_needed_profile_dict(user):
-    list_needed_profile_dicts = []
+def relevant_users_for_user(user):
     user_friends = database_func.get_user_friends(user)
     user_groups = database_func.get_user_groups(user)
     total_groups_participants = []
     for group in user_groups:
         total_groups_participants = total_groups_participants + group.get("group_members")
     total_needed_profile_names = remove_duplicates(total_groups_participants + user_friends)
+    return total_needed_profile_names
+
+def get_list_of_needed_profile_dict(user):
+    list_needed_profile_dicts = []
+    total_needed_profile_names = relevant_users_for_user(user)
     for name in total_needed_profile_names:
         profile_pic_bytes = database_func.get_profile_pic_by_name(name)
         current_dict = create_profile_pic_dict(name, profile_pic_bytes)
@@ -416,10 +419,19 @@ class Communication:
         net.send_call_list_of_dicts(list_call_dicts)
         self.logger.info(f"Sent list of call dicts list to user {User}")
 
-        list_profile_dicts = get_list_of_needed_profile_dict(User)
-        net.send_profile_list_of_dicts(list_profile_dicts)
-        self.logger.info(f"Sent list of cprofile dicts list to user {User}")
+        self.send_profile_list_of_dicts_to_user(User)
 
+    def update_profiles_list_for_everyone_by_user(self, user):
+        relevant_users = relevant_users_for_user(user)
+        for user in relevant_users:
+            self.send_profile_list_of_dicts_to_user(user)
+
+    def send_profile_list_of_dicts_to_user(self, user):
+        net = self.get_net_by_name(user)
+        if net is not None:
+            list_profile_dicts = get_list_of_needed_profile_dict(user)
+            net.send_profile_list_of_dicts(list_profile_dicts)
+            self.logger.info(f"Sent list of cprofile dicts list to user {user}")
 
     def get_list_of_calls_for_user(self, user):
         list_of_calls_dicts = []
