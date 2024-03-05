@@ -300,61 +300,6 @@ def make_circular_image1(image_path_or_bytes):
         if isinstance(image_path_or_bytes, str):
             with open(image_path_or_bytes, 'rb') as f:
                 image_data = f.read()
-            # Determine file format from file extension
-            file_extension = image_path_or_bytes.split('.')[-1].upper()
-            format = 'JPEG' if file_extension in ['JPG', 'JPEG'] else file_extension
-        else:
-            image_data = image_path_or_bytes
-            format = None
-
-        # Open the image using BytesIO
-        with BytesIO(image_data) as image_buffer:
-            image = Image.open(image_buffer)
-
-            # Convert the image to RGBA mode (if not already)
-            if image.mode != 'RGBA':
-                image = image.convert('RGBA')
-
-            # Determine the maximum circular area based on image dimensions
-            width, height = image.size
-            max_radius = min(width // 2, height // 2)
-
-            # Create a mask with a transparent circle
-            mask = Image.new('L', (width, height), 0)  # Create a black mask
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse(((width - max_radius * 2) // 2, (height - max_radius * 2) // 2,
-                        (width + max_radius * 2) // 2, (height + max_radius * 2) // 2), fill=255)
-
-            # Apply the mask to the image
-            circular_image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-            circular_image.paste(image, mask=mask)
-
-            # Convert the circular image to bytes
-            output_buffer = BytesIO()
-            circular_image.save(output_buffer, format=format)
-            circular_image_bytes = output_buffer.getvalue()
-
-        return circular_image_bytes
-
-    except Exception as e:
-        print(f"Error converting image: {e}")
-        return None
-
-
-def make_circular_image(image_path_or_bytes):
-    """Converts an image to a circular image.
-
-    Args:
-        image_path_or_bytes (str or bytes): Path to the image file or image data as bytes.
-
-    Returns:
-        bytes: The circular image as bytes.
-    """
-    try:
-        # Load the image using Pillow
-        if isinstance(image_path_or_bytes, str):
-            with open(image_path_or_bytes, 'rb') as f:
-                image_data = f.read()
         else:
             image_data = image_path_or_bytes
 
@@ -379,6 +324,56 @@ def make_circular_image(image_path_or_bytes):
             # Apply the mask to the image
             circular_image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
             circular_image.paste(image, mask=mask)
+
+            # Convert the circular image to bytes
+            output_buffer = BytesIO()
+            circular_image.save(output_buffer, format='PNG')  # Save as PNG format
+            circular_image_bytes = output_buffer.getvalue()
+
+        return circular_image_bytes
+
+    except Exception as e:
+        print(f"Error converting image: {e}")
+        return None
+
+
+def make_circular_image(image_bytes):
+    """Converts an image to a circular image with the same width and height.
+
+    Args:
+        image_bytes (bytes): Image data as bytes.
+
+    Returns:
+        bytes: The circular image as bytes.
+    """
+    try:
+        # Load the image using Pillow
+        with BytesIO(image_bytes) as image_buffer:
+            image = Image.open(image_buffer)
+
+            # Convert the image to RGBA mode (if not already)
+            if image.mode != 'RGBA':
+                image = image.convert('RGBA')
+
+            # Determine the minimum dimension for the circular image
+            min_dimension = min(image.width, image.height)
+
+            # Create a square-shaped image
+            square_image = Image.new('RGBA', (min_dimension, min_dimension), (255, 255, 255, 0))
+            offset = ((min_dimension - image.width) // 2, (min_dimension - image.height) // 2)
+            square_image.paste(image, offset)
+
+            # Determine the maximum circular area based on the minimum dimension
+            max_radius = min_dimension // 2
+
+            # Create a mask with a transparent circle
+            mask = Image.new('L', (min_dimension, min_dimension), 0)  # Create a black mask
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse(((0, 0), (min_dimension, min_dimension)), fill=255)
+
+            # Apply the mask to the image
+            circular_image = Image.new('RGBA', (min_dimension, min_dimension), (255, 255, 255, 0))
+            circular_image.paste(square_image, mask=mask)
 
             # Convert the circular image to bytes
             output_buffer = BytesIO()
