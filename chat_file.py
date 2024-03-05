@@ -3560,7 +3560,8 @@ class SettingsBox(QWidget):
         self.parent.profile_pic = None
         self.Network.send_profile_pic(None)
         print("send profile pic to server")
-        set_icon_from_bytes_to_label(self.profile_image_label, None)
+        self.parent.activateWindow()
+        self.parent.update_profile_pic_dicts_list(self.parent.username, None)
 
     def edit_profile_pic_pressed(self):
         self.open_file_dialog()
