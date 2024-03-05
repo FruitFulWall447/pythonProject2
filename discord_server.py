@@ -296,6 +296,9 @@ def thread_recv_messages(n, addr, username):
                 elif is_string(data):
                     if data.startswith("update_profile_pic"):
                         profile_pic_encoded = data.split(":")[1]
+                        if profile_pic_encoded == "None":
+                            profile_pic_encoded = None
+                            logger.info(f"{User} reset his profile picture")
                         database_func.update_profile_pic(User, profile_pic_encoded)
                         logger.info(f"updated client profile pic of {User}")
                         Communication.update_profiles_list_for_everyone_by_user(User)

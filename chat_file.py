@@ -3557,11 +3557,17 @@ class SettingsBox(QWidget):
             print(e)
 
     def remove_profile_pic(self):
-        self.parent.profile_pic = None
-        self.Network.send_profile_pic(None)
-        print("send profile pic to server")
-        self.parent.activateWindow()
-        self.parent.update_profile_pic_dicts_list(self.parent.username, None)
+        try:
+            self.parent.profile_pic = None
+            try:
+                self.Network.send_profile_pic(None)
+            except Exception as e:
+                print(f"error in sending profile picture: {e}")
+            print("send profile pic to server")
+            self.parent.activateWindow()
+            self.parent.update_profile_pic_dicts_list(self.parent.username, None)
+        except Exception as e:
+            print(f"error in resetting profile pic {e}")
 
     def edit_profile_pic_pressed(self):
         self.open_file_dialog()

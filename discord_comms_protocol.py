@@ -418,6 +418,9 @@ class client_net:
         if isinstance(profile_pic, bytes):
             # If content is bytes, encode it as a Base64 string
             content = base64.b64encode(profile_pic).decode('utf-8')
+        elif profile_pic is None:
+            str_profile_pic = "None"
+            content = str_profile_pic.encode("utf-8")
 
         full_message = "update_profile_pic:" + content
 
