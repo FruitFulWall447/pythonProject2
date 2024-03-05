@@ -231,18 +231,20 @@ def open_image_bytes(image_bytes):
     """
     try:
         # Create a temporary file to save the image bytes
-        with open("temp_image.png", "wb") as f:
-            f.write(image_bytes)
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            temp_file.write(image_bytes)
+
+            # Get the path of the temporary file
+            temp_file_path = temp_file.name
 
         # Open the temporary file using the default image viewer application
-        webbrowser.open("temp_image.png")
+        webbrowser.open(temp_file_path)
 
         return True
 
     except Exception as e:
         print(f"Error opening image: {e}")
         return False
-
 
 def calculate_image_size_in_kb(image_bytes):
     try:
