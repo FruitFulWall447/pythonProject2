@@ -1058,7 +1058,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
                     file_type = ""
-                    if self.file_name.endswith("png"):
+                    if self.file_name.endswith(("png", "jpg")):
                         file_type = "image"
                     elif self.file_name.endswith(("mp4", "mov")):
                         file_type = "video"
