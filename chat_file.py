@@ -441,17 +441,28 @@ def set_icon_from_bytes_to_label(label, image_bytes):
     # Load the image from bytes
     pixmap = QPixmap()
     pixmap.loadFromData(image_bytes)
-    # Set the icon to the label with the exact width and height of the label
-    image_aspect_ratio = pixmap.width() / pixmap.height()
-    if image_aspect_ratio <= 0.5:
-        x = pixmap.scaledToWidth(label.width())
-    elif image_aspect_ratio >= 1.5:
-        x = pixmap.scaledToHeight(label.height())
-    else:
-        x = pixmap.scaledToWidth(label.width()).scaledToHeight(label.height())
-    label.setPixmap(x)
-    label.setAlignment(Qt.AlignCenter)
 
+    # Get the size of the label
+    label_size = label.size()
+    label_width = label_size.width()
+    label_height = label_size.height()
+
+    # Calculate the aspect ratio of the image
+    image_width = pixmap.width()
+    image_height = pixmap.height()
+    image_aspect_ratio = image_width / image_height
+
+    # Determine how to scale the image based on its aspect ratio
+    if image_aspect_ratio <= 0.5:
+        scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
+    elif image_aspect_ratio >= 1.5:
+        scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
+    else:
+        scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+    # Set the scaled pixmap to the label
+    label.setPixmap(scaled_pixmap)
+    label.setAlignment(Qt.AlignCenter)
 
 def set_icon_from_bytes_to_button(button, image_bytes):
     # Load the image from bytes
@@ -2108,20 +2119,22 @@ class ChatBox(QWidget):
         label.setPixmap(pixmap)
 
     def load_image_from_bytes_to_button(self, image_bytes, button):
-        pixmap = QPixmap()
-        pixmap.loadFromData(image_bytes)
+        image = QImage.fromData(image_bytes)
 
-        if pixmap.width() == 0 or pixmap.height() == 0:
+        if image.isNull() or image.width() == 0 or image.height() == 0:
             print("There is an error with image_bytes")
             return
 
         # Calculate the scaled size while maintaining the aspect ratio
-        aspect_ratio = pixmap.width() / pixmap.height()
+        aspect_ratio = image.width() / image.height()
         target_width = self.image_width
         target_height = int(target_width / aspect_ratio)
 
         # Scale the image to the target size
-        pixmap = pixmap.scaled(target_width, target_height, Qt.KeepAspectRatio)
+        scaled_image = image.scaled(target_width, target_height, Qt.KeepAspectRatio)
+
+        # Convert the QImage to QPixmap for displaying in the button
+        pixmap = QPixmap.fromImage(scaled_image)
 
         # Set the button's icon
         button.setIconSize(pixmap.size())
