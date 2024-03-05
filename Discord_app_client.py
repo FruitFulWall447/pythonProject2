@@ -557,6 +557,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.background_color = "#141c4b"
         self.standard_hover_color = "#2980b9"
         self.color_design_options = ["Red", "Blue", "Black and White", "Green"]
+        screen = QDesktopWidget().screenGeometry()
+        # Extract the screen width and height
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
 
         self.is_create_group_pressed = False
         self.is_rename_group_pressed = False

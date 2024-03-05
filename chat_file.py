@@ -3926,7 +3926,7 @@ class VideoPlayer(QWidget):
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
 
         exit_watch_button = QPushButton(self)
-        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y+20)
+        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y + int(screen_height * 0.05))
         make_q_object_clear(exit_watch_button)
         exit_watch_button.clicked.connect(self.stop_watching)
 
