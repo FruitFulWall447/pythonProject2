@@ -1388,13 +1388,16 @@ class ChatBox(QWidget):
         elif name in dict.get("muted"):
             set_button_icon(status_button, muted_icon, width, height)
         user_profile_pic = self.parent.get_profile_pic_by_username(name)
-        if user_profile_pic is not None:
-            circular_image = make_circular_image(user_profile_pic)
-            set_icon_from_bytes_to_label(button, circular_image)
-        else:
-            regular_icon_bytes = file_to_bytes(regular_icon_path)
-            circular_image = make_circular_image(regular_icon_bytes)
-            set_icon_from_bytes_to_label(button, circular_image)
+        try:
+            if user_profile_pic is not None:
+                circular_image = make_circular_image(user_profile_pic)
+                set_icon_from_bytes_to_label(button, circular_image)
+            else:
+                regular_icon_bytes = file_to_bytes(regular_icon_path)
+                circular_image = make_circular_image(regular_icon_bytes)
+                set_icon_from_bytes_to_label(button, circular_image)
+        except Exception as e:
+            print(f"error in setting image to profile button {e}")
         status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
         self.call_profiles_list.append(button)
         self.call_profiles_list.append(status_button)
@@ -3530,12 +3533,15 @@ class SettingsBox(QWidget):
 
                 profile_image_x, profile_image_y = (800, 200)
                 user_image = self.parent.get_profile_pic_by_username(self.parent.username)
-                if user_image is None:
-                    icon_path = "discord_app_assets/regular_profile.png"
-                    set_icon_to_label(self.profile_image_label, icon_path, width, height)
-                else:
-                    circular_pic_bytes = make_circular_image(user_image)
-                    set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
+                try:
+                    if user_image is None:
+                        icon_path = "discord_app_assets/regular_profile.png"
+                        set_icon_to_label(self.profile_image_label, icon_path, width, height)
+                    else:
+                        circular_pic_bytes = make_circular_image(user_image)
+                        set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
+                except Exception as e:
+                    print(f"error in putting profile image on label {e}")
                 self.profile_image_label.move(profile_image_x, profile_image_y)
                 width_change_profile_pic, height_change_profile_pic = (160, 40)
                 x_change_profile_pic, y_change_profile_pic = (800, 400)
@@ -3583,7 +3589,7 @@ class SettingsBox(QWidget):
                     self.Network.send_profile_pic(image_bytes)
                     print("send profile pic to server")
                     self.parent.activateWindow()
-                    circular_pic = make_circular_image(file_path)
+                    circular_pic = make_circular_image(image_bytes)
                     if circular_pic is not None:
                         set_icon_from_bytes_to_label(self.profile_image_label, circular_pic)
                         self.parent.update_profile_pic_dicts_list(self.parent.username, image_bytes)
