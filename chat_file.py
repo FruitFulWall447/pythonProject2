@@ -461,35 +461,32 @@ def set_icon_from_bytes_to_label(label, image_bytes):
     label.setPixmap(scaled_pixmap)
     label.setAlignment(Qt.AlignCenter)
 
-def set_icon_from_bytes_to_button(button, image_bytes):
-    # Load the image from bytes
-    pixmap = QPixmap()
-    pixmap.loadFromData(image_bytes)
-    # Set the icon to the button with the exact width and height of the button
-    image_aspect_ratio = pixmap.width() / pixmap.height()
+
+def set_icon_from_path_to_label(label, image_path):
+    # Load the image from file path
+    pixmap = QPixmap(image_path)
+
+    # Get the size of the label
+    label_size = label.size()
+    label_width = label_size.width()
+    label_height = label_size.height()
+
+    # Calculate the aspect ratio of the image
+    image_width = pixmap.width()
+    image_height = pixmap.height()
+    image_aspect_ratio = image_width / image_height
+
+    # Determine how to scale the image based on its aspect ratio
     if image_aspect_ratio <= 0.5:
-        x = pixmap.scaledToWidth(button.width())
+        scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
     elif image_aspect_ratio >= 1.5:
-        x = pixmap.scaledToHeight(button.height())
+        scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
     else:
-        x = pixmap.scaledToWidth(button.width()).scaledToHeight(button.height())
-    button.setIcon(QIcon(x))
-    button.setIconSize(button.size())
-    button.setStyleSheet("border: none;")  # Optional: Remove border around the icon
-    button.setAlignment(Qt.AlignCenter)
+        scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-
-def set_icon_to_label(label, icon_path, width=None, height=None):
-    # Create QIcon object from the provided icon path
-    icon = QIcon(icon_path)
-
-    # Get the size of the icon
-    icon_size = icon.availableSizes()[0]  # Get the size of the icon
-    icon_width = width if width is not None else icon_size.width()
-    icon_height = height if height is not None else icon_size.height()
-
-    # Set the icon to the label
-    label.setPixmap(icon.pixmap(icon_width, icon_height))
+    # Set the scaled pixmap to the label
+    label.setPixmap(scaled_pixmap)
+    label.setAlignment(Qt.AlignCenter)
 
 
 def set_icon_to_circular_label(label, icon_path, width=None, height=None):
@@ -3398,9 +3395,7 @@ class SettingsBox(QWidget):
                 user_image = self.parent.get_profile_pic_by_username(self.parent.username)
                 if user_image is None:
                     icon_path = "discord_app_assets/regular_profile.png"
-                    regular_icon_bytes = file_to_bytes(icon_path)
-                    circular_image = make_circular_image(regular_icon_bytes)
-                    set_icon_from_bytes_to_label(self.profile_image_label, circular_image)
+                    set_icon_from_path_to_label(self.profile_image_label, icon_path)
                 else:
                     circular_pic_bytes = make_circular_image(user_image)
                     set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
@@ -3538,9 +3533,7 @@ class SettingsBox(QWidget):
                 try:
                     if user_image is None:
                         icon_path = "discord_app_assets/regular_profile.png"
-                        regular_icon_bytes = file_to_bytes(icon_path)
-                        circular_image = make_circular_image(regular_icon_bytes)
-                        set_icon_from_bytes_to_label(self.profile_image_label, circular_image)
+                        set_icon_from_path_to_label(self.profile_image_label, icon_path)
                     else:
                         circular_pic_bytes = make_circular_image(user_image)
                         set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
