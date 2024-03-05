@@ -3926,7 +3926,7 @@ class VideoPlayer(QWidget):
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
 
         exit_watch_button = QPushButton(self)
-        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y)
+        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y+20)
         make_q_object_clear(exit_watch_button)
         exit_watch_button.clicked.connect(self.stop_watching)
 
@@ -3966,6 +3966,7 @@ class VideoPlayer(QWidget):
         else:
             self.media_player.play()
             self.position_timer.start()
+
     def stop_watching(self):
         self.media_player.stop()
         self.parent.stop_watching_video()
@@ -4029,6 +4030,8 @@ class VideoPlayer(QWidget):
             elif self.media_player.state() == QMediaPlayer.PausedState:
                 self.media_player.play()
                 self.position_timer.start()
+        elif event.key() == Qt.Key_Escape:
+            self.stop_watching()
 
 
 
