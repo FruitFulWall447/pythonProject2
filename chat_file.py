@@ -3271,7 +3271,8 @@ class SettingsBox(QWidget):
         self.settings_button_height = 50
         self.file_dialog = QFileDialog(self)
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
-        self.file_dialog.setNameFilter("Image files (*.png)")
+        self.file_dialog.setNameFilter("Image files (*.png *.jpg)")
+
 
         delta_of_main_buttons = 50
 
