@@ -288,7 +288,10 @@ def update_profile_pic(username, profile_pic_encoded):
         connection = connect_to_kevindb()
         cursor = connection.cursor()
 
-        profile_pic = decode_base64(profile_pic_encoded)
+        if profile_pic_encoded is not None:
+            profile_pic = decode_base64(profile_pic_encoded)
+        else:
+            profile_pic = None
 
         table_name = "Sign_Up_Table"
 

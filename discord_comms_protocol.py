@@ -420,7 +420,7 @@ class client_net:
             content = base64.b64encode(profile_pic).decode('utf-8')
         elif profile_pic is None:
             str_profile_pic = "None"
-            content = str_profile_pic.encode("utf-8")
+            content = str_profile_pic
 
         full_message = "update_profile_pic:" + content
 
