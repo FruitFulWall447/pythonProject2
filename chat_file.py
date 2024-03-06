@@ -3732,24 +3732,29 @@ class SettingsBox(QWidget):
         icons_size = 30
         if not self.parent.is_push_to_talk:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(brighter_blue, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(self.parent.background_color, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(regular_blue, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(self.parent.background_color, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
+
             selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, starter_y+10)
             not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
         else:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(regular_blue, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(self.parent.background_color, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(brighter_blue, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(self.parent.background_color, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
+
             selected_button_image = self.create_image_label(selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
             not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, starter_y + 10)
+        if self.parent.background_color == "Black and White":
+            push_to_talk_button.setStyleSheet(push_to_talk_button.styleSheet() + "color: black;")
+            voice_activity_button.setStyleSheet(voice_activity_button.styleSheet() + "color: black;")
 
     def create_option_box(self, width, height, x, y, item_list):
         color_combobox = CustomComboBox(self)
