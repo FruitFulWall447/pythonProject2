@@ -688,18 +688,18 @@ class ChatBox(QWidget):
         ringing_square_label_width = 240
         self.ringing_square_label = QLabel(self)
         self.ringing_square_label.setGeometry(ringing_square_label_x, 200, ringing_square_label_width, 400)
-        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px #2980b9;")
+        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px {self.parent.standard_hover_color};")
         self.ringing_square_label.move(ringing_square_label_x, 220)
 
         self.square_pos = (600, 0)
         self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
                                       self.height_of_chat_box)
-        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid #2980b9;")
+        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
 
         around_name_y = self.square_pos[1]
         around_name_x = self.square_pos[0]
         self.around_name = QLabel(self)
-        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid #2980b9;")
+        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
         start_height_of_around_name = 50
         height_of_around_name = start_height_of_around_name
         self.around_name_delta = 220
@@ -746,17 +746,17 @@ class ChatBox(QWidget):
             self.send_image_button.setIconSize(scaled_size)
             self.send_image_y = 928
             self.send_image_button.move(610, self.send_image_y)
-            self.send_image_button.setStyleSheet("""            
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-             QPushButton {
+            self.send_image_button.setStyleSheet(f"""            
+            QPushButton:hover {{
+                background-color: {self.parent.standard_hover_color};
+            }}
+             QPushButton {{
                 background-color: transparent;
-                }
-            QPushButton:pressed {
+                }}
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }
+            }}
             """)
             self.send_image_button.clicked.connect(self.open_image_file_dialog)
 
@@ -1178,8 +1178,8 @@ class ChatBox(QWidget):
         self.find_contact_text_entry.textChanged.connect(self.on_text_changed_in_contact_search)
 
         self.friends_button = QPushButton("  Social", self)
-        self.friends_button.setStyleSheet('''
-            QPushButton {
+        self.friends_button.setStyleSheet(f'''
+            QPushButton {{
             color: white;
             font-size: 15px;
             border: none;  /* Remove the border */
@@ -1189,15 +1189,15 @@ class ChatBox(QWidget):
             text-align: left;  /* Align the text to the left */
             alignment: left;   /* Align the icon and text to the left */
             padding-left: 10px;   /* Adjust the starting position to the right */
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+            }}
+            QPushButton:hover {{
+                background-color: {self.parent.standard_hover_color};
+            }}
 
-            QPushButton:pressed {
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }
+            }}
 
         ''')
         icon = QIcon("discord_app_assets/friends_icon.png")  # Replace with the path to your icon image
@@ -1266,16 +1266,16 @@ class ChatBox(QWidget):
 
         button.clicked.connect(click_function)
 
-        button.setStyleSheet("""
-            QPushButton {
+        button.setStyleSheet(f"""
+            QPushButton {{
                 background-color: #6fa8b6;
                 background-repeat: no-repeat;
                 background-position: center;
-                border-radius: """ + str(height // 2) + """px;  /* Set to half of the button height */
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
+                border-radius: {height // 2}px;  /* Set to half of the button height */
+            }}
+            QPushButton:hover {{
+                background-color: {self.parent.standard_hover_color};
+            }}
         """)
 
         return button
@@ -1459,17 +1459,17 @@ class ChatBox(QWidget):
         label.setStyleSheet("""color: white;font-size: 12px;""")
         label.move(starter_x + 40, starter_y_of_border + 75)
 
-        style_sheet = """
-        QPushButton {
+        style_sheet = f"""
+        QPushButton {{
             color: white;
             font-size: 16px;
             background-color: rgba(0, 0, 0, 0); /* Transparent background */
-            border: 2px solid #2980b9; /* Use a slightly darker shade for the border */
+            border: 2px solid {self.parent.standard_hover_color}; /* Use a slightly darker shade for the border */
             border-radius: 5px;
-            }
-                        QPushButton:hover {
+            }}
+                        QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
         """
         scroll_up_button = QPushButton("↑", self)
         scroll_up_button.move(starter_x + 230, starter_y_of_border + 25)
@@ -1491,19 +1491,19 @@ class ChatBox(QWidget):
             if i >= self.parent.add_users_to_group_index * 5:
                 friend_label = QPushButton(friend, self)
                 friend_label.friend_name = friend
-                friend_label.setStyleSheet('''
+                friend_label.setStyleSheet(f'''
                     color: white;
                     font-size: 18px;
-                    border: 2px solid #2980b9;
+                    border: 2px solid {self.parent.standard_hover_color};
                     border-radius: 5px;
                     padding: 5px;
                     margin-bottom: 18px;
                     text-align: left; /* Align text to the left */
-                }
+                }}
 
-                QPushButton:hover {
+                QPushButton:hover {{
                     background-color: #3498db; /* Bluish hover color */
-                }
+                }}
                 ''')
                 friend_label.clicked.connect(self.toggle_checkbox)
                 friend_checkbox = QCheckBox(self)
@@ -1526,7 +1526,7 @@ class ChatBox(QWidget):
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.parent.background_color_hex};
-                border: 2px solid #2980b9;
+                border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 color: #b9c0c7;
@@ -1581,17 +1581,17 @@ class ChatBox(QWidget):
         label.setStyleSheet("""color: white;font-size: 12px;""")
         label.move(starter_x + 40, starter_y_of_border + 75)
 
-        style_sheet = """
-        QPushButton {
+        style_sheet = f"""
+        QPushButton {{
             color: white;
             font-size: 16px;
             background-color: rgba(0, 0, 0, 0); /* Transparent background */
-            border: 2px solid #2980b9; /* Use a slightly darker shade for the border */
+            border: 2px solid {self.parent.standard_hover_color}; /* Use a slightly darker shade for the border */
             border-radius: 5px;
-            }
-                        QPushButton:hover {
+            }}
+                        QPushButton:hover {{
                 background-color: #2980b9;
-            }
+            }}
         """
         scroll_up_button = QPushButton("↑", self)
         scroll_up_button.move(starter_x + 230, starter_y_of_border + 25)
@@ -1613,19 +1613,20 @@ class ChatBox(QWidget):
             if i >= self.parent.create_group_index * 5:
                 friend_label = QPushButton(friend, self)
                 friend_label.friend_name = friend
-                friend_label.setStyleSheet('''
+                friend_label.setStyleSheet(f'''
+                {{
                     color: white;
                     font-size: 18px;
-                    border: 2px solid #2980b9;
+                    border: 2px solid {self.parent.standard_hover_color};
                     border-radius: 5px;
                     padding: 5px;
                     margin-bottom: 18px;
                     text-align: left; /* Align text to the left */
-                }
+                }}
 
-                QPushButton:hover {
+                QPushButton:hover {{
                     background-color: #3498db; /* Bluish hover color */
-                }
+                }}
                 ''')
                 friend_label.clicked.connect(self.toggle_checkbox)
                 friend_checkbox = QCheckBox(self)
@@ -1648,7 +1649,7 @@ class ChatBox(QWidget):
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.parent.background_color_hex};
-                border: 2px solid #2980b9;
+                border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 color: #b9c0c7;
@@ -1857,7 +1858,7 @@ class ChatBox(QWidget):
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.parent.background_color_hex};
-                border: 2px solid #2980b9;
+                border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 padding-left: 35px;  /* Adjust the padding to move text to the right */
@@ -2506,7 +2507,7 @@ class FriendsBox(QWidget):
         selecting_buttons_stylesheet = (f"""
             QPushButton {{
                 background-color: {self.parent.background_color_hex};  /* Use your desired blue color */
-                border: 2px solid #2980b9;  /* Use a slightly darker shade for the border */
+                border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
                 border-radius: 5px;
                 padding: 8px 16px;
                 color: #b9c0c7;
@@ -2526,10 +2527,10 @@ class FriendsBox(QWidget):
             }}
         """)
 
-        selecting_button_pressed_stylesheet = ("""
-            QPushButton {
+        selecting_button_pressed_stylesheet = (f"""
+            QPushButton {{
                 background-color: #3498db;  /* Use your desired color for pressed state */
-                border: 2px solid #2980b9;  /* Use a slightly darker shade for the border */
+                border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
                 border-radius: 5px;
                 padding: 8px 16px;
                 color: #b9c0c7;
@@ -2537,21 +2538,21 @@ class FriendsBox(QWidget):
                 font-size: 14px;
                 font-weight: normal;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            }
-            QPushButton:hover {
+            }}
+            QPushButton:hover {{
                 background-color: #2980b9;
-            }
-            QPushButton:pressed {
+            }}
+            QPushButton:pressed {{
                 background-color: #2c3e50;  /* Use your desired color for pressed state */
                 border-color: #34495e;  /* Use a slightly darker shade for the border in pressed state */
-            }
+            }}
         """)
 
         border1_width = 725
         border1_height = self.friends_label.height() + 48
         self.border1_label = QLabel(self)
         self.border1_label.setStyleSheet('''
-                        border: 2px solid #2980b9;
+                        border: 2px solid {self.parent.standard_hover_color}};
                         border-radius: 5px;
                         padding: 5px;
                         margin-bottom: 2px;
@@ -2562,8 +2563,8 @@ class FriendsBox(QWidget):
         border2_width = border1_width
         border3_height = self.friends_label.height() + 900
         self.border2_label = QLabel(self)
-        self.border2_label.setStyleSheet('''
-                        border: 2px solid #2980b9;
+        self.border2_label.setStyleSheet(f'''
+                        border: 2px solid {self.parent.standard_hover_color};
                         border-radius: 5px;
                         padding: 5px;
                         margin-bottom: 2px;
@@ -2576,8 +2577,8 @@ class FriendsBox(QWidget):
         self.border2_label.lower()
 
         self.border3_label = QLabel(self)
-        self.border3_label.setStyleSheet('''
-                        border: 2px solid #2980b9;
+        self.border3_label.setStyleSheet(f'''
+                        border: 2px solid {self.parent.standard_hover_color};
                         border-radius: 5px;
                         padding: 5px;
                         margin-bottom: 2px;
@@ -2662,7 +2663,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2681,7 +2682,7 @@ class FriendsBox(QWidget):
 
                 line = QFrame(self)
                 line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
-                line.setStyleSheet("background-color: #2980b9;")  # Set line color
+                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
 
                 chat_button = QPushButton(self)
                 chat_button_x = 1235
@@ -2766,7 +2767,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2785,7 +2786,7 @@ class FriendsBox(QWidget):
 
                 line = QFrame(self)
                 line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
-                line.setStyleSheet("background-color: #2980b9;")  # Set line color
+                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
 
                 chat_button = QPushButton(self)
                 chat_button_x = 1235
@@ -2880,7 +2881,7 @@ class FriendsBox(QWidget):
                 self.search = QLineEdit(self)
                 self.search.setPlaceholderText("Search")
                 self.search.setStyleSheet(
-                    "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                    f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
                 self.search.setGeometry(search_x, search_y, search_width, search_height)
                 self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2961,7 +2962,7 @@ class FriendsBox(QWidget):
             self.add_friend_entry.setPlaceholderText("Add Friend")
             self.add_friend_entry.setGeometry(search_x, search_y + 100, search_width - 10, search_height + 50)
             self.add_friend_entry.setStyleSheet(
-                "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.add_friend_entry.setFixedHeight(40)  # Increase height
 
         if self.parent.friends_box_page == "blocked":
@@ -2986,7 +2987,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -3018,17 +3019,17 @@ class FriendsBox(QWidget):
             button.setIconSize(button_icon.actualSize(QSize(26, 26)))
         else:
             button.setIconSize(button_icon.actualSize(QSize(41, 41)))
-        button.setStyleSheet("""           
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton {
+        button.setStyleSheet(f"""           
+            QPushButton:hover {{
+                background-color: {self.parent.standard_hover_color};
+            }}
+            QPushButton {{
                 background-color: transparent;
-            }
-            QPushButton:pressed {
+            }}
+            QPushButton:pressed {{
                 background-color: #202225;
                 border-color: #72767d;
-            }""")
+            }}""")
 
         button.clicked.connect(lambda checked: click_callback(friend))
         button.move(x, y)
@@ -3311,7 +3312,7 @@ class SettingsBox(QWidget):
         hover_color = self.parent.standard_hover_color
 
         self.label = QLabel(self)
-        self.label.setStyleSheet("border-right: 3px solid #2980b9; padding-left: 10px;")
+        self.label.setStyleSheet(f"border-right: 3px solid {self.parent.standard_hover_color}; padding-left: 10px;")
         self.label.setGeometry(starter_x_of_main_buttons + self.privacy_safety_button.width()-3, -20, 3, 1020)
 
         self.combo_box_style_sheet = """
@@ -3857,7 +3858,7 @@ class SettingsBox(QWidget):
         button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {self.parent.background_color_hex};
-                border: 2px solid #2980b9;
+                border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 padding-left: 35px;  /* Adjust the padding to move text to the right */
@@ -3889,7 +3890,7 @@ class SettingsBox(QWidget):
         return f"""
             QPushButton {{
                 background-color: {normal_color};
-                border: 2px solid #2980b9;
+                border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
                 padding-left: 35px;  /* Adjust the padding to move text to the right */
