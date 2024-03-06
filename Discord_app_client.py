@@ -554,9 +554,38 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     updated_settings_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
-        self.background_color = "#141c4b"
+        self.blueish_background_color = "#141c4b"
+        self.blackish_background_color = "#000000"
+        self.reddish_background_color = "#FF0000"
+        self.grayish_background_color = "#919090"
+
+        self.blueish_style_hover_color = "#2980b9"
+        self.blackish_style_hover_color = "#FFFFFF"
+        self.reddish_style_hover_color = "#2980b9"
+        self.grayish_style_hover_color = "#2980b9"
+
+        self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color, self.blackish_style_hover_color, self.grayish_style_hover_color]
+
+        self.hex_colors = [self.reddish_background_color, self.blueish_background_color, self.blackish_background_color, self.grayish_background_color]
+        self.color_design_options = ["Red", "Blue", "Black and White", "Gray"]
+        self.color_design_mapping = {
+            self.color_design_options[0]: self.hex_colors[0],
+            self.color_design_options[1]: self.hex_colors[1],
+            self.color_design_options[2]: self.hex_colors[2],
+            self.color_design_options[3]: self.hex_colors[3]
+        }
+
+        self.style_color_hover_mapping = {
+            self.color_design_options[0]: self.hex_hover_colors[0],
+            self.color_design_options[1]: self.hex_hover_colors[1],
+            self.color_design_options[2]: self.hex_hover_colors[2],
+            self.color_design_options[3]: self.hex_hover_colors[3]
+        }
+
         self.standard_hover_color = "#2980b9"
-        self.color_design_options = ["Red", "Blue", "Black and White", "Green"]
+        self.background_color_hex = "#141c4b"
+        self.background_color = "Blue"
+        self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
         screen = QDesktopWidget().screenGeometry()
         # Extract the screen width and height
         self.screen_width = screen.width()
@@ -674,7 +703,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setWindowTitle('Main Page')
             self.setStyleSheet(f'''
                 QWidget {{
-                    background-color: {self.background_color};
+                    background-color: {self.background_color_hex};
                 }}
             ''')
             # Create an instance of ChatBox
@@ -700,6 +729,31 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_every_screen(self):
+        try:
+            self.updated_chat()
+            self.updated_requests()
+            self.updated_settings_page()
+        except Exception as e:
+            print(f"error in updating screens: {e}")
+
+    def update_background_color(self, new_background_color_str):
+        background_color_hex = self.color_design_mapping.get(new_background_color_str)
+        self.background_color = new_background_color_str
+        self.background_color_hex = background_color_hex
+        get_new_hover_color = self.style_color_hover_mapping.get(new_background_color_str)
+        self.standard_hover_color = get_new_hover_color
+        self.setStyleSheet(f'''
+            QWidget {{
+                background-color: {background_color_hex};
+            }}
+        ''')
+        print("updated background color")
+        try:
+            self.update_every_screen()
+        except Exception as e:
+            print(f"error in changing background color: {e}")
 
     def update_profile_pic_dicts_list(self, name, new_image):
         for profile_pic in self.list_profile_pic_dicts:

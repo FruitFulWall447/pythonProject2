@@ -688,18 +688,18 @@ class ChatBox(QWidget):
         ringing_square_label_width = 240
         self.ringing_square_label = QLabel(self)
         self.ringing_square_label.setGeometry(ringing_square_label_x, 200, ringing_square_label_width, 400)
-        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px #2980b9;")
+        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px #2980b9;")
         self.ringing_square_label.move(ringing_square_label_x, 220)
 
         self.square_pos = (600, 0)
         self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
                                       self.height_of_chat_box)
-        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px solid #2980b9;")
+        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid #2980b9;")
 
         around_name_y = self.square_pos[1]
         around_name_x = self.square_pos[0]
         self.around_name = QLabel(self)
-        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color}; border: 5px solid #2980b9;")
+        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid #2980b9;")
         start_height_of_around_name = 50
         height_of_around_name = start_height_of_around_name
         self.around_name_delta = 220
@@ -721,7 +721,6 @@ class ChatBox(QWidget):
         self.around_name.raise_()
 
         self.call_profiles_list = []
-
 
         if self.parent.selected_chat != "":
             self.ringing_square_label = QLabel(self)
@@ -999,11 +998,9 @@ class ChatBox(QWidget):
                         self.put_call_icons_on_the_screen()
 
             self.text_entry = QLineEdit(self)
-            self.text_entry.setGeometry(10, 10, self.width_of_chat_box-70, 40)
-            self.text_entry.setStyleSheet(
-                "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
-            text_entry_y = self.send_image_y
-            self.text_entry.move(650, text_entry_y)
+            text_entry_y = self.send_image_y-5
+            self.text_entry.setGeometry(650, text_entry_y, self.width_of_chat_box-70, 40)
+            self.text_entry.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
             text = self.current_chat.replace("/", "")
             place_holder_text = "Message" + " " + text
             self.text_entry.setPlaceholderText(place_holder_text)
@@ -1150,8 +1147,8 @@ class ChatBox(QWidget):
         border_width = 350
         info_y = 902
         self.border_label = QLabel(self)
-        self.border_label.setStyleSheet('''
-                        border: 2px solid #2980b9;
+        self.border_label.setStyleSheet(f'''
+                        border: 2px solid {self.parent.standard_hover_color};
                         border-radius: 5px;
                         padding: 5px;
                         margin-bottom: 2px;
@@ -1161,7 +1158,6 @@ class ChatBox(QWidget):
 
         self.border_label2 = QLabel(self)
         self.border_label2.setStyleSheet('''
-
                             padding: 5px;
                             margin-bottom: 2px;
                             border-top: 2px solid #2980b9; /* Top border */
@@ -1176,7 +1172,7 @@ class ChatBox(QWidget):
         self.find_contact_text_entry = QLineEdit(self)
         self.find_contact_text_entry.setPlaceholderText("Find a conversation")
         self.find_contact_text_entry.setStyleSheet(
-            "background-color: #2980b9; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+            f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
         self.find_contact_text_entry.setGeometry(find_contact_pos[0], find_contact_pos[1], find_contact_size[0],
                                                  find_contact_size[1])
         self.find_contact_text_entry.textChanged.connect(self.on_text_changed_in_contact_search)
@@ -1226,11 +1222,11 @@ class ChatBox(QWidget):
             print(f"error in showing chats list{e}")
 
         username_label = QLabel(self.parent.username, self)
-        username_label.setStyleSheet('''
+        username_label.setStyleSheet(f'''
             color: white;
             font-size: 18px;
-            background-color: #2980b9;
-            border: 2px solid #2980b9;  /* Use a slightly darker shade for the border */
+            background-color: {self.parent.standard_hover_color};
+            border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
             border-radius: 5px;
             padding: 5px;
             margin-bottom: 18px;
@@ -1257,14 +1253,9 @@ class ChatBox(QWidget):
 
         if self.parent.is_create_group_pressed:
             self.display_create_group_box()
-
-
         self.raise_needed_elements()
 
     # Layout
-
-
-
     def create_custom_in_call_button(self, width, height, x, y, click_function):
         button = QPushButton(self)
 
@@ -1534,7 +1525,7 @@ class ChatBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {self.parent.background_color};
+                background-color: {self.parent.background_color_hex};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -1656,7 +1647,7 @@ class ChatBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {self.parent.background_color};
+                background-color: {self.parent.background_color_hex};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -1865,7 +1856,7 @@ class ChatBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {self.parent.background_color};
+                background-color: {self.parent.background_color_hex};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -2514,7 +2505,7 @@ class FriendsBox(QWidget):
 
         selecting_buttons_stylesheet = (f"""
             QPushButton {{
-                background-color: {self.parent.background_color};  /* Use your desired blue color */
+                background-color: {self.parent.background_color_hex};  /* Use your desired blue color */
                 border: 2px solid #2980b9;  /* Use a slightly darker shade for the border */
                 border-radius: 5px;
                 padding: 8px 16px;
@@ -3316,7 +3307,7 @@ class SettingsBox(QWidget):
         self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.privacy_safety, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        background_color = self.parent.background_color
+        background_color = self.parent.background_color_hex
         hover_color = self.parent.standard_hover_color
 
         self.label = QLabel(self)
@@ -3503,6 +3494,8 @@ class SettingsBox(QWidget):
                 width, height = (300, 45)
                 appearance_select_box_x, appearance_select_box_y = (800, starter_y)
                 self.color_combobox = self.create_option_box(width, height, appearance_select_box_x, appearance_select_box_y, list_optional_colors)
+                self.color_combobox.setCurrentText(self.parent.background_color)
+                self.color_combobox.currentIndexChanged.connect(self.background_color_changed)
                 appearance_select_box_label = self.create_white_label(appearance_select_box_x, appearance_select_box_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "THEME COLOR")
                 font_size_slider_x, font_size_slider_y = 800, starter_y+100
@@ -3519,6 +3512,12 @@ class SettingsBox(QWidget):
                 self.font_size_label = self.create_white_label(font_size_slider_x + font_size_slider_width + 10, font_size_slider_y + 7,
                                                             self.default_labels_font_size, 100, 30,
                                                             str(self.parent.messages_font_size))
+                font_option_x, font_option_y = 800, starter_y+200
+                font_slider_label = self.create_white_label(font_option_x, font_option_y-space_between_option_box_and_label,
+                                                              self.default_labels_font_size, None, None, "FONT STYLE")
+                self.font_box = self.create_option_box(width, height, font_option_x, font_option_y, self.parent.font_options)
+                self.font_box.currentIndexChanged.connect(self.font_updated)
+
             elif self.parent.selected_settings == "User Profile":
                 width, height = (120, 120)
                 self.profile_image_label = create_custom_circular_label(width, height, self)
@@ -3558,6 +3557,15 @@ class SettingsBox(QWidget):
 
         except Exception as e:
             print(e)
+
+    def background_color_changed(self):
+        new_background_color = self.color_combobox.currentText()
+        self.parent.update_background_color(new_background_color)
+        print(new_background_color)
+
+    def font_updated(self):
+        new_font = self.font_box.currentText()
+        print(new_font)
 
     def remove_profile_pic(self):
         try:
@@ -3609,7 +3617,6 @@ class SettingsBox(QWidget):
         else:
             self.parent.is_push_to_talk = True
         self.parent.updated_settings_page()
-
 
     def create_colored_button(self, background_color, hover_color, border_color, x, y, width, height, text):
         new_button = QPushButton(text, self)
@@ -3849,7 +3856,7 @@ class SettingsBox(QWidget):
 
         button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {self.parent.background_color};
+                background-color: {self.parent.background_color_hex};
                 border: 2px solid #2980b9;
                 border-radius: 5px;
                 padding: 8px 16px;
