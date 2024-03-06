@@ -2969,7 +2969,7 @@ class FriendsBox(QWidget):
             self.add_friend_entry.setPlaceholderText("Add Friend")
             self.add_friend_entry.setGeometry(search_x, search_y + 100, search_width - 10, search_height + 50)
             self.add_friend_entry.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.add_friend_entry.setFixedHeight(40)  # Increase height
 
         if self.parent.friends_box_page == "blocked":
