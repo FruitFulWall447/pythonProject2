@@ -993,9 +993,13 @@ class ChatBox(QWidget):
                         self.put_call_icons_on_the_screen()
 
             self.text_entry = QLineEdit(self)
+            if self.parent.background_color == "Black and White":
+                text_entry_color = "black"
+            else:
+                text_entry_color = "white"
             text_entry_y = self.send_image_y-5
             self.text_entry.setGeometry(650, text_entry_y, self.width_of_chat_box-70, 40)
-            self.text_entry.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+            self.text_entry.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
             text = self.current_chat.replace("/", "")
             place_holder_text = "Message" + " " + text
             self.text_entry.setPlaceholderText(place_holder_text)
@@ -1221,10 +1225,14 @@ class ChatBox(QWidget):
             print(f"error in showing chats list{e}")
 
         username_label = QLabel(self.parent.username, self)
+        if text_entry_color == "black":
+            username_label_background_color = "black"
+        else:
+            username_label_background_color = self.parent.standard_hover_color
         username_label.setStyleSheet(f'''
             color: white;
             font-size: 18px;
-            background-color: {self.parent.standard_hover_color};
+            background-color: {username_label_background_color};
             border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
             border-radius: 5px;
             padding: 5px;
@@ -1244,9 +1252,6 @@ class ChatBox(QWidget):
                 background-color: transparent;
             }
 
-            QPushButton:hover {
-                background-color: #808080; /* Gray color for hover */
-            }
         ''')
         settings_button.clicked.connect(self.parent.Settings_clicked)
 
@@ -2550,8 +2555,8 @@ class FriendsBox(QWidget):
         border1_width = 725
         border1_height = self.friends_label.height() + 48
         self.border1_label = QLabel(self)
-        self.border1_label.setStyleSheet('''
-                        border: 2px solid {self.parent.standard_hover_color}};
+        self.border1_label.setStyleSheet(f'''
+                        border: 2px solid {self.parent.standard_hover_color};
                         border-radius: 5px;
                         padding: 5px;
                         margin-bottom: 2px;
@@ -2638,6 +2643,9 @@ class FriendsBox(QWidget):
 
         self.social_label = QLabel("", self)
         self.social_label.hide()
+        self.search_box_color = "white"
+        if self.parent.background_color == "Black and White":
+            self.search_box_color = "black"
 
         if self.parent.friends_box_page == "online":
 
@@ -2662,7 +2670,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2766,7 +2774,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2880,7 +2888,7 @@ class FriendsBox(QWidget):
                 self.search = QLineEdit(self)
                 self.search.setPlaceholderText("Search")
                 self.search.setStyleSheet(
-                    f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                    f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
                 self.search.setGeometry(search_x, search_y, search_width, search_height)
                 self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -2986,7 +2994,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color:{self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
