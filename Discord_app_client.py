@@ -1050,6 +1050,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                             self.list_messages.insert(0, message_dict)
                             n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string", None)
                             print("Sent message to server")
+                            self.chat_start_index = 0
                             self.updated_chat()
                             self.chat_box.text_entry.setText("")
                             self.chat_box.text_entry.setFocus()
@@ -1092,6 +1093,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         print(f"error in sending message")
                     self.file_to_send = None
                     self.file_name = ""
+                    self.chat_start_index = 0
                     self.updated_chat()
                 elif social_clicked:
                     self.friends_box.send_friend_request()
