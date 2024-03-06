@@ -684,12 +684,7 @@ class ChatBox(QWidget):
         self.text_entry = QLineEdit(self)
         self.text_entry.hide()
 
-        ringing_square_label_x = 1500
-        ringing_square_label_width = 240
-        self.ringing_square_label = QLabel(self)
-        self.ringing_square_label.setGeometry(ringing_square_label_x, 200, ringing_square_label_width, 400)
-        self.ringing_square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px {self.parent.standard_hover_color};")
-        self.ringing_square_label.move(ringing_square_label_x, 220)
+
 
         self.square_pos = (600, 0)
         self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
@@ -1157,12 +1152,12 @@ class ChatBox(QWidget):
         self.border_label.lower()
 
         self.border_label2 = QLabel(self)
-        self.border_label2.setStyleSheet('''
+        self.border_label2.setStyleSheet(f'''
                             padding: 5px;
                             margin-bottom: 2px;
-                            border-top: 2px solid #2980b9; /* Top border */
-                            border-left: 2px solid #2980b9; /* Left border */
-                            border-right: 2px solid #2980b9; /* Right border */
+                            border-top: 2px solid {self.parent.standard_hover_color}; /* Top border */
+                            border-left: 2px solid {self.parent.standard_hover_color}; /* Left border */
+                            border-right: 2px solid {self.parent.standard_hover_color}; /* Right border */
                         ''')
         self.border_label2.setGeometry(friend_x, 0, border_width, 170)
         self.border_label2.lower()
@@ -1170,9 +1165,13 @@ class ChatBox(QWidget):
         find_contact_pos = (260, 20)
         find_contact_size = (320, 40)
         self.find_contact_text_entry = QLineEdit(self)
+        if self.parent.background_color == "Black and White":
+            text_entry_color = "black"
+        else:
+            text_entry_color = "white"
         self.find_contact_text_entry.setPlaceholderText("Find a conversation")
         self.find_contact_text_entry.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: white; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
         self.find_contact_text_entry.setGeometry(find_contact_pos[0], find_contact_pos[1], find_contact_size[0],
                                                  find_contact_size[1])
         self.find_contact_text_entry.textChanged.connect(self.on_text_changed_in_contact_search)
@@ -1614,19 +1613,19 @@ class ChatBox(QWidget):
                 friend_label = QPushButton(friend, self)
                 friend_label.friend_name = friend
                 friend_label.setStyleSheet(f'''
-                {{
-                    color: white;
-                    font-size: 18px;
-                    border: 2px solid {self.parent.standard_hover_color};
-                    border-radius: 5px;
-                    padding: 5px;
-                    margin-bottom: 18px;
-                    text-align: left; /* Align text to the left */
-                }}
+                    QPushButton {{
+                        color: white;
+                        font-size: 18px;
+                        border: 2px solid {self.parent.standard_hover_color};
+                        border-radius: 5px;
+                        padding: 5px;
+                        margin-bottom: 18px;
+                        text-align: left; /* Align text to the left */
+                    }}
 
-                QPushButton:hover {{
-                    background-color: #3498db; /* Bluish hover color */
-                }}
+                    QPushButton:hover {{
+                        background-color: #3498db; /* Bluish hover color */
+                    }}
                 ''')
                 friend_label.clicked.connect(self.toggle_checkbox)
                 friend_checkbox = QCheckBox(self)
