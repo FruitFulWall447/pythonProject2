@@ -3658,7 +3658,11 @@ class SettingsBox(QWidget):
             push_to_talk_label = self.push_to_talk_label(x, y, 20, 340, 50, self.parent.push_to_talk_key, "red", red)
         else:
             border_color = self.parent.standard_hover_color
-            push_to_talk_label = self.push_to_talk_label(x, y, 20, 340, 50, self.parent.push_to_talk_key, "white", border_color)
+            if self.parent.background_color == "Black and White":
+                font_color = "black"
+            else:
+                font_color = "white"
+            push_to_talk_label = self.push_to_talk_label(x, y, 20, 340, 50, self.parent.push_to_talk_key, font_color, border_color)
 
         hover_red = "#CC0000"  # Slightly darker than red
 
@@ -3730,12 +3734,13 @@ class SettingsBox(QWidget):
         selected_path = "discord_app_assets/select_circle.png"
         not_selected_path = "discord_app_assets/not_select_circle.png"
         icons_size = 30
+        no_background_color = "transparent"
         if not self.parent.is_push_to_talk:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(self.parent.background_color, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(self.parent.background_color, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
 
@@ -3743,10 +3748,10 @@ class SettingsBox(QWidget):
             not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
         else:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(self.parent.background_color, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(self.parent.background_color, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
 
