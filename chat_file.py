@@ -1492,18 +1492,19 @@ class ChatBox(QWidget):
                 friend_label = QPushButton(friend, self)
                 friend_label.friend_name = friend
                 friend_label.setStyleSheet(f'''
-                    color: white;
-                    font-size: 18px;
-                    border: 2px solid {self.parent.standard_hover_color};
-                    border-radius: 5px;
-                    padding: 5px;
-                    margin-bottom: 18px;
-                    text-align: left; /* Align text to the left */
-                }}
+                    QPushButton {{
+                        color: white;
+                        font-size: 18px;
+                        border: 2px solid {self.parent.standard_hover_color};
+                        border-radius: 5px;
+                        padding: 5px;
+                        margin-bottom: 18px;
+                        text-align: left; /* Align text to the left */
+                    }}
 
-                QPushButton:hover {{
-                    background-color: #3498db; /* Bluish hover color */
-                }}
+                    QPushButton:hover {{
+                        background-color: #3498db; /* Bluish hover color */
+                    }}
                 ''')
                 friend_label.clicked.connect(self.toggle_checkbox)
                 friend_checkbox = QCheckBox(self)
