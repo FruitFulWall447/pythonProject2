@@ -2480,6 +2480,8 @@ class FriendsBox(QWidget):
             margin-bottom: 10px;
         '''
         self.friends_label = QPushButton("  Social", self)
+        self.block_friend_label = QLabel(self)
+        self.remove_friend_label = QLabel(self)
         self.friends_label.setStyleSheet('''
             color: white;
             font-size: 15px;
@@ -2994,7 +2996,7 @@ class FriendsBox(QWidget):
             self.search = QLineEdit(self)
             self.search.setPlaceholderText("Search")
             self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color:{self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
@@ -3086,9 +3088,12 @@ class FriendsBox(QWidget):
         self.blocked_button.raise_()
         self.search.raise_()
         self.social_label.raise_()
-        self.block_friend_label.raise_()
-        self.remove_friend_label.raise_()
-        self.chat_label.raise_()
+        try:
+            self.block_friend_label.raise_()
+            self.remove_friend_label.raise_()
+            self.chat_label.raise_()
+        except Exception as e:
+            x = 4
         for element in self.raised_elements:
             element.raise_()
 
