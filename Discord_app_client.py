@@ -741,6 +741,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
+        self.mp3_message_media_player.setVolume(50)
         self.media_player.stateChanged.connect(self.handle_state_changed)
         self.media_player.setVolume(50)
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
@@ -785,6 +786,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_media_players_volume(self, value):
+        self.mp3_message_media_player.setVolume(value)
+        self.media_player.setVolume(value)
 
     def update_every_screen(self):
         try:

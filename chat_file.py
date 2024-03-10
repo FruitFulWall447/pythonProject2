@@ -3932,7 +3932,7 @@ class SettingsBox(QWidget):
     def set_volume(self, value):
         self.parent.volume = value
         self.volume_label.setText(str(value))
-        self.parent.media_player.setVolume(value)
+        self.parent.update_media_players_volume(value)
 
 
     def my_account_pressed(self):
