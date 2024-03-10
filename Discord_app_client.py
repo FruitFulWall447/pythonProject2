@@ -367,7 +367,7 @@ def thread_play_vc_data():
     while vc_play_flag:
         try:
             vc_data = vc_data_queue.get(block=True, timeout=0.1)
-            modified_data_list = audio_datalist_set_volume([vc_data], volume=10)  # Adjust volume to 10%
+            modified_data_list = audio_datalist_set_volume([vc_data], volume=main_page.volume)  # Adjust volume to 10%
             modified_data = b''.join(modified_data_list)
             # Play the modified audio data
             output_stream.write(modified_data)
