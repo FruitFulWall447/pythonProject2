@@ -294,6 +294,14 @@ def thread_recv_messages(n, addr, username):
                     Communication.user_offline(User)
                     break
                 elif is_string(data):
+                    if data.startswith("block"):
+                        user_to_block = data.split(":")[1]
+                        database_func.block_user(User, user_to_block)
+                        logger.info(f"{User} blocked {user_to_block}")
+                    if data.startswith("unblock"):
+                        user_to_unblock = data.split(":")[1]
+                        database_func.unblock_user(User, user_to_unblock)
+                        logger.info(f"{User} unblocked {user_to_unblock}")
                     if data.startswith("update_profile_pic"):
                         profile_pic_encoded = data.split(":")[1]
                         if profile_pic_encoded == "None":

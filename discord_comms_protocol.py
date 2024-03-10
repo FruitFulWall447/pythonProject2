@@ -482,6 +482,22 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def block_user(self, user_to_block):
+        data = f"block:{user_to_block}"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
+    def unblock_user(self, user_to_unblock):
+        data = f"unblock:{user_to_unblock}"
+        try:
+            self.send_str(data)
+
+        except socket.error as e:
+            print(e)
+
     def send_friends_request_rejection(self, rejected_user):
         data = f"friend_request_status:reject:{rejected_user}"
         try:

@@ -1247,7 +1247,7 @@ class ChatBox(QWidget):
 
         username_label.setGeometry(friend_x, info_y, border_width, 90)
 
-        profile_image_label_position = int(friend_x + self.parent.screen_width * 0.005), int(info_y + self.parent.screen_height * 0.004 )
+        profile_image_label_position = int(friend_x + self.parent.screen_width * 0.005), int(info_y + self.parent.screen_height * 0.004)
         width, height = (55, 55)
         profile_image_label = create_custom_circular_label(width, height, self)
         chat_image = self.parent.get_profile_pic_by_username(self.parent.username)
@@ -3215,6 +3215,7 @@ class FriendsBox(QWidget):
 
     def block_friend(self, friend):
         # Implement the logic to start a chat with the selected friend
+        self.Network.block_user(friend)
         print(f"blocking {friend}")
 
     def draw_circle(self, widget, color_of_circle):

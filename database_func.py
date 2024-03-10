@@ -800,6 +800,135 @@ def remove_chat_from_user(username, chat_to_remove):
             connection.close()
 
 
+def get_blocked_users(username):
+    try:
+        # Connect to the MySQL database
+        connection = connect_to_kevindb()
+
+        # Create a cursor object
+        cursor = connection.cursor()
+
+        # Retrieve the blocked_list for the user
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        result = cursor.fetchone()
+
+        # If no result or blocked_list is empty, return an empty list
+        if not result or not result[0]:
+            return []
+
+        # Convert the blocked_list JSON to a Python list
+        blocked_users = json.loads(result[0])
+
+        return blocked_users
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return []
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+def block_user(username, user_to_block):
+    try:
+        # Connect to the MySQL database
+        connection = connect_to_kevindb()
+
+        # Create a cursor object
+        cursor = connection.cursor()
+
+        # Retrieve the current blocked_list for the user
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        result = cursor.fetchone()
+
+        if result:
+            blocked_list_json = result[0]
+
+            # If the blocked_list_json is None, set it to an empty list
+            blocked_list = json.loads(blocked_list_json) if blocked_list_json else []
+
+            # Add the user_to_block to the blocked_list
+            blocked_list.append(user_to_block)
+
+            # Convert the updated blocked_list to JSON format
+            updated_blocked_list_json = json.dumps(blocked_list)
+
+            # Update the blocked_list for the user
+            cursor.execute("UPDATE sign_up_table SET blocked_list = %s WHERE username = %s",
+                           (updated_blocked_list_json, username))
+
+            # Commit the changes
+            connection.commit()
+
+            print(f"Blocked user '{user_to_block}' for user '{username}'.")
+        else:
+            print(f"No user found with username '{username}'.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
+def unblock_user(username, user_to_unblock):
+    try:
+        # Connect to the MySQL database
+        connection = connect_to_kevindb()
+
+        # Create a cursor object
+        cursor = connection.cursor()
+
+        # Retrieve the current blocked_list for the user
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        result = cursor.fetchone()
+
+        if result:
+            blocked_list_json = result[0]
+
+            # If the blocked_list_json is None, set it to an empty list
+            blocked_list = json.loads(blocked_list_json) if blocked_list_json else []
+
+            # Remove the user_to_unblock from the blocked_list if it exists
+            if user_to_unblock in blocked_list:
+                blocked_list.remove(user_to_unblock)
+
+                # Convert the updated blocked_list to JSON format
+                updated_blocked_list_json = json.dumps(blocked_list)
+
+                # Update the blocked_list for the user
+                cursor.execute("UPDATE sign_up_table SET blocked_list = %s WHERE username = %s",
+                               (updated_blocked_list_json, username))
+
+                # Commit the changes
+                connection.commit()
+
+                print(f"Unblocked user '{user_to_unblock}' for user '{username}'.")
+            else:
+                print(f"User '{user_to_unblock}' not found in the blocked list for user '{username}'.")
+
+        else:
+            print(f"No user found with username '{username}'.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
 def create_group(group_name, group_manager, group_members_list=None):
     new_chat_name = ""
     try:
