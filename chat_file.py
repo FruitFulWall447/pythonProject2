@@ -396,6 +396,8 @@ def create_custom_circular_label(width, height, parent):
     label.setStyleSheet("""
         QLabel {
             border-radius: """ + str(height // 2) + """px; /* Set to half of the label height */
+            background-color: transparent; /* Make the background color transparent */
+
         }
     """)
 
@@ -1833,10 +1835,27 @@ class ChatBox(QWidget):
             print(f"error in raising elements {e}")
 
     def create_friend_button(self, label, parent, style_sheet, position):
-        text, id = gets_group_attributes_from_format(label)
+
+        px_padding_of_button_text = 55
+        chat_name = label
+        text, id = gets_group_attributes_from_format(chat_name)
         if id:
             len_group = self.parent.get_number_of_members_by_group_id(id)
         button_text = text
+
+        width, height = (35, 35)
+        profile_image_label = create_custom_circular_label(width, height, self)
+        profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
+        chat_image = self.parent.get_profile_pic_by_username(chat_name)
+        if chat_image is None:
+            icon_path = "discord_app_assets/regular_profile.png"
+            set_icon_from_path_to_label(profile_image_label, icon_path)
+        else:
+            circular_pic_bytes = make_circular_image(chat_image)
+            set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
+        profile_image_label.move(profile_image_x, profile_image_y)
+
+
 
         button = QPushButton(parent)
         button.setText(button_text)
@@ -1851,7 +1870,6 @@ class ChatBox(QWidget):
             background-color: rgba(0,0,0,0);
         '''
 
-        px_padding_of_button_text = 55
         if id:
             members_label = QLabel(f"{len_group} Members", self)
             members_label.setStyleSheet(style)
@@ -1889,6 +1907,7 @@ class ChatBox(QWidget):
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         button.setFixedWidth(350)
         button.raise_()
+        profile_image_label.raise_()
         if id:
             members_label.raise_()
 
