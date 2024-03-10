@@ -809,6 +809,13 @@ class server_net:
         # Convert the length of the data to a string
         self.send_str(full_message)
 
+    def send_blocked_list(self, list):
+        encoded_list = json.dumps(list)
+        full_message = "blocked_list:" + encoded_list
+
+        # Convert the length of the data to a string
+        self.send_str(full_message)
+
     def send_online_users_list(self, online_users_list):
         encoded_list = json.dumps(online_users_list)
         full_message = "online_users:" + encoded_list

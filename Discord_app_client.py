@@ -223,6 +223,14 @@ def thread_recv_messages():
                     print("Updated the requests list")
                 except Exception as e:
                     print(f"error in requests_list {e}")
+            if data.startswith("blocked_list:"):
+                try:
+                    blocked_list = data.split("blocked_list:", 1)[1]
+                    main_page.blocked_list = json.loads(blocked_list)
+                    QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                    print("Updated the requests list")
+                except Exception as e:
+                    print(f"error in requests_list {e}")
             if data.startswith("online_users"):
                 try:
                     online_users_list = data.split("online_users:", 1)[1]
