@@ -2525,7 +2525,7 @@ class FriendsBox(QWidget):
             }}
 
             QPushButton:hover {{
-                background-color: #2980b9;
+                background-color: {self.parent.standard_hover_color};
             }}
 
             QPushButton:pressed {{
@@ -3744,12 +3744,13 @@ class SettingsBox(QWidget):
         not_selected_path = "discord_app_assets/not_select_circle.png"
         icons_size = 30
         no_background_color = "transparent"
+        border_color = self.parent.standard_hover_color
         if not self.parent.is_push_to_talk:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, brighter_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, border_color, buttons_x, starter_y, width_buttons,height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, regular_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, border_color, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
 
@@ -3757,10 +3758,10 @@ class SettingsBox(QWidget):
             not_selected_button_image = self.create_image_label(not_selected_path, icons_size, icons_size, buttons_x + 5, second_button_y + 10)
         else:
             text1 = "Voice Activity"
-            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, regular_blue, buttons_x, starter_y, width_buttons,height_buttons, text1)
+            voice_activity_button = self.create_colored_button(no_background_color, brighter_blue, border_color, buttons_x, starter_y, width_buttons, height_buttons, text1)
             text2 = "Push to Talk"
             second_button_y = starter_y + 60
-            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, brighter_blue, buttons_x, second_button_y, width_buttons,height_buttons, text2)
+            push_to_talk_button = self.create_colored_button(no_background_color, brighter_blue, border_color, buttons_x, second_button_y, width_buttons,height_buttons, text2)
             voice_activity_button.clicked.connect(self.change_input_mode)
             push_to_talk_button.clicked.connect(self.change_input_mode)
 
