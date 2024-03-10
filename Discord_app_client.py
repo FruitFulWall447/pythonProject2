@@ -361,33 +361,15 @@ accumulated_data = []
 vc_data_queue = Queue()
 
 
-def apply_volume(data, volume):
-    # Convert volume from percentage to a factor (0.0 to 1.0)
-    volume_factor = volume / 100.0
-
-    # Scale audio data by volume factor
-    adjusted_data = []
-    for sample in data:
-        adjusted_sample = int(sample * volume_factor)
-        # Clip adjusted sample to the valid range of audio samples
-        adjusted_sample = max(min(adjusted_sample, 32767), -32768)
-        adjusted_data.append(adjusted_sample)
-
-    # Convert adjusted data back to bytes
-    return bytes(bytearray(adjusted_data))
-
 
 def thread_play_vc_data():
-    global vc_data_queue
-    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
+    global vc_data_queue, main_page
+    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK, volume=main_page.volume)
     while vc_play_flag:
         try:
             vc_data = vc_data_queue.get(block=True, timeout=0.1)
 
-            # Adjust volume
-            adjusted_vc_data = apply_volume(vc_data, main_page.volume)
-
-            output_stream.write(adjusted_vc_data)
+            output_stream.write(vc_data)
         except Empty:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
