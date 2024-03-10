@@ -361,14 +361,26 @@ accumulated_data = []
 vc_data_queue = Queue()
 
 
+def apply_volume(data, volume):
+    # Convert volume from percentage to a factor (0.0 to 1.0)
+    volume_factor = volume / 100.0
+
+    # Scale audio data by volume factor
+    adjusted_data = bytearray(int(sample * volume_factor) for sample in data)
+    return bytes(adjusted_data)
+
+
 def thread_play_vc_data():
     global vc_data_queue
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
     while vc_play_flag:
         try:
-            vc_data = vc_data_queue.get(block=True, timeout=1)
+            vc_data = vc_data_queue.get(block=True, timeout=0.1)
 
-            output_stream.write(vc_data)
+            # Adjust volume
+            adjusted_vc_data = apply_volume(vc_data, main_page.volume)
+
+            output_stream.write(adjusted_vc_data)
         except Empty:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
@@ -726,7 +738,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
         self.mp3_message_media_player = QMediaPlayer()
         self.media_player.stateChanged.connect(self.handle_state_changed)
-        self.media_player.setVolume(70)
+        self.media_player.setVolume(50)
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.media_player.setMedia(self.ringtone)

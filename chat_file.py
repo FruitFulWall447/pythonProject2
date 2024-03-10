@@ -3062,7 +3062,7 @@ class FriendsBox(QWidget):
                 self.connect_button_label_pair(
                     unblock_friend_button,
                     self.block_friend_label,
-                    "Block",
+                    "Unblock",
                     "discord_app_assets/block_icon.png",
                     self.unblock_friend,
                     unblock_friend_button_x - 60,
@@ -3932,6 +3932,7 @@ class SettingsBox(QWidget):
     def set_volume(self, value):
         self.parent.volume = value
         self.volume_label.setText(str(value))
+        self.parent.media_player.setVolume(value)
 
 
     def my_account_pressed(self):
