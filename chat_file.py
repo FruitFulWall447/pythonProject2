@@ -1851,10 +1851,11 @@ class ChatBox(QWidget):
             background-color: rgba(0,0,0,0);
         '''
 
+        px_padding_of_button_text = 55
         if id:
             members_label = QLabel(f"{len_group} Members", self)
             members_label.setStyleSheet(style)
-            memeber_x = position[0] + 35
+            memeber_x = position[0] + px_padding_of_button_text
             members_label.move(memeber_x, position[1] + 28)
 
         padding_top = "padding-top: -7px;" if label.startswith("(") else ""  # Adjust the padding value as needed
@@ -1865,7 +1866,7 @@ class ChatBox(QWidget):
                 border: 2px solid {self.parent.standard_hover_color};
                 border-radius: 5px;
                 padding: 8px 16px;
-                padding-left: 35px;  /* Adjust the padding to move text to the right */
+                padding-left: {px_padding_of_button_text}px;  /* Adjust the padding to move text to the right */
                 {padding_top}
                 color: white;
                 font-family: Arial, sans-serif;
@@ -1876,7 +1877,7 @@ class ChatBox(QWidget):
             }}
 
             QPushButton:hover {{
-                background-color: #2980b9;
+                background-color: {self.parent.standard_hover_color};
             }}
 
             QPushButton:pressed {{
@@ -3896,7 +3897,7 @@ class SettingsBox(QWidget):
             }}
 
             QPushButton:hover {{
-                background-color: #2980b9;
+                background-color: {self.parent.standard_hover_color};
             }}
 
             QPushButton:pressed {{

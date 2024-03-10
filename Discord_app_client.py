@@ -556,14 +556,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         super().__init__()
         self.blueish_background_color = "#141c4b"
         self.blackish_background_color = "#000000"
-        self.reddish_background_color = "#FF0000"
-        self.grayish_background_color = "#919090"
+        self.reddish_background_color = "#5c1114"
+        self.grayish_background_color = "#363131"
         self.special_design_color = "#2b2d31"
 
         self.blueish_style_hover_color = "#2980b9"
         self.blackish_style_hover_color = "#FFFFFF"
-        self.reddish_style_hover_color = "#2980b9"
-        self.grayish_style_hover_color = "#2980b9"
+        self.reddish_style_hover_color = "#7d1d21"
+        self.grayish_style_hover_color = "#5c4a4b"
         self.special_design_hover_color = "#36373d"
 
         self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color,
