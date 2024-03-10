@@ -3013,6 +3013,8 @@ class FriendsBox(QWidget):
             self.add_friend_entry.setFixedHeight(40)  # Increase height
 
         if self.parent.friends_box_page == "blocked":
+            self.friend_labels = []
+            friend_starter_y = 200 + (self.parent.friends_box_index * -50)
             friends_box_list = []
             try:
                 if self.parent.current_friends_box_search:
@@ -3037,6 +3039,47 @@ class FriendsBox(QWidget):
                 f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
             self.search.setGeometry(search_x, search_y, search_width, search_height)
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
+
+            friends_label_x = search_x
+            for friend in friends_box_list:
+                friend_label = QLabel(friend, self)
+                friend_label.setStyleSheet(style_sheet)
+                friend_label.move(friends_label_x + 25, friend_starter_y)
+                friend_label.setFixedHeight(self.font_size)  # Increase height
+                friend_label.adjustSize()  # Ensure the label size is adjusted to its content
+
+                line = QFrame(self)
+                line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
+                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
+
+
+                unblock_friend_button_x = 1235
+
+                unblock_friend_button = QPushButton(self)
+
+                self.block_friend_label = QLabel("Block", self)
+                self.raised_elements.append(self.block_friend_label)
+                self.connect_button_label_pair(
+                    unblock_friend_button,
+                    self.block_friend_label,
+                    "Block",
+                    "discord_app_assets/block_icon.png",
+                    self.unblock_friend,
+                    unblock_friend_button_x - 60,
+                    friend_starter_y + 10,
+                    friend  # Pass the friend parameter here
+                )
+
+                if friend_starter_y > self.parent.height():
+                    self.parent.is_friends_box_full = True
+                    print("smaller then 0")
+                    break
+
+                friend_starter_y += 70
+                self.friend_labels.append(friend_label)
+                self.raise_all_element()
+            if friend_starter_y < self.parent.height():
+                self.parent.is_friends_box_full = False
 
         self.error_friend = QLabel("couldn't find user", self)
         self.error_friend.move(search_x, search_y + 100 + search_height)
@@ -3217,6 +3260,12 @@ class FriendsBox(QWidget):
         # Implement the logic to start a chat with the selected friend
         self.Network.block_user(friend)
         print(f"blocking {friend}")
+
+    def unblock_friend(self, friend):
+        # Implement the logic to start a chat with the selected friend
+        self.Network.unblock_user(friend)
+        print(f"unblocked {friend}")
+
 
     def draw_circle(self, widget, color_of_circle):
         pixmap = QPixmap(20, 20)
