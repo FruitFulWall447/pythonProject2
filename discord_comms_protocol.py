@@ -914,6 +914,13 @@ class server_net:
         except socket.error as e:
             print(e)
 
+    def send_all_data_received(self):
+        data = "data:receive:done"
+        try:
+            self.send_str(data)
+        except socket.error as e:
+            print(e)
+
     def send_security_token_to_client(self, security_token):
         data = f"security_token:{security_token}"
         try:

@@ -421,6 +421,9 @@ class Communication:
 
         self.send_profile_list_of_dicts_to_user(User)
 
+        net.send_all_data_received()
+        self.logger.info(f"All needed data sent to {User}")
+
     def update_profiles_list_for_everyone_by_user(self, user):
         relevant_users = relevant_users_for_user(user)
         for relevant_user in relevant_users:

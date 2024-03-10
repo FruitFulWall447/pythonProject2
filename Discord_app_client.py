@@ -144,12 +144,18 @@ def return_share_camera_bytes_parameters(share_camera_data):
 
 
 def thread_recv_messages():
-    global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag
+    global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag, splash_page
     print("receiving thread started running")
     temp_count = 0
     while Flag_recv_messages:
         data = n.recv_str()
         if is_string(data):
+            if data.startswith("data"):
+                action = data.split(":")[1]
+                if action == "receive":
+                    status = data.split(":")[2]
+                    if status == "done":
+                        QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
             if data.startswith("profile_dicts:"):
                 split_data = data.split(":", 1)
                 list_of_profile_dicts = json.loads(split_data[1])
@@ -441,12 +447,14 @@ def thread_send_share_camera_data():
 
 
 class SplashScreen(QWidget):
+    stop_loading_signal = pyqtSignal()
     def __init__(self):
         super().__init__()
         self.init_ui()
 
     def init_ui(self):
         # Set window properties
+        self.stop_loading_signal.connect(self.close_page_open_main_page)
         self.setWindowTitle('Splash Screen')
         self.setStyleSheet("""
             QWidget {
@@ -475,13 +483,22 @@ class SplashScreen(QWidget):
         # Create timer to update loading dots
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.update_loading_dots)
-        self.loading_timer.start(400)  # Update every 500 milliseconds
 
         # Set up elapsed time variable
         self.elapsed_time = 0
 
         # Show the splash screen
         self.show()
+
+    def start_timer(self):
+        self.loading_timer.start(400)  # Update every 500 milliseconds
+
+    def close_page_open_main_page(self):
+        global is_logged_in
+        main_page.update_values()
+        main_page.showMaximized()
+        is_logged_in = True
+        self.close()
 
     def update_loading_dots(self):
         global is_logged_in, main_page, n
@@ -496,41 +513,42 @@ class SplashScreen(QWidget):
 
         if self.elapsed_time >= wait_time_sec*1000:  # 5 seconds
             # Transition to the login page after 5 seconds
-            if not are_token_saved():
-                self.loading_timer.stop()
-                login_page.showMaximized()
-                self.close()
-            else:
-                security_token = get_saved_token()
-                n.send_security_token(security_token)
-                data = n.recv_str()
-                if data.startswith("security_token"):
-                    parts = data.split(":")
-                    server_answer = parts[1]
-                    if server_answer == "valid":
-                        data = n.recv_str()
-                        if data.startswith("username"):
-                            parts = data.split(":")
-                            username, action, action_state = parts[1], parts[2], parts[3]
-                            username = data.split(":")[1]
-                            if action == "login":
-                                if action_state == "valid":
-                                    self.loading_timer.stop()
-                                    print("logged in successfully")
-                                    self.hide()
-                                    main_page.username = username
-                                    main_page.update_values()
-                                    main_page.showMaximized()
-                                    is_logged_in = True
-                                    threading.Thread(target=thread_recv_messages, args=()).start()
-                                    self.close()
-                                elif action_state == "invalid":
-                                    print("username already logged in")
-                    elif server_answer == "invalid":
-                        print("security token isn't valid")
-                        self.loading_timer.stop()
-                        login_page.showMaximized()
-                        self.close()
+            if main_page.username == "":
+                if not are_token_saved():
+                    self.loading_timer.stop()
+                    login_page.showMaximized()
+                    self.close()
+                else:
+                    security_token = get_saved_token()
+                    n.send_security_token(security_token)
+                    data = n.recv_str()
+                    if data.startswith("security_token"):
+                        parts = data.split(":")
+                        server_answer = parts[1]
+                        if server_answer == "valid":
+                            data = n.recv_str()
+                            if data.startswith("username"):
+                                parts = data.split(":")
+                                username, action, action_state = parts[1], parts[2], parts[3]
+                                username = data.split(":")[1]
+                                if action == "login":
+                                    if action_state == "valid":
+                                        self.loading_timer.stop()
+                                        print("logged in successfully")
+                                        self.hide()
+                                        main_page.username = username
+                                        main_page.update_values()
+                                        main_page.showMaximized()
+                                        is_logged_in = True
+                                        threading.Thread(target=thread_recv_messages, args=()).start()
+                                        self.close()
+                                    elif action_state == "invalid":
+                                        print("username already logged in")
+                        elif server_answer == "invalid":
+                            print("security token isn't valid")
+                            self.loading_timer.stop()
+                            login_page.showMaximized()
+                            self.close()
 
 chat_clicked = True
 social_clicked = False
@@ -1667,7 +1685,7 @@ class Login_page(QWidget):
             self.remember_me_status = False
 
     def submit_form(self):
-        global n, is_logged_in
+        global n, is_logged_in, splash_page
         self.incorrect_label.hide()
         self.user_is_logged_in.hide()
         username = self.username.text()
@@ -1683,17 +1701,13 @@ class Login_page(QWidget):
                 if self.remember_me_status:
                     n.ask_for_security_token()
                     print("You will be remembered")
-                    main_page.username = username
-                    main_page.update_values()
-                    main_page.showMaximized()
-                    is_logged_in = True
-                    threading.Thread(target=thread_recv_messages, args=()).start()
-                else:
-                    main_page.username = username
-                    main_page.update_values()
-                    main_page.showMaximized()
-                    is_logged_in = True
-                    threading.Thread(target=thread_recv_messages, args=()).start()
+
+                main_page.username = username
+                main_page.update_values()
+                is_logged_in = True
+                threading.Thread(target=thread_recv_messages, args=()).start()
+                splash_page = SplashScreen()
+                splash_page.showMaximized()
             elif data == "already_logged_in":
                 print("User logged in from another device")
                 self.user_is_logged_in.show()
@@ -2282,6 +2296,7 @@ if __name__ == '__main__':
     n = client_net()
     app = QApplication(sys.argv)
     splash_page = SplashScreen()
+    splash_page.start_timer()
     splash_page.showMaximized()
     load_all_pages(n)
     app.exec_()
