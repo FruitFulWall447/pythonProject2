@@ -367,10 +367,9 @@ def thread_play_vc_data():
     while vc_play_flag:
         try:
             vc_data = vc_data_queue.get(block=True, timeout=0.1)
-            adjusted_data = apply_volume(vc_data, main_page.volume)
 
             # Write adjusted audio data to the output stream
-            output_stream.write(adjusted_data)
+            output_stream.write(vc_data)
         except Empty:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
@@ -404,15 +403,6 @@ def thread_send_voice_chat_data():
     input_stream.stop_stream()
     input_stream.close()
     print("stopped voice chat thread....")
-
-
-def apply_volume(data, volume):
-    # Convert volume from percentage to a factor (0.0 to 1.0)
-    volume_factor = volume / 100.0
-
-    # Scale audio data by volume factor
-    adjusted_data = bytearray(int(sample * volume_factor) for sample in data)
-    return bytes(adjusted_data)
 
 
 def thread_send_share_screen_data():
@@ -1769,7 +1759,7 @@ class VideoClient(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.image_label = QLabel(self)
-        self.image_label.setAlignment(Qt.AlignCenter)
+        self.image_label.move(0, 0)
 
         layout = QVBoxLayout(self.central_widget)
         layout.addWidget(self.image_label)
