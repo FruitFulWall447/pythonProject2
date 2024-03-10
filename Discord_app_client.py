@@ -361,15 +361,14 @@ accumulated_data = []
 vc_data_queue = Queue()
 
 
-
 def thread_play_vc_data():
     global vc_data_queue, main_page
-    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK, volume=main_page.volume)
+    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
     while vc_play_flag:
         try:
             vc_data = vc_data_queue.get(block=True, timeout=0.1)
 
-            output_stream.write(vc_data)
+            output_stream.write(vc_data * (main_page.volume / 100))  # Adjust volume
         except Empty:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
