@@ -367,13 +367,28 @@ def thread_play_vc_data():
     while vc_play_flag:
         try:
             vc_data = vc_data_queue.get(block=True, timeout=0.1)
-
-            # Write adjusted audio data to the output stream
-            output_stream.write(vc_data)
+            modified_data_list = audio_datalist_set_volume([vc_data], volume=10)  # Adjust volume to 10%
+            modified_data = b''.join(modified_data_list)
+            # Play the modified audio data
+            output_stream.write(modified_data)
         except Empty:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
     output_stream.close()
+
+
+def audio_datalist_set_volume(datalist, volume):
+    """ Change value of list of audio chunks """
+    sound_level = (volume / 100.)
+    modified_datalist = []
+
+    for i in range(len(datalist)):
+        chunk = np.frombuffer(datalist[i], dtype=np.int16)
+        chunk = chunk * sound_level
+        modified_chunk = chunk.astype(np.int16)
+        modified_datalist.append(modified_chunk)
+
+    return modified_datalist
 
 
 def thread_send_voice_chat_data():
