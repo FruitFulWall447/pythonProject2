@@ -366,8 +366,15 @@ def apply_volume(data, volume):
     volume_factor = volume / 100.0
 
     # Scale audio data by volume factor
-    adjusted_data = bytearray(int(sample * volume_factor) for sample in data)
-    return bytes(adjusted_data)
+    adjusted_data = []
+    for sample in data:
+        adjusted_sample = int(sample * volume_factor)
+        # Clip adjusted sample to the valid range of audio samples
+        adjusted_sample = max(min(adjusted_sample, 32767), -32768)
+        adjusted_data.append(adjusted_sample)
+
+    # Convert adjusted data back to bytes
+    return bytes(bytearray(adjusted_data))
 
 
 def thread_play_vc_data():
