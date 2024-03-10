@@ -486,6 +486,7 @@ class SplashScreen(QWidget):
 
         # Set up elapsed time variable
         self.elapsed_time = 0
+        self.start_timer()
 
         # Show the splash screen
         self.show()
@@ -2296,7 +2297,6 @@ if __name__ == '__main__':
     n = client_net()
     app = QApplication(sys.argv)
     splash_page = SplashScreen()
-    splash_page.start_timer()
     splash_page.showMaximized()
     load_all_pages(n)
     app.exec_()
