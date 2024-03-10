@@ -790,6 +790,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
 
             }
             self.circular_images_dicts_list.append(circular_images_dict)
+        self.updated_chat()
 
     def update_profile_pic_dicts_list(self, name, new_image):
         for profile_pic in self.list_user_profile_dicts:

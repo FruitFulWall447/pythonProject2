@@ -1232,17 +1232,34 @@ class ChatBox(QWidget):
             username_label_background_color = "black"
         else:
             username_label_background_color = self.parent.standard_hover_color
+
+        username_label_margin_bottom = int(self.parent.screen_width * 0.013)
+        username_label_padding = int(self.parent.screen_width * 0.035)
         username_label.setStyleSheet(f'''
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             background-color: {username_label_background_color};
             border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
             border-radius: 5px;
-            padding: 5px;
-            margin-bottom: 18px;
+            padding: {username_label_padding}px;
+            margin-bottom: {username_label_margin_bottom}px;
         ''')
 
         username_label.setGeometry(friend_x, info_y, border_width, 90)
+
+        profile_image_label_position = int(friend_x + self.parent.screen_width * 0.005), int(info_y + self.parent.screen_height * 0.004 )
+        width, height = (55, 55)
+        profile_image_label = create_custom_circular_label(width, height, self)
+        chat_image = self.parent.get_profile_pic_by_username(self.parent.username)
+        if chat_image is None:
+            icon_path = self.parent.regular_profile_image_path
+            set_icon_from_path_to_label(profile_image_label, icon_path)
+        else:
+            circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(self.parent.username)
+            set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
+        profile_image_label.move(profile_image_label_position[0], profile_image_label_position[1])
+
+
         settings_button = QPushButton(self)
         settings_button.setFixedSize(50, 50)  # Set the fixed size of the button
         # Set the icon for the chat button
