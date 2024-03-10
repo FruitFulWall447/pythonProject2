@@ -3061,6 +3061,8 @@ class FriendsBox(QWidget):
             default_list = self.parent.friends_list
         elif self.parent.friends_box_page == "pending":
             default_list = self.parent.friends_list
+        elif self.parent.friends_box_page == "blocked":
+            default_list = self.parent.friends_list
         try:
             if self.search.hasFocus():
                 if len(self.search.text()) > 0:
@@ -3357,29 +3359,30 @@ class SettingsBox(QWidget):
 
         """ % (background_color, hover_color, hover_color, background_color, hover_color)
 
-        self.volume_slider_style_sheet = """
-                       QSlider::groove:horizontal {
+        slider_style_sheet_color = "#3498db"
+        self.volume_slider_style_sheet = f"""
+                       QSlider::groove:horizontal {{
                            border: 1px solid #bbb;
                            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
                            height: 10px;
                            margin: 0px;
-                       }
+                       }}
 
-                       QSlider::handle:horizontal {
+                       QSlider::handle:horizontal {{
                            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
                            border: 1px solid #777;
                            width: 20px;
                            margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
                            border-radius: 5px;
-                       }
+                       }}
 
-                       QSlider::add-page:horizontal {
+                       QSlider::add-page:horizontal {{
                            background: #fff;
-                       }
+                       }}
 
-                       QSlider::sub-page:horizontal {
-                           background: #3498db; /* Change this color to the desired color for the left side */
-                       }
+                       QSlider::sub-page:horizontal {{
+                           background: {slider_style_sheet_color}; /* Change this color to the desired color for the left side */
+                       }}
                                """
 
         label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)

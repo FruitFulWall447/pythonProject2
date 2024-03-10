@@ -558,28 +558,35 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.blackish_background_color = "#000000"
         self.reddish_background_color = "#FF0000"
         self.grayish_background_color = "#919090"
+        self.special_design_color = "#2b2d31"
 
         self.blueish_style_hover_color = "#2980b9"
         self.blackish_style_hover_color = "#FFFFFF"
         self.reddish_style_hover_color = "#2980b9"
         self.grayish_style_hover_color = "#2980b9"
+        self.special_design_hover_color = "#36373d"
 
-        self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color, self.blackish_style_hover_color, self.grayish_style_hover_color]
+        self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color,
+                                 self.blackish_style_hover_color, self.grayish_style_hover_color,
+                                 self.special_design_hover_color]
 
-        self.hex_colors = [self.reddish_background_color, self.blueish_background_color, self.blackish_background_color, self.grayish_background_color]
-        self.color_design_options = ["Red", "Blue", "Black and White", "Gray"]
+        self.hex_colors = [self.reddish_background_color, self.blueish_background_color, self.blackish_background_color,
+                           self.grayish_background_color, self.special_design_color]
+        self.color_design_options = ["Red", "Blue", "Black and White", "Gray", "Connectify Special"]
         self.color_design_mapping = {
             self.color_design_options[0]: self.hex_colors[0],
             self.color_design_options[1]: self.hex_colors[1],
             self.color_design_options[2]: self.hex_colors[2],
-            self.color_design_options[3]: self.hex_colors[3]
+            self.color_design_options[3]: self.hex_colors[3],
+            self.color_design_options[4]: self.hex_colors[4]
         }
 
         self.style_color_hover_mapping = {
             self.color_design_options[0]: self.hex_hover_colors[0],
             self.color_design_options[1]: self.hex_hover_colors[1],
             self.color_design_options[2]: self.hex_hover_colors[2],
-            self.color_design_options[3]: self.hex_hover_colors[3]
+            self.color_design_options[3]: self.hex_hover_colors[3],
+            self.color_design_options[4]: self.hex_hover_colors[4]
         }
 
         self.standard_hover_color = "#2980b9"
@@ -1051,7 +1058,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     def updated_requests(self):
         global social_clicked
         try:
-            if self.friends_box_page == "add friend" or self.friends_box_page == "blocked":
+            if self.friends_box_page == "add friend":
                 self.stacked_widget.removeWidget(self.friends_box)
                 self.friends_box = FriendsBox(friends_list=self.friends_list,
                                               requests_list=self.request_list, Network=n, username=self.username,
