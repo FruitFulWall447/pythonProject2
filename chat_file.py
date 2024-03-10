@@ -246,6 +246,7 @@ def open_image_bytes(image_bytes):
         print(f"Error opening image: {e}")
         return False
 
+
 def calculate_image_size_in_kb(image_bytes):
     try:
         # Create a BytesIO object from the image bytes
@@ -1848,10 +1849,10 @@ class ChatBox(QWidget):
         profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
         chat_image = self.parent.get_profile_pic_by_username(chat_name)
         if chat_image is None:
-            icon_path = "discord_app_assets/regular_profile.png"
+            icon_path = self.parent.regular_profile_image_path
             set_icon_from_path_to_label(profile_image_label, icon_path)
         else:
-            circular_pic_bytes = make_circular_image(chat_image)
+            circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_x, profile_image_y)
 

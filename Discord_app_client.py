@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
     QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names
+from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names, make_circular_image
 import pyaudio
 import random
 import json
@@ -153,9 +153,10 @@ def thread_recv_messages():
             if data.startswith("profile_dicts:"):
                 split_data = data.split(":", 1)
                 list_of_profile_dicts = json.loads(split_data[1])
-                main_page.list_profile_pic_dicts = list_of_profile_dicts
+                main_page.list_user_profile_dicts = list_of_profile_dicts
                 QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
                 QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "caching_circular_images_signal", Qt.QueuedConnection)
                 print("got list of profile dictionaries")
             if data.startswith("error"):
                 parts = data.split(":")
@@ -552,8 +553,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     disconnect_signal = pyqtSignal()
     stop_watching_stream_signal = pyqtSignal()
     updated_settings_signal = pyqtSignal()
+    caching_circular_images_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
+        self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
+
         self.blueish_background_color = "#141c4b"
         self.blackish_background_color = "#000000"
         self.reddish_background_color = "#5c1114"
@@ -637,7 +641,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.push_to_talk_key = None
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
-        self.list_profile_pic_dicts = None
+        self.list_user_profile_dicts = []
+        self.circular_images_dicts_list = []
 
         self.volume = 50
         self.font_size = 12
@@ -688,6 +693,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.reset_call_var_signal.connect(self.reset_call_var)
         self.new_message_play_audio_signal.connect(self.new_message_play_audio)
         self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
+        self.caching_circular_images_signal.connect(self.caching_circular_images)
         self.disconnect_signal.connect(self.quit_application)
         self.media_player = QMediaPlayer()
 
@@ -762,8 +768,31 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in changing background color: {e}")
 
+    def get_circular_image_bytes_by_name(self, name):
+        for circular_image_dictionary in self.circular_images_dicts_list:
+            username = circular_image_dictionary.get("username")
+            if username == name:
+                return circular_image_dictionary.get("circular_image_bytes")
+
+    def caching_circular_images(self):
+        self.circular_images_dicts_list = []
+        for profile_dictionary in self.list_user_profile_dicts:
+            username = profile_dictionary.get("username")
+            image_bytes_encoded = profile_dictionary.get("encoded_image_bytes")
+            if image_bytes_encoded is None:
+                circular_image_bytes = None
+            else:
+                image_bytes = base64.b64decode(image_bytes_encoded)
+                circular_image_bytes = make_circular_image(image_bytes)
+            circular_images_dict = {
+                "username": username,
+                "circular_image_bytes": circular_image_bytes
+
+            }
+            self.circular_images_dicts_list.append(circular_images_dict)
+
     def update_profile_pic_dicts_list(self, name, new_image):
-        for profile_pic in self.list_profile_pic_dicts:
+        for profile_pic in self.list_user_profile_dicts:
             if profile_pic.get("username") == name:
                 if new_image is not None:
                     profile_pic["encoded_image_bytes"] = base64.b64encode(new_image).decode()
@@ -772,7 +801,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 print("updated the profile dictionary list")
 
     def get_profile_pic_by_username(self, username):
-        for profile_dict in self.list_profile_pic_dicts:
+        for profile_dict in self.list_user_profile_dicts:
             if profile_dict.get("username") == username:
                 image_bytes_encoded = profile_dict.get("encoded_image_bytes")
                 if image_bytes_encoded is not None:
