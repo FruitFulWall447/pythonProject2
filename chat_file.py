@@ -1409,10 +1409,13 @@ class ChatBox(QWidget):
             set_button_icon(status_button, deafened_icon, width, height)
         elif name in dict.get("muted"):
             set_button_icon(status_button, muted_icon, width, height)
-        user_profile_pic = self.parent.get_profile_pic_by_username(name)
+        if self.current_group_id:
+            profile_pic = self.parent.get_circular_image_bytes_by_group_id(self.current_group_id)
+        else:
+            profile_pic = self.parent.get_profile_pic_by_username(name)
         try:
-            if user_profile_pic is not None:
-                circular_image = make_circular_image(user_profile_pic)
+            if profile_pic is not None:
+                circular_image = make_circular_image(profile_pic)
                 set_icon_from_bytes_to_label(button, circular_image)
             else:
                 regular_icon_bytes = file_to_bytes(regular_icon_path)
