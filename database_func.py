@@ -764,9 +764,7 @@ def get_group_image_by_id(group_id):
         result = cursor.fetchone()
 
         if result:
-            # Decode the base64-encoded image bytes
-            image_bytes = base64.b64decode(result[0])
-            return image_bytes
+            return result
 
     except Exception as e:
         print(f"Error getting group image: {e}")
