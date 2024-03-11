@@ -747,6 +747,37 @@ def update_group_image(group_id, image_bytes):
             connection.close()
 
 
+def get_group_image_by_id(group_id):
+    try:
+        # Establish a connection to the MySQL database
+        connection = connect_to_kevindb()
+
+        select_query = """
+            SELECT group_image
+            FROM my_groups
+            WHERE group_id = %s
+        """
+
+        # Execute the query
+        cursor = connection.cursor()
+        cursor.execute(select_query, (group_id,))
+        result = cursor.fetchone()
+
+        if result:
+            # Decode the base64-encoded image bytes
+            image_bytes = base64.b64decode(result[0])
+            return image_bytes
+
+    except Exception as e:
+        print(f"Error getting group image: {e}")
+
+    finally:
+        # Close the database connection
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
 def get_user_chats(username):
     try:
         # Connect to your MySQL database
