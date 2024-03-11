@@ -10,6 +10,7 @@ import json
 import time
 import zlib
 import logging
+import base64
 from multiprocessing import Process
 
 
@@ -324,6 +325,14 @@ def thread_recv_messages(n, addr, username):
                                 members_list.append(User)
                                 database_func.create_group(f"{User}'s Group", User, members_list)
                                 logger.info(f"{User} created a new group")
+                            else:
+                                parts = data.split(":")
+                                if parts[1] == "update_image":
+                                    group_id = parts[2]
+                                    encoded_b64_image = ':'.join(parts[3:])
+                                    image_bytes = base64.b64decode(encoded_b64_image)
+                                    database_func.update_group_image(int(group_id), image_bytes)
+                                    logger.info(f"Update group image of id: {group_id} was updated by {User}")
                     if data.startswith("current_chat:"):
                         parts = data.split(":")
                         current_chat = parts[1]

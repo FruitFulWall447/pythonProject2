@@ -718,6 +718,35 @@ def add_chat_to_user(username, new_chat_name):
             connection.close()
 
 
+def update_group_image(group_id, image_bytes):
+    try:
+        # Establish a connection to the MySQL database
+        connection = connect_to_kevindb()
+
+        # Prepare the UPDATE query
+        update_query = """
+            UPDATE my_groups
+            SET group_image = %s
+            WHERE group_id = %s
+        """
+
+        # Execute the query
+        cursor = connection.cursor()
+        cursor.execute(update_query, (image_bytes, group_id))
+        connection.commit()
+
+        print(f"Group image updated successfully for group ID: {group_id}")
+
+    except Exception as e:
+        print(f"Error updating group image: {e}")
+
+    finally:
+        # Close the database connection
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
 def get_user_chats(username):
     try:
         # Connect to your MySQL database

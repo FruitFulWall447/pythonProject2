@@ -292,6 +292,12 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_new_group_image_to_server(self, image_bytes, group_id):
+        encoded_b64_image = base64.b64encode(image_bytes).decode('utf-8')
+        full_message = f"group:update_image:{group_id}:" + encoded_b64_image
+
+        self.send_str(full_message)
+
     def create_group(self, group_members_list):
         encoded_list = json.dumps(group_members_list)
         full_message = "group:create:" + encoded_list

@@ -978,6 +978,13 @@ class ChatBox(QWidget):
                     rename_group_x = add_user_x - 50
                     rename_group_y = call_button_y
                     self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+                    icon = QIcon("discord_app_assets/edit_image_icon.png")
+                    edit_group_image_x = rename_group_x - 50
+                    edit_group_image_y = rename_group_y
+                    self.edit_group_image_button = self.create_top_page_button(edit_group_image_x, edit_group_image_y,
+                                                                               icon)
+                    self.edit_group_image_button.clicked.connect(self.change_group_image)
+
                 # if in chat where there is a group call gives option to join
                 if self.current_group_id:
                     if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
@@ -1278,6 +1285,9 @@ class ChatBox(QWidget):
         if self.parent.is_create_group_pressed:
             self.display_create_group_box()
         self.raise_needed_elements()
+
+    def change_group_image(self):
+        self.open_file_dialog_for_changing_group_image()
 
     # Layout
     def create_custom_in_call_button(self, width, height, x, y, click_function):
@@ -1821,6 +1831,7 @@ class ChatBox(QWidget):
                     group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
                     if group_manager == self.parent.username:
                         self.rename_group.raise_()
+                        self.edit_group_image_button.raise_()
             self.border_label2.raise_()
             self.find_contact_text_entry.raise_()
             self.friends_button.raise_()
@@ -1934,6 +1945,26 @@ class ChatBox(QWidget):
     def raise_around_name_label(self):
         self.around_name.raise_()
 
+    def open_file_dialog_for_changing_group_image(self):
+        if self.file_dialog.exec_():
+            selected_files = self.file_dialog.selectedFiles()
+            file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
+            self.parent.file_name = selected_files[0].split("/")[-1]
+            file_path = selected_files[0]  # Get the file path
+            file_size = os.path.getsize(file_path)  # Get the file size in bytes
+
+            # Check if the file size is greater than 10 MB (10 * 1024 * 1024 bytes)
+            if file_size > 10 * 1024 * 1024:
+                print("File size exceeds the limit (10 MB).")
+                return
+            if selected_files and file_types[0] in ["png", "jpg"]:
+                image_bytes = file_to_bytes(selected_files[0])
+
+                if is_valid_image(image_bytes):
+                    self.Network.send_new_group_image_to_server(image_bytes, self.current_group_id)
+                    print("sent new image to server")
+                else:
+                    print("couldn't load image")
 
     def open_file_dialog(self):
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
