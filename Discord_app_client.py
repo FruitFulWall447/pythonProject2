@@ -162,7 +162,7 @@ def thread_recv_messages():
                 main_page.list_user_profile_dicts = list_of_profile_dicts
                 QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
                 QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "caching_circular_images_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
                 print("got list of profile dictionaries")
             if data.startswith("error"):
                 parts = data.split(":")
@@ -189,6 +189,7 @@ def thread_recv_messages():
                     temp = data.split("groups_list:", 1)[1]
                     main_page.groups_list = json.loads(temp)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                    QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
                     print("Updated the Groups list")
                 except Exception as e:
                     print(f"error in groups_list {e}")
@@ -596,7 +597,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     disconnect_signal = pyqtSignal()
     stop_watching_stream_signal = pyqtSignal()
     updated_settings_signal = pyqtSignal()
-    caching_circular_images_signal = pyqtSignal()
+    caching_circular_images_of_users_signal = pyqtSignal()
+    caching_circular_images_of_groups_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
@@ -685,7 +687,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
         self.list_user_profile_dicts = []
-        self.circular_images_dicts_list = []
+        self.circular_images_dicts_list_of_users = []
+        self.circular_images_dicts_list_of_groups = []
 
         self.volume = 50
         self.font_size = 12
@@ -736,7 +739,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.reset_call_var_signal.connect(self.reset_call_var)
         self.new_message_play_audio_signal.connect(self.new_message_play_audio)
         self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
-        self.caching_circular_images_signal.connect(self.caching_circular_images)
+        self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
+        self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
         self.disconnect_signal.connect(self.quit_application)
         self.media_player = QMediaPlayer()
 
@@ -817,13 +821,19 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             print(f"error in changing background color: {e}")
 
     def get_circular_image_bytes_by_name(self, name):
-        for circular_image_dictionary in self.circular_images_dicts_list:
+        for circular_image_dictionary in self.circular_images_dicts_list_of_users:
             username = circular_image_dictionary.get("username")
             if username == name:
                 return circular_image_dictionary.get("circular_image_bytes")
 
-    def caching_circular_images(self):
-        self.circular_images_dicts_list = []
+    def get_circular_image_bytes_by_group_id(self, group_id):
+        for circular_image_dictionary in self.circular_images_dicts_list_of_groups:
+            current_group_id = circular_image_dictionary.get("group_id")
+            if current_group_id == group_id:
+                return circular_image_dictionary.get("circular_image_bytes")
+
+    def caching_circular_images_of_users(self):
+        self.circular_images_dicts_list_of_users = []
         for profile_dictionary in self.list_user_profile_dicts:
             username = profile_dictionary.get("username")
             image_bytes_encoded = profile_dictionary.get("encoded_image_bytes")
@@ -837,7 +847,25 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 "circular_image_bytes": circular_image_bytes
 
             }
-            self.circular_images_dicts_list.append(circular_images_dict)
+            self.circular_images_dicts_list_of_users.append(circular_images_dict)
+        self.updated_chat()
+
+    def caching_circular_images_of_groups(self):
+        self.circular_images_dicts_list_of_groups = []
+        for group in self.groups_list:
+            group_id = group.get("group_id")
+            image_bytes_encoded = group.get("group_b64_encoded_image")
+            if image_bytes_encoded is None:
+                circular_image_bytes = None
+            else:
+                image_bytes = base64.b64decode(image_bytes_encoded)
+                circular_image_bytes = make_circular_image(image_bytes)
+            circular_images_dict = {
+                "group_id": group_id,
+                "circular_image_bytes": circular_image_bytes
+
+            }
+            self.circular_images_dicts_list_of_groups.append(circular_images_dict)
         self.updated_chat()
 
     def update_profile_pic_dicts_list(self, name, new_image):

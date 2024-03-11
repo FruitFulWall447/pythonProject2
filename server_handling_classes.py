@@ -26,6 +26,7 @@ def remove_duplicates(input_list):
             unique_elements.append(item)
     return unique_elements
 
+
 def relevant_users_for_user(user):
     user_friends = database_func.get_user_friends(user)
     user_groups = database_func.get_user_groups(user)
@@ -34,6 +35,7 @@ def relevant_users_for_user(user):
         total_groups_participants = total_groups_participants + group.get("group_members")
     total_needed_profile_names = remove_duplicates(total_groups_participants + user_friends)
     return total_needed_profile_names
+
 
 def get_list_of_needed_profile_dict(user):
     list_needed_profile_dicts = []
@@ -423,6 +425,7 @@ class Communication:
         self.logger.info(f"Sent list of call dicts list to user {User}")
 
         self.send_profile_list_of_dicts_to_user(User)
+        self.logger.info(f"Sent list of profile dicts list to user {User}")
 
         net.send_all_data_received()
         self.logger.info(f"All needed data sent to {User}")
@@ -437,7 +440,7 @@ class Communication:
         if net is not None:
             list_profile_dicts = get_list_of_needed_profile_dict(user)
             net.send_profile_list_of_dicts(list_profile_dicts)
-            self.logger.info(f"Sent list of cprofile dicts list to user {user}")
+            self.logger.info(f"Sent list of profile dicts list to user {user}")
 
     def get_list_of_calls_for_user(self, user):
         list_of_calls_dicts = []

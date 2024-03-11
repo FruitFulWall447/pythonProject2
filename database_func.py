@@ -1228,7 +1228,8 @@ def get_user_groups(username):
         cursor = connection.cursor()
 
         # Retrieve the groups where the specified username is a group member
-        cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date FROM my_groups")
+        cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date, "
+                       "group_image FROM my_groups")
 
         user_groups = []
         for row in cursor.fetchall():
@@ -1242,6 +1243,7 @@ def get_user_groups(username):
                     "group_members": group_members_list,
                     "group_manager": row[3],
                     "creation_date": row[4].strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
+                    "group_b64_encoded_image": base64.b64encode(row[5]).decode("utf-8") if row[5] else None
                 })
 
         return user_groups
