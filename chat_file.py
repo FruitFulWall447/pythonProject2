@@ -1876,16 +1876,17 @@ class ChatBox(QWidget):
         width, height = (35, 35)
         profile_image_label = create_custom_circular_label(width, height, self)
         profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
-        if self.current_group_id:
-            chat_image = self.parent.get_circular_image_bytes_by_group_id(self.current_group_id)
+
+        if id:
+            chat_image = self.parent.get_circular_image_bytes_by_group_id(id)
         else:
             chat_image = self.parent.get_profile_pic_by_username(chat_name)
         if chat_image is None:
             icon_path = self.parent.regular_profile_image_path
             set_icon_from_path_to_label(profile_image_label, icon_path)
         else:
-            if self.current_group_id:
-                circular_pic_bytes = self.parent.get_circular_image_bytes_by_group_id(self.current_group_id)
+            if id:
+                circular_pic_bytes = chat_image
             else:
                 circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
