@@ -327,6 +327,7 @@ def thread_recv_messages(n, addr, username):
                                 logger.info(f"{User} created a new group")
                             else:
                                 parts = data.split(":")
+                                print("soemthing")
                                 if parts[1] == "update_image":
                                     group_id = parts[2]
                                     encoded_b64_image = ':'.join(parts[3:])
