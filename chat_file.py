@@ -3934,7 +3934,6 @@ class SettingsBox(QWidget):
         self.volume_label.setText(str(value))
         self.parent.update_media_players_volume(value)
 
-
     def my_account_pressed(self):
         if self.parent.selected_settings !="My Account":
             self.parent.selected_settings = "My Account"
