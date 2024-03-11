@@ -71,7 +71,8 @@ def is_client_waits_for_message(client):
 
 def add_message_for_client(client, message):
     global messages_to_clients_dict
-    messages_to_clients_dict[client] = message
+    if client in Communication.online_users:
+        messages_to_clients_dict[client] = message
 
 
 def get_and_remove_message_for_client(client):
@@ -335,7 +336,6 @@ def thread_recv_messages(n, addr, username):
                                 logger.info(f"Update group image of id: {group_id} was updated by {User}")
                     if data.startswith("current_chat:"):
                         parts = data.split(":")
-                        current_chat = parts[1]
                         add_message_for_client(User, data)
                         time.sleep(0.1)
                         add_message_for_client(User, "update_chat_list")
@@ -351,7 +351,8 @@ def thread_recv_messages(n, addr, username):
                         database_func.add_message(sender, receiver, content, message_type, file_name)
                         if not receiver.startswith("("):
                             add_message_for_client(receiver, f"got_new_message:{sender}")
-                        else: # means its a group therefore need to update message for every member of group
+                        else:
+                            # means its a group therefore need to update message for every member of group
                             group_name, group_id = gets_group_attributes_from_format(receiver)
                             group_members = database_func.get_group_members(group_id)
                             group_members.remove(User)

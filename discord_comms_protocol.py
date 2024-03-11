@@ -711,7 +711,6 @@ class server_net:
             # Padding adjustment
             number_of_zero = self.original_len - len(size_str)
             size = ("0" * number_of_zero) + size_str
-
             # Send the size as a string
             self.server.send(size.encode('utf-8'))
 
@@ -755,6 +754,18 @@ class server_net:
 
         encoded_list = json.dumps(list)
         full_message = "messages_list:" + encoded_list
+
+        # Convert the length of the data to a string
+        self.send_str(full_message)
+
+    def send_new_message(self, message):
+        full_message = f"new_message:{message}"
+
+        # Convert the length of the data to a string
+        self.send_str(full_message)
+
+    def send_new_message_of_other_chat(self):
+        full_message = "new_message"
 
         # Convert the length of the data to a string
         self.send_str(full_message)

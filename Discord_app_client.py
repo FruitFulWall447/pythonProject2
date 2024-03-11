@@ -246,8 +246,6 @@ def thread_recv_messages():
                 try:
                     friends_list = data.split("friends_list:", 1)[1]
                     main_page.friends_list = json.loads(friends_list)
-                    #if main_page.chat_box.chat_name_label.text() == "" and len(friends_list) > 0:
-                        #main_page.chat_box.selected_chat_changed(main_page.friends_list[0])
                     QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
                     QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                     print(f"Got friends list: {main_page.friends_list}")
