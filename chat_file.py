@@ -1884,7 +1884,10 @@ class ChatBox(QWidget):
             icon_path = self.parent.regular_profile_image_path
             set_icon_from_path_to_label(profile_image_label, icon_path)
         else:
-            circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
+            if self.current_group_id:
+                circular_pic_bytes = self.parent.get_circular_image_bytes_by_group_id(self.current_group_id)
+            else:
+                circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_x, profile_image_y)
 
