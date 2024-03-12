@@ -1635,7 +1635,7 @@ class Login_page(QWidget):
         forgot_password_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
         forgot_password_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
 
-        sign_up_label = QLabel('<a href="sign_up">Dont have a user yet? sign up here</a>', self)
+        sign_up_label = QLabel('<a href="sign_up">Dont have a user yet? sign_up here</a>', self)
         sign_up_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         sign_up_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
         sign_up_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px

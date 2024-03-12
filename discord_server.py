@@ -191,7 +191,7 @@ def thread_recv_messages(n, addr, username):
                     else:
                         logger.info(f"Server sent Invalid to address ({addr})")
                         n.send_invalid_login()
-                if message_type == "sign up":
+                if message_type == "sign_up":
                     username = data.get("username")
                     password = data.get("password")
                     email = data.get("email")
@@ -204,11 +204,11 @@ def thread_recv_messages(n, addr, username):
                         attempts_remaining = 3  # Set the maximum number of attempts
                         while attempts_remaining > 0:
                             data = n.recv_str()
-                            if data.startswith("sign_up"):
-                                parts = data.split(":")
-                                action = parts[1]
+                            message_type = data.get("message_type")
+                            if message_type == "sign_up":
+                                action = data.get("action")
                                 if action == "verification_code":
-                                    code_gotten = parts[2]
+                                    code_gotten = data.get("code")
                                     if code_gotten is None:
                                         logger.info(f"lost connection with ({addr})")
                                         break
@@ -225,7 +225,7 @@ def thread_recv_messages(n, addr, username):
                                         logger.info(f"({addr}) existed code menu")
                                         break
                                     else:
-                                        logger.info(f"Server sent sign up Invalid to ({addr})")
+                                        logger.info(f"Server sent sign_up Invalid to ({addr})")
                                         n.send_sign_up_code_invalid()
                                         attempts_remaining -= 1
                     else:

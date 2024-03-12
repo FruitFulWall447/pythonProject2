@@ -391,7 +391,7 @@ class client_net:
         self.send_message_dict(message)
 
     def send_sign_up_info(self, username, password, email):
-        message_format = "sign up"
+        message_format = "sign_up"
         message = {"message_type": message_format, "username": username,
                    "password": password, "email": email}
         self.send_message_dict(message)
