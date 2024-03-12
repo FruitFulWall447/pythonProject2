@@ -147,7 +147,7 @@ class Call:
         self.logger.debug(f"call participants: {self.participants}")
         for name, net in self.call_nets.items():
             if net is not None:
-                net.send_str("call:ended")
+                net.send_user_that_call_ended()
                 net.remove_call_to_user_of_id(self.call_id)
         self.close_all_video_streams()
         self.logger.info(f"Call of id {self.call_id} ended")
@@ -163,7 +163,7 @@ class Call:
     def send_to_everyone_call_accepted(self):
         for name, net in self.call_nets.items():
             if net is not None and name in self.participants:
-                net.send_str("call:accepted")
+                net.send_user_that_call_accepted()
 
     def is_user_in_a_call(self, user):
         if user in self.participants:
@@ -200,7 +200,7 @@ class Call:
         self.gets_call_nets_from_dict()
         try:
             net = self.parent.get_net_by_name(user)
-            net.send_str("call:accepted")
+            net.send_user_that_call_accepted()
             self.logger.debug(f"Sent call:accepted to user {user}, with net {net}")
         except Exception as e:
             self.logger.error(f"Error sending string: {e}")
@@ -322,16 +322,16 @@ class Ring:
         for name, net in self.ringers_nets.items():
             if net is not None:
                 if name not in self.accepted_rings and name not in self.rejected_rings:
-                    net.send_str('call:timeout')
+                    net.send_user_call_timeout()
 
     def stop_ring_for_ringer(self):
         ringers_net = self.parent.get_net_by_name(self.ringer)
-        ringers_net.send_str('call:timeout')
+        ringers_net.send_user_call_timeout()
 
     def cancel_ring_for_all(self):
         for name, net in self.ringers_nets.items():
             if net is not None:
-                net.send_str('call:timeout')
+                net.send_user_call_timeout()
         self.stop_ring_for_ringer()
         self.is_ringer_stopped_call = True
         self.ring_thread_flag = False
@@ -531,7 +531,7 @@ class Communication:
                 else:
                     call.remove_user_from_call(user)
                     users_net = self.get_net_by_name(user)
-                    users_net.send_str("call:ended")
+                    users_net.send_user_that_call_ended()
                     self.logger.info("Removed user from group call")
 
     def are_users_in_a_call(self, list_users):

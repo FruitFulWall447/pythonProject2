@@ -118,6 +118,15 @@ def threaded_logged_in_client(n, User):
 
         if is_client_waits_for_message(User):
             message = get_and_remove_message_for_client(User)
+            if isinstance(message, dict):
+                message_type = message.get("message_type")
+                if message_type == "current_chat":
+                    client_current_chat = message.get("current_chat")
+                    logger.info(f"{User} current chat is {client_current_chat}")
+                    database_func.mark_messages_as_read(User, client_current_chat)
+                    if client_current_chat not in database_func.get_user_chats(User):
+                        database_func.add_chat_to_user(User, client_current_chat)
+                        logger.info(f"added new chat to {User}")
             if isinstance(message, list):
                 logger.info(f"Sent online users list to {User}")
                 friends_list = database_func.get_user_friends(User)
@@ -141,13 +150,6 @@ def threaded_logged_in_client(n, User):
                 else:
                     n.send_str("new_message")
                     logger.info(f"{User} got a new message")
-            if isinstance(message, str) and message.startswith("current_chat"):
-                client_current_chat = message.split(":")[1]
-                logger.info(f"{User} current chat is {client_current_chat}")
-                database_func.mark_messages_as_read(User, client_current_chat)
-                if client_current_chat not in database_func.get_user_chats(User):
-                    database_func.add_chat_to_user(User, client_current_chat)
-                    logger.info(f"added new chat to {User}")
             if isinstance(message, str) and message.startswith("update_chat_list"):
                 list_dict_of_messages = database_func.get_messages(User, client_current_chat)
                 n.send_messages_list(list_dict_of_messages)
@@ -168,8 +170,11 @@ def thread_recv_messages(n, addr, username):
     while True:
         if not is_logged_in:
             try:
-                username, password, format, email, security_token = n.recv_login_info()
-                if format == "login":
+                data = n.recv_str()
+                message_type = data.get("message_type")
+                if message_type == "login":
+                    username = data.get("username")
+                    password = data.get("password")
                     is_valid = database_func.login(username, password)
                     if is_valid:
                         if not username in Communication.online_users:
@@ -186,7 +191,10 @@ def thread_recv_messages(n, addr, username):
                     else:
                         logger.info(f"Server sent Invalid to address ({addr})")
                         n.send_invalid_login()
-                if format == "sign up":
+                if message_type == "sign up":
+                    username = data.get("username")
+                    password = data.get("password")
+                    email = data.get("email")
                     is_valid = not database_func.username_exists(username)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
@@ -223,7 +231,9 @@ def thread_recv_messages(n, addr, username):
                     else:
                         logger.info(f"Server sent Invalid to ({addr})")
                         n.send_sign_up_invalid()
-                if format == "forget password":
+                if message_type == "forget password":
+                    username = data.get("username")
+                    email = data.get("email")
                     is_valid = database_func.user_exists_with_email(username, email)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
@@ -232,37 +242,43 @@ def thread_recv_messages(n, addr, username):
                         n.send_forget_password_info_valid()
                         attempts_remaining = 3  # Set the maximum number of attempts
                         while attempts_remaining > 0:
-                            code_gotten = n.recv_str()
-                            logger.info(f"got {code_gotten} from ({addr})")
-                            if code_gotten is None:
-                                logger.info(f"lost connection with ({addr})")
-                                break
-                            code_gotten = int(code_gotten)
-                            logger.info(f"Server got {code_gotten} from ({addr})")
-                            if code_gotten == code:
-                                logger.info(f"code gotten from {username} is correct")
-                                n.send_forget_password_code_valid()
-                                data = n.recv_str()
-                                parts = data.split(":")
-                                if len(parts) > 0:
-                                    if parts[0] == "password":
-                                        if parts[1] == "new":
-                                            new_password = parts[2]
-                                            database_func.change_password(username, new_password)
-                                            send_changed_password_to_email(email, username)
-                                            logger.info(f"{username} changed password")
-                                            break
-                            elif code_gotten == "Exit":
-                                logger.info(f"({addr}) existed code menu")
-                                break
-                            else:
-                                logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
-                                n.send_forget_password_code_invalid()
-                                attempts_remaining -= 1
+                            code_gotten_data = n.recv_str()
+                            message_type = code_gotten_data.get("message_type")
+                            if message_type == "sign_up":
+                                action = code_gotten_data.get("action")
+                                if action == "verification_code":
+                                    code_gotten_data = code_gotten_data.get("code")
+                                    logger.info(f"got {code_gotten} from ({addr})")
+                                    if code_gotten is None:
+                                        logger.info(f"lost connection with ({addr})")
+                                        break
+                                    code_gotten = int(code_gotten)
+                                    logger.info(f"Server got {code_gotten} from ({addr})")
+                                    if code_gotten == code:
+                                        logger.info(f"code gotten from {username} is correct")
+                                        n.send_forget_password_code_valid()
+                                        data = n.recv_str()
+                                        message_type = code_gotten_data.get("message_type")
+                                        if message_type == "password":
+                                            action = data.get("action")
+                                            if action == "new_password":
+                                                new_password = data.get("new_password")
+                                                database_func.change_password(username, new_password)
+                                                send_changed_password_to_email(email, username)
+                                                logger.info(f"{username} changed password")
+                                                break
+                                    elif code_gotten == "Exit":
+                                        logger.info(f"({addr}) existed code menu")
+                                        break
+                                    else:
+                                        logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
+                                        n.send_forget_password_code_invalid()
+                                        attempts_remaining -= 1
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
                         n.send_forget_password_info_invalid()
-                if format == "security token":
+                if message_type == "security_token":
+                    security_token = data.get("security_token")
                     username = database_func.check_security_token(security_token)
                     if not username:
                         logger.info(f"security token from ({addr}) isn't valid")
@@ -290,206 +306,188 @@ def thread_recv_messages(n, addr, username):
                 logger.info(f"lost connection with {User}")
                 Communication.user_offline(User)
                 break
-            if isinstance(data, str):
-                if data is None:
-                    logger.info(f"lost connection with {User}")
-                    Communication.user_offline(User)
-                    break
-                elif is_string(data):
-                    if data.startswith("block"):
-                        user_to_block = data.split(":")[1]
-                        database_func.block_user(User, user_to_block)
-                        logger.info(f"{User} blocked {user_to_block}")
-                    if data.startswith("unblock"):
-                        user_to_unblock = data.split(":")[1]
-                        database_func.unblock_user(User, user_to_unblock)
-                        logger.info(f"{User} unblocked {user_to_unblock}")
-                    if data.startswith("update_profile_pic"):
-                        profile_pic_encoded = data.split(":")[1]
-                        if profile_pic_encoded == "None":
-                            profile_pic_encoded = None
-                            logger.info(f"{User} reset his profile picture")
-                        database_func.update_profile_pic(User, profile_pic_encoded)
-                        logger.info(f"updated client profile pic of {User}")
-                        Communication.update_profiles_list_for_everyone_by_user(User)
-                    if data.startswith("security_token"):
-                        action = data.split(":")[1]
-                        if action == "needed":
-                            user_security_token = database_func.get_security_token(User)
-                            n.send_security_token_to_client(user_security_token)
-                            logger.info(f"Sent security token to - {User} , {user_security_token}")
-                    if data.startswith("group:"):
-                        parts = data.split(":")
-                        if len(parts) == 3:
-                            if parts[1] == "create":
-                                members_list = json.loads(parts[2])
-                                members_list.append(User)
-                                database_func.create_group(f"{User}'s Group", User, members_list)
-                                logger.info(f"{User} created a new group")
-                        else:
-                            parts = data.split(":")
-                            if parts[1] == "update_image":
-                                group_id = parts[2]
-                                encoded_b64_image = ':'.join(parts[3:])
-                                image_bytes = base64.b64decode(encoded_b64_image)
-                                database_func.update_group_image(int(group_id), image_bytes)
-                                logger.info(f"Update group image of id: {group_id} was updated by {User}")
-                    if data.startswith("current_chat:"):
-                        parts = data.split(":")
-                        add_message_for_client(User, data)
-                        time.sleep(0.1)
-                        add_message_for_client(User, "update_chat_list")
-                        logger.info(f"got {User} current chat")
-                    if data.startswith("add_message:"):
-                        message = data.split(":", 1)[1]
-                        message = json.loads(message)
-                        sender = message.get("sender")
-                        receiver = message.get("receiver")
-                        content = message.get("content")
-                        message_type = message.get("type")
-                        file_name = message.get("file_name")
-                        database_func.add_message(sender, receiver, content, message_type, file_name)
-                        if not receiver.startswith("("):
-                            add_message_for_client(receiver, f"got_new_message:{sender}")
-                        else:
-                            # means its a group therefore need to update message for every member of group
-                            group_name, group_id = gets_group_attributes_from_format(receiver)
-                            group_members = database_func.get_group_members(group_id)
-                            group_members.remove(User)
-                            for member in group_members:
-                                add_message_for_client(member, f"got_new_message:{receiver}")
-                        logger.info(f"added new message from {User} to {receiver}")
-                    if data.startswith("friend_request:"):
-                        num_of_parts = len(data.split(":"))
-                        if num_of_parts != 2:
-                            parts = data.split(":")
-                            user = parts[1]
-                            friend_user = parts[2]
-                            if not database_func.are_friends(user, friend_user) and database_func.username_exists(friend_user) and not friend_user == user and not database_func.is_active_request(user, friend_user):
-                                database_func.send_friend_request(user, friend_user)
-                                logger.info(f"{user} sent friend request to {friend_user}")
-                                add_message_for_client(friend_user, "friends_request:send")
-                                n.send_str("friend_request:worked")
-                            else:
-                                if database_func.is_active_request(user, friend_user):
-                                    logger.info("friend request is active")
-                                    n.send_str("friend_request:active")
-                                elif not database_func.username_exists(friend_user):
-                                    n.send_str("friend_request:not exist")
-                                else:
-                                    n.send_str("friend_request:already friends")
-                        else:
-                            parts = data.split(":")
-                            user_len = parts[1]
-                            friend_request_list = database_func.get_friend_requests(User)
-                            if len(friend_request_list) != int(user_len):
-                                n.send_requests_list(friend_request_list)
-                                logger.info(f"Sent requests list ({friend_request_list}) to user {User}")
-                            else:
-                                logger.info(f"sent to {User} friend_request_list is updated")
-                    if data.startswith("friend_remove:"):
-                        friends_to_remove = data.split(":")[1]
-                        database_func.remove_friend(User, friends_to_remove)
-                        if friends_to_remove in online_users:
-                            add_message_for_client(friends_to_remove, "friends_list:send")
-                        logger.info(f"{User} removed {friends_to_remove} as friend")
-                    if data.startswith("friend_request_status:"):
-                        parts = data.split(":")
-                        status = parts[1]
-                        accepted_or_rejected_user = parts[2]
-                        if status == "accept":
-                            database_func.handle_friend_request(User, accepted_or_rejected_user, True)
-                            logger.info(f"{User} accepted {accepted_or_rejected_user} friend request")
-                            add_message_for_client(User, "friends_request:send")
-                            add_message_for_client(accepted_or_rejected_user, "friends_request:send")
-                            add_message_for_client(User, "friends_list:send")
-                            add_message_for_client(accepted_or_rejected_user, "friends_list:send")
-                        else:
-                            database_func.handle_friend_request(User, accepted_or_rejected_user, False)
-                            logger.info(f"{User} rejected {accepted_or_rejected_user} friend request")
-                            add_message_for_client(User, "friends_request:send")
-                            add_message_for_client(accepted_or_rejected_user, "friends_request:send")
-                    if data.startswith("call:"):
-                        parts = data.split(":")
-                        action = parts[1]
-                        if action == "stream":
-                            if len(parts) == 4 or len(parts) == 5:
-                                stream_type = parts[2]
-                                stream_action = parts[3]
-                                if stream_action == "start":
-                                    Communication.create_video_stream_for_user_call(User, stream_type)
-                                elif stream_action == "close":
-                                    Communication.close_video_stream_for_user_call(User, stream_type)
-                                elif stream_action == "watch":
-                                    if len(parts) == 5:
-                                        streamer = parts[4]
-                                        Communication.add_spectator_to_call_stream(User, streamer, stream_type)
-                            elif len(parts) == 3:
-                                stream_action = parts[2]
-                                if stream_action == "stop_watch":
-                                    Communication.remove_spectator_from_call_stream(User)
-                        if action == "join":
-                            if Communication.is_user_in_a_call(User):
-                                Communication.remove_user_from_call(User)
-                                group_id = int(parts[2])
-                                Communication.add_user_to_group_call_by_id(User, group_id)
-                            else:
-                                group_id = int(parts[2])
-                                Communication.add_user_to_group_call_by_id(User, group_id)
-                        if action == "mute":
-                            if parts[2] != "myself":
-                                person_to_mute = parts[2]
-                            else:
-                                Communication.mute_or_unmute_self_user(User)
-                        if action == "deafen":
-                            Communication.deafen_or_undeafen_self_user(User)
-                        if action == "calling":
-                            if parts[2] != "stop!":
-                                user_that_is_getting_called = parts[2]
-                                logger.info(f"{User} calling {user_that_is_getting_called}")
-                                Communication.create_ring(User, user_that_is_getting_called)
-                            else:
-                                Communication.cancel_ring_by_the_ringer(User)
-                        if action == "accepted":
-                            ringer = parts[2]
-                            logger.info(f"{User} accepted {ringer} call")
-                            # if a call already created no need to create just need to append the user to the call
-                            if ringer.startswith("("):
-                                group_id, group_name, caller = parse_group_caller_format(ringer)
-                                if Communication.is_group_call_exist_by_id(group_id):
-                                    Communication.add_user_to_group_call_by_id(User, group_id)
-                                else:
-                                    Communication.create_call_and_add(group_id, [User, caller])
-                            else:
-                                Communication.create_call_and_add(None, [User, ringer])
-                                Communication.accept_ring_by_ringer(ringer, User)
-                        if action == "rejected":
-                            rejected_caller = parts[2]
-                            if rejected_caller.startswith("("):
-                                group_id, group_name, caller = parse_group_caller_format(rejected_caller)
-                                logger.info(f"{User} rejected {caller} Group call, Group: {group_name}")
-                                Communication.reject_ring_by_ringer(caller, User)
-                            else:
-                                rejected_caller = rejected_caller
-                                logger.info(f"{User} rejected {rejected_caller} call")
-                                Communication.reject_ring_by_ringer(rejected_caller, User)
-                        if action == "ended":
+            message_type = data.get("message_type")
+            if message_type == "current_chat":
+                user_current_chat = data.get("current_chat")
+                add_message_for_client(User, data)
+                time.sleep(0.1)
+                add_message_for_client(User, "update_chat_list")
+                logger.info(f"got {User} current chat")
+            if message_type == "call":
+                call_action_type = data.get("call_action_type")
+                if call_action_type == "stream":
+                    stream_type = data.get("stream_type")
+                    stream_action = data.get("action")
+                    if stream_action == "start":
+                        Communication.create_video_stream_for_user_call(User, stream_type)
+                    elif stream_action == "close":
+                        Communication.close_video_stream_for_user_call(User, stream_type)
+                    elif stream_action == "watch":
+                        streamer = data.get("user_to_watch")
+                        Communication.add_spectator_to_call_stream(User, streamer, stream_type)
+                    if stream_action == "stop_watch":
+                        Communication.remove_spectator_from_call_stream(User)
+                if call_action_type == "in_call_action":
+                    action = data.get("action")
+                    if action == "join":
+                        group_id = data.get("group_id")
+                        if Communication.is_user_in_a_call(User):
                             Communication.remove_user_from_call(User)
-            elif isinstance(data, bytes):
-                if data.startswith(vc_data_sequence):
-                    rest_of_bytes = data[len(vc_data_sequence):]
-                    vc_data = zlib.decompress(rest_of_bytes)
-                    Communication.send_vc_data_to_call(vc_data, User)
-                elif data.startswith(share_screen_sequence):
-                    shape_bytes = data.split(b":")[-1]
-                    rest_of_bytes = data[len(share_screen_sequence):len(data)-len(shape_bytes)-1]
-                    share_screen_data = zlib.decompress(rest_of_bytes)
-                    Communication.send_share_screen_data_to_call(share_screen_data, shape_bytes, User, "ScreenStream")
-                elif data.startswith(share_camera_sequence):
-                    shape_bytes = data.split(b":")[-1]
-                    rest_of_bytes = data[len(share_camera_sequence):len(data)-len(shape_bytes)-1]
-                    share_screen_data = zlib.decompress(rest_of_bytes)
-                    Communication.send_share_screen_data_to_call(share_screen_data, shape_bytes, User, "CameraStream")
+                            Communication.add_user_to_group_call_by_id(User, group_id)
+                        else:
+                            Communication.add_user_to_group_call_by_id(User, group_id)
+                    if action == "mute_myself":
+                        Communication.mute_or_unmute_self_user(User)
+                    if action == "deafen_myself":
+                        Communication.deafen_or_undeafen_self_user(User)
+                    if action == "calling":
+                        user_that_is_getting_called = data.get("calling_to")
+                        logger.info(f"{User} calling {user_that_is_getting_called}")
+                        Communication.create_ring(User, user_that_is_getting_called)
+                    if action == "stop!":
+                        Communication.cancel_ring_by_the_ringer(User)
+                    if action == "accepted_call":
+                        ringer = data.get("accepted_caller")
+                        logger.info(f"{User} accepted {ringer} call")
+                        # if a call already created no need to create just need to append the user to the call
+                        if ringer.startswith("("):
+                            group_id, group_name, caller = parse_group_caller_format(ringer)
+                            if Communication.is_group_call_exist_by_id(group_id):
+                                Communication.add_user_to_group_call_by_id(User, group_id)
+                            else:
+                                Communication.create_call_and_add(group_id, [User, caller])
+                        else:
+                            Communication.create_call_and_add(None, [User, ringer])
+                            Communication.accept_ring_by_ringer(ringer, User)
+                    if action == "rejected_call":
+                        rejected_caller = data.get("rejected_caller")
+                        if rejected_caller.startswith("("):
+                            group_id, group_name, caller = parse_group_caller_format(rejected_caller)
+                            logger.info(f"{User} rejected {caller} Group call, Group: {group_name}")
+                            Communication.reject_ring_by_ringer(caller, User)
+                        else:
+                            rejected_caller = rejected_caller
+                            logger.info(f"{User} rejected {rejected_caller} call")
+                            Communication.reject_ring_by_ringer(rejected_caller, User)
+                    if action == "ended":
+                        Communication.remove_user_from_call(User)
+                if call_action_type == "change_calling_status":
+                    action = data.get("action")
+                    if action == "stop!":
+                        Communication.cancel_ring_by_the_ringer(User)
+            if message_type == "add_message":
+                sender = data.get("sender")
+                receiver = data.get("receiver")
+                content = data.get("content")
+                type_of_message = data.get("type")
+                file_name = data.get("file_name")
+                database_func.add_message(sender, receiver, content, type_of_message, file_name)
+                if not receiver.startswith("("):
+                    add_message_for_client(receiver, f"got_new_message:{sender}")
+                else:
+                    # means its a group therefore need to update message for every member of group
+                    group_name, group_id = gets_group_attributes_from_format(receiver)
+                    group_members = database_func.get_group_members(group_id)
+                    group_members.remove(User)
+                    for member in group_members:
+                        add_message_for_client(member, f"got_new_message:{receiver}")
+                logger.info(f"added new message from {User} to {receiver}")
+            if message_type == "update_profile_pic":
+                b64_encoded_profile_pic = data.get("b64_encoded_profile_pic")
+                if b64_encoded_profile_pic == "None":
+                    b64_encoded_profile_pic = None
+                    logger.info(f"{User} reset his profile picture")
+                database_func.update_profile_pic(User, b64_encoded_profile_pic)
+                logger.info(f"updated client profile pic of {User}")
+                Communication.update_profiles_list_for_everyone_by_user(User)
+            if message_type == "security_token":
+                action = data.get("action")
+                if action == "needed":
+                    user_security_token = database_func.get_security_token(User)
+                    n.send_security_token_to_client(user_security_token)
+                    logger.info(f"Sent security token to - {User} , {user_security_token}")
+            if message_type == "vc_data":
+                compressed_vc_data = data.get("compressed_vc_data")
+                vc_data = zlib.decompress(compressed_vc_data)
+                Communication.send_vc_data_to_call(vc_data, User)
+            if message_type == "share_screen_data":
+                compressed_share_screen_data = data.get("compressed_share_screen_data")
+                shape_of_frame = data.get("shape_of_frame")
+                share_screen_data = zlib.decompress(compressed_share_screen_data)
+                Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
+            if message_type == "share_camera_data":
+                compressed_share_camera_data = data.get("compressed_share_screen_data")
+                shape_of_frame = data.get("shape_of_frame")
+                share_screen_data = zlib.decompress(compressed_share_camera_data)
+                Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
+            if message_type == "friend_request":
+                username_for_request = data.get("username_for_request")
+                user = User
+                friend_user = username_for_request
+                if not database_func.are_friends(user, friend_user) and database_func.username_exists(
+                        friend_user) and not friend_user == user and not database_func.is_active_request(user,
+                                                                                                         friend_user):
+                    database_func.send_friend_request(user, friend_user)
+                    logger.info(f"{user} sent friend request to {friend_user}")
+                    add_message_for_client(friend_user, "friends_request:send")
+                    n.sent_friend_request_status("worked")
+                else:
+                    if database_func.is_active_request(user, friend_user):
+                        logger.info("friend request is active")
+                        n.sent_friend_request_status("active")
+                    elif not database_func.username_exists(friend_user):
+                        n.sent_friend_request_status("not exist")
+                    else:
+                        n.sent_friend_request_status("already friends")
+            if message_type == "friend_request_status":
+                status = data.get("action")
+                if status == "accept":
+                    accepted_or_rejected_user = data.get("accepted_user")
+                    database_func.handle_friend_request(User, accepted_or_rejected_user, True)
+                    logger.info(f"{User} accepted {accepted_or_rejected_user} friend request")
+                    add_message_for_client(User, "friends_request:send")
+                    add_message_for_client(accepted_or_rejected_user, "friends_request:send")
+                    add_message_for_client(User, "friends_list:send")
+                    add_message_for_client(accepted_or_rejected_user, "friends_list:send")
+                else:
+                    accepted_or_rejected_user = data.get("rejected_user")
+                    database_func.handle_friend_request(User, accepted_or_rejected_user, False)
+                    logger.info(f"{User} rejected {accepted_or_rejected_user} friend request")
+                    add_message_for_client(User, "friends_request:send")
+                    add_message_for_client(accepted_or_rejected_user, "friends_request:send")
+            if message_type == "friend_remove":
+                friends_to_remove = data.get("username_to_remove")
+                database_func.remove_friend(User, friends_to_remove)
+                if friends_to_remove in online_users:
+                    add_message_for_client(friends_to_remove, "friends_list:send")
+                logger.info(f"{User} removed {friends_to_remove} as friend")
+            if message_type == "block":
+                user_to_block = data.get("user_to_block")
+                database_func.block_user(User, user_to_block)
+                logger.info(f"{User} blocked {user_to_block}")
+            if message_type == "unblock":
+                user_to_unblock = data.get("user_to_unblock")
+                database_func.unblock_user(User, user_to_unblock)
+                logger.info(f"{User} unblocked {user_to_unblock}")
+            if message_type == "group":
+                action = data.get("action")
+                if action == "create":
+                    members_list = json.loads(data.get("group_members_list"))
+                    members_list.append(User)
+                    database_func.create_group(f"{User}'s Group", User, members_list)
+                    logger.info(f"{User} created a new group")
+                if action == "update_image":
+                    group_id = data.get("group_id")
+                    encoded_b64_image = data.get("encoded_b64_image")
+                    image_bytes = base64.b64decode(encoded_b64_image)
+                    database_func.update_group_image(int(group_id), image_bytes)
+                    logger.info(f"Update group image of id: {group_id} was updated by {User}")
+
+
+
+
+
+
 
 
 

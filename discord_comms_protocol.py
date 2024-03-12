@@ -15,6 +15,7 @@ from cryptography.hazmat.primitives import padding as aes_padding
 from cryptography.fernet import Fernet
 import secrets
 import struct
+import pickle
 
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
@@ -165,7 +166,6 @@ class client_net:
         self.sending_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
 
-
     def connect(self):
         try:
             self.client.connect(self.addr)
@@ -229,211 +229,196 @@ class client_net:
             # Release the lock
             self.sending_data_lock.release()
 
+    def send_message_dict(self, message_dict):
+        try:
+            pickled_data = pickle.dumps(message_dict)
+            self.send_bytes(pickled_data)
+        except Exception as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
-            message = f"current_chat:{current_chat}"
-            self.send_str(message)
+            message = {"message_type": "current_chat", "current_chat": current_chat}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def start_screen_stream(self):
         try:
-            stream_type = "ScreenStream"
-            message = f"call:stream:{stream_type}:start"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": "ScreenStream", "action": "start"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def close_screen_stream(self):
         try:
-            stream_type = "ScreenStream"
-            message = f"call:stream:{stream_type}:close"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": "ScreenStream", "action": "close"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def start_camera_stream(self):
         try:
             stream_type = "CameraStream"
-            message = f"call:stream:{stream_type}:start"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type, "action": "start"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def close_camera_stream(self):
         try:
             stream_type = "CameraStream"
-            message = f"call:stream:{stream_type}:close"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type, "action": "close"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def watch_screen_stream_of_user(self, user):
         try:
             stream_type = "ScreenStream"
-            message = f"call:stream:{stream_type}:watch:{user}"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type,
+                       "action": "close", "user_to_watch": user}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def watch_camera_stream_of_user(self, user):
         try:
             stream_type = "CameraStream"
-            message = f"call:stream:{stream_type}:watch:{user}"
-            self.send_str(message)
+            message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type,
+                       "action": "close", "user_to_watch": user}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def stop_watching_current_stream(self):
         try:
-            message = f"call:stream:stop_watch"
-            self.send_str(message)
+            message = {"message_type": "call", "call_type": "stream",
+                       "action": "stop_watch"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def leave_call(self):
-        data = f"call:ended"
         try:
             # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "ended"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_new_password(self, new_password):
-        data = f"password:new:{new_password}"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "password",
+                       "action": "new_password", "new_password": new_password}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_new_group_image_to_server(self, image_bytes, group_id):
         encoded_b64_image = base64.b64encode(image_bytes).decode('utf-8')
-        full_message = f"group:update_image:{group_id}:" + encoded_b64_image
-
-        self.send_str(full_message)
+        message = {"message_type": "group",
+                   "action": "update_image", "group_id": group_id, "encoded_b64_image": encoded_b64_image}
+        self.send_message_dict(message)
 
     def create_group(self, group_members_list):
-        encoded_list = json.dumps(group_members_list)
-        full_message = "group:create:" + encoded_list
-
-        self.send_str(full_message)
+        json_group_members_list = json.dumps(group_members_list)
+        message = {"message_type": "group",
+                   "action": "create", "group_members_list": json_group_members_list}
+        self.send_message_dict(message)
 
     def send_calling_user(self, user_that_is_called):
-        data = f"call:calling:{user_that_is_called}"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "calling", "calling_to": user_that_is_called}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def stop_ringing_to_group_or_user(self):
-        data = f"call:calling:stop!"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
-
+            message = {"message_type": "call", "call_action_type": "change_calling_status",
+                       "action": "stop!"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_join_call_of_group_id(self, group_id):
-        data = f"call:join:{group_id}"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "join_call", "group_id": group_id}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_accept_call_with(self, accepted_caller):
-        data = f"call:accepted:{accepted_caller}"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "accepted_call", "accepted_caller": accepted_caller}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_reject_call_with(self, rejected_caller):
-        data = f"call:rejected:{rejected_caller}"
         try:
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "rejected_call", "rejected_caller": rejected_caller}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def toggle_mute_for_myself(self):
-        data = f"call:mute:myself"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "mute_myself"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def toggle_deafen_for_myself(self):
-        data = f"call:deafen:myself"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "deafen_myself"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
-
     def send_login_info(self, username, password):
-        format = "login"
-        message = {"format": format,
-                   "username": username,
-                   "password": password
-                   }
-        encoded_message = json.dumps(message)
 
-
-        # Convert the length of the data to a string
-        self.send_str(encoded_message)
+        message = {"message_type": "login", "username": username,
+                   "password": password}
+        self.send_message_dict(message)
 
     def send_sign_up_info(self, username, password, email):
-        format = "sign up"
-        message = {"format": format,
-                   "username": username,
-                   "password": password,
-                   "email": email
-                   }
-        encoded_message = json.dumps(message)
-
-
-        self.send_str(encoded_message)
+        message_format = "sign up"
+        message = {"message_type": message_format, "username": username,
+                   "password": password, "email": email}
+        self.send_message_dict(message)
 
     def send_security_token(self, security_token):
-        format = "security token"
-        message = {"format": format,
-                   "security_token": security_token,
-                   }
-        encoded_message = json.dumps(message)
-        self.send_str(encoded_message)
+        message_format = "security_token"
+        message = {"message_type": message_format, "security_token": security_token}
+        self.send_message_dict(message)
 
     def send_username_and_email_froget_password(self, username, password, email):
-        format = "forget password"
-        message = {"format": format,
-                   "username": username,
-                   "password": password,
-                   "email": email
-                   }
-        encoded_message = json.dumps(message)
-
-        self.send_str(encoded_message)
+        message_format = "forget password"
+        message = {"message_type": message_format, "username": username,
+                   "email": email}
+        self.send_message_dict(message)
 
     def send_message(self, sender, receiver, content, type, file_name):
         if isinstance(content, bytes):
             # If content is bytes, encode it as a Base64 string
             content = base64.b64encode(content).decode('utf-8')
-        message = {"sender": sender,
+        message_format = "add_message"
+        message = {"message_type": message_format, "sender": sender,
                    "receiver": receiver,
                    "content": content,
                    "type": type,
                    "file_name": file_name
-
                    }
-        encoded_message = json.dumps(message)
-        full_message = "add_message:" + encoded_message
-
-        self.send_str(full_message)
+        self.send_message_dict(message)
 
     def send_profile_pic(self, profile_pic):
         if isinstance(profile_pic, bytes):
@@ -442,21 +427,19 @@ class client_net:
         elif profile_pic is None:
             str_profile_pic = "None"
             content = str_profile_pic
-
-        full_message = "update_profile_pic:" + content
-
-        self.send_str(full_message)
+        message_format = "update_profile_pic"
+        message = {"message_type": message_format, "b64_encoded_profile_pic": content
+                   }
+        self.send_message_dict(message)
 
     def send_vc_data(self, vc_data):
         try:
             full_message = vc_data
             compressed_message = zlib.compress(full_message)
-
-            # Add a specific sequence of bytes at the beginning
-            sequence = br'\vc_data'  # Use raw string to treat backslash as a literal character
-            full_message = sequence + compressed_message
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message_format = "vc_data"
+            message = {"message_type": message_format, "compressed_vc_data": compressed_message
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error in send vc data is: {e}")
 
@@ -464,12 +447,11 @@ class client_net:
         try:
             full_message = share_screen_data
             compressed_message = zlib.compress(full_message)
-            shape_of_frame_bytes = b":" + struct.pack('III', *shape_of_frame)
-            # Add a specific sequence of bytes at the beginning
-            sequence = br'\share_screen_data'  # Use raw string to treat backslash as a literal character
-            full_message = sequence + compressed_message + shape_of_frame_bytes
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message_format = "share_screen_data"
+            message = {"message_type": message_format, "compressed_share_screen_data": compressed_message,
+                       "shape_of_frame": shape_of_frame
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error is in send share screen data: {e}")
 
@@ -477,75 +459,76 @@ class client_net:
         try:
             full_message = share_camera_data
             compressed_message = zlib.compress(full_message)
-            shape_of_frame_bytes = b":" + struct.pack('III', *shape_of_frame)
-            # Add a specific sequence of bytes at the beginning
-            sequence = br'\share_camera_data'  # Use raw string to treat backslash as a literal character
-            full_message = sequence + compressed_message + shape_of_frame_bytes
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message_format = "share_camera_data"
+            message = {"message_type": message_format, "compressed_share_camera_data": compressed_message,
+                       "shape_of_frame": shape_of_frame
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error is send share camera data: {e}")
 
     def send_friend_request(self, username, friend_username):
-        data = f"friend_request:{username}:{friend_username}"
         try:
             # Convert the length of the data to a string
-            self.send_str(data)
-
+            message = {"message_type": "friend_request", "username_for_request": friend_username
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_remove_friend(self, friend_username):
-        data = f"friend_remove:{friend_username}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "friend_remove", "username_to_remove": friend_username
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def block_user(self, user_to_block):
-        data = f"block:{user_to_block}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "block", "user_to_block": user_to_block
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def unblock_user(self, user_to_unblock):
-        data = f"unblock:{user_to_unblock}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "unblock", "user_to_unblock": user_to_unblock
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_friends_request_rejection(self, rejected_user):
-        data = f"friend_request_status:reject:{rejected_user}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "friend_request_status", "action": "reject", "rejected_user": rejected_user
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_friends_request_acception(self, accepted_user):
-        data = f"friend_request_status:accept:{accepted_user}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "friend_request_status", "action": "accept", "accepted_user": accepted_user
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def ask_for_security_token(self):
-        data = "security_token:needed"
         try:
-            self.send_str(data)
+            message = {"message_type": "security_token", "action": "needed"
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_verification_code(self, code):
-        data = f"sign_up:verification_code:{code}"
         try:
-            self.send_str(data)
+            message = {"message_type": "sign_up", "action": "verification_code", "code": code
+                       }
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
@@ -602,10 +585,7 @@ class client_net:
                     print("Received data is None")
                     return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
-                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence) or data.startswith(share_camera_sequence):
-                    return data
-                decoded_data = data.decode('utf-8')
-                return decoded_data
+                return pickle.loads(data)
             except Exception as e:
                 print(f"error in receiving data: {e}")
                 return data
@@ -629,7 +609,6 @@ class client_net:
             print(f"Error: {e}")
             return None  # Return None in case of an error
 
-
     def return_socket(self):
         return self.client
 
@@ -652,13 +631,11 @@ class client_net:
             print("did not expect message")
             return
 
-
         # Deserialize the received public key
         server_public_key = serialization.load_pem_public_key(
             received_serialized_server_public_key_bytes,
             backend=default_backend()
         )
-
 
         encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
 
@@ -691,7 +668,6 @@ class server_net:
         self.aes_key = None
         self.sending_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
-
 
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()
@@ -765,277 +741,297 @@ class server_net:
             # Release the lock
             self.sending_data_lock.release()
 
-    def send_messages_list(self, list):
+    def send_message_dict(self, message_dict):
+        try:
+            pickled_data = pickle.dumps(message_dict)
+            self.send_bytes(pickled_data)
+        except Exception as e:
+            print(e)
 
-        encoded_list = json.dumps(list)
-        full_message = "messages_list:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+    def send_messages_list(self, messages_list):
+        json_messages_list = json.dumps(messages_list)
+        message = {"message_type": "messages_list", "messages_list": json_messages_list
+                   }
+        self.send_message_dict(message)
 
     def send_new_message(self, message):
-        full_message = f"new_message:{message}"
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        message = {"message_type": "new_message", "new_message": message
+                   }
+        self.send_message_dict(message)
 
     def send_new_message_of_other_chat(self):
-        full_message = "new_message"
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        message = {"message_type": "new_message", "new_message": ""
+                   }
+        self.send_message_dict(message)
 
     def send_requests_list(self, list):
-        encoded_list = json.dumps(list)
-        full_message = "requests_list:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        json_requests_list = json.dumps(list)
+        message = {"message_type": "requests_list", "requests_list": json_requests_list
+                   }
+        self.send_message_dict(message)
 
     def sent_code_to_mail(self):
-        data = f"code:sent:email"
         try:
             # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "code", "action": "sent", "sent_to": "email"
+                       }
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
 
+    def sent_friend_request_status(self, status):
+        try:
+            # Convert the length of the data to a string
+            message = {"message_type": "friend_request", "friend_request_status": status}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_vc_data(self, vc_data, speaker):
         try:
             compressed_vc_data = zlib.compress(vc_data)
-            sequence = br'\vc_data'  # Use raw string to treat backslash as a literal character
-            encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = sequence + encoded_speaker + compressed_vc_data
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message = {"message_type": "vc_data", "compressed_vc_data": compressed_vc_data, "speaker": speaker
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error in send vc data is: {e}")
 
     def send_share_screen_data(self, share_screen_data, speaker, shape_of_frame_bytes):
         try:
             compressed_share_screen_data = zlib.compress(share_screen_data)
-            share_screen_sequence = br'\share_screen_data'
-            encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = share_screen_sequence + encoded_speaker + compressed_share_screen_data + b":" + shape_of_frame_bytes
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message = {"message_type": "share_screen_data", "compressed_share_screen_data":
+                compressed_share_screen_data, "speaker": speaker, "frame_shape": shape_of_frame_bytes
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error in send share screen data is: {e}")
 
     def send_share_camera_data(self, share_camera_data, speaker, shape_of_frame_bytes):
         try:
             compressed_share_screen_data = zlib.compress(share_camera_data)
-            share_camera_sequence = br'\share_camera_data'
-            encoded_speaker = (speaker + ":").encode("utf-8")
-            full_message = share_camera_sequence + encoded_speaker + compressed_share_screen_data + b":" + shape_of_frame_bytes
-            # Convert the length of the data to a string
-            self.send_bytes(full_message)
+            message = {"message_type": "share_camera_data",
+                       "compressed_share_camera_data": compressed_share_screen_data,
+                       "speaker": speaker, "frame_shape": shape_of_frame_bytes
+                       }
+            self.send_message_dict(message)
         except Exception as e:
             print(f"error in send camera data is: {e}")
 
-    def send_friends_list(self, list):
-        encoded_list = json.dumps(list)
-        full_message = "friends_list:" + encoded_list
+    def send_friends_list(self, friends_list):
+        json_friends_list = json.dumps(friends_list)
+        message = {"message_type": "friends_list",
+                   "friends_list": json_friends_list
+                   }
+        self.send_message_dict(message)
 
-        # Convert the length of the data to a string
-        self.send_str(full_message)
-
-    def send_blocked_list(self, list):
-        encoded_list = json.dumps(list)
-        full_message = "blocked_list:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+    def send_blocked_list(self, blocked_list):
+        json_blocked_list = json.dumps(blocked_list)
+        message = {"message_type": "blocked_list",
+                   "blocked_list": json_blocked_list
+                   }
+        self.send_message_dict(message)
 
     def send_online_users_list(self, online_users_list):
-        encoded_list = json.dumps(online_users_list)
-        full_message = "online_users:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        json_online_users_list = json.dumps(online_users_list)
+        message = {"message_type": "online_users_list",
+                   "online_users_list": json_online_users_list
+                   }
+        self.send_message_dict(message)
 
     def send_user_groups_list(self, group_list):
-        encoded_list = json.dumps(group_list)
-        full_message = "groups_list:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        json_group_list = json.dumps(group_list)
+        message = {"message_type": "groups_list",
+                   "groups_list": json_group_list
+                   }
+        self.send_message_dict(message)
 
     def send_user_chats_list(self, chats_list):
-        encoded_list = json.dumps(chats_list)
-        full_message = "chats_list:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        json_chats_list = json.dumps(chats_list)
+        message = {"message_type": "chats_list",
+                   "chats_list": json_chats_list
+                   }
+        self.send_message_dict(message)
 
     def send_user_that_calling(self, user_that_is_calling):
-        data = f"call:calling:{user_that_is_calling}"
         try:
-            # Convert the length of the data to a string
-            self.send_str(data)
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "calling", "user_that_called": user_that_is_calling}
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
 
+    def send_user_that_call_ended(self):
+        try:
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "ended"}
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
+
+    def send_user_that_call_accepted(self):
+        try:
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "accepted"}
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
+
+    def send_user_call_timeout(self):
+        try:
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "timeout"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_call_dict(self, call_dict):
-        encoded_object = json.dumps(call_dict)
-        full_message = "call:dict:" + encoded_object
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+        message = {"message_type": "call", "call_action_type": "call_dictionary",
+                   "action": "dict", "dict": call_dict}
+        self.send_message_dict(message)
 
     def send_call_list_of_dicts(self, call_dicts_list):
-        encoded_list = json.dumps(call_dicts_list)
-        full_message = "call:list_call_dicts:" + encoded_list
+        json_call_dicts_list = json.dumps(call_dicts_list)
+        message = {"message_type": "call", "call_action_type": "call_dictionary",
+                   "action": "list_call_dicts", "list_call_dicts": json_call_dicts_list}
+        self.send_message_dict(message)
 
-        # Convert the length of the data to a string
-        self.send_str(full_message)
-
-    def send_profile_list_of_dicts(self, call_dicts_list):
-        encoded_list = json.dumps(call_dicts_list)
-        full_message = "profile_dicts:" + encoded_list
-
-        # Convert the length of the data to a string
-        self.send_str(full_message)
+    def send_profile_list_of_dicts(self, profile_dicts_list):
+        json_profile_dicts_list = json.dumps(profile_dicts_list)
+        message = {"message_type": "profile_dicts_list", "profile_dicts_list": json_profile_dicts_list}
+        self.send_message_dict(message)
 
     def remove_call_to_user_of_id(self, call_id):
-        data = f"call:remove_id:{call_id}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "call", "call_action_type": "update_calls",
+                       "action": "remove_id", "removed_id": call_id}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_stream_of_user_closed(self, user):
-        data = f"call:stream:stopped:{user}"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "call", "call_action_type": "in_call_action",
+                       "action": "stream_stopped", "user_that_stopped": user}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_confirm_login(self):
-        data = f"login:confirm"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "login", "login_status": "confirm"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_invalid_login(self):
-        data = f"login:invalid"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "login", "login_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_already_logged_in(self):
-        data = f"login:already_logged_in"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "login", "login_status": "already_logged_in"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_confirm(self):
-        data = f"sign_up:confirm"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "sign_up", "sign_up_status": "confirm"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_invalid(self):
-        data = f"sign_up:invalid"
         try:
-            self.send_str(data)
-
+            message = {"message_type": "sign_up", "sign_up_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_code_invalid(self):
-        data = f"sign_up:code:invalid"
         try:
-            self.send_str(data)
+            message = {"message_type": "sign_up", "action": "code", 'code_status': "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_code_valid(self):
-        data = f"sign_up:code:valid"
         try:
-            self.send_str(data)
+            message = {"message_type": "sign_up", "action": "code", 'code_status': "valid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_all_data_received(self):
-        data = "data:receive:done"
         try:
-            self.send_str(data)
+            message = {"message_type": "data", "action": "receive", 'receive_status': "done"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_to_client(self, security_token):
-        data = f"security_token:{security_token}"
         try:
-            self.send_str(data)
+            message = {"message_type": "security_token", "security_token": security_token}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_valid(self):
-        data = f"security_token:valid"
         try:
-            self.send_str(data)
+            message = {"message_type": "security_token", "security_status": "valid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_invalid(self):
-        data = f"security_token:invalid"
         try:
-            self.send_str(data)
+            message = {"message_type": "security_token", "security_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_username_to_client_login_valid(self, username):
-        data = f"username:{username}:login:valid"
         try:
-            self.send_str(data)
+            message = {"message_type": "login_action", "username": username, "login_status": "valid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_username_to_client_login_invalid(self, username):
-        data = f"username:{username}:login:invalid"
         try:
-            self.send_str(data)
+            message = {"message_type": "login_action", "username": username, "login_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_info_valid(self):
-        data = f"forget_password:valid"
         try:
-            self.send_str(data)
+            message = {"message_type": "forget_password", "forget_password_status": "valid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_info_invalid(self):
-        data = f"forget_password:invalid"
         try:
-            self.send_str(data)
+            message = {"message_type": "forget_password", "forget_password_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_code_valid(self):
-        data = f"forget_password:code:valid"
         try:
-            self.send_str(data)
+            message = {"message_type": "forget_password", "action": "code", "code_status": "valid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_code_invalid(self):
-        data = f"forget_password:code:invalid"
         try:
-            self.send_str(data)
+            message = {"message_type": "forget_password", "action": "code", "code_status": "invalid"}
+            self.send_message_dict(message)
         except socket.error as e:
             print(e)
 
@@ -1068,7 +1064,6 @@ class server_net:
         except ValueError as e:
             print("Value error")
 
-
     def recv_str(self):
         try:
             # Receive the size as binary data and convert it to an integer
@@ -1085,11 +1080,7 @@ class server_net:
                     print("Received data is None")
                     return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
-                if data.startswith(vc_data_sequence) or data.startswith(share_screen_sequence):
-                    return data
-                else:
-                    decoded_data = data.decode('utf-8')
-                    return decoded_data
+                return pickle.loads(data)
             except Exception as e:
                 # If decoding as UTF-8 fails, treat it as binary data
                 print(f"error in receiving data: {e}")
@@ -1102,17 +1093,6 @@ class server_net:
             data = "error:disconnect"
             self.send_str(data)
             return None
-            # try:
-            #     while True:
-            #         discarded_data = self.server.recv(4096)
-            #         if not discarded_data:
-            #             break  # No more data to receive
-            #     return 1
-            # except socket.error as e:
-            #     self.logger.error(f"Error while clearing socket buffer: {e}")
-            #
-            #     return None  # Return None to indicate failure due to unexpected data
-
 
     def recv_bytes(self):
         try:
@@ -1129,7 +1109,6 @@ class server_net:
         except (socket.error, ValueError) as e:
             print(f"Error: {e}")
             return None  # Return None in case of an error
-
 
     def return_socket(self):
         return self.server
@@ -1170,7 +1149,5 @@ class server_net:
                 self.aes_key = aes_key
             except Exception as e:
                 print(e)
-
-
         else:
             print("Error receiving the symmetric key.")

@@ -149,118 +149,84 @@ def thread_recv_messages():
     temp_count = 0
     while Flag_recv_messages:
         data = n.recv_str()
-        if is_string(data):
-            if data.startswith("data"):
-                action = data.split(":")[1]
-                if action == "receive":
-                    status = data.split(":")[2]
-                    if status == "done":
-                        QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
-            if data.startswith("profile_dicts:"):
-                split_data = data.split(":", 1)
-                list_of_profile_dicts = json.loads(split_data[1])
-                main_page.list_user_profile_dicts = list_of_profile_dicts
-                QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
-                print("got list of profile dictionaries")
-            if data.startswith("error"):
-                parts = data.split(":")
-                if parts[1] == "disconnect":
-                    print(f"lost connection with the server")
-                    QMetaObject.invokeMethod(main_page, "disconnect_signal", Qt.QueuedConnection)
-            if data == "new_message":
-                QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
-                print("got new message")
-            if data.startswith("security_token:"):
-                security_token = data.split(":")[1]
-                save_token(security_token)
-            if data.startswith("messages_list:"):
-                try:
-                    # list messages is a list of dicts where each dict is a message
-                    temp = data.split("messages_list:", 1)[1]
-                    main_page.list_messages = json.loads(temp)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    print("Updated the messages list")
-                except Exception as e:
-                    print(f"error in messages_list {e}")
-            if data.startswith("groups_list:"):
-                try:
-                    temp = data.split("groups_list:", 1)[1]
-                    main_page.groups_list = json.loads(temp)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
-                    print("Updated the Groups list")
-                except Exception as e:
-                    print(f"error in groups_list {e}")
-            if data.startswith("chats_list:"):
-                try:
-                    temp = data.split("chats_list:", 1)[1]
-                    main_page.chats_list = json.loads(temp)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    print("Updated the chats list")
-                    print(f"chats list is: {main_page.chats_list}")
-                except Exception as e:
-                    print(f"error in chats_list {e}")
-            if data.startswith('list_status:'):
-                print(f"got ({data}) from server")
-            if data.startswith("friend_request:"):
-                print(f"got ({data}) from server")
-                parts = data.split(":")
-                status = parts[1]
-                if status == "not exist":
-                    main_page.friends_box.friend_not_found()
-                elif status == "already friends":
-                    main_page.friends_box.request_was_friend()
-                elif status == "worked":
-                    main_page.friends_box.request_was_sent()
-                elif status == "active":
-                    main_page.friends_box.request_is_pending()
-            if data.startswith("requests_list:"):
-                try:
-                    request_list = data.split("requests_list:", 1)[1]
-                    main_page.request_list = json.loads(request_list)
-                    QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                    print("Updated the requests list")
-                except Exception as e:
-                    print(f"error in requests_list {e}")
-            if data.startswith("blocked_list:"):
-                try:
-                    blocked_list = data.split("blocked_list:", 1)[1]
-                    main_page.blocked_list = json.loads(blocked_list)
-                    QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                    print("Updated the requests list")
-                except Exception as e:
-                    print(f"error in requests_list {e}")
-            if data.startswith("online_users"):
-                try:
-                    online_users_list = data.split("online_users:", 1)[1]
-                    online_users_list = json.loads(online_users_list)
-                    main_page.online_users_list = online_users_list
-                    QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    print(f"Got online users list: {online_users_list}")
-                except Exception as e:
-                    print(f"error in online_users error:{e}")
-            if data.startswith("friends_list:"):
-                try:
-                    friends_list = data.split("friends_list:", 1)[1]
-                    main_page.friends_list = json.loads(friends_list)
-                    QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    print(f"Got friends list: {main_page.friends_list}")
-                    print("Updated friends_list list")
-                except Exception as e:
-                    print(f"error in got friends_list:{e}")
-            if data.startswith("call"):
-                parts = data.split(':')
-                action = parts[1]
+        message_type = data.get("message_type")
+        if message_type == "messages_list":
+            message_list = json.loads(data.get("messages_list"))
+            main_page.list_messages = message_list
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            print("Updated the messages list")
+        if message_type == "new_message":
+            new_message = data.get("new_message")
+            QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
+            print("got new message")
+        if message_type == "requests_list":
+            requests_list = json.loads(data.get("requests_list"))
+            main_page.request_list = requests_list
+            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+            print("Updated the requests list")
+        if message_type == "vc_data":
+            compressed_vc_data = data.get("compressed_vc_data")
+            speaker = data.get("speaker")
+            vc_data = zlib.decompress(compressed_vc_data)
+            vc_data_queue.put(vc_data)
+        if message_type == "share_screen_data":
+            compressed_share_screen_data = data.get("compressed_share_screen_data")
+            speaker = data.get("speaker")
+            frame_shape = data.get("frame_shape")
+            share_screen_data = zlib.decompress(compressed_share_screen_data)
+            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
+            main_page.update_stream_screen_frame(decompressed_frame)
+        if message_type == "share_camera_data":
+            compressed_share_camera_data = data.get("compressed_share_camera_data")
+            speaker = data.get("speaker")
+            frame_shape = data.get("frame_shape")
+            share_screen_data = zlib.decompress(compressed_share_camera_data)
+            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
+            main_page.update_stream_screen_frame(decompressed_frame)
+        if message_type == "friends_list":
+            json_friends_list = data.get("friends_list")
+            print(json_friends_list)
+            print(type(json_friends_list))
+            friends_list = json.loads(json_friends_list)
+            main_page.friends_list = friends_list
+            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            print(f"Got friends list: {main_page.friends_list}")
+            print("Updated friends_list list")
+        if message_type == "online_users_list":
+            online_users_list = json.loads(data.get("online_users_list"))
+            main_page.online_users_list = online_users_list
+            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            print(f"Got online users list: {online_users_list}")
+        if message_type == "blocked_list":
+            blocked_list = json.loads(data.get("blocked_list"))
+            main_page.blocked_list = blocked_list
+            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+            print("Updated the requests list")
+        if message_type == "groups_list":
+            groups_list = json.loads(data.get("groups_list"))
+            main_page.groups_list = groups_list
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
+            print("Updated the Groups list")
+        if message_type == "chats_list":
+            chats_list = json.loads(data.get("chats_list"))
+            main_page.chats_list = chats_list
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            print("Updated the chats list")
+            print(f"chats list is: {main_page.chats_list}")
+        if message_type == "call":
+            call_action_type = data.get("call_action_type")
+            if call_action_type == "in_call_action":
+                action = data.get("action")
                 if action == "calling":
+                    user_that_called = data.get("user_that_called")
                     if main_page.is_in_a_call or main_page.is_calling or main_page.is_getting_called:
                         print(f"User got a call but he is busy")
                     else:
                         try:
-                            getting_called_by = parts[2]
+                            getting_called_by = user_that_called
                             print(f"User is called by {getting_called_by}")
                             main_page.is_getting_called = True
                             main_page.getting_called_by = getting_called_by
@@ -296,10 +262,13 @@ def thread_recv_messages():
                     send_vc_thread.join()
                     recv_vc_data.join()
                     QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                if action == "stream_stopped":
+                    user_that_stopped_stream = data.get("user_that_stopped")
+            if call_action_type == "call_dictionary":
+                action = data.get("action")
                 if action == "dict":
-                    second_colon_index = data.find(':', data.find(':') + 1)
-                    json_str = data[second_colon_index + 1:].strip()
-                    call_dict = json.loads(json_str)
+                    call_dictionary = data.get("dict")
+                    call_dict = call_dictionary
                     if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
                         main_page.update_call_dict_by_id(call_dict)
                         if main_page.is_watching_screen:
@@ -313,37 +282,42 @@ def thread_recv_messages():
                                                                  Qt.QueuedConnection)
                     else:
                         main_page.call_dicts.append(call_dict)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                    print("got call dict from server")
-                    print(call_dict)
                 if action == "list_call_dicts":
-                    second_colon_index = data.find(':', data.find(':') + 1)
-                    list_of_call_dicts = json.loads(data[second_colon_index + 1:].strip())
+                    list_call_dicts = json.loads(data.get("list_call_dicts"))
+                    list_of_call_dicts = list_call_dicts
                     main_page.call_dicts = list_of_call_dicts
                     print(f"got list of call dicts: {list_of_call_dicts}")
+            if call_action_type == "update_calls":
+                action = data.get("action")
                 if action == "remove_id":
-                    call_id_to_remove = parts[2]
-                    main_page.remove_call_dict_by_id(call_id_to_remove)
-        else:
-            try:
-                if data.startswith(vc_data_sequence):
-                    speaker, compressed_vc_data = return_vc_bytes_parameters(data)
-                    vc_data = zlib.decompress(compressed_vc_data)
-                    vc_data_queue.put(vc_data)
-                elif data.startswith(share_screen_sequence):
-                    streamer, compressed_share_screen_data, frame_shape_bytes = return_share_screen_bytes_parameters(data)
-                    frame_shape = struct.unpack('III', frame_shape_bytes)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-                    main_page.update_stream_screen_frame(decompressed_frame)
-                elif data.startswith(share_camera_sequence):
-                    streamer, compressed_share_camera_data, frame_shape_bytes = return_share_camera_bytes_parameters(data)
-                    frame_shape = struct.unpack('III', frame_shape_bytes)
-                    share_screen_data = zlib.decompress(compressed_share_camera_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-                    main_page.update_stream_screen_frame(decompressed_frame)
-            except Exception as e:
-                print(f"error in getting byte data:{e}")
+                    id_to_remove = data.get("removed_id")
+                    main_page.remove_call_dict_by_id(id_to_remove)
+        if message_type == "profile_dicts_list":
+            profile_dicts_list = json.loads(data.get("profile_dicts_list"))
+            main_page.list_user_profile_dicts = profile_dicts_list
+            QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
+            print("got list of profile dictionaries")
+        if message_type == "data":
+            action = data.get("action")
+            if action == "receive":
+                receive_status = data.get("receive_status")
+                if receive_status == "done":
+                    QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
+        if message_type == "security_token":
+            security_token = data.get("security_token")
+            save_token(security_token)
+        if message_type == "friend_request":
+            status = data.get("friend_request_status")
+            if status == "not exist":
+                main_page.friends_box.friend_not_found()
+            elif status == "already friends":
+                main_page.friends_box.request_was_friend()
+            elif status == "worked":
+                main_page.friends_box.request_was_sent()
+            elif status == "active":
+                main_page.friends_box.request_is_pending()
 
 
 
@@ -1748,9 +1722,10 @@ class Login_page(QWidget):
         password = self.password.text()
         n.send_login_info(username, password)
         data = n.recv_str()
-        if data.startswith("login"):
-            result = data.split(":")[1]
-            if result == "confirm":
+        message_type = data.get("message_type")
+        if message_type == "login":
+            login_status = data.get("login_status")
+            if login_status == "confirm":
                 print("logged in successfully")
                 self.hide()
 
@@ -1764,7 +1739,7 @@ class Login_page(QWidget):
                 threading.Thread(target=thread_recv_messages, args=()).start()
                 splash_page = SplashScreen()
                 splash_page.showMaximized()
-            elif data == "already_logged_in":
+            elif login_status == "already_logged_in":
                 print("User logged in from another device")
                 self.user_is_logged_in.show()
             else:
