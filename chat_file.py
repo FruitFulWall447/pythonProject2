@@ -287,57 +287,6 @@ def calculate_image_size_in_mb(image_bytes):
         return None
 
 
-def make_circular_image1(image_path_or_bytes):
-    """Converts an image to a circular image.
-
-    Args:
-        image_path_or_bytes (str or bytes): Path to the image file or image data as bytes.
-
-    Returns:
-        bytes: The circular image as bytes.
-    """
-    try:
-        # Load the image using Pillow
-        if isinstance(image_path_or_bytes, str):
-            with open(image_path_or_bytes, 'rb') as f:
-                image_data = f.read()
-        else:
-            image_data = image_path_or_bytes
-
-        # Determine the file format from the provided bytes
-        with BytesIO(image_data) as image_buffer:
-            image = Image.open(image_buffer)
-
-            # Convert the image to RGBA mode (if not already)
-            if image.mode != 'RGBA':
-                image = image.convert('RGBA')
-
-            # Determine the maximum circular area based on image dimensions
-            width, height = image.size
-            max_radius = min(width // 2, height // 2)
-
-            # Create a mask with a transparent circle
-            mask = Image.new('L', (width, height), 0)  # Create a black mask
-            draw = ImageDraw.Draw(mask)
-            draw.ellipse(((width - max_radius * 2) // 2, (height - max_radius * 2) // 2,
-                        (width + max_radius * 2) // 2, (height + max_radius * 2) // 2), fill=255)
-
-            # Apply the mask to the image
-            circular_image = Image.new('RGBA', (width, height), (255, 255, 255, 0))
-            circular_image.paste(image, mask=mask)
-
-            # Convert the circular image to bytes
-            output_buffer = BytesIO()
-            circular_image.save(output_buffer, format='PNG')  # Save as PNG format
-            circular_image_bytes = output_buffer.getvalue()
-
-        return circular_image_bytes
-
-    except Exception as e:
-        print(f"Error converting image: {e}")
-        return None
-
-
 def make_circular_image(image_bytes):
     """Converts an image to a circular image with the same width and height.
 
@@ -1416,8 +1365,7 @@ class ChatBox(QWidget):
                 set_icon_from_bytes_to_label(button, profile_pic)
             else:
                 regular_icon_bytes = file_to_bytes(regular_icon_path)
-                circular_image = make_circular_image(regular_icon_bytes)
-                set_icon_from_bytes_to_label(button, circular_image)
+                set_icon_from_bytes_to_label(button, profile_pic)
         except Exception as e:
             print(f"error in setting image to profile button {e}")
         status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
@@ -3530,8 +3478,7 @@ class SettingsBox(QWidget):
                     icon_path = "discord_app_assets/regular_profile.png"
                     set_icon_from_path_to_label(self.profile_image_label, icon_path)
                 else:
-                    circular_pic_bytes = make_circular_image(user_image)
-                    set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
+                    set_icon_from_bytes_to_label(self.profile_image_label, user_image)
                 self.profile_image_label.move(profile_image_x, profile_image_y)
 
                 label_name_next_to_image_x, label_name_next_to_image_y = (950, 240)
@@ -3676,8 +3623,7 @@ class SettingsBox(QWidget):
                         icon_path = "discord_app_assets/regular_profile.png"
                         set_icon_from_path_to_label(self.profile_image_label, icon_path)
                     else:
-                        circular_pic_bytes = make_circular_image(user_image)
-                        set_icon_from_bytes_to_label(self.profile_image_label, circular_pic_bytes)
+                        set_icon_from_bytes_to_label(self.profile_image_label, user_image)
                 except Exception as e:
                     print(f"error in putting profile image on label {e}")
                 self.profile_image_label.move(profile_image_x, profile_image_y)
