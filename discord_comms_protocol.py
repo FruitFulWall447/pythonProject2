@@ -277,7 +277,7 @@ class client_net:
         try:
             stream_type = "ScreenStream"
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type,
-                       "action": "close", "user_to_watch": user}
+                       "action": "watch", "user_to_watch": user}
             self.send_message_dict(message)
         except socket.error as e:
             print(e)

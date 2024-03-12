@@ -255,7 +255,7 @@ class Call:
         for stream in self.video_streams_list:
             if stream.streamer == streamer and stream.stream_type == stream_type:
                 stream.add_spectator(spectator)
-                self.logger.info(f"{spectator} started watching stream of id {self.call_id}")
+                self.logger.info(f"{spectator} started watching stream of id {self.call_id} and type {stream.stream_type}")
                 return
         self.logger.error(f"couldn't add spectator to stream")
 
