@@ -439,7 +439,7 @@ class Communication:
     def send_new_profile_of_user(self, user, b64_encoded_profile_pic, user_of_profile):
         net = self.get_net_by_name(user)
         if net is not None:
-            profile_dict = create_profile_pic_dict(user, b64_encoded_profile_pic)
+            profile_dict = create_profile_pic_dict(user_of_profile, b64_encoded_profile_pic)
             net.send_profile_dict_of_user(profile_dict, user_of_profile)
             self.logger.info(f"Sent list new profile dict of user {user_of_profile} to user {user}")
 
