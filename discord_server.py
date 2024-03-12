@@ -300,7 +300,7 @@ def thread_recv_messages(n, addr, username):
             except Exception as e:
                 print(e)
         else:
-            logger.debug(f"waiting for data...for {User}")
+            #logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
             if data is None:
                 logger.info(f"lost connection with {User}")
@@ -406,18 +406,21 @@ def thread_recv_messages(n, addr, username):
                     logger.info(f"Sent security token to - {User} , {user_security_token}")
             if message_type == "vc_data":
                 compressed_vc_data = data.get("compressed_vc_data")
-                vc_data = zlib.decompress(compressed_vc_data)
-                Communication.send_vc_data_to_call(vc_data, User)
+                if compressed_vc_data is not None:
+                    vc_data = zlib.decompress(compressed_vc_data)
+                    Communication.send_vc_data_to_call(vc_data, User)
             if message_type == "share_screen_data":
                 compressed_share_screen_data = data.get("compressed_share_screen_data")
                 shape_of_frame = data.get("shape_of_frame")
-                share_screen_data = zlib.decompress(compressed_share_screen_data)
-                Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
+                if compressed_share_screen_data is not None:
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
             if message_type == "share_camera_data":
                 compressed_share_camera_data = data.get("compressed_share_screen_data")
                 shape_of_frame = data.get("shape_of_frame")
-                share_screen_data = zlib.decompress(compressed_share_camera_data)
-                Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
+                if compressed_share_camera_data is not None:
+                    share_screen_data = zlib.decompress(compressed_share_camera_data)
+                    Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
             if message_type == "friend_request":
                 username_for_request = data.get("username_for_request")
                 user = User
