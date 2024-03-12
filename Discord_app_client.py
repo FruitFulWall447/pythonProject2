@@ -773,10 +773,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
-    def update_profile_dict_of_user_wrapper(self, args):
-        name, new_profile_dict = args
-        self.update_profile_dict_of_user(name, new_profile_dict)
-
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)
         self.media_player.setVolume(value)
@@ -893,7 +889,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 user_dict["circular_image_bytes"] = circular_image
                 # Exit the loop since the update is done
                 print(f"update_circular_photo_of_user of {username}")
-                print(circular_image)
                 break
         # After updating, call the method to notify any listeners about the update
         self.updated_chat()
