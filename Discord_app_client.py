@@ -268,6 +268,7 @@ def thread_recv_messages():
                 action = data.get("action")
                 if action == "dict":
                     call_dictionary = data.get("dict")
+                    print(call_dictionary)
                     call_dict = call_dictionary
                     if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
                         main_page.update_call_dict_by_id(call_dict)
