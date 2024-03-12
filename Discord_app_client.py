@@ -520,28 +520,27 @@ class SplashScreen(QWidget):
                     security_token = get_saved_token()
                     n.send_security_token(security_token)
                     data = n.recv_str()
-                    if data.startswith("security_token"):
-                        parts = data.split(":")
-                        server_answer = parts[1]
+                    message_type = data.get("message_type")
+                    if message_type == "security_token":
+                        server_answer = data.get("security_status")
                         if server_answer == "valid":
                             data = n.recv_str()
-                            if data.startswith("username"):
+                            message_type = data.get("message_type")
+                            if message_type == "login_action":
                                 parts = data.split(":")
-                                username, action, action_state = parts[1], parts[2], parts[3]
-                                username = data.split(":")[1]
-                                if action == "login":
-                                    if action_state == "valid":
-                                        self.loading_timer.stop()
-                                        print("logged in successfully")
-                                        self.hide()
-                                        main_page.username = username
-                                        main_page.update_values()
-                                        main_page.showMaximized()
-                                        is_logged_in = True
-                                        threading.Thread(target=thread_recv_messages, args=()).start()
-                                        self.close()
-                                    elif action_state == "invalid":
-                                        print("username already logged in")
+                                username, action_state = data.get("username"), data.get("login_status")
+                                if action_state == "valid":
+                                    self.loading_timer.stop()
+                                    print("logged in successfully")
+                                    self.hide()
+                                    main_page.username = username
+                                    main_page.update_values()
+                                    main_page.showMaximized()
+                                    is_logged_in = True
+                                    threading.Thread(target=thread_recv_messages, args=()).start()
+                                    self.close()
+                                elif action_state == "invalid":
+                                    print("username already logged in")
                         elif server_answer == "invalid":
                             print("security token isn't valid")
                             self.loading_timer.stop()
@@ -1549,15 +1548,14 @@ class Sign_up_page(QWidget):
         if is_info_valid:
             n.send_sign_up_info(username, password, email)
             data = n.recv_str()
-            if data.startswith("code:"):
-                parts = data.split(":")
-                action, destination = parts[1], parts[2]
+            message_type = data.get("message_type")
+            if message_type == "code":
+                action, destination = data.get("action"), data.get("sent_to")
                 if action == "sent" and destination == "email":
                     verification_code_page.showMaximized()
                     self.hide()
-            elif data.startswith("sign_up"):
-                parts = data.split(":")
-                result = parts[1]
+            elif message_type == "sign_up":
+                result = data.get("sign_up_status")
                 if result == "invalid":
                     self.username_already_used.show()
 
@@ -1938,9 +1936,9 @@ class Forget_password_page(QWidget):
             if is_email_valid(email) and len(username) > 0:
                 n.send_username_and_email_froget_password(username, None, email)
                 data = n.recv_str()
-                if data.startswith("forget_password"):
-                    parts = data.split(":")
-                    result = parts[1]
+                message_type = data.get("message_type")
+                if message_type == "forget_password":
+                    result = data.get("forget_password_status")
                     if result == "valid":
                         print("Server send code to email")
                         self.hide()
@@ -2107,20 +2105,20 @@ class Verification_code_page(QWidget):
                 n.send_sign_up_verification_code(code)
                 print("Sent verification code to server")
                 data = n.recv_str()
-                if data.startswith("sign_up"):
-                    kind = data.split(":")[1]
+                message_type = data.get("message_type")
+                if message_type == "sign_up":
+                    kind = data.get("action")
                     if kind == "code":
-                        result = data.split(":")[2]
+                        result = data.get("code_status")
                         if result == "valid":
                             print("Server got the code")
                             self.successfully_signed_up.show()
                             self.image_button.show()
                         elif result == "invalid":
                             pass
-                elif data.startswith("forget_password"):
-                    parts = data.split(":")
-                    kind = parts[1]
-                    result = parts[2]
+                elif message_type == "forget_password":
+                    kind = data.get("action")
+                    result = data.get("code_status")
                     if kind == "code":
                         if result == "valid":
                             self.hide()
