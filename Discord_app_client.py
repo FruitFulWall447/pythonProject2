@@ -846,7 +846,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     profile_pic["encoded_image_bytes"] = base64.b64encode(new_image).decode()
                 else:
                     profile_pic["encoded_image_bytes"] = None
-                print("updated the profile dictionary list")
+                print(f"updated the profile pic in dictionary list of username {name}")
 
     def get_profile_pic_by_username(self, username):
         for profile_dict in self.list_user_profile_dicts:

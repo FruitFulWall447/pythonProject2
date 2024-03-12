@@ -1410,11 +1410,10 @@ class ChatBox(QWidget):
         elif name in dict.get("muted"):
             set_button_icon(status_button, muted_icon, width, height)
 
-        profile_pic = self.parent.get_profile_pic_by_username(name)
+        profile_pic = self.parent.get_circular_image_bytes_by_name(name)
         try:
             if profile_pic is not None:
-                circular_image = make_circular_image(profile_pic)
-                set_icon_from_bytes_to_label(button, circular_image)
+                set_icon_from_bytes_to_label(button, profile_pic)
             else:
                 regular_icon_bytes = file_to_bytes(regular_icon_path)
                 circular_image = make_circular_image(regular_icon_bytes)
@@ -3526,7 +3525,7 @@ class SettingsBox(QWidget):
                 width, height = (120, 120)
                 self.profile_image_label = create_custom_circular_label(width, height, self)
                 profile_image_x, profile_image_y = (800, 200)
-                user_image = self.parent.get_profile_pic_by_username(self.parent.username)
+                user_image = self.parent.get_circular_image_bytes_by_name(self.parent.username)
                 if user_image is None:
                     icon_path = "discord_app_assets/regular_profile.png"
                     set_icon_from_path_to_label(self.profile_image_label, icon_path)
@@ -3671,7 +3670,7 @@ class SettingsBox(QWidget):
                 """)
 
                 profile_image_x, profile_image_y = (800, 200)
-                user_image = self.parent.get_profile_pic_by_username(self.parent.username)
+                user_image = self.parent.get_circular_image_bytes_by_name(self.parent.username)
                 try:
                     if user_image is None:
                         icon_path = "discord_app_assets/regular_profile.png"

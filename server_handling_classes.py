@@ -33,6 +33,7 @@ def relevant_users_for_user(user):
     total_groups_participants = []
     for group in user_groups:
         total_groups_participants = total_groups_participants + group.get("group_members")
+    total_groups_participants.append(user)
     total_needed_profile_names = remove_duplicates(total_groups_participants + user_friends)
     return total_needed_profile_names
 
