@@ -21,6 +21,21 @@ share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
 
+def create_dictionary_with_message_type(message_type, keys, values):
+    # Ensure both lists have the same length
+    if len(keys) != len(values):
+        raise ValueError("Lists must have the same length")
+
+    # Add the message_type as the first key-value pair
+    keys.insert(0, 'message_type')
+    values.insert(0, message_type)
+
+    # Create the dictionary using a dictionary comprehension
+    result = {keys[i]: values[i] for i in range(len(keys))}
+
+    return result
+
+
 def generate_secure_symmetric_key():
     symmetric_key = secrets.token_bytes(32)
     return symmetric_key
