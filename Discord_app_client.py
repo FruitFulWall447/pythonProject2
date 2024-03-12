@@ -857,7 +857,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         else:
             if circular_pic_bytes is None:
                 circular_image = make_circular_image(new_photo)
-                print("here")
             else:
                 circular_image = circular_pic_bytes
         # Iterate through the list of circular image dictionaries
