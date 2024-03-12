@@ -1827,7 +1827,7 @@ class ChatBox(QWidget):
         if id:
             chat_image = self.parent.get_circular_image_bytes_by_group_id(id)
         else:
-            chat_image = self.parent.get_profile_pic_by_username(chat_name)
+            chat_image = self.parent.get_circular_image_bytes_by_name(chat_name)
         if chat_image is None:
             icon_path = self.parent.regular_profile_image_path
             set_icon_from_path_to_label(profile_image_label, icon_path)
