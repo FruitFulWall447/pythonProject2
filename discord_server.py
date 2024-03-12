@@ -484,14 +484,8 @@ def thread_recv_messages(n, addr, username):
                     logger.info(f"Update group image of id: {group_id} was updated by {User}")
 
 
-
-
-
-
-
-
-
 Communication = Communication()
+
 
 def main():
     logger = logging.getLogger(__name__)
