@@ -856,12 +856,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updated_chat()
 
     def update_profile_dict_of_user(self, name, new_profile_dict):
+        print(new_profile_dict)
         index = 0
         for profile_dict in self.list_user_profile_dicts:
             if profile_dict.get("username") == name:
                 print("we got inside the if")
                 self.list_user_profile_dicts[index] = new_profile_dict
-                self.update_circular_pic_of_new_profile(name)
+                encoded_image = new_profile_dict.get("encoded_image_bytes")
+                self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
                 break
             index += 1
 
@@ -874,13 +876,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     profile_dict["encoded_image_bytes"] = None
                 print(f"updated the profile pic in dictionary list of username {name}")
                 self.update_circular_photo_of_user(name, new_image_bytes, circular_pic_bytes)
-                break
-
-    def update_circular_pic_of_new_profile(self, name):
-        for profile_dict in self.list_user_profile_dicts:
-            if profile_dict.get("username") == name:
-                encoded_image = profile_dict.get("encoded_image_bytes")
-                self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
                 break
 
     def update_circular_photo_of_user(self, username, new_photo, circular_pic_bytes=None):
@@ -899,7 +894,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 user_dict["circular_image_bytes"] = circular_image
                 # Exit the loop since the update is done
                 break
-        print(f"update_circular_photo_of_user of username")
+        print(f"update_circular_photo_of_user of {username}")
         # After updating, call the method to notify any listeners about the update
         self.updated_chat()
 
