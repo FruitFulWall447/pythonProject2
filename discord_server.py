@@ -416,7 +416,7 @@ def thread_recv_messages(n, addr, username):
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
                     Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
             if message_type == "share_camera_data":
-                compressed_share_camera_data = data.get("compressed_share_screen_data")
+                compressed_share_camera_data = data.get("compressed_share_camera_data")
                 shape_of_frame = data.get("shape_of_frame")
                 if compressed_share_camera_data is not None:
                     share_screen_data = zlib.decompress(compressed_share_camera_data)

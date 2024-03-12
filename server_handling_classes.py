@@ -726,8 +726,6 @@ class VideoStream:
                     net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
                 else:
                     net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
-                self.logger.info(f"sent share data to {name}")
-                # self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):
         if len(self.spectators) > 0:
