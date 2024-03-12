@@ -820,6 +820,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             }
             self.circular_images_dicts_list_of_users.append(circular_images_dict)
         self.updated_chat()
+        self.updated_settings_page()
 
     def caching_circular_images_of_groups(self):
         self.circular_images_dicts_list_of_groups = []
@@ -839,19 +840,26 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.circular_images_dicts_list_of_groups.append(circular_images_dict)
         self.updated_chat()
 
-    def update_profile_pic_dicts_list(self, name, new_image):
+    def update_profile_pic_dicts_list(self, name, new_image_bytes, circular_pic_bytes=None):
         for profile_pic in self.list_user_profile_dicts:
             if profile_pic.get("username") == name:
-                if new_image is not None:
-                    profile_pic["encoded_image_bytes"] = base64.b64encode(new_image).decode()
+                if new_image_bytes is not None:
+                    profile_pic["encoded_image_bytes"] = base64.b64encode(new_image_bytes).decode()
                 else:
                     profile_pic["encoded_image_bytes"] = None
                 print(f"updated the profile pic in dictionary list of username {name}")
-                self.update_circular_photo_of_user(name, new_image)
+                self.update_circular_photo_of_user(name, new_image_bytes, circular_pic_bytes)
                 break
 
-    def update_circular_photo_of_user(self, username, new_photo):
-        circular_image = make_circular_image(new_photo)
+    def update_circular_photo_of_user(self, username, new_photo, circular_pic_bytes=None):
+        if new_photo is None:
+            circular_image = None
+        else:
+            if circular_pic_bytes is None:
+                circular_image = make_circular_image(new_photo)
+                print("here")
+            else:
+                circular_image = circular_pic_bytes
         # Iterate through the list of circular image dictionaries
         for user_dict in self.circular_images_dicts_list_of_users:
             # Check if the username matches
