@@ -344,8 +344,6 @@ def thread_recv_messages(n, addr, username):
                         user_that_is_getting_called = data.get("calling_to")
                         logger.info(f"{User} calling {user_that_is_getting_called}")
                         Communication.create_ring(User, user_that_is_getting_called)
-                    if action == "stop!":
-                        Communication.cancel_ring_by_the_ringer(User)
                     if action == "accepted_call":
                         ringer = data.get("accepted_caller")
                         logger.info(f"{User} accepted {ringer} call")
