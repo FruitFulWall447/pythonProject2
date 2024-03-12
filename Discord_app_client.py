@@ -856,7 +856,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updated_chat()
 
     def update_profile_dict_of_user(self, name, new_profile_dict):
-        print(new_profile_dict)
         index = 0
         for profile_dict in self.list_user_profile_dicts:
             if profile_dict.get("username") == name:
@@ -893,8 +892,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Update the circular photo for the user
                 user_dict["circular_image_bytes"] = circular_image
                 # Exit the loop since the update is done
+                print(f"update_circular_photo_of_user of {username}")
+                print(circular_image)
                 break
-        print(f"update_circular_photo_of_user of {username}")
         # After updating, call the method to notify any listeners about the update
         self.updated_chat()
 
