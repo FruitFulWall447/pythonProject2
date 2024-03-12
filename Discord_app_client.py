@@ -25,11 +25,11 @@ from queue import Queue, Empty
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from server_handling_classes import create_profile_pic_dict
 
+email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex",
+                   "mail.ru",
+                   "tutanota", "icloud", "rackspace", "mailchimp",
 
-email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex", "mail.ru",
-                   "tutanota", "icloud", "rackspace","mailchimp",
-
-]
+                   ]
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
 
@@ -103,6 +103,7 @@ def is_email_valid(email):
 def is_string(variable):
     return isinstance(variable, str)
 
+
 Flag_recv_messages = True
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
@@ -113,7 +114,7 @@ def return_vc_bytes_parameters(vc_bytes):
     try:
         sequence_and_name = vc_bytes.split(b":")[0]
         encoded_name = sequence_and_name[len(vc_data_sequence):]
-        compressed_vc_data = vc_bytes[len(sequence_and_name)+1:]
+        compressed_vc_data = vc_bytes[len(sequence_and_name) + 1:]
         name_of_talker = encoded_name.decode("utf-8")
         return name_of_talker, compressed_vc_data
     except Exception as e:
@@ -125,7 +126,7 @@ def return_share_screen_bytes_parameters(share_screen_data):
         sequence_and_name = share_screen_data.split(b":")[0]
         frame_shape_bytes = share_screen_data.split(b":")[-1]
         encoded_name = sequence_and_name[len(share_screen_sequence):]
-        compressed_share_screen_data = share_screen_data[len(sequence_and_name)+1:]
+        compressed_share_screen_data = share_screen_data[len(sequence_and_name) + 1:]
         name_of_talker = encoded_name.decode("utf-8")
         return name_of_talker, compressed_share_screen_data, frame_shape_bytes
     except Exception as e:
@@ -137,7 +138,7 @@ def return_share_camera_bytes_parameters(share_camera_data):
         sequence_and_name = share_camera_data.split(b":")[0]
         frame_shape_bytes = share_camera_data.split(b":")[-1]
         encoded_name = sequence_and_name[len(share_camera_sequence):]
-        compressed_share_screen_data = share_camera_data[len(sequence_and_name)+1:]
+        compressed_share_screen_data = share_camera_data[len(sequence_and_name) + 1:]
         name_of_talker = encoded_name.decode("utf-8")
         return name_of_talker, compressed_share_screen_data, frame_shape_bytes
     except Exception as e:
@@ -274,7 +275,8 @@ def thread_recv_messages():
                             if main_page.username in call_dict.get("participants"):
                                 if main_page.watching_type == "ScreenStream":
                                     if main_page.watching_user not in call_dict.get("screen_streamers"):
-                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal", Qt.QueuedConnection)
+                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                                                                 Qt.QueuedConnection)
                                 else:
                                     if main_page.watching_user not in call_dict.get("camera_streamers"):
                                         QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
@@ -301,9 +303,7 @@ def thread_recv_messages():
         if message_type == "updated_profile_dict":
             profile_dict = json.loads(data.get("profile_dict"))
             name_of_profile_dict = data.get("username")
-            # QMetaObject.invokeMethod(main_page, "updating_profile_dict_signal", Qt.QueuedConnection,
-            #                          Q_ARG(str, name_of_profile_dict), Q_ARG(dict, profile_dict))
-            main_page.update_profile_dict_of_user(name_of_profile_dict, profile_dict)
+            main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
         if message_type == "data":
             action = data.get("action")
@@ -324,7 +324,6 @@ def thread_recv_messages():
                 main_page.friends_box.request_was_sent()
             elif status == "active":
                 main_page.friends_box.request_is_pending()
-
 
 
 flag_updates = True
@@ -451,6 +450,7 @@ def thread_send_share_camera_data():
 
 class SplashScreen(QWidget):
     stop_loading_signal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -470,15 +470,16 @@ class SplashScreen(QWidget):
         """)
         # Create logo label
         logo_label = QLabel(self)
-        logo_label.setPixmap(QPixmap('discord_app_assets/connectify_icon.png'))  # Replace with the actual path to your PNG file
+        logo_label.setPixmap(
+            QPixmap('discord_app_assets/connectify_icon.png'))  # Replace with the actual path to your PNG file
         logo_label.setAlignment(Qt.AlignCenter)
-        logo_label.move(1690//2, 300)
+        logo_label.move(1690 // 2, 300)
 
         # Create loading label
         loading_label = QLabel('Loading...', self)
         loading_label.setAlignment(Qt.AlignCenter)
         loading_label.setObjectName('loading_label')
-        loading_label.move(1690//2+55, 460)
+        loading_label.move(1690 // 2 + 55, 460)
 
         # Set up dot counter
         self.dot_count = 0
@@ -515,7 +516,7 @@ class SplashScreen(QWidget):
         # Increment elapsed time
         self.elapsed_time += 500  # Timer interval is 500 milliseconds
 
-        if self.elapsed_time >= wait_time_sec*1000:  # 5 seconds
+        if self.elapsed_time >= wait_time_sec * 1000:  # 5 seconds
             # Transition to the login page after 5 seconds
             if main_page.username == "":
                 if not are_token_saved():
@@ -553,6 +554,7 @@ class SplashScreen(QWidget):
                             login_page.showMaximized()
                             self.close()
 
+
 chat_clicked = True
 social_clicked = False
 setting_clicked = False
@@ -563,7 +565,7 @@ request_list = []
 is_logged_in = False
 
 
-class MainPage(QWidget): # main page doesnt know when chat is changed...
+class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
     updated_requests_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
@@ -576,7 +578,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     updated_settings_signal = pyqtSignal()
     caching_circular_images_of_users_signal = pyqtSignal()
     caching_circular_images_of_groups_signal = pyqtSignal()
-    updating_profile_dict_signal = pyqtSignal()
+    updating_profile_dict_signal = pyqtSignal(str, dict)
+
     def __init__(self, Netwrok):
         super().__init__()
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
@@ -703,7 +706,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.watching_type = None
         self.is_camera_shared = False
 
-
         self.chat_start_index_max = float('inf')
         self.current_chat_box_search = False
         self.temp_search_list = []
@@ -720,7 +722,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
         self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
         self.disconnect_signal.connect(self.quit_application)
-        self.updating_profile_dict_signal.connect(partial(self.update_profile_dict_of_user_wrapper, self))
+        self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -733,7 +735,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
         self.init_ui()
-
 
     def init_ui(self):
         global n
@@ -748,14 +749,16 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             ''')
             # Create an instance of ChatBox
             if chat_clicked:
-                self.chat_box = ChatBox(self.selected_chat, self.list_messages, self.friends_list, parent=self, Network=n)   # Set the parent widget
+                self.chat_box = ChatBox(self.selected_chat, self.list_messages, self.friends_list, parent=self,
+                                        Network=n)  # Set the parent widget
 
             buttons_layout = QHBoxLayout()
             self.main_layout = QVBoxLayout(self)
             self.main_layout.addSpacing(30)
             self.main_layout.addLayout(buttons_layout)
             self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                          requests_list=self.request_list, Network=n, username=self.username, parent=self)
+                                          requests_list=self.request_list, Network=n, username=self.username,
+                                          parent=self)
             self.friends_box.hide()
             self.settings_box = SettingsBox(parent=self)
             self.settings_box.hide()
@@ -853,10 +856,14 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.updated_chat()
 
     def update_profile_dict_of_user(self, name, new_profile_dict):
-        for index, profile_dict in enumerate(self.list_user_profile_dicts):
+        index = 0
+        for profile_dict in self.list_user_profile_dicts:
             if profile_dict.get("username") == name:
+                print("we got inside the if")
                 self.list_user_profile_dicts[index] = new_profile_dict
+                self.update_circular_pic_of_new_profile(name)
                 break
+            index += 1
 
     def update_profile_pic_dicts_list(self, name, new_image_bytes, circular_pic_bytes=None):
         for profile_dict in self.list_user_profile_dicts:
@@ -867,6 +874,13 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     profile_dict["encoded_image_bytes"] = None
                 print(f"updated the profile pic in dictionary list of username {name}")
                 self.update_circular_photo_of_user(name, new_image_bytes, circular_pic_bytes)
+                break
+
+    def update_circular_pic_of_new_profile(self, name):
+        for profile_dict in self.list_user_profile_dicts:
+            if profile_dict.get("username") == name:
+                encoded_image = profile_dict.get("encoded_image_bytes")
+                self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
                 break
 
     def update_circular_photo_of_user(self, username, new_photo, circular_pic_bytes=None):
@@ -885,7 +899,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 user_dict["circular_image_bytes"] = circular_image
                 # Exit the loop since the update is done
                 break
-
+        print(f"update_circular_photo_of_user of username")
         # After updating, call the method to notify any listeners about the update
         self.updated_chat()
 
@@ -1019,10 +1033,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
                         self.play_sound(join_sound)
                 elif len(updated_participants) < len(participants_before) and self.username in updated_participants:
-                    user_left_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/leave_call_sound_effect.mp3'))
+                    user_left_sound = QMediaContent(
+                        QUrl.fromLocalFile('discord_app_assets/leave_call_sound_effect.mp3'))
                     self.play_sound(user_left_sound)
         self.call_dicts.append(updated_call_dict)
-
 
     def reset_call_var(self):
         try:
@@ -1172,7 +1186,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             setting_clicked = False
             social_clicked = True
 
-
     def updated_requests(self):
         global social_clicked
         try:
@@ -1189,7 +1202,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 has_had_focus_of_search_bar = self.friends_box.search.hasFocus()
                 self.stacked_widget.removeWidget(self.friends_box)
                 self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                              requests_list=self.request_list, Network=n, username=self.username, parent=self)
+                                              requests_list=self.request_list, Network=n, username=self.username,
+                                              parent=self)
                 self.stacked_widget.insertWidget(2, self.friends_box)
 
                 if len(search_bar_text) > 0:
@@ -1225,9 +1239,11 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
                             formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                            message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username, str(formatted_time), "string", None)
+                            message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username,
+                                                               str(formatted_time), "string", None)
                             self.list_messages.insert(0, message_dict)
-                            n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string", None)
+                            n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string",
+                                           None)
                             print("Sent message to server")
                             self.chat_start_index = 0
                             self.updated_chat()
@@ -1240,7 +1256,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     # it into a UTF-8 string for transmission or storage.
                     compressed_byte_file = zlib.compress(self.file_to_send)
                     compressed_base64_file = base64.b64encode(compressed_byte_file).decode()
-                    #print(len(compressed_base64_image))
+                    # print(len(compressed_base64_image))
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
                     file_type = ""
@@ -1267,7 +1283,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
                     try:
-                        n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type, self.file_name)
+                        n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type,
+                                       self.file_name)
                     except Exception as e:
                         print(f"error in sending message")
                     self.file_to_send = None
@@ -1334,7 +1351,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 self.is_editing_push_to_talk_button = False
                 self.updated_settings_page()
 
-
     def wheelEvent(self, event):
         global chat_clicked
         # Handle the wheel event (scrolling)
@@ -1352,7 +1368,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 self.chat_start_index -= 1
                 self.updated_chat()
 
-            elif delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (self.chat_box_chats_index < 0): #or something
+            elif delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (
+                    self.chat_box_chats_index < 0):  # or something
                 # Scrolling up
 
                 self.chat_box_chats_index += 1
@@ -1365,7 +1382,8 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
                 mouse_pos = event.pos()
-                if delta > 0 and self.friends_box.is_mouse_on_friends_box(mouse_pos) and self.friends_box_index_y_start > self.friends_box.default_starting_y:
+                if delta > 0 and self.friends_box.is_mouse_on_friends_box(
+                        mouse_pos) and self.friends_box_index_y_start > self.friends_box.default_starting_y:
                     # Scrolling up
 
                     self.friends_box_index += 1
@@ -1399,7 +1417,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             search_bar_text = self.chat_box.find_contact_text_entry.text()
             try:
                 self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
-                                   parent=self, Network=n)
+                                        parent=self, Network=n)
             except Exception as e:
                 print(f"error in creating chat_box on updated_chat_func : {e}")
             if self.chat_box.messages_list is None:
@@ -1419,7 +1437,6 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
             print(f"error in updated chat {e}")
-
 
     def update_values(self):
         self.friends_box.username = self.username
@@ -1443,15 +1460,15 @@ class Sign_up_page(QWidget):
         self.init_ui()
         self.password_not_match_label = QLabel('Password does not match', self)
         self.password_not_match_label.setStyleSheet("color: red; font-size: 12px;")
-        self.password_not_match_label.move(1690//2+2, 413)
+        self.password_not_match_label.move(1690 // 2 + 2, 413)
         self.password_not_match_label.hide()
 
-        self.email_Required_field = self.create_label("Required field", (1690//2+25, 572))
-        self.username_Required_field = self.create_label("Required field", (1690//2+25, 332))
-        self.password_Required_field = self.create_label("Required field", (1690//2+25, 412))
-        self.confirm_password_Required_field = self.create_label("Required field", (1690//2+25, 492))
-        self.invalid_email = self.create_label("Invalid Email", (1690//2+25, 572))
-        self.password_too_short = self.create_label("Password too short", (1690//2+25, 413))
+        self.email_Required_field = self.create_label("Required field", (1690 // 2 + 25, 572))
+        self.username_Required_field = self.create_label("Required field", (1690 // 2 + 25, 332))
+        self.password_Required_field = self.create_label("Required field", (1690 // 2 + 25, 412))
+        self.confirm_password_Required_field = self.create_label("Required field", (1690 // 2 + 25, 492))
+        self.invalid_email = self.create_label("Invalid Email", (1690 // 2 + 25, 572))
+        self.password_too_short = self.create_label("Password too short", (1690 // 2 + 25, 413))
         self.username_already_used = self.create_label("Username is taken", (1690 // 2 + 25, 332))
         self.hide_every_error_label()
 
@@ -1491,7 +1508,7 @@ class Sign_up_page(QWidget):
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
         image_button.setIconSize(scaled_size)
-        image_button.move(1690//2+60, 235)
+        image_button.move(1690 // 2 + 60, 235)
 
         image_button.clicked.connect(self.return_button_pressed)
 
@@ -1508,16 +1525,17 @@ class Sign_up_page(QWidget):
         email.setPlaceholderText("Email")
         email.setStyleSheet("color: white;")
 
-        label.move(1690//2, 192)
+        label.move(1690 // 2, 192)
         username.move(1690 // 2, 280)
         password.move(1690 // 2, 360)
         password_confirm.move(1690 // 2, 440)
-        email.move(1690//2, 520)
+        email.move(1690 // 2, 520)
 
         # Create button
         submit_button = QPushButton('Submit', self)
-        submit_button.clicked.connect(lambda: self.submit_form(username.text(), password.text(), password_confirm.text(), email.text()))
-        submit_button.move(1690//2-25, 600)
+        submit_button.clicked.connect(
+            lambda: self.submit_form(username.text(), password.text(), password_confirm.text(), email.text()))
+        submit_button.move(1690 // 2 - 25, 600)
 
         submit_button.setStyleSheet('''
             QPushButton {
@@ -1644,13 +1662,13 @@ class Login_page(QWidget):
         self.incorrect_label = QLabel('Username or Password incorrect', self)
         self.incorrect_label.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
-        self.incorrect_label.move(1690//2+10, 333)
+        self.incorrect_label.move(1690 // 2 + 10, 333)
         self.incorrect_label.hide()
 
         self.user_is_logged_in = QLabel('Username already logged in', self)
         self.user_is_logged_in.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
-        self.user_is_logged_in.move(1690//2+10, 333)
+        self.user_is_logged_in.move(1690 // 2 + 10, 333)
         self.user_is_logged_in.hide()
 
     def init_ui(self):
@@ -1667,36 +1685,35 @@ class Login_page(QWidget):
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
         image_button.setIconSize(scaled_size)
-        image_button.move(1690//2+60, 235)
-
+        image_button.move(1690 // 2 + 60, 235)
 
         # Create "Forgot your password?" label
         forgot_password_label = QLabel('<a href="forgot">Forgot your password</a>', self)
         forgot_password_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         forgot_password_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
-        forgot_password_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
+        forgot_password_label.setStyleSheet(
+            "color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
 
         sign_up_label = QLabel('<a href="sign_up">Dont have a user yet? sign_up here</a>', self)
         sign_up_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         sign_up_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
         sign_up_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
         sign_up_label.linkActivated.connect(self.move_to_sign_up_page)
-        sign_up_label.move(1690//2-30, 535)
+        sign_up_label.move(1690 // 2 - 30, 535)
 
         checkbox = QCheckBox('Keep me signed in', self)
         checkbox.setStyleSheet("QCheckBox { color: white; font-size: 12px}")
         checkbox.stateChanged.connect(self.on_checkbox_change)
-        checkbox.move(1690//2+10, 415)
+        checkbox.move(1690 // 2 + 10, 415)
         # Connect the linkActivated signal to a custom slot
         forgot_password_label.linkActivated.connect(self.forgot_password_clicked)
-        forgot_password_label.move(1690//2+10, 445)
-        label.move(1690//2+10, 192)
-
+        forgot_password_label.move(1690 // 2 + 10, 445)
+        label.move(1690 // 2 + 10, 192)
 
         # Create button
         submit_button = QPushButton('Login', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690//2-30, 465)
+        submit_button.move(1690 // 2 - 30, 465)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -1854,6 +1871,7 @@ class VideoClient(QMainWindow):
             main_page.watching_type = None
             self.close()
 
+
 class Forget_password_page(QWidget):
     def __init__(self):
         super().__init__()
@@ -1866,7 +1884,6 @@ class Forget_password_page(QWidget):
         self.email.setPlaceholderText("Email")
         self.email.setStyleSheet("color: white;")
         self.email.move(1690 // 2, 360)
-
 
     def create_label(self, text, position):
         label = QLabel(text, self)
@@ -1889,11 +1906,7 @@ class Forget_password_page(QWidget):
         image_button.move(1690 // 2 + 60, 235)
         image_button.clicked.connect(self.return_button_pressed)
 
-
-
-
         # Set placeholder text and color
-
 
         # Create "Forgot your password?" label
         code_label = QLabel('<a href="forgot">Resend code</a>', self)
@@ -1903,16 +1916,14 @@ class Forget_password_page(QWidget):
 
         # Connect the linkActivated signal to a custom slot
         code_label.linkActivated.connect(self.resend_code_clicked)
-        code_label.move(1690//2+20, 420)
+        code_label.move(1690 // 2 + 20, 420)
 
-
-        label.move(1690//2, 192)
-
+        label.move(1690 // 2, 192)
 
         # Create button
         submit_button = QPushButton('Submit info', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690//2-30, 450)
+        submit_button.move(1690 // 2 - 30, 450)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -1992,7 +2003,6 @@ class Forget_password_page(QWidget):
         print(4)
 
 
-
 class Verification_code_page(QWidget):
     def __init__(self):
         super().__init__()
@@ -2017,9 +2027,8 @@ class Verification_code_page(QWidget):
         self.code.setStyleSheet("color: white;")
         self.code.move(1690 // 2, 320)
 
-        self.successfully_signed_up = self.create_label("successfully signed up", (1690 // 2+5, 540))
+        self.successfully_signed_up = self.create_label("successfully signed up", (1690 // 2 + 5, 540))
         self.successfully_signed_up.hide()
-
 
         self.image_button = QPushButton(self)
         # Load an image and set it as the button's icon
@@ -2058,7 +2067,6 @@ class Verification_code_page(QWidget):
             }
         """)
 
-
     def return_button_pressed(self):
         global login_page
         self.hide()
@@ -2088,15 +2096,14 @@ class Verification_code_page(QWidget):
 
         # Connect the linkActivated signal to a custom slot
         code_label.linkActivated.connect(self.Resend_code_clicked)
-        code_label.move(1690//2+10, 410)
+        code_label.move(1690 // 2 + 10, 410)
 
-        label.move(1690//2, 180)
-
+        label.move(1690 // 2, 180)
 
         # Create button
         submit_button = QPushButton('Submit code', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690//2+10, 450)
+        submit_button.move(1690 // 2 + 10, 450)
         # Set styles
         self.setStyleSheet("""
             QWidget {
@@ -2137,7 +2144,6 @@ class Verification_code_page(QWidget):
             }
         """)
 
-
     def submit_form(self):
         global n, change_password_page
         code = self.code.text()
@@ -2172,6 +2178,7 @@ class Verification_code_page(QWidget):
     def Resend_code_clicked(self, link):
         if link == "resend":
             print("resend code")
+
 
 class Change_password_page(QWidget):
     def __init__(self):
@@ -2227,8 +2234,6 @@ class Change_password_page(QWidget):
         self.hide()
         login_page.showMaximized()
 
-
-
     def create_label(self, text, position):
         label = QLabel(text, self)
         label.setStyleSheet("color: red; font-size: 12px;")
@@ -2250,7 +2255,7 @@ class Change_password_page(QWidget):
         image_button.move(1690 // 2 + 60, 235)
         image_button.clicked.connect(self.return_button_pressed)
 
-        self.too_short.move(1690//2+10, 340)
+        self.too_short.move(1690 // 2 + 10, 340)
         self.too_short.hide()
         self.too_short.setStyleSheet(
             "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
@@ -2260,7 +2265,7 @@ class Change_password_page(QWidget):
         # Create button
         submit_button = QPushButton('Submit info', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690//2-30, 450)
+        submit_button.move(1690 // 2 - 30, 450)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -2332,8 +2337,6 @@ class Change_password_page(QWidget):
             else:
                 self.too_short.show()
                 break
-
-
 
     def resend_code_clicked(self):
         print(4)
