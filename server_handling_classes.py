@@ -434,7 +434,7 @@ class Communication:
     def update_profiles_list_for_everyone_by_user(self, user, b64_encoded_profile_pic):
         relevant_users = relevant_users_for_user(user)
         for relevant_user in relevant_users:
-            self.send_profile_list_of_dicts_to_user(relevant_user)
+            self.send_new_profile_of_user(relevant_user, b64_encoded_profile_pic)
 
     def send_new_profile_of_user(self, user, b64_encoded_profile_pic):
         net = self.get_net_by_name(user)

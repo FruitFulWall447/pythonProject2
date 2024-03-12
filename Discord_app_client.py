@@ -301,7 +301,7 @@ def thread_recv_messages():
         if message_type == "updated_profile_dict":
             profile_dict = json.loads(data.get("profile_dict"))
             name_of_profile_dict = data.get("username")
-            QMetaObject.invokeMethod(main_page, "update_profile_dict_of_user", Qt.QueuedConnection,
+            QMetaObject.invokeMethod(main_page, "updating_profile_dict_signal", Qt.QueuedConnection,
                                      Q_ARG(str, name_of_profile_dict), Q_ARG(dict, profile_dict))
             print(f"got updated profile dictionary of {name_of_profile_dict}")
         if message_type == "data":
