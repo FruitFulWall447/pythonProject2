@@ -264,11 +264,12 @@ def thread_recv_messages():
                     QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
                 if action == "stream_stopped":
                     user_that_stopped_stream = data.get("user_that_stopped")
+
             if call_action_type == "call_dictionary":
                 action = data.get("action")
                 if action == "dict":
                     call_dictionary = data.get("dict")
-                    print(call_dictionary)
+                    print(f"got call dict {call_dictionary}")
                     call_dict = call_dictionary
                     if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
                         main_page.update_call_dict_by_id(call_dict)
@@ -284,6 +285,7 @@ def thread_recv_messages():
                                                                  Qt.QueuedConnection)
                     else:
                         main_page.call_dicts.append(call_dict)
+                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
                 if action == "list_call_dicts":
                     list_call_dicts = json.loads(data.get("list_call_dicts"))
                     list_of_call_dicts = list_call_dicts
