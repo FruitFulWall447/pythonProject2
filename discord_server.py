@@ -320,9 +320,9 @@ def thread_recv_messages(n, addr, username):
                     stream_action = data.get("action")
                     if stream_action == "start":
                         Communication.create_video_stream_for_user_call(User, stream_type)
-                    elif stream_action == "close":
+                    if stream_action == "close":
                         Communication.close_video_stream_for_user_call(User, stream_type)
-                    elif stream_action == "watch":
+                    if stream_action == "watch":
                         streamer = data.get("user_to_watch")
                         Communication.add_spectator_to_call_stream(User, streamer, stream_type)
                     if stream_action == "stop_watch":

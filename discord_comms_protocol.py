@@ -293,7 +293,7 @@ class client_net:
 
     def stop_watching_current_stream(self):
         try:
-            message = {"message_type": "call", "call_type": "stream",
+            message = {"message_type": "call", "call_action_type": "stream",
                        "action": "stop_watch"}
             self.send_message_dict(message)
         except socket.error as e:
