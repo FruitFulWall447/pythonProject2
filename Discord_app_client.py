@@ -847,6 +847,22 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
                 else:
                     profile_pic["encoded_image_bytes"] = None
                 print(f"updated the profile pic in dictionary list of username {name}")
+                self.update_circular_photo_of_user(name, new_image)
+                break
+
+    def update_circular_photo_of_user(self, username, new_photo):
+        circular_image = make_circular_image(new_photo)
+        # Iterate through the list of circular image dictionaries
+        for user_dict in self.circular_images_dicts_list_of_users:
+            # Check if the username matches
+            if user_dict["username"] == username:
+                # Update the circular photo for the user
+                user_dict["circular_image_bytes"] = circular_image
+                # Exit the loop since the update is done
+                break
+
+        # After updating, call the method to notify any listeners about the update
+        self.updated_chat()
 
     def get_profile_pic_by_username(self, username):
         for profile_dict in self.list_user_profile_dicts:
