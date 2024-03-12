@@ -185,8 +185,6 @@ def thread_recv_messages():
             main_page.update_stream_screen_frame(decompressed_frame)
         if message_type == "friends_list":
             json_friends_list = data.get("friends_list")
-            print(json_friends_list)
-            print(type(json_friends_list))
             friends_list = json.loads(json_friends_list)
             main_page.friends_list = friends_list
             QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
