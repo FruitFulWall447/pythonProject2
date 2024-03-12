@@ -255,6 +255,7 @@ class Call:
         for stream in self.video_streams_list:
             if stream.streamer == streamer and stream.stream_type == stream_type:
                 stream.add_spectator(spectator)
+                self.logger.info(f"{spectator} started watching stream of id {self.call_id}")
                 return
         self.logger.error(f"couldn't add spectator to stream")
 
@@ -725,6 +726,7 @@ class VideoStream:
                     net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
                 else:
                     net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                self.logger.info(f"sent share data to {name}")
                 # self.logger.info(f"Sent share screen data to {name}")
 
     def end_stream(self):

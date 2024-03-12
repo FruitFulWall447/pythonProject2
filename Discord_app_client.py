@@ -262,9 +262,6 @@ def thread_recv_messages():
                     send_vc_thread.join()
                     recv_vc_data.join()
                     QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
-                if action == "stream_stopped":
-                    user_that_stopped_stream = data.get("user_that_stopped")
-
             if call_action_type == "call_dictionary":
                 action = data.get("action")
                 if action == "dict":
