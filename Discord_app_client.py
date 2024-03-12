@@ -857,6 +857,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if profile_dict.get("username") == name:
                 print("we got inside the if")
                 self.list_user_profile_dicts[index] = new_profile_dict
+                if self.list_user_profile_dicts[index] is None:
+                    print("big mistake here")
                 encoded_image = new_profile_dict.get("encoded_image_bytes")
                 self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
                 break
