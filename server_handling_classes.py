@@ -431,10 +431,17 @@ class Communication:
         net.send_all_data_received()
         self.logger.info(f"All needed data sent to {User}")
 
-    def update_profiles_list_for_everyone_by_user(self, user):
+    def update_profiles_list_for_everyone_by_user(self, user, b64_encoded_profile_pic):
         relevant_users = relevant_users_for_user(user)
         for relevant_user in relevant_users:
             self.send_profile_list_of_dicts_to_user(relevant_user)
+
+    def send_new_profile_of_user(self, user, b64_encoded_profile_pic):
+        net = self.get_net_by_name(user)
+        if net is not None:
+            profile_dict = create_profile_pic_dict(user, b64_encoded_profile_pic)
+            net.send_profile_dict_of_user(profile_dict, user)
+            self.logger.info(f"Sent list nwe profile dicts list to user {user}")
 
     def send_profile_list_of_dicts_to_user(self, user):
         net = self.get_net_by_name(user)

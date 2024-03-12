@@ -19,6 +19,7 @@ import cv2
 import numpy as np
 import pyautogui
 import struct
+from functools import partial
 import re
 from queue import Queue, Empty
 from PyQt5.QtMultimediaWidgets import QVideoWidget
@@ -297,6 +298,12 @@ def thread_recv_messages():
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
             print("got list of profile dictionaries")
+        if message_type == "updated_profile_dict":
+            profile_dict = json.loads(data.get("profile_dict"))
+            name_of_profile_dict = data.get("username")
+            QMetaObject.invokeMethod(main_page, "update_profile_dict_of_user", Qt.QueuedConnection,
+                                     Q_ARG(str, name_of_profile_dict), Q_ARG(dict, profile_dict))
+            print(f"got updated profile dictionary of {name_of_profile_dict}")
         if message_type == "data":
             action = data.get("action")
             if action == "receive":
@@ -568,6 +575,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
     updated_settings_signal = pyqtSignal()
     caching_circular_images_of_users_signal = pyqtSignal()
     caching_circular_images_of_groups_signal = pyqtSignal()
+    updating_profile_dict_signal = pyqtSignal()
     def __init__(self, Netwrok):
         super().__init__()
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
@@ -711,6 +719,7 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
         self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
         self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
         self.disconnect_signal.connect(self.quit_application)
+        self.updating_profile_dict_signal.connect(partial(self.update_profile_dict_of_user_wrapper, self))
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -759,6 +768,10 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_profile_dict_of_user_wrapper(self, args):
+        name, new_profile_dict = args
+        self.update_profile_dict_of_user(name, new_profile_dict)
 
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)
@@ -838,13 +851,19 @@ class MainPage(QWidget): # main page doesnt know when chat is changed...
             self.circular_images_dicts_list_of_groups.append(circular_images_dict)
         self.updated_chat()
 
+    def update_profile_dict_of_user(self, name, new_profile_dict):
+        for index, profile_dict in enumerate(self.list_user_profile_dicts):
+            if profile_dict.get("username") == name:
+                self.list_user_profile_dicts[index] = new_profile_dict
+                break
+
     def update_profile_pic_dicts_list(self, name, new_image_bytes, circular_pic_bytes=None):
-        for profile_pic in self.list_user_profile_dicts:
-            if profile_pic.get("username") == name:
+        for profile_dict in self.list_user_profile_dicts:
+            if profile_dict.get("username") == name:
                 if new_image_bytes is not None:
-                    profile_pic["encoded_image_bytes"] = base64.b64encode(new_image_bytes).decode()
+                    profile_dict["encoded_image_bytes"] = base64.b64encode(new_image_bytes).decode()
                 else:
-                    profile_pic["encoded_image_bytes"] = None
+                    profile_dict["encoded_image_bytes"] = None
                 print(f"updated the profile pic in dictionary list of username {name}")
                 self.update_circular_photo_of_user(name, new_image_bytes, circular_pic_bytes)
                 break

@@ -397,7 +397,7 @@ def thread_recv_messages(n, addr, username):
                     logger.info(f"{User} reset his profile picture")
                 database_func.update_profile_pic(User, b64_encoded_profile_pic)
                 logger.info(f"updated client profile pic of {User}")
-                Communication.update_profiles_list_for_everyone_by_user(User)
+                Communication.update_profiles_list_for_everyone_by_user(User, b64_encoded_profile_pic)
             if message_type == "security_token":
                 action = data.get("action")
                 if action == "needed":

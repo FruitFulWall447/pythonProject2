@@ -900,6 +900,11 @@ class server_net:
         message = {"message_type": "profile_dicts_list", "profile_dicts_list": json_profile_dicts_list}
         self.send_message_dict(message)
 
+    def send_profile_dict_of_user(self, profile_dict, user):
+        json_profile_dict = json.dumps(profile_dict)
+        message = {"message_type": "updated_profile_dict", "profile_dict": json_profile_dict, "username": user}
+        self.send_message_dict(message)
+
     def remove_call_to_user_of_id(self, call_id):
         try:
             message = {"message_type": "call", "call_action_type": "update_calls",
