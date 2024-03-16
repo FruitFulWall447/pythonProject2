@@ -2192,7 +2192,6 @@ class ChatBox(QWidget):
                     y -= (content_label.height()-30)
                     content_label.move(x_pos, y)
                     self.message_labels.append(content_label)
-                    y -= 30
 
                     # second part = Name + timestamp
                     title_label = QLabel()
@@ -2201,6 +2200,8 @@ class ChatBox(QWidget):
                         f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                         f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
                     self.message_labels.append(title_label)
+
+                    y -= title_label.height()
                     title_label.move(x_pos, y)
                     y -= title_label.height()
                     if index != len(self.parent.list_messages) - 1:
@@ -2411,9 +2412,6 @@ class ChatBox(QWidget):
 
     def create_temp_message_label(self, message):
         try:
-            x_pos = self.draw_message_start_x
-            width_of_chat_box = self.width_of_chat_box
-
             label = QLabel(message, self)
             label.setStyleSheet("color: white;")
             font = label.font()
