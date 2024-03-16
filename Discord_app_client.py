@@ -1354,10 +1354,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
                 self.chat_start_index += 1
                 self.updated_chat()
+                self.Network.messages_list_current_index(self.chat_start_index)
             elif delta < 0 and self.chat_start_index > 0 and self.chat_box.is_mouse_on_chat_box(mouse_pos):
                 # Scrolling down, but prevent scrolling beyond the first message
                 self.chat_start_index -= 1
                 self.updated_chat()
+                self.Network.messages_list_current_index(self.chat_start_index)
 
             elif delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (
                     self.chat_box_chats_index < 0):  # or something

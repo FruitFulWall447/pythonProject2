@@ -476,6 +476,15 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def messages_list_current_index(self, index):
+        try:
+            # Convert the length of the data to a string
+            message = {"message_type": "messages_list_index", "messages_list_index": index
+                       }
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
+
     def send_remove_friend(self, friend_username):
         try:
             message = {"message_type": "friend_remove", "username_to_remove": friend_username

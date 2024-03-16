@@ -112,6 +112,7 @@ def threaded_logged_in_client(n, User):
     global list_vc_data_sending
     flag_is_call_sent = False
     client_current_chat = ""
+    messages_list_index = 0
     logger = logging.getLogger(__name__)
     while True:
         time.sleep(0.05)
@@ -127,6 +128,11 @@ def threaded_logged_in_client(n, User):
                     if client_current_chat not in database_func.get_user_chats(User):
                         database_func.add_chat_to_user(User, client_current_chat)
                         logger.info(f"added new chat to {User}")
+                    list_dict_of_messages = database_func.get_messages(User, client_current_chat)
+                    n.send_messages_list(list_dict_of_messages)
+                if message_type == "messages_list_index":
+                    messages_list_index = message.get("messages_list_index")
+                    print(f"{User} new messages list index is: {messages_list_index}")
             if isinstance(message, list):
                 logger.info(f"Sent online users list to {User}")
                 friends_list = database_func.get_user_friends(User)
@@ -310,9 +316,9 @@ def thread_recv_messages(n, addr, username):
             if message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
                 add_message_for_client(User, data)
-                time.sleep(0.1)
-                add_message_for_client(User, "update_chat_list")
-                logger.info(f"got {User} current chat")
+            if message_type == "messages_list_index":
+                messages_list_index = data.get("messages_list_index")
+                add_message_for_client(User, data)
             if message_type == "call":
                 call_action_type = data.get("call_action_type")
                 if call_action_type == "stream":

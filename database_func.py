@@ -510,6 +510,69 @@ def get_messages(sender, receiver):
             connection.close()
 
 
+def get_last_amount_of_messages(sender, receiver, first_message_index, last_message_index):
+    try:
+        # Connect to the MySQL database (replace with your own connection details)
+        connection = connect_to_kevindb()
+
+        # Create a cursor object to interact with the database
+        cursor = connection.cursor()
+
+        # Check if the receiver is a group chat (starts with '(')
+        is_group_chat = receiver.startswith('(')
+
+        # Execute the query to retrieve messages
+        if is_group_chat:
+            _, group_id = gets_group_attributes_from_format(receiver)
+            id_format = f"({str(group_id)})"
+            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%'".format(
+                id_format.replace('\'', '\'\''))
+        else:
+            query = """
+                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type, file_name 
+                FROM messages
+                WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')
+            """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
+
+        # Add conditions for message indices
+        query += f" ORDER BY timestamp DESC LIMIT {last_message_index - first_message_index + 1} OFFSET {first_message_index}"
+
+        cursor.execute(query)
+
+        # Fetch all the results into a list of tuples
+        messages = cursor.fetchall()
+
+        # Convert each tuple to a list and include timestamp
+        formatted_messages = []
+        for message in messages:
+            if message[3] != "string":
+                # If content is bytes, encode it as a Base64 string
+                content = base64.b64encode(message[0]).decode('utf-8')
+            else:
+                content = message[0].decode('utf-8')
+            message_dict = {
+                "content": content,
+                "sender_id": message[1],
+                "timestamp": str(message[2]),
+                "message_type": message[3],
+                "file_name": message[4]
+            }
+            formatted_messages.append(message_dict)
+
+        return formatted_messages
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return []
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+
 def are_friends(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
