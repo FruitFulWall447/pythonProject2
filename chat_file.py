@@ -660,8 +660,6 @@ class ChatBox(QWidget):
         if self.current_group_id:
             if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
                 height_of_around_name = start_height_of_around_name + self.around_name_delta
-            else:
-                print(self.parent.call_dicts)
 
         self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
         self.around_name.move(around_name_x, around_name_y)
@@ -1702,7 +1700,7 @@ class ChatBox(QWidget):
                 if friend_name in self.parent.selected_group_members and state == 0:
                     self.parent.selected_group_members.remove(friend_name)
         except Exception as e:
-            print(e)
+            print(f"friend_checkbox_changed error :{e}")
         self.parent.updated_chat()
 
     def is_mouse_on_chats_list(self, mouse_pos):
@@ -1723,9 +1721,9 @@ class ChatBox(QWidget):
                         self.parent.temp_search_list = []
                         self.parent.updated_chat()
                     except Exception as e:
-                        print(e)
+                        print(f"text_changed error :{e}")
         except Exception as e:
-            print(e)
+            print(f"text_changed error :{e}")
 
     def return_search_list(self):
         # Get the filtered and sorted list of buttons
@@ -1743,7 +1741,7 @@ class ChatBox(QWidget):
                     temp_list.append(chat_name)
                 return temp_list
         except Exception as e:
-            print(e)
+            print(f"return_search_list error :{e}")
 
     def drew_friends_buttons_on_screen_by_list(self, list):
         # Clear the existing buttons
@@ -2013,7 +2011,7 @@ class ChatBox(QWidget):
                 self.mic_button.setIcon(self.muted_mic_icon)
                 self.Network.toggle_mute_for_myself()
         except Exception as e:
-            print(e)
+            print(f"error mute_and_unmute {e}")
 
     def deafen_and_undeafen(self):
         if self.parent.deafen:
@@ -2080,7 +2078,7 @@ class ChatBox(QWidget):
         try:
             self.parent.updated_chat()
         except Exception as e:
-            print(e)
+            print(f"error ringing_user {e}")
 
     def call_user(self):
         try:
@@ -2094,13 +2092,13 @@ class ChatBox(QWidget):
                 self.Network.send_calling_user(self.parent.selected_chat)
                 self.ringing_user(self.parent.selected_chat)
         except Exception as e:
-            print(e)
+            print(f"error call_user {e}")
 
     def on_friend_button_clicked(self, label):
         try:
             self.selected_chat_changed(label)
         except Exception as e:
-            print(e)
+            print(f"error on_friend_button_clicked {e}")
 
     def Return_pos(self):
         return self.square_pos[0], self.square_pos[1]
@@ -2158,7 +2156,6 @@ class ChatBox(QWidget):
         button.setIconSize(pixmap.size())
         button.setIcon(QIcon(pixmap))
         button.setGeometry(100, 100, self.image_width, target_height)  # Adjust size as needed
-
 
     def show_messages_on_screen(self, list_messages):
         # can show up to 33 message in the chat
@@ -2417,7 +2414,6 @@ class ChatBox(QWidget):
             x_pos = self.draw_message_start_x
             width_of_chat_box = self.width_of_chat_box
 
-
             label = QLabel(message, self)
             label.setStyleSheet("color: white;")
             font = label.font()
@@ -2464,7 +2460,7 @@ class ChatBox(QWidget):
                 if self.text_entry:
                     self.text_entry.setPlaceholderText(place_holder_text)
             except Exception as e:
-                print(e)
+                print(f"error selected_chat_changed {e}")
             self.parent.selected_chat = name
             self.parent.chat_start_index = 0
             self.Network.updated_current_chat(name)
@@ -2974,7 +2970,7 @@ class FriendsBox(QWidget):
                         lambda checked, index=i: self.handle_friend_request(index, accept=False))
                 self.raise_all_element()
             except Exception as e:
-                print(e)
+                print(f"error pending page {e}")
 
         if self.parent.friends_box_page == "add friend":
             self.add_friend.setStyleSheet(selecting_button_pressed_stylesheet)
@@ -3202,7 +3198,7 @@ class FriendsBox(QWidget):
                 self.parent.friends_box_page = "pending"
                 self.parent.updated_requests()
         except Exception as e:
-            print(e)
+            print(f"error pending_button_pressed {e}")
 
     def blocked_button_pressed(self):
         if self.parent.friends_box_page != "blocked":
@@ -3225,10 +3221,7 @@ class FriendsBox(QWidget):
                 self.parent.friends_box_page = "add friend"
                 self.parent.updated_requests()
         except Exception as e:
-            print(e)
-
-    def show_online_list(self):
-        print("online list")
+            print(f"error add_friend_button_pressed {e}")
 
     def open_chat(self, friend):
         # Implement the logic to start a chat with the selected friend
@@ -3641,11 +3634,8 @@ class SettingsBox(QWidget):
                                                                       y_remove_profile_pic, width_change_profile_pic,
                                                                       height_change_profile_pic, "Remove Avatar")
                 remove_profile_pic_button.clicked.connect(self.remove_profile_pic)
-
-
-
         except Exception as e:
-            print(e)
+            print(f"error setting page {e}")
 
     def background_color_changed(self):
         new_background_color = self.color_combobox.currentText()
@@ -3654,7 +3644,7 @@ class SettingsBox(QWidget):
 
     def font_updated(self):
         new_font = self.font_box.currentText()
-        print(new_font)
+        print(f"new_font is {new_font}")
 
     def remove_profile_pic(self):
         try:
@@ -3694,7 +3684,7 @@ class SettingsBox(QWidget):
             self.font_size_label.setText(str(font_size))
             self.parent.updated_chat()
         except Exception as e:
-            print(e)
+            print(f"font_size_changed error :{e}")
 
     def create_my_account_labels(self, x, y, font_size, text1, text2):
         label1 = self.create_custom_label(x, y, font_size, None, None, text1, "grey", False)
@@ -4098,7 +4088,7 @@ class VideoPlayer(QWidget):
             else:
                 print("Failed to create temporary file")
         except Exception as e:
-            print(e)
+            print(f"play_video error :{e}")
 
     def update_duration(self, duration):
         self.slider.setMaximum(duration)
