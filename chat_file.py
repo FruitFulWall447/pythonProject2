@@ -4157,12 +4157,13 @@ class ScrollableWidget(QWidget):
 
         # Create a widget to contain labels and buttons
         inner_widget = QWidget()
-
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         # Set fixed width for inner widget to ensure proper layout
         inner_widget.setFixedWidth(380)
 
         # Create a layout for the inner widget
         layout = QVBoxLayout(inner_widget)
+        layout.setSpacing(10)  # Adjust this value as needed
 
         # Add labels and buttons to the layout
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
