@@ -671,7 +671,7 @@ class ChatBox(QWidget):
             end_y_pos = 50 + self.around_name_delta
         else:
             end_y_pos = 50
-        temp_widget_x, temp_widget_y = (600, height_of_around_name)
+        temp_widget_x, temp_widget_y = (0, height_of_around_name)
         temp_widget_width = self.width_of_chat_box
         temp_widget_height = (starter - end_y_pos)
         temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
@@ -4166,7 +4166,6 @@ class ScrollableWidget(QWidget):
         layout = QVBoxLayout(inner_widget)
 
         # Add labels and buttons to the layout
-        index = 0
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
         for i in reversed(self.parent.parent.list_messages):
             message_content = i.get("content")
@@ -4182,11 +4181,10 @@ class ScrollableWidget(QWidget):
                 title_label = QLabel()
                 title_label = self.parent.create_temp_message_label("")
                 title_label.setText(
-                    f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
                 layout.addWidget(title_label)
                 layout.addWidget(content_label)
-
             elif message_type == "image":
                 try:
                     decoded_compressed_image_bytes = base64.b64decode(message_content)
@@ -4200,8 +4198,8 @@ class ScrollableWidget(QWidget):
 
                     message = ""
                     title_label = self.parent.create_temp_message_label(message)
-                    title_label.setText(f'<span style="font-size: {self.parent.font_size+2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                                  f'<span style="font-size: {self.parent.font_size-3}px; color: gray;"> {message_time}</span>')
+                    title_label.setText(f'<span style="font-size: {self.parent.parent.font_size+2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                                  f'<span style="font-size: {self.parent.parent.font_size-3}px; color: gray;"> {message_time}</span>')
 
                     layout.addWidget(title_label)
                     layout.addWidget(image_label)
@@ -4217,59 +4215,62 @@ class ScrollableWidget(QWidget):
                     first_video_frame_bytes = extract_first_frame(video_bytes)
                     self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
 
-                    video_label.clicked.connect(lambda _, video_bytes=video_bytes: self.parent.start_watching_video(video_bytes))
+                    video_label.clicked.connect(lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
                     play_button = QPushButton(self)
                     play_button_icon_path = "discord_app_assets/play_video_icon.png"
                     play_button_size = (50, 50)
                     play_button.clicked.connect(
-                        lambda _, video_bytes=video_bytes: self.parent.start_watching_video(video_bytes))
+                        lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
                     set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
 
                     make_q_object_clear(play_button)
                     message = ""
                     title_label = self.parent.create_temp_message_label(message)
                     title_label.setText(
-                        f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                        f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
                     layout.addWidget(title_label)
                     layout.addWidget(video_label)
                 except Exception as e:
                     print(f"error in show messages is:{e}")
             elif message_type == "audio":
-                decoded_compressed_audio_bytes = base64.b64decode(message_content)
-                audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
+                try:
+                    decoded_compressed_audio_bytes = base64.b64decode(message_content)
+                    audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
 
-                audio_label = QPushButton(f"{file_name}", self)
-                audio_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px; padding-left: 50%;")
-
-
-
-                play_button = QPushButton(self)
-                play_button_icon_path = "discord_app_assets/play_video_icon.png"
-                play_button_size = (25, 25)
-                set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
-                play_button.clicked.connect(
-                    lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes, self.parent.mp3_message_media_player))
-                #audio_label.setGeometry(x_pos, y, 300, 40)
-                make_q_object_clear(play_button)
+                    audio_label = QPushButton(f"{file_name}", self)
+                    audio_label.setStyleSheet(f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
 
 
-                message = ""
-                title_label = self.parent.create_temp_message_label(message)
-                title_label.setText(
-                    f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
-                layout.addWidget(title_label)
-                layout.addWidget(audio_label)
+                    play_button = QPushButton(self)
+                    play_button_icon_path = "discord_app_assets/play_video_icon.png"
+                    play_button_size = (25, 25)
+                    set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
+                    play_button.clicked.connect(
+                        lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes, self.parent.parent.mp3_message_media_player))
+                    #audio_label.setGeometry(x_pos, y, 300, 40)
+                    make_q_object_clear(play_button)
+
+
+                    message = ""
+                    title_label = self.parent.create_temp_message_label(message)
+                    title_label.setText(
+                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+
+                    layout.addWidget(title_label)
+                    layout.addWidget(audio_label)
+                except Exception as e:
+                    print("error in audio file")
             elif message_type in basic_files_types:
                 try:
                     decoded_compressed_file_bytes = base64.b64decode(message_content)
                     file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
                     link_label = QPushButton(f"{file_name}", self)
-                    link_label.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.font_size}px; padding-left: 50%;")
+                    link_label.setStyleSheet(f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
                     if message_type == "txt":
                         link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
                     elif message_type == "pptx":
@@ -4289,20 +4290,19 @@ class ScrollableWidget(QWidget):
                             lambda _, file_bytes=file_bytes: open_pdf_from_bytes(file_bytes))
                     link_label.setContextMenuPolicy(Qt.CustomContextMenu)
                     link_label.customContextMenuRequested.connect(
-                        lambda pos, file_bytes=file_bytes, button=link_label, type=message_type, name=file_name: self.show_context_menu(pos, button,
+                        lambda pos, file_bytes=file_bytes, button=link_label, type=message_type, name=file_name: self.parent.show_context_menu(pos, button,
                                                                                                      file_bytes, type, name))
                     #link_label.setGeometry(x_pos, y, 300, 40)
                     message = ""
                     title_label = self.parent.create_temp_message_label(message)
                     title_label.setText(
-                        f'<span style="font-size: {self.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                        f'<span style="font-size: {self.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
                     layout.addWidget(title_label)
                     layout.addWidget(link_label)
                 except Exception as e:
                     print(f"error in show messages is:{e}")
-            index += 1
 
 
         # Set the inner widget as the scroll area's widget
