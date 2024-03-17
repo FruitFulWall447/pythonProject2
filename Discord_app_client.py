@@ -899,7 +899,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 if image_bytes_encoded is not None:
                     return base64.b64decode(image_bytes_encoded)
                 else:
-                    print(profile_dict)
                     return None
         print("no profile by that name")
 
