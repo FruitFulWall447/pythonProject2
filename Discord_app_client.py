@@ -1288,6 +1288,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         elif event.key() == Qt.Key_Escape:
             if not chat_clicked:
                 self.Chat_clicked()
+                self.updated_chat()
             else:
                 if self.is_create_group_pressed:
                     self.is_create_group_pressed = False

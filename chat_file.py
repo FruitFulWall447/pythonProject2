@@ -3693,7 +3693,6 @@ class SettingsBox(QWidget):
         try:
             self.parent.font_size = int(font_size)
             self.font_size_label.setText(str(font_size))
-            self.parent.updated_chat()
         except Exception as e:
             print(f"font_size_changed error :{e}")
 
