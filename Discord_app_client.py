@@ -796,9 +796,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_groups_list_by_dict(self, updated_group_dict):
         index = 0
         for group_dict in self.groups_list:
-            if group_dict.get("group_id") == updated_group_dict.get("id"):
+            if group_dict.get("group_id") == updated_group_dict.get("group_id"):
                 self.groups_list[index] = updated_group_dict
-                print(f"updated group dict of id {updated_group_dict.get('id')}")
+                print(f"updated group dict of id {updated_group_dict.get('group_id')}")
+                self.update_circular_photo_of_group(updated_group_dict.get('group_id'),
+                                                    base64.decode(updated_group_dict.get('group_b64_encoded_image')))
                 self.updated_chat()
                 return
             index += 1
@@ -918,6 +920,26 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 user_dict["circular_image_bytes"] = circular_image
                 # Exit the loop since the update is done
                 print(f"update_circular_photo_of_user of {username}")
+                break
+        # After updating, call the method to notify any listeners about the update
+        self.updated_chat()
+
+    def update_circular_photo_of_group(self, group_id, new_photo, circular_pic_bytes=None):
+        if new_photo is None:
+            circular_image = None
+        else:
+            if circular_pic_bytes is None:
+                circular_image = make_circular_image(new_photo)
+            else:
+                circular_image = circular_pic_bytes
+        # Iterate through the list of circular image dictionaries
+        for group_dict in self.circular_images_dicts_list_of_users:
+            # Check if the username matches
+            if group_dict["group_id"] == group_id:
+                # Update the circular photo for the user
+                group_dict["circular_image_bytes"] = circular_image
+                # Exit the loop since the update is done
+                print(f"update_circular_photo_of_user of group id :{group_id}")
                 break
         # After updating, call the method to notify any listeners about the update
         self.updated_chat()

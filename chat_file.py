@@ -1913,7 +1913,6 @@ class ChatBox(QWidget):
         if self.file_dialog.exec_():
             selected_files = self.file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
-            self.parent.file_name = selected_files[0].split("/")[-1]
             file_path = selected_files[0]  # Get the file path
             file_size = os.path.getsize(file_path)  # Get the file size in bytes
 
