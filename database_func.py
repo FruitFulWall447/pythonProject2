@@ -1088,6 +1088,7 @@ def create_group(group_name, group_manager, group_members_list=None):
             connection.close()
         for member in group_members_list:
             add_chat_to_user(member, new_chat_name)
+        return new_chat_name
 
 
 def change_group_manager(group_id, new_manager):

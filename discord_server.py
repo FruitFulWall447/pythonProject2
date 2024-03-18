@@ -482,7 +482,8 @@ def thread_recv_messages(n, addr, username):
                 if action == "create":
                     members_list = json.loads(data.get("group_members_list"))
                     members_list.append(User)
-                    database_func.create_group(f"{User}'s Group", User, members_list)
+                    group_chat_name = database_func.create_group(f"{User}'s Group", User, members_list)
+                    n.add_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
                 if action == "update_image":
                     group_id = data.get("group_id")
