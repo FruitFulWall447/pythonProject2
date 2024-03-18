@@ -798,6 +798,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         for group_dict in self.groups_list:
             if group_dict.get("group_id") == updated_group_dict.get("id"):
                 self.groups_list[index] = updated_group_dict
+                print(f"updated group dict of id {updated_group_dict.get('id')}")
                 self.updated_chat()
                 return
             index += 1
