@@ -127,6 +127,7 @@ def threaded_logged_in_client(n, User):
                     database_func.mark_messages_as_read(User, client_current_chat)
                     if client_current_chat not in database_func.get_user_chats(User):
                         database_func.add_chat_to_user(User, client_current_chat)
+                        n.add_chat(client_current_chat)
                         logger.info(f"added new chat to {User}")
                     list_dict_of_messages = database_func.get_messages(User, client_current_chat)
                     n.send_messages_list(list_dict_of_messages)

@@ -4353,20 +4353,20 @@ class CreateGroupBox(QWidget):
             adding_border_height = 400
             adding_border_width = 300
 
-            border_of_adding = QLabel(self)
+            border_of_adding = QLabel(self.parent)
             border_of_adding.setGeometry(starter_x, starter_y_of_border, adding_border_width, adding_border_height)
             border_of_adding.raise_()
             border_of_adding.setStyleSheet("""border: 2px solid black;  
             /* Use a slightly darker shade for the border */
                             border-radius: 5px;""")
 
-            label = QLabel(f"Select friends", self)
+            label = QLabel(f"Select friends", self.parent)
             label.setStyleSheet("""color: white;font-size: 20px;""")
             label.move(starter_x + 20, starter_y_of_border + 10)
 
             label = QLabel(
                 f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends",
-                self)
+                self.parent)
             label.setStyleSheet("""color: white;font-size: 14px;""")
             label.move(starter_x + 20, starter_y_of_border + 45)
 
@@ -4376,7 +4376,7 @@ class CreateGroupBox(QWidget):
             label = QLabel(f"Page({Page}/"
                            f"{calculate_division_value(len(self.friends_list))})"
                            f"     "
-                           f"Selected({len(self.selected_group_members)})", self)
+                           f"Selected({len(self.selected_group_members)})", self.parent)
             label.setStyleSheet("""color: white;font-size: 12px;""")
             label.move(starter_x + 40, starter_y_of_border + 75)
 
@@ -4392,12 +4392,12 @@ class CreateGroupBox(QWidget):
                     background-color: #2980b9;
                 }}
             """
-            scroll_up_button = QPushButton("↑", self)
+            scroll_up_button = QPushButton("↑", self.parent)
             scroll_up_button.move(starter_x + 230, starter_y_of_border + 25)
             scroll_up_button.setFixedWidth(50)
             scroll_up_button.setStyleSheet(style_sheet)
 
-            scroll_down_button = QPushButton("↓", self)
+            scroll_down_button = QPushButton("↓", self.parent)
             scroll_down_button.move(starter_x + 230, starter_y_of_border + 55)
             scroll_down_button.setFixedWidth(50)
             scroll_down_button.setStyleSheet(style_sheet)
@@ -4407,7 +4407,7 @@ class CreateGroupBox(QWidget):
             i = 0
             for friend in self.friends_list:
                 if i >= self.create_group_index * 5:
-                    friend_label = QPushButton(friend, self)
+                    friend_label = QPushButton(friend, self.parent)
                     friend_label.friend_name = friend
                     friend_label.setStyleSheet(f'''
                         QPushButton {{
@@ -4425,7 +4425,7 @@ class CreateGroupBox(QWidget):
                         }}
                     ''')
                     friend_label.clicked.connect(self.parent.toggle_checkbox)
-                    friend_checkbox = QCheckBox(self)
+                    friend_checkbox = QCheckBox(self.parent)
                     if friend in self.selected_group_members:
                         friend_checkbox.setChecked(True)
                     friend_checkbox.friend_name = friend  # Store friend's name as an attribute
@@ -4438,7 +4438,7 @@ class CreateGroupBox(QWidget):
                     friend_checkbox.raise_()
                 i += 1
 
-            button = QPushButton("Create DM", self)
+            button = QPushButton("Create DM", self.parent)
             button.move(starter_x + 15, starter_y_of_border + adding_border_height - 80)
             button.setFixedHeight(self.parent.friends_button_height)
             button.clicked.connect(self.parent.create_dm_pressed)

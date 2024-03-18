@@ -217,6 +217,12 @@ def thread_recv_messages():
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the chats list")
             print(f"chats list is: {main_page.chats_list}")
+        if message_type == "add_chat":
+            new_chat = data.get("chat_to_add")
+            main_page.chats_list.append(new_chat)
+            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            print("Updated the chats list")
+            print(f"chats list is: {main_page.chats_list}")
         if message_type == "call":
             call_action_type = data.get("call_action_type")
             if call_action_type == "in_call_action":

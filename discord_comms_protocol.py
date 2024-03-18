@@ -826,6 +826,12 @@ class server_net:
         except Exception as e:
             print(f"error in send camera data is: {e}")
 
+    def add_new_chat(self, chat_to_add):
+        message = {"message_type": "add_chat",
+                   "chat_to_add": chat_to_add
+                   }
+        self.send_message_dict(message)
+
     def send_friends_list(self, friends_list):
         json_friends_list = json.dumps(friends_list)
         message = {"message_type": "friends_list",
