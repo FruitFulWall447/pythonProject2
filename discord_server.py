@@ -127,7 +127,7 @@ def threaded_logged_in_client(n, User):
                     database_func.mark_messages_as_read(User, client_current_chat)
                     if client_current_chat not in database_func.get_user_chats(User):
                         database_func.add_chat_to_user(User, client_current_chat)
-                        n.add_chat(client_current_chat)
+                        n.add_new_chat(client_current_chat)
                         logger.info(f"added new chat to {User}")
                     list_dict_of_messages = database_func.get_messages(User, client_current_chat)
                     n.send_messages_list(list_dict_of_messages)
@@ -482,8 +482,9 @@ def thread_recv_messages(n, addr, username):
                 if action == "create":
                     members_list = json.loads(data.get("group_members_list"))
                     members_list.append(User)
-                    group_chat_name = database_func.create_group(f"{User}'s Group", User, members_list)
-                    n.add_chat(group_chat_name)
+                    group_chat_name, new_group_id = database_func.create_group(f"{User}'s Group", User, members_list)
+                    Communication.send_new_group_to_members()
+                    n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
                 if action == "update_image":
                     group_id = data.get("group_id")

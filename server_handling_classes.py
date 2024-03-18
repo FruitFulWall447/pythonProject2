@@ -402,6 +402,14 @@ class Communication:
         self.online_users = []
         self.logger = logging.getLogger(__name__)
 
+    def send_new_group_to_members(self, group_id):
+        group_members = database_func.get_group_members(group_id)
+        group_dict = database_func.get_group_by_id(group_id)
+        for member in group_members:
+            net = self.get_net_by_name(member)
+            if net is not None:
+                net.send_new_group(group_dict)
+
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)
         friends_list = database_func.get_user_friends(User)

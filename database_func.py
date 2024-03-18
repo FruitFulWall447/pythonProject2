@@ -1088,7 +1088,7 @@ def create_group(group_name, group_manager, group_members_list=None):
             connection.close()
         for member in group_members_list:
             add_chat_to_user(member, new_chat_name)
-        return new_chat_name
+        return new_chat_name, group_id
 
 
 def change_group_manager(group_id, new_manager):
@@ -1322,6 +1322,48 @@ def get_user_groups(username):
             cursor.close()
         if connection:
             connection.close()
+
+
+def get_group_by_id(group_id):
+    try:
+        # Connect to the MySQL database
+        connection = connect_to_kevindb()
+
+        # Create a cursor object to interact with the database
+        cursor = connection.cursor()
+
+        # Retrieve the group with the specified group_id
+        cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date, "
+                       "group_image FROM my_groups WHERE group_id = %s", (group_id,))
+
+        group_data = cursor.fetchone()
+
+        if group_data:
+            group_members_list = json.loads(group_data[2]) if group_data[2] else []
+
+            group_info = {
+                "group_id": group_data[0],
+                "group_name": group_data[1],
+                "group_members": group_members_list,
+                "group_manager": group_data[3],
+                "creation_date": group_data[4].strftime("%Y-%m-%d") if group_data[4] else None,
+                "group_b64_encoded_image": base64.b64encode(group_data[5]).decode("utf-8") if group_data[5] else None
+            }
+            return group_info
+        else:
+            return None
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        return None
+
+    finally:
+        # Close the cursor and connection
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
 
 
 def get_latest_chats(username):
