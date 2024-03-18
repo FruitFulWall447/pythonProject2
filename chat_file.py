@@ -671,9 +671,9 @@ class ChatBox(QWidget):
             end_y_pos = 50 + self.around_name_delta
         else:
             end_y_pos = 50
-        temp_widget_x, temp_widget_y = (0, height_of_around_name)
+        temp_widget_x, temp_widget_y = (600, height_of_around_name)
         temp_widget_width = self.width_of_chat_box
-        temp_widget_height = (starter - end_y_pos)
+        temp_widget_height = self.height_of_chat_box - 130
         temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
         temp_widget.move(0, 0)
 
@@ -1091,7 +1091,7 @@ class ChatBox(QWidget):
         else:
             self.image_too_big.hide()
 
-        self.show_messages_on_screen(self.messages_list)
+        #self.show_messages_on_screen(self.messages_list)
 
         style_sheet = '''
             color: white;
@@ -2456,6 +2456,7 @@ class ChatBox(QWidget):
 
     def selected_chat_changed(self, name):
         if name != self.parent.selected_chat:
+            self.parent.is_new_chat_clicked = True
             if name.startswith("("):
                 self.parent.is_current_chat_a_group = True
                 text, _ = gets_group_attributes_from_format(name)
@@ -4158,6 +4159,9 @@ class ScrollableWidget(QWidget):
         # Create a widget to contain labels and buttons
         inner_widget = QWidget()
         spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        len_message_list = len(self.parent.parent.list_messages)
+        scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
+
         # Set fixed width for inner widget to ensure proper layout
         inner_widget.setFixedWidth(380)
 
@@ -4308,6 +4312,12 @@ class ScrollableWidget(QWidget):
         # Set the inner widget as the scroll area's widget
         scroll_area.setWidget(inner_widget)
         scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+        if self.parent.parent.is_new_chat_clicked:
+            scroll_area.verticalScrollBar().setValue(scroll_area.verticalScrollBar().maximum())    # Set fixed width for inner widget to ensure proper layout
+            self.parent.parent.is_new_chat_clicked = False
+        else:
+            scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)    # Set fixed width for inner widget to ensure proper layout
+
 
     def scroll_to_index(self, index):
         # Get the vertical scroll bar of the scroll area
@@ -4315,6 +4325,11 @@ class ScrollableWidget(QWidget):
 
         # Set the scroll bar value to scroll to the specified index
         scroll_bar.setValue(index)
+
+    def scroll_value_changed(self, value):
+        # Update your variable with the current scroll value
+        self.parent.parent.chat_start_index = value
+        self.parent.parent.Network.messages_list_current_index(value)
 
 
 
