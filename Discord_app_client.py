@@ -799,8 +799,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if group_dict.get("group_id") == updated_group_dict.get("group_id"):
                 self.groups_list[index] = updated_group_dict
                 print(f"updated group dict of id {updated_group_dict.get('group_id')}")
-                self.update_circular_photo_of_group(updated_group_dict.get('group_id'),
-                                                    base64.decode(updated_group_dict.get('group_b64_encoded_image')))
+                new_image = base64.b64decode(updated_group_dict.get('group_b64_encoded_image'))
+                self.update_circular_photo_of_group(updated_group_dict.get('group_id'), new_image)
                 self.updated_chat()
                 return
             index += 1
@@ -933,7 +933,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             else:
                 circular_image = circular_pic_bytes
         # Iterate through the list of circular image dictionaries
-        for group_dict in self.circular_images_dicts_list_of_users:
+        for group_dict in self.circular_images_dicts_list_of_groups:
             # Check if the username matches
             if group_dict["group_id"] == group_id:
                 # Update the circular photo for the user
