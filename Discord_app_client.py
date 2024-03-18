@@ -155,6 +155,7 @@ def thread_recv_messages():
         if message_type == "messages_list":
             message_list = json.loads(data.get("messages_list"))
             main_page.list_messages = message_list
+            main_page.is_new_chat_clicked = True
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the messages list")
         if message_type == "new_message":
@@ -1237,10 +1238,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                             n.send_message(self.username, self.selected_chat, message_dict.get("content"), "string",
                                            None)
                             print("Sent message to server")
-                            self.chat_start_index = 0
-                            self.updated_chat()
                             self.chat_box.text_entry.setText("")
                             self.chat_box.text_entry.setFocus()
+                            self.is_new_chat_clicked = True
+                            self.updated_chat()
                 if self.file_to_send:
                     print(len(self.file_to_send))
                     # Compresses the byte representation of an image using zlib,
@@ -1281,7 +1282,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         print(f"error in sending message")
                     self.file_to_send = None
                     self.file_name = ""
-                    self.chat_start_index = 0
+                    self.is_new_chat_clicked = True
                     self.updated_chat()
                 elif social_clicked:
                     self.friends_box.send_friend_request()
