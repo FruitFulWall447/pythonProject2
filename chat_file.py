@@ -672,7 +672,10 @@ class ChatBox(QWidget):
         if self.parent.selected_chat != "":
             temp_widget_x, temp_widget_y = (600, height_of_around_name)
             temp_widget_width = self.width_of_chat_box
-            temp_widget_height = self.height_of_chat_box - 130
+            if height_of_around_name != start_height_of_around_name:
+                temp_widget_height = self.height_of_chat_box - 130 - self.around_name_delta
+            else:
+                temp_widget_height = self.height_of_chat_box - 130
             temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
             self.ringing_square_label = QLabel(self)
             ringing_square_label_x = 1500
