@@ -219,7 +219,7 @@ def thread_recv_messages():
             print(f"chats list is: {main_page.chats_list}")
         if message_type == "add_chat":
             new_chat = data.get("chat_to_add")
-            main_page.chats_list.insert(new_chat)
+            main_page.chats_list.insert(0, new_chat)
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the chats list")
             print(f"chats list is: {main_page.chats_list}")
@@ -317,6 +317,10 @@ def thread_recv_messages():
             name_of_profile_dict = data.get("username")
             main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
+        if message_type == "update_group_dict":
+            group_dict = json.loads(data.get("group_dict"))
+            main_page.update_group_lists_by_group.emit(group_dict)
+            print(f"got updated group dic {group_dict.get('group_id')}")
         if message_type == "data":
             action = data.get("action")
             if action == "receive":
@@ -591,6 +595,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     caching_circular_images_of_users_signal = pyqtSignal()
     caching_circular_images_of_groups_signal = pyqtSignal()
     updating_profile_dict_signal = pyqtSignal(str, dict)
+    update_group_lists_by_group = pyqtSignal(dict)
 
     def __init__(self, Netwrok):
         super().__init__()
@@ -737,6 +742,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
         self.disconnect_signal.connect(self.quit_application)
         self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
+        self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -786,6 +792,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_groups_list_by_dict(self, updated_group_dict):
+        index = 0
+        for group_dict in self.groups_list:
+            if group_dict.get("group_id") == updated_group_dict.get("id"):
+                self.groups_list[index] = updated_group_dict
+                self.updated_chat()
+                return
+            index += 1
 
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)

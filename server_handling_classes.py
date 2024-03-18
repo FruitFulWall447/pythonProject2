@@ -410,6 +410,14 @@ class Communication:
             if net is not None:
                 net.send_new_group(group_dict)
 
+    def update_group_dict_for_members(self, group_id):
+        group_members = database_func.get_group_members(group_id)
+        group_dict = database_func.get_group_by_id(group_id)
+        for member in group_members:
+            net = self.get_net_by_name(member)
+            if net is not None:
+                net.update_group(group_dict)
+
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)
         friends_list = database_func.get_user_friends(User)

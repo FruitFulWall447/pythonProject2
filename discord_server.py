@@ -483,7 +483,7 @@ def thread_recv_messages(n, addr, username):
                     members_list = json.loads(data.get("group_members_list"))
                     members_list.append(User)
                     group_chat_name, new_group_id = database_func.create_group(f"{User}'s Group", User, members_list)
-                    Communication.send_new_group_to_members()
+                    Communication.send_new_group_to_members(new_group_id)
                     n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
                 if action == "update_image":
@@ -491,6 +491,7 @@ def thread_recv_messages(n, addr, username):
                     encoded_b64_image = data.get("encoded_b64_image")
                     image_bytes = base64.b64decode(encoded_b64_image)
                     database_func.update_group_image(int(group_id), image_bytes)
+                    Communication.update_group_dict_for_members(group_id)
                     logger.info(f"Update group image of id: {group_id} was updated by {User}")
 
 

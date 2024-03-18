@@ -838,6 +838,12 @@ class server_net:
                    }
         self.send_message_dict(message)
 
+    def update_group(self, group_dict):
+        message = {"message_type": "update_group_dict",
+                   "group_dict": json.dumps(group_dict)
+                   }
+        self.send_message_dict(message)
+
     def send_friends_list(self, friends_list):
         json_friends_list = json.dumps(friends_list)
         message = {"message_type": "friends_list",
