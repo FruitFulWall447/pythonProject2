@@ -1732,9 +1732,9 @@ class ChatBox(QWidget):
         self.parent.create_group_index = 0
         self.parent.updated_chat()
 
-    def add_user_to_group(self, group_id, user_to_add):
-        self.Network.add_user_to_group(group_id, user_to_add)
-        print(f"Added user {user_to_add} to group of id {group_id}")
+    def add_user_to_group(self, group_id):
+        self.Network.add_user_to_group(group_id, self.parent.selected_group_members)
+        print(f"Added user {self.parent.selected_group_members} to group of id {group_id}")
         self.parent.is_create_group_pressed = False
         self.parent.is_add_users_to_group_pressed = False
         self.parent.selected_group_members.clear()
@@ -4542,6 +4542,8 @@ class CreateGroupBox(QWidget):
             button.setFixedHeight(self.parent.friends_button_height)
             if self.box_format == "create":
                 button.clicked.connect(self.parent.create_dm_pressed)
+            else:
+                button.clicked.connect(self.parent.add_users_to_group)
 
             button.setStyleSheet(f"""
                 QPushButton {{

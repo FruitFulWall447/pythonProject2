@@ -328,9 +328,9 @@ class client_net:
                    "action": "create", "group_members_list": json_group_members_list}
         self.send_message_dict(message)
 
-    def add_user_to_group(self, group_id, user_to_add):
+    def add_user_to_group(self, group_id, users_list):
         message = {"message_type": "group", "action": "add_user",
-                   "group_id": group_id, "user_to_add": user_to_add}
+                   "group_id": group_id, "users_to_add": json.dumps(users_list)}
         self.send_message_dict(message)
 
     def send_calling_user(self, user_that_is_called):
