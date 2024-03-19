@@ -1724,23 +1724,25 @@ class ChatBox(QWidget):
             print("no change")
 
     def create_dm_pressed(self):
-        self.Network.create_group(self.parent.selected_group_members)
-        print("You a created new group")
-        self.parent.is_create_group_pressed = False
-        self.parent.is_add_users_to_group_pressed = False
-        self.parent.selected_group_members.clear()
-        self.parent.create_group_index = 0
-        self.parent.updated_chat()
+        if len(self.parent.selected_group_members) != 0:
+            self.Network.create_group(self.parent.selected_group_members)
+            print("You a created new group")
+            self.parent.is_create_group_pressed = False
+            self.parent.is_create_group_inside_chat_pressed = False
+            self.parent.selected_group_members.clear()
+            self.parent.create_group_index = 0
+            self.parent.updated_chat()
 
     def add_users_to_group(self):
         group_id = self.current_group_id
-        self.Network.add_user_to_group(group_id, self.parent.selected_group_members)
-        print(f"Added user {self.parent.selected_group_members} to group of id {group_id}")
-        self.parent.is_create_group_pressed = False
-        self.parent.is_add_users_to_group_pressed = False
-        self.parent.selected_group_members.clear()
-        self.parent.create_group_index = 0
-        self.parent.updated_chat()
+        if len(self.parent.selected_group_members) != 0:
+            self.Network.add_user_to_group(group_id, self.parent.selected_group_members)
+            print(f"Added user {self.parent.selected_group_members} to group of id {group_id}")
+            self.parent.is_create_group_pressed = False
+            self.parent.is_create_group_inside_chat_pressed = False
+            self.parent.selected_group_members.clear()
+            self.parent.create_group_index = 0
+            self.parent.updated_chat()
 
     def friend_checkbox_changed(self, state):
         checkbox = self.sender()
