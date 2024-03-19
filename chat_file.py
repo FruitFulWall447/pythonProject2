@@ -4208,7 +4208,8 @@ class ScrollableWidget(QWidget):
 
             # Create a layout for the inner widget
             self.layout = QVBoxLayout(inner_widget)
-            self.layout.setSpacing(10)  # Adjust this value as needed
+            self.space_between_widgets = 10
+            self.layout.setSpacing(self.space_between_widgets)  # Adjust this value as needed
             self.layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # Align widgets to the left and top
 
             # Add labels and buttons to the layout
@@ -4406,7 +4407,10 @@ class ScrollableWidget(QWidget):
 
     def scroll_up_by_N_widgets(self, N):
         total_height = 0
-
+        for i in range(min(N * 2, self.layout.count())):
+            widget = self.layout.itemAt(i).widget()
+            if widget:
+                total_height += widget.sizeHint().height() + self.space_between_widgets
         print(f"total height is {total_height}")
         self.scroll_area.verticalScrollBar().setValue(total_height)
         self.scroll_value_changed(self.scroll_area.verticalScrollBar().value())
