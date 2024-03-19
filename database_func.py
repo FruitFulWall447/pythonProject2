@@ -465,13 +465,14 @@ def get_messages(sender, receiver):
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%'".format(
+            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%' ORDER BY timestamp".format(
                 id_format.replace('\'', '\'\''))
         else:
             query = """
                 SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type, file_name 
                 FROM messages
-                WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')
+                WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}') ORDER BY timestamp
+
             """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
         cursor.execute(query)
 

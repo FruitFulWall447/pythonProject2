@@ -166,6 +166,7 @@ def thread_recv_messages():
             #QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             #main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
             main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
+            main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
         if message_type == "new_message":
             new_message = data.get("new_message")
             QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
