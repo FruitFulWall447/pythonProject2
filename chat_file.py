@@ -4408,6 +4408,10 @@ class ScrollableWidget(QWidget):
         # Update your variable with the current scroll value
         if value == 0:
             print("scrolled all the way up")
+            if len(self.parent.parent.list_messages) >= 15:
+                self.parent.parent.Network.ask_for_more_messages()
+                print("asked for more messages")
+
         self.parent.parent.chat_start_index = value
 
 

@@ -844,6 +844,12 @@ class server_net:
         except Exception as e:
             print(f"error in send camera data is: {e}")
 
+    def send_to_client_he_has_all_of_the_messages(self):
+        message = {"message_type": "messages_status",
+                   "messages_status": "up_to_data"
+                   }
+        self.send_message_dict(message)
+
     def add_new_chat(self, chat_to_add):
         message = {"message_type": "add_chat",
                    "chat_to_add": chat_to_add

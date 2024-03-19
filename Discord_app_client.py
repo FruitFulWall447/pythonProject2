@@ -666,7 +666,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.is_chat_box_full = False
         self.is_friends_box_full = False
         self.is_last_message_on_screen = False
+
         self.list_messages = []
+        self.is_user_have_current_chat_all_messages = False
+
         self.request_list = []
         self.is_in_a_call = False
         self.is_calling = False

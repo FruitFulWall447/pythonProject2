@@ -138,7 +138,8 @@ def threaded_logged_in_client(n, User):
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
                             messages_list_index, messages_list_index+5)
                     messages_list_index += 5
-                    n.send_addition_messages_list(list_dict_of_messages)
+                    if len(list_dict_of_messages) > 0:
+                        n.send_addition_messages_list(list_dict_of_messages)
             if isinstance(message, list):
                 logger.info(f"Sent online users list to {User}")
                 friends_list = database_func.get_user_friends(User)
