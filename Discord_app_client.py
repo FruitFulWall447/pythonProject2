@@ -161,11 +161,10 @@ def thread_recv_messages():
             print("Updated the messages list")
         if message_type == "message_list_addition":
             message_list_addition = json.loads(data.get("message_list_addition"))
-            list_message_before = main_page.list_messages
             main_page.list_messages = main_page.list_messages + message_list_addition
             main_page.is_messages_need_update = True
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            main_page.updating_profile_dict_signal.emit(len(list_message_before) - len(message_list_addition))
+            main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
         if message_type == "new_message":
             new_message = data.get("new_message")
             QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
@@ -762,7 +761,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
         self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
         self.update_message_box_signal.connect(self.update_message_box)
-        self.scroll_back_to_index_before_update_signal(self.scroll_back_to_index_before_update_signal)
+        self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -815,6 +814,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def scroll_back_to_index_before_update(self, n_last_widgets):
         self.messages_content_saver.scroll_up_by_N_widgets(n_last_widgets)
+        print(f"scrolled back down by {n_last_widgets} widgets")
 
     def update_message_box(self):
         self.messages_content_saver.update_messages_layout()

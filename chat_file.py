@@ -4406,10 +4406,6 @@ class ScrollableWidget(QWidget):
         scroll_bar.setValue(index)
 
     def scroll_up_by_N_widgets(self, N):
-        # Get the vertical scroll bar of the scroll area
-        scroll_bar = self.scroll_area.verticalScrollBar()
-
-        # Get the height of each widget in the layout
         total_height = 0
         for i in range(min(N, self.layout.count())):
             widget = self.layout.itemAt(i).widget()
@@ -4417,12 +4413,12 @@ class ScrollableWidget(QWidget):
                 total_height += widget.sizeHint().height()
 
         # Scroll up by the total height of the first N widgets
-        scroll_bar.setValue(max(0, scroll_bar.value() - total_height))
+        self.scroll_area.verticalScrollBar().setValue(total_height)
+        self.scroll_value_changed(total_height)
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
         if value == 0:
-            print("scrolled all the way up")
             if len(self.parent.parent.list_messages) >= 15:
                 self.parent.parent.Network.ask_for_more_messages()
                 print("asked for more messages")
