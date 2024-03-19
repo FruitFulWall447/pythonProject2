@@ -932,15 +932,16 @@ class ChatBox(QWidget):
             self.call_button = self.create_top_page_button(call_button_x, call_button_y, icon)
             self.call_button.clicked.connect(self.call_user)
             icon = QIcon("discord_app_assets/add_user.png")
-            add_user_x = call_button_x - 50
-            add_user_y = call_button_y
-            self.add_user_button = self.create_top_page_button(add_user_x, add_user_y, icon)
+            self.add_user_x = call_button_x - 50
+            self.add_user_y = call_button_y
+            self.add_user_button = self.create_top_page_button(self.add_user_x, self.add_user_y, icon)
+            self.add_user_button.clicked.connect(self.add_user_to_group_pressed)
 
             if self.current_group_id:
                 group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
                 if group_manager == self.parent.username:
                     icon = QIcon("discord_app_assets/edit_name.png")
-                    rename_group_x = add_user_x - 50
+                    rename_group_x = self.add_user_x - 50
                     rename_group_y = call_button_y
                     self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
                     icon = QIcon("discord_app_assets/edit_image_icon.png")
@@ -1253,11 +1254,22 @@ class ChatBox(QWidget):
         settings_button.clicked.connect(self.parent.Settings_clicked)
 
         if self.parent.is_create_group_pressed:
-           create_group_box = CreateGroupBox(self)
+           create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
            create_group_box.raise_()
+        elif self.parent.is_create_group_inside_chat_pressed:
+            if self.parent.is_current_chat_a_group:
+                create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "add")
+            else:
+                create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "create")
+            create_group_box.raise_()
             #self.display_create_group_box()
         #chats_widget.raise_()
         self.raise_needed_elements()
+
+    def add_user_to_group_pressed(self):
+        self.parent.is_create_group_pressed = False
+        self.parent.is_create_group_inside_chat_pressed = True
+        self.parent.updated_chat()
 
     def change_group_image(self):
         self.open_file_dialog_for_changing_group_image()
@@ -2488,6 +2500,7 @@ class ChatBox(QWidget):
             self.image_too_big.hide()
             self.parent.size_error_label = False
             self.parent.file_to_send = None
+            self.parent.is_create_group_inside_chat_pressed = False
             self.parent.file_name = ""
             self.parent.updated_chat()
 
@@ -4374,10 +4387,13 @@ class ScrollableWidget(QWidget):
 
 
 class CreateGroupBox(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, x, y, box_format):
         super().__init__()
         self.parent = parent
         try:
+            self.x = x
+            self.y = y
+            self.box_format = box_format
             self.create_group_open_x = self.parent.create_group_open_x
             self.create_group_open_y = self.parent.create_group_open_y
             self.selected_group_members = self.parent.parent.selected_group_members
@@ -4391,8 +4407,12 @@ class CreateGroupBox(QWidget):
 
     def initUI(self):
         try:
-            starter_x = self.create_group_open_x
-            starter_y_of_border = self.create_group_open_y + 50
+            if self.box_format == "create":
+                submit_button_text = "Create DM"
+            else:
+                submit_button_text = "ADD"
+            starter_x = self.x
+            starter_y_of_border = self.y + 50
             adding_border_height = 400
             adding_border_width = 300
 
@@ -4406,20 +4426,28 @@ class CreateGroupBox(QWidget):
             label = QLabel(f"Select friends", self.parent)
             label.setStyleSheet("""color: white;font-size: 20px;""")
             label.move(starter_x + 20, starter_y_of_border + 10)
-
-            label = QLabel(
-                f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends",
-                self.parent)
-            label.setStyleSheet("""color: white;font-size: 14px;""")
-            label.move(starter_x + 20, starter_y_of_border + 45)
-
             Page = 0
             if len(self.friends_list) > 0:
                 Page = self.create_group_index + 1
-            label = QLabel(f"Page({Page}/"
-                           f"{calculate_division_value(len(self.friends_list))})"
-                           f"     "
-                           f"Selected({len(self.selected_group_members)})", self.parent)
+
+            if self.parent.parent.is_create_group_inside_chat_pressed:
+                if self.parent.group_id:
+                    group_members = self.parent.parent.get_number_of_members_by_group_id(self.parent.group_id)
+                    amount_of_people_to_add_text = f"You can add {self.group_max_members - len(group_members) - len(self.selected_group_members)} more friends"
+                    text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+                else:
+                    amount_of_people_to_add_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
+                    text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+            else:
+                amount_of_people_to_add_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
+                text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+            label = QLabel(amount_of_people_to_add_text, self.parent)
+            label.setStyleSheet("""color: white;font-size: 14px;""")
+            label.move(starter_x + 20, starter_y_of_border + 45)
+
+
+
+            label = QLabel(text_inside_label, self.parent)
             label.setStyleSheet("""color: white;font-size: 12px;""")
             label.move(starter_x + 40, starter_y_of_border + 75)
 
@@ -4467,7 +4495,20 @@ class CreateGroupBox(QWidget):
                             background-color: #3498db; /* Bluish hover color */
                         }}
                     ''')
-                    friend_label.clicked.connect(self.parent.toggle_checkbox)
+                    if self.parent.parent.is_create_group_inside_chat_pressed:
+                        if self.parent.group_id:
+                            group_members = self.parent.parent.get_number_of_members_by_group_id(self.parent.group_id)
+                            if friend in group_members:
+                                pass
+                            else:
+                                friend_label.clicked.connect(self.parent.toggle_checkbox)
+                        else:
+                            if self.parent.parent.selected_chat == friend:
+                                pass
+                            else:
+                                friend_label.clicked.connect(self.parent.toggle_checkbox)
+                    else:
+                        friend_label.clicked.connect(self.parent.toggle_checkbox)
                     friend_checkbox = QCheckBox(self.parent)
                     if friend in self.selected_group_members:
                         friend_checkbox.setChecked(True)
@@ -4481,7 +4522,7 @@ class CreateGroupBox(QWidget):
                     friend_checkbox.raise_()
                 i += 1
 
-            button = QPushButton("Create DM", self.parent)
+            button = QPushButton(submit_button_text, self.parent)
             button.move(starter_x + 15, starter_y_of_border + adding_border_height - 80)
             button.setFixedHeight(self.parent.friends_button_height)
             button.clicked.connect(self.parent.create_dm_pressed)

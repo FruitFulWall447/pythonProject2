@@ -648,6 +648,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.screen_height = screen.height()
 
         self.is_create_group_pressed = False
+        self.is_create_group_inside_chat_pressed = False
+
         self.is_rename_group_pressed = False
         self.is_add_users_to_group_pressed = False
 
