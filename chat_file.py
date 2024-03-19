@@ -2513,7 +2513,7 @@ class ChatBox(QWidget):
             except Exception as e:
                 print(f"error selected_chat_changed {e}")
             self.parent.selected_chat = name
-            self.parent.chat_start_index = 0
+            self.parent.chat_start_index = None
             self.Network.updated_current_chat(name)
             self.image_too_big.hide()
             self.parent.size_error_label = False
@@ -4202,7 +4202,6 @@ class ScrollableWidget(QWidget):
             inner_widget = QWidget()
             spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
             len_message_list = len(self.parent.parent.list_messages)
-            self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
 
             # Set fixed width for inner widget to ensure proper layout
             #inner_widget.setFixedWidth(380)
@@ -4215,7 +4214,6 @@ class ScrollableWidget(QWidget):
             # Add labels and buttons to the layout
             self.load_all_message_func(reversed(self.parent.parent.list_messages))
 
-
             # Set the inner widget as the scroll area's widget
             self.scroll_area.setWidget(inner_widget)
             self.scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
@@ -4223,11 +4221,13 @@ class ScrollableWidget(QWidget):
                 max = self.scroll_area.verticalScrollBar().maximum()
                 self.scroll_area.verticalScrollBar().setValue(max)
                 print(f"Scrolled to maximum {max}")
-                self.scroll_value_changed(self.scroll_area.verticalScrollBar().maximum())
+                self.scroll_value_changed(max)
                 # Reset the flag
                 self.parent.parent.is_new_chat_clicked = False
             else:
-                self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
+                if self.parent.parent.chat_start_index is not None:
+                    self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
+            self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
         except Exception as e:
             print(f"Error in creating messages box {e}")
 
@@ -4417,7 +4417,7 @@ class ScrollableWidget(QWidget):
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
-
+        print(f"got value {value}")
         if value == 0 and not self.parent.parent.is_new_chat_clicked:
             if len(self.parent.parent.list_messages) >= 15:
                 self.parent.parent.Network.ask_for_more_messages()

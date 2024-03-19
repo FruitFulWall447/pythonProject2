@@ -717,7 +717,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.chats_list = []
         self.file_to_send = None
         self.file_name = ""
-        self.chat_start_index = 0
+        self.chat_start_index = None
         self.Network = Netwrok
         self.chat_box_chats_index = 0
         self.chat_box_index_y_start = 100
@@ -742,7 +742,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.is_new_chat_clicked = True
 
-        self.chat_start_index_max = float('inf')
         self.current_chat_box_search = False
         self.temp_search_list = []
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -1491,8 +1490,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                         parent=self, Network=n)
             except Exception as e:
                 print(f"error in creating chat_box on updated_chat_func : {e}")
-            if self.chat_box.messages_list is None:
-                self.chat_start_index = 0
 
             self.stacked_widget.insertWidget(0, self.chat_box)
             self.chat_box.text_entry.setText(text)
