@@ -113,7 +113,7 @@ def threaded_logged_in_client(n, User):
     flag_is_call_sent = False
     client_current_chat = ""
     logger = logging.getLogger(__name__)
-    numbers_of_starter_message = 15
+    numbers_of_starter_message = 20
     messages_list_max_index = numbers_of_starter_message
     while True:
         time.sleep(0.05)

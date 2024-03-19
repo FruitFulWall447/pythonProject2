@@ -4412,8 +4412,9 @@ class ScrollableWidget(QWidget):
                 total_height += widget.sizeHint().height()
 
         # Scroll up by the total height of the first N widgets
-        self.scroll_area.verticalScrollBar().setValue(total_height)
-        self.scroll_value_changed(total_height)
+        current_scroll_value = self.scroll_area.verticalScrollBar().value()
+        self.scroll_area.verticalScrollBar().setValue(max(0, current_scroll_value - total_height))
+        self.scroll_value_changed(self.scroll_area.verticalScrollBar().value())
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
