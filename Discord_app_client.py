@@ -1320,6 +1320,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                             self.chat_box.text_entry.setFocus()
                             self.is_new_chat_clicked = True
                             self.updated_chat()
+                            self.chat_box.text_entry.setFocus(True)
                 if self.file_to_send:
                     print(len(self.file_to_send))
                     # Compresses the byte representation of an image using zlib,
@@ -1362,6 +1363,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.file_name = ""
                     self.is_new_chat_clicked = True
                     self.updated_chat()
+                    self.chat_box.text_entry.setFocus(True)
                 elif social_clicked:
                     self.friends_box.send_friend_request()
             except Exception as e:

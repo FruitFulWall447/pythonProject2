@@ -114,7 +114,7 @@ def threaded_logged_in_client(n, User):
     client_current_chat = ""
     logger = logging.getLogger(__name__)
     numbers_of_starter_message = 15
-    messages_list_index = numbers_of_starter_message
+    messages_list_max_index = numbers_of_starter_message
     while True:
         time.sleep(0.05)
 
@@ -130,14 +130,18 @@ def threaded_logged_in_client(n, User):
                         database_func.add_chat_to_user(User, client_current_chat)
                         n.add_new_chat(client_current_chat)
                         logger.info(f"added new chat to {User}")
+                    all_chat_messages = database_func.get_messages(User, client_current_chat)
+                    if len(all_chat_messages) < numbers_of_starter_message:
+                        messages_list_max_index = len(all_chat_messages)
+                    else:
+                         messages_list_max_index = numbers_of_starter_message
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
-                                                                                      , numbers_of_starter_message)
-                    messages_list_index = numbers_of_starter_message
+                                                                                      , messages_list_max_index)
                     n.send_messages_list(list_dict_of_messages)
                 if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
-                            messages_list_index, messages_list_index+5)
-                    messages_list_index += 5
+                            messages_list_max_index+1, messages_list_max_index+6)
+                    messages_list_max_index += 6
                     if len(list_dict_of_messages) > 0:
                         n.send_addition_messages_list(list_dict_of_messages)
             if isinstance(message, list):
