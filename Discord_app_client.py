@@ -162,9 +162,10 @@ def thread_recv_messages():
         if message_type == "message_list_addition":
             message_list_addition = json.loads(data.get("message_list_addition"))
             main_page.list_messages = main_page.list_messages + message_list_addition
-            main_page.is_messages_need_update = True
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
+            #main_page.is_messages_need_update = True
+            #QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+            #main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
+            main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
         if message_type == "new_message":
             new_message = data.get("new_message")
             QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
@@ -603,6 +604,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     caching_circular_images_of_groups_signal = pyqtSignal()
     updating_profile_dict_signal = pyqtSignal(str, dict)
     update_group_lists_by_group = pyqtSignal(dict)
+    insert_messages_into_message_box_signal = pyqtSignal(list)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     update_message_box_signal = pyqtSignal()
 
@@ -761,6 +763,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
         self.update_message_box_signal.connect(self.update_message_box)
         self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
+        self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -814,6 +817,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def scroll_back_to_index_before_update(self, n_last_widgets):
         self.messages_content_saver.scroll_up_by_N_widgets(n_last_widgets)
         print(f"scrolled back down by {n_last_widgets} widgets")
+
+    def insert_messages_into_message_box(self, messages_list):
+        self.messages_content_saver.insert_messages_list_to_layout(messages_list)
 
     def update_message_box(self):
         self.messages_content_saver.update_messages_layout()

@@ -4240,6 +4240,16 @@ class ScrollableWidget(QWidget):
             self.add_message_to_layout(i)
 
     def add_message_to_layout(self, message):
+        self.add_or_insert_message_to_layout(message, False)
+
+    def insert_message_to_layout(self, message):
+        self.add_or_insert_message_to_layout(message, True)
+
+    def insert_messages_list_to_layout(self, message_list):
+        for i in message_list:
+            self.insert_message_to_layout(i)
+
+    def add_or_insert_message_to_layout(self, message, is_insert):
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
         i = message
         message_content = i.get("content")
@@ -4257,8 +4267,12 @@ class ScrollableWidget(QWidget):
             title_label.setText(
                 f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                 f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-            self.layout.addWidget(title_label)
-            self.layout.addWidget(content_label)
+            if not is_insert:
+                self.layout.addWidget(title_label)
+                self.layout.addWidget(content_label)
+            else:
+                self.layout.insertWidget(0, content_label)
+                self.layout.insertWidget(0, title_label)
         elif message_type == "image":
             try:
                 decoded_compressed_image_bytes = base64.b64decode(message_content)
@@ -4278,8 +4292,12 @@ class ScrollableWidget(QWidget):
                     f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                     f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
-                self.layout.addWidget(title_label)
-                self.layout.addWidget(image_label)
+                if not is_insert:
+                    self.layout.addWidget(title_label)
+                    self.layout.addWidget(image_label)
+                else:
+                    self.layout.insertWidget(0, image_label)
+                    self.layout.insertWidget(0, title_label)
             except Exception as e:
                 print(f"error in show messages is:{e}")
         elif message_type == "video":
@@ -4313,8 +4331,12 @@ class ScrollableWidget(QWidget):
                 title_label.setText(
                     f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                     f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-                self.layout.addWidget(title_label)
-                self.layout.addWidget(video_label)
+                if not is_insert:
+                    self.layout.addWidget(title_label)
+                    self.layout.addWidget(video_label)
+                else:
+                    self.layout.insertWidget(0, video_label)
+                    self.layout.insertWidget(0, title_label)
             except Exception as e:
                 print(f"error in show messages is:{e}")
         elif message_type == "audio":
@@ -4342,8 +4364,12 @@ class ScrollableWidget(QWidget):
                     f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                     f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
-                self.layout.addWidget(title_label)
-                self.layout.addWidget(audio_label)
+                if not is_insert:
+                    self.layout.addWidget(title_label)
+                    self.layout.addWidget(audio_label)
+                else:
+                    self.layout.insertWidget(0, audio_label)
+                    self.layout.insertWidget(0, title_label)
             except Exception as e:
                 print("error in audio file")
         elif message_type in basic_files_types:
@@ -4383,8 +4409,12 @@ class ScrollableWidget(QWidget):
                     f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                     f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
-                self.layout.addWidget(title_label)
-                self.layout.addWidget(link_label)
+                if not is_insert:
+                    self.layout.addWidget(title_label)
+                    self.layout.addWidget(link_label)
+                else:
+                    self.layout.insertWidget(0, link_label)
+                    self.layout.insertWidget(0, title_label)
             except Exception as e:
                 print(f"error in show messages is:{e}")
 
