@@ -680,7 +680,6 @@ class ChatBox(QWidget):
             if self.parent.is_messages_need_update:
                 temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
                 self.parent.messages_content_saver = temp_widget
-                print("updated_message_box")
                 self.parent.is_messages_need_update = False
             else:
                 temp_widget = self.parent.messages_content_saver.update_scroll_area_parent(self)
@@ -4418,7 +4417,8 @@ class ScrollableWidget(QWidget):
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
-        if value == 0:
+
+        if value == 0 and not self.parent.parent.is_new_chat_clicked:
             if len(self.parent.parent.list_messages) >= 15:
                 self.parent.parent.Network.ask_for_more_messages()
                 print("asked for more messages")
