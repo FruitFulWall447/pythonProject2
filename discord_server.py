@@ -493,7 +493,16 @@ def thread_recv_messages(n, addr, username):
                     database_func.update_group_image(int(group_id), image_bytes)
                     Communication.update_group_dict_for_members(group_id)
                     logger.info(f"Update group image of id: {group_id} was updated by {User}")
-
+                if action == "add_user":
+                    group_id = data.get("group_id")
+                    user_to_add = data.get("user_to_add")
+                    group_dict = database_func.get_group_by_id(group_id)
+                    group_manager = group_dict.get("group_manager")
+                    if group_manager == User:
+                        database_func.append_group_member(group_id, user_to_add)
+                        logger.info(f"Added {user_to_add} to group of id {group_id} by {User}")
+                    else:
+                        logger.critical(f"{User} tried to add user to group where he has no permissions")
 
 Communication = Communication()
 

@@ -328,6 +328,11 @@ class client_net:
                    "action": "create", "group_members_list": json_group_members_list}
         self.send_message_dict(message)
 
+    def add_user_to_group(self, group_id, user_to_add):
+        message = {"message_type": "group", "action": "add_user",
+                   "group_id": group_id, "user_to_add": user_to_add}
+        self.send_message_dict(message)
+
     def send_calling_user(self, user_that_is_called):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",

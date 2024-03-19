@@ -1693,7 +1693,7 @@ class ChatBox(QWidget):
         button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         button.setFixedWidth(adding_border_width - 30)
 
-    def toggle_checkbox(self):
+    def toggle_checkbox(self, create_or_add_group_widget):
         sender = self.sender()
         if isinstance(sender, QPushButton):
             friend_name = sender.friend_name
@@ -1702,6 +1702,7 @@ class ChatBox(QWidget):
                 if isinstance(child, QCheckBox) and child.friend_name == friend_name
             )
             friend_checkbox.toggle()
+            create_or_add_group_widget.update_labels_text()
             self.friend_checkbox_changed(friend_checkbox.isChecked())
 
     def handle_create_group_index(self, format):
@@ -1726,6 +1727,16 @@ class ChatBox(QWidget):
         self.Network.create_group(self.parent.selected_group_members)
         print("You a created new group")
         self.parent.is_create_group_pressed = False
+        self.parent.is_add_users_to_group_pressed = False
+        self.parent.selected_group_members.clear()
+        self.parent.create_group_index = 0
+        self.parent.updated_chat()
+
+    def add_user_to_group(self, group_id, user_to_add):
+        self.Network.add_user_to_group(group_id, user_to_add)
+        print(f"Added user {user_to_add} to group of id {group_id}")
+        self.parent.is_create_group_pressed = False
+        self.parent.is_add_users_to_group_pressed = False
         self.parent.selected_group_members.clear()
         self.parent.create_group_index = 0
         self.parent.updated_chat()
@@ -4445,15 +4456,15 @@ class CreateGroupBox(QWidget):
             else:
                 page_plus_selected_label_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
                 page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
-            page_plus_selected_label = QLabel(page_plus_selected_label_text, self.parent)
-            page_plus_selected_label.setStyleSheet("""color: white;font-size: 14px;""")
-            page_plus_selected_label.move(starter_x + 20, starter_y_of_border + 45)
+            self.page_plus_selected_label = QLabel(page_plus_selected_label_text, self.parent)
+            self.page_plus_selected_label.setStyleSheet("""color: white;font-size: 14px;""")
+            self.page_plus_selected_label.move(starter_x + 20, starter_y_of_border + 45)
 
 
 
-            amount_of_people_to_add_text_label = QLabel(page_plus_selected_text, self.parent)
-            amount_of_people_to_add_text_label.setStyleSheet("""color: white;font-size: 12px;""")
-            amount_of_people_to_add_text_label.move(starter_x + 40, starter_y_of_border + 75)
+            self.amount_of_people_to_add_text_label = QLabel(page_plus_selected_text, self.parent)
+            self.amount_of_people_to_add_text_label.setStyleSheet("""color: white;font-size: 12px;""")
+            self.amount_of_people_to_add_text_label.move(starter_x + 40, starter_y_of_border + 75)
 
             style_sheet = f"""
             QPushButton {{
@@ -4506,14 +4517,14 @@ class CreateGroupBox(QWidget):
                             if friend in group_members:
                                 friend_checkbox.setChecked(True)
                             else:
-                                friend_label.clicked.connect(self.parent.toggle_checkbox)
+                                friend_label.clicked.connect(partial(self.parent.toggle_checkbox, self))
                         else:
                             if self.parent.parent.selected_chat == friend:
                                 friend_checkbox.setChecked(True)
                             else:
-                                friend_label.clicked.connect(self.parent.toggle_checkbox)
+                                friend_label.clicked.connect(partial(self.parent.toggle_checkbox, self))
                     else:
-                        friend_label.clicked.connect(self.parent.toggle_checkbox)
+                        friend_label.clicked.connect(partial(self.parent.toggle_checkbox, self))
                     if friend in self.selected_group_members:
                         friend_checkbox.setChecked(True)
                     friend_checkbox.friend_name = friend  # Store friend's name as an attribute
@@ -4529,7 +4540,8 @@ class CreateGroupBox(QWidget):
             button = QPushButton(submit_button_text, self.parent)
             button.move(starter_x + 15, starter_y_of_border + adding_border_height - 80)
             button.setFixedHeight(self.parent.friends_button_height)
-            button.clicked.connect(self.parent.create_dm_pressed)
+            if self.box_format == "create":
+                button.clicked.connect(self.parent.create_dm_pressed)
 
             button.setStyleSheet(f"""
                 QPushButton {{
@@ -4558,6 +4570,26 @@ class CreateGroupBox(QWidget):
             button.setFixedWidth(adding_border_width - 30)
         except Exception as e:
             print(f"error in creating group box {e}")
+
+    def update_labels_text(self):
+        Page = 0
+        if len(self.friends_list) > 0:
+            Page = self.create_group_index + 1
+        if self.parent.parent.is_create_group_inside_chat_pressed:
+            if self.parent.current_group_id:
+                number_of_group_members = self.parent.parent.get_number_of_members_by_group_id(
+                    self.parent.current_group_id)
+                page_plus_selected_label_text = f"You can add {self.group_max_members - number_of_group_members - len(self.selected_group_members)} more friends"
+                page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+            else:
+                page_plus_selected_label_text = f"You can add {(self.group_max_members - 2) - len(self.selected_group_members)} more friends"
+                page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+        else:
+            page_plus_selected_label_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
+            page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+        self.page_plus_selected_label.setText(page_plus_selected_label_text)
+        self.amount_of_people_to_add_text_label.setText(page_plus_selected_text)
+
 
 
 class VideoThumbnailWidget(QWidget):
