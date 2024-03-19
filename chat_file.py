@@ -684,6 +684,7 @@ class ChatBox(QWidget):
                 self.parent.is_messages_need_update = False
             else:
                 temp_widget = self.parent.messages_content_saver.update_scroll_area_parent(self)
+
             self.around_name.raise_()
             self.ringing_square_label = QLabel(self)
             ringing_square_label_x = 1500
