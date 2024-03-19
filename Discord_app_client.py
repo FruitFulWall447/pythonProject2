@@ -1040,11 +1040,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         return False
 
     def get_number_of_members_by_group_id(self, group_id):
+        return len(self.get_group_members_by_group_id(group_id))
+
+    def get_group_members_by_group_id(self, group_id):
         group_id = int(group_id)
         for group in self.groups_list:
             if group["group_id"] == group_id:
-                return len(group["group_members"])
-        return 0  # Return 0 if the group ID is not found
+                return group["group_members"]
+        return None  # Return 0 if the group ID is not found
 
     def remove_call_dict_by_id(self, id_to_remove):
         for call_dict in self.call_dicts:

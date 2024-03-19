@@ -1267,9 +1267,13 @@ class ChatBox(QWidget):
         self.raise_needed_elements()
 
     def add_user_to_group_pressed(self):
-        self.parent.is_create_group_pressed = False
-        self.parent.is_create_group_inside_chat_pressed = True
-        self.parent.updated_chat()
+        if self.parent.is_create_group_inside_chat_pressed:
+            self.parent.is_create_group_inside_chat_pressed = False
+            self.parent.updated_chat()
+        else:
+            self.parent.is_create_group_pressed = False
+            self.parent.is_create_group_inside_chat_pressed = True
+            self.parent.updated_chat()
 
     def change_group_image(self):
         self.open_file_dialog_for_changing_group_image()
@@ -1738,7 +1742,7 @@ class ChatBox(QWidget):
                     self.parent.selected_group_members.remove(friend_name)
         except Exception as e:
             print(f"friend_checkbox_changed error :{e}")
-        self.parent.updated_chat()
+        #self.parent.updated_chat()
 
     def is_mouse_on_chats_list(self, mouse_pos):
         box_geometry = self.border_label.geometry()
@@ -4431,25 +4435,25 @@ class CreateGroupBox(QWidget):
                 Page = self.create_group_index + 1
 
             if self.parent.parent.is_create_group_inside_chat_pressed:
-                if self.parent.group_id:
-                    group_members = self.parent.parent.get_number_of_members_by_group_id(self.parent.group_id)
-                    amount_of_people_to_add_text = f"You can add {self.group_max_members - len(group_members) - len(self.selected_group_members)} more friends"
-                    text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+                if self.parent.current_group_id:
+                    number_of_group_members = self.parent.parent.get_number_of_members_by_group_id(self.parent.current_group_id)
+                    page_plus_selected_label_text = f"You can add {self.group_max_members - number_of_group_members - len(self.selected_group_members)} more friends"
+                    page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
                 else:
-                    amount_of_people_to_add_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
-                    text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+                    page_plus_selected_label_text = f"You can add {(self.group_max_members - 2) - len(self.selected_group_members)} more friends"
+                    page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
             else:
-                amount_of_people_to_add_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
-                text_inside_label = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
-            label = QLabel(amount_of_people_to_add_text, self.parent)
-            label.setStyleSheet("""color: white;font-size: 14px;""")
-            label.move(starter_x + 20, starter_y_of_border + 45)
+                page_plus_selected_label_text = f"You can add {(self.group_max_members - 1) - len(self.selected_group_members)} more friends"
+                page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
+            page_plus_selected_label = QLabel(page_plus_selected_label_text, self.parent)
+            page_plus_selected_label.setStyleSheet("""color: white;font-size: 14px;""")
+            page_plus_selected_label.move(starter_x + 20, starter_y_of_border + 45)
 
 
 
-            label = QLabel(text_inside_label, self.parent)
-            label.setStyleSheet("""color: white;font-size: 12px;""")
-            label.move(starter_x + 40, starter_y_of_border + 75)
+            amount_of_people_to_add_text_label = QLabel(page_plus_selected_text, self.parent)
+            amount_of_people_to_add_text_label.setStyleSheet("""color: white;font-size: 12px;""")
+            amount_of_people_to_add_text_label.move(starter_x + 40, starter_y_of_border + 75)
 
             style_sheet = f"""
             QPushButton {{
@@ -4473,8 +4477,8 @@ class CreateGroupBox(QWidget):
             scroll_down_button.setFixedWidth(50)
             scroll_down_button.setStyleSheet(style_sheet)
 
-            starter_x = self.create_group_open_x
-            starter_y = self.create_group_open_y + 150
+            starter_x = self.x
+            starter_y = self.y + 150
             i = 0
             for friend in self.friends_list:
                 if i >= self.create_group_index * 5:
@@ -4495,21 +4499,21 @@ class CreateGroupBox(QWidget):
                             background-color: #3498db; /* Bluish hover color */
                         }}
                     ''')
+                    friend_checkbox = QCheckBox(self.parent)
                     if self.parent.parent.is_create_group_inside_chat_pressed:
-                        if self.parent.group_id:
-                            group_members = self.parent.parent.get_number_of_members_by_group_id(self.parent.group_id)
+                        if self.parent.current_group_id:
+                            group_members = self.parent.parent.get_group_members_by_group_id(self.parent.current_group_id)
                             if friend in group_members:
-                                pass
+                                friend_checkbox.setChecked(True)
                             else:
                                 friend_label.clicked.connect(self.parent.toggle_checkbox)
                         else:
                             if self.parent.parent.selected_chat == friend:
-                                pass
+                                friend_checkbox.setChecked(True)
                             else:
                                 friend_label.clicked.connect(self.parent.toggle_checkbox)
                     else:
                         friend_label.clicked.connect(self.parent.toggle_checkbox)
-                    friend_checkbox = QCheckBox(self.parent)
                     if friend in self.selected_group_members:
                         friend_checkbox.setChecked(True)
                     friend_checkbox.friend_name = friend  # Store friend's name as an attribute
