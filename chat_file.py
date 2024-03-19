@@ -1183,10 +1183,15 @@ class ChatBox(QWidget):
         self.friends_button.clicked.connect(self.parent.Social_clicked)
 
         try:
+            friend_starter_y = 170
+            friend_x = 250
             if not self.parent.current_chat_box_search:
-                self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
+                #self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
+                chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
             else:
-                self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
+
+                #self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
+                chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
         except Exception as e:
             print(f"error in showing chats list{e}")
 
@@ -4214,20 +4219,24 @@ class ScrollableWidget(QWidget):
                     self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
 
                     video_label.clicked.connect(lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
-                    play_button = QPushButton(self)
+
+
+                    play_button = QPushButton(video_label)
                     play_button_icon_path = "discord_app_assets/play_video_icon.png"
                     play_button_size = (50, 50)
                     play_button.clicked.connect(
                         lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
                     set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
-
+                    play_button.move(0 + (0.5 * video_label.width() - 0.5 * play_button_size[0]),
+                                     0 + (0.5 * video_label.height() - 0.5 * play_button_size[1]))
                     make_q_object_clear(play_button)
+
+                    #video_frame = VideoThumbnailWidget(self, video_label, play_button)
                     message = ""
                     title_label = self.parent.create_temp_message_label(message)
                     title_label.setText(
                         f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                         f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-
                     layout.addWidget(title_label)
                     layout.addWidget(video_label)
                 except Exception as e:
@@ -4315,6 +4324,73 @@ class ScrollableWidget(QWidget):
             self.parent.parent.is_new_chat_clicked = False
         else:
             scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
+
+
+    def scroll_to_index(self, index):
+        # Get the vertical scroll bar of the scroll area
+        scroll_bar = self.scroll_area.verticalScrollBar()
+
+        # Set the scroll bar value to scroll to the specified index
+        scroll_bar.setValue(index)
+
+    def scroll_value_changed(self, value):
+        # Update your variable with the current scroll value
+        self.parent.parent.chat_start_index = value
+
+
+class ScrollableChats(QWidget):
+    def __init__(self, parent, width, height, x, y, chats_list):
+        super().__init__()
+        self.chats_list = chats_list
+        self.parent = parent
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+        self.initUI()
+
+    def initUI(self):
+        # Create a scroll area
+        scroll_area = QScrollArea(self.parent)
+        scroll_area.setWidgetResizable(True)
+
+        # Create a widget to contain labels and buttons
+        inner_widget = QWidget()
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
+
+        # Set fixed width for inner widget to ensure proper layout
+        inner_widget.setFixedWidth(380)
+
+        # Create a layout for the inner widget
+        layout = QVBoxLayout(inner_widget)
+        layout.setSpacing(10)  # Adjust this value as needed
+
+
+        style_sheet = '''
+            color: white;
+            font-size: 15px;
+            margin-bottom: 2px;
+        '''
+        self.friends_button_height = 50
+        friend_starter_y = 170 + (self.parent.chat_box_chats_index * -50)
+        friend_x = 250
+        for chat in self.chats_list:
+            try:
+                button = self.parent.create_friend_button(chat, self, style_sheet, (friend_x, friend_starter_y))
+                layout.addWidget(button)
+            except Exception as e:
+                print(f"error in drew friends button {e}")
+
+        scroll_area.setWidget(inner_widget)
+        scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+
+
+
+        # Set the inner widget as the scroll area's widget
+        scroll_area.setWidget(inner_widget)
+        scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+
 
 
     def scroll_to_index(self, index):
@@ -4469,6 +4545,31 @@ class CreateGroupBox(QWidget):
             button.setFixedWidth(adding_border_width - 30)
         except Exception as e:
             print(f"error in creating group box {e}")
+
+
+class VideoThumbnailWidget(QWidget):
+    def __init__(self, parent, video_button, play_button):
+        super().__init__()
+        try:
+            self.parent = parent
+
+            # Set the video_button as the parent widget of the play_button
+            play_button.setParent(video_button)
+
+            # Calculate the position to center the play_button inside the video_button
+            play_width = play_button.width()
+            play_height = play_button.height()
+            video_width = video_button.width()
+            video_height = video_button.height()
+            play_x = (video_width - play_width) // 2
+            play_y = (video_height - play_height) // 2
+
+            # Move the play_button to the center of the video_button
+            play_button.move(play_x, play_y)
+
+        except Exception as e:
+            print(f"Error in creating thumbnail: {e}")
+
 
 
 
