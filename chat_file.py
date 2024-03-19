@@ -684,6 +684,7 @@ class ChatBox(QWidget):
                 self.parent.is_messages_need_update = False
             else:
                 temp_widget = self.parent.messages_content_saver.update_scroll_area_parent(self)
+                self.parent.messages_content_saver = temp_widget
 
             self.around_name.raise_()
             self.ringing_square_label = QLabel(self)
@@ -4403,6 +4404,20 @@ class ScrollableWidget(QWidget):
 
         # Set the scroll bar value to scroll to the specified index
         scroll_bar.setValue(index)
+
+    def scroll_up_by_N_widgets(self, N):
+        # Get the vertical scroll bar of the scroll area
+        scroll_bar = self.scroll_area.verticalScrollBar()
+
+        # Get the height of each widget in the layout
+        total_height = 0
+        for i in range(min(N, self.layout.count())):
+            widget = self.layout.itemAt(i).widget()
+            if widget:
+                total_height += widget.sizeHint().height()
+
+        # Scroll up by the total height of the first N widgets
+        scroll_bar.setValue(max(0, scroll_bar.value() - total_height))
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
