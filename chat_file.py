@@ -4205,11 +4205,12 @@ class ScrollableWidget(QWidget):
             self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
 
             # Set fixed width for inner widget to ensure proper layout
-            inner_widget.setFixedWidth(380)
+            #inner_widget.setFixedWidth(380)
 
             # Create a layout for the inner widget
             self.layout = QVBoxLayout(inner_widget)
             self.layout.setSpacing(10)  # Adjust this value as needed
+            self.layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # Align widgets to the left and top
 
             # Add labels and buttons to the layout
             self.load_all_message_func(reversed(self.parent.parent.list_messages))
@@ -4266,6 +4267,8 @@ class ScrollableWidget(QWidget):
                 image_label.setStyleSheet("background-color: transparent; border: none;")
 
                 self.parent.load_image_from_bytes_to_button(image_bytes, image_label)
+                image_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
+
                 image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
 
                 message = ""
@@ -4287,6 +4290,8 @@ class ScrollableWidget(QWidget):
                 video_label.setStyleSheet("background-color: transparent; border: none;")
                 first_video_frame_bytes = extract_first_frame(video_bytes)
                 self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
+                video_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
+
 
                 video_label.clicked.connect(
                     lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
