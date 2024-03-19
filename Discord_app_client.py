@@ -156,6 +156,7 @@ def thread_recv_messages():
             message_list = json.loads(data.get("messages_list"))
             main_page.list_messages = message_list
             main_page.is_new_chat_clicked = True
+            main_page.is_messages_need_update = True
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the messages list")
         if message_type == "new_message":
@@ -596,6 +597,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     caching_circular_images_of_groups_signal = pyqtSignal()
     updating_profile_dict_signal = pyqtSignal(str, dict)
     update_group_lists_by_group = pyqtSignal(dict)
+    update_message_box_signal = pyqtSignal()
 
     def __init__(self, Netwrok):
         super().__init__()
@@ -692,6 +694,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.font_size = 12
 
         self.is_watching_video = False
+        # the scroll widget that contain all of the messages
+        self.messages_content_saver = None
+        self.is_messages_need_update = True
 
         self.online_users_list = []
         self.friends_list = []
@@ -743,6 +748,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.disconnect_signal.connect(self.quit_application)
         self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
         self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
+        self.update_message_box_signal.connect(self.update_message_box)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -792,6 +798,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_message_box(self):
+        self.messages_content_saver.update_messages_layout()
 
     def update_groups_list_by_dict(self, updated_group_dict):
         index = 0
@@ -1405,11 +1414,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Scrolling up
 
                 self.chat_box_chats_index += 1
-                self.updated_chat()
+                self.update_chat_for_chats_scroll()
             elif delta < 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos):
                 # Scrolling down, but prevent scrolling beyond the first message
                 self.chat_box_chats_index -= 1
-                self.updated_chat()
+                self.update_chat_for_chats_scroll()
         if social_clicked:
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
@@ -1436,8 +1445,16 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.chat_box.setVisible(True)
 
     def updated_chat(self):
+        self.update_chat_page(True)
+
+    def update_chat_for_chats_scroll(self):
+        self.update_chat_page(False)
+
+    def update_chat_page(self, is_update_messages_box):
         global chat_clicked
         try:
+            if is_update_messages_box:
+                self.is_messages_need_update = True
             text = ""
             try:
                 text = self.chat_box.text_entry.text()

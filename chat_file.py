@@ -676,7 +676,15 @@ class ChatBox(QWidget):
                 temp_widget_height = self.height_of_chat_box - 130 - self.around_name_delta
             else:
                 temp_widget_height = self.height_of_chat_box - 130
-            temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
+
+            if self.parent.is_messages_need_update:
+                temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
+                self.parent.messages_content_saver = temp_widget
+                print("updated_message_box")
+                self.parent.is_messages_need_update = False
+            else:
+                temp_widget = self.parent.messages_content_saver.update_scroll_area_parent(self)
+            self.around_name.raise_()
             self.ringing_square_label = QLabel(self)
             ringing_square_label_x = 1500
             ringing_square_label_width = 240
@@ -1186,12 +1194,12 @@ class ChatBox(QWidget):
             friend_starter_y = 170
             friend_x = 250
             if not self.parent.current_chat_box_search:
-                #self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
-                chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
+                self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
+                #chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
             else:
 
-                #self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
-                chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
+                self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
+                #chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
         except Exception as e:
             print(f"error in showing chats list{e}")
 
@@ -1247,6 +1255,7 @@ class ChatBox(QWidget):
            create_group_box = CreateGroupBox(self)
            create_group_box.raise_()
             #self.display_create_group_box()
+        #chats_widget.raise_()
         self.raise_needed_elements()
 
     def change_group_image(self):
@@ -4140,6 +4149,7 @@ class VideoPlayer(QWidget):
         elif event.key() == Qt.Key_Escape:
             self.stop_watching()
 
+
 class ScrollableWidget(QWidget):
     def __init__(self, parent, width, height, x, y):
         super().__init__()
@@ -4152,179 +4162,203 @@ class ScrollableWidget(QWidget):
 
     def initUI(self):
         # Create a scroll area
-        scroll_area = QScrollArea(self.parent)
-        scroll_area.setWidgetResizable(True)
+        try:
+            self.scroll_area = QScrollArea(self.parent)
+            self.scroll_area.setWidgetResizable(True)
 
-        # Create a widget to contain labels and buttons
-        inner_widget = QWidget()
-        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        len_message_list = len(self.parent.parent.list_messages)
-        scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
+            # Create a widget to contain labels and buttons
+            inner_widget = QWidget()
+            spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+            len_message_list = len(self.parent.parent.list_messages)
+            self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
 
-        # Set fixed width for inner widget to ensure proper layout
-        inner_widget.setFixedWidth(380)
+            # Set fixed width for inner widget to ensure proper layout
+            inner_widget.setFixedWidth(380)
 
-        # Create a layout for the inner widget
-        layout = QVBoxLayout(inner_widget)
-        layout.setSpacing(10)  # Adjust this value as needed
+            # Create a layout for the inner widget
+            self.layout = QVBoxLayout(inner_widget)
+            self.layout.setSpacing(10)  # Adjust this value as needed
 
-        # Add labels and buttons to the layout
+            # Add labels and buttons to the layout
+            self.load_all_message_func(reversed(self.parent.parent.list_messages))
+
+
+            # Set the inner widget as the scroll area's widget
+            self.scroll_area.setWidget(inner_widget)
+            self.scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+            if self.parent.parent.is_new_chat_clicked:
+                max = self.scroll_area.verticalScrollBar().maximum()
+                self.scroll_area.verticalScrollBar().setValue(max)
+                print(f"Scrolled to maximum {max}")
+                self.scroll_value_changed(self.scroll_area.verticalScrollBar().maximum())
+                # Reset the flag
+                self.parent.parent.is_new_chat_clicked = False
+            else:
+                self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
+        except Exception as e:
+            print(f"Error in creating messages box {e}")
+
+    def update_scroll_area_parent(self, new_parent):
+        self.scroll_area.setParent(new_parent)
+
+    def load_all_message_func(self, message_list):
+        for i in message_list:
+            self.add_message_to_layout(i)
+
+    def add_message_to_layout(self, message):
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
-        for i in reversed(self.parent.parent.list_messages):
-            message_content = i.get("content")
-            message_time = i.get("timestamp")
-            message_sender = i.get("sender_id")
-            message_type = i.get("message_type")
-            file_name = i.get("file_name")
-            if not message_content or message_type == "string":
+        i = message
+        message_content = i.get("content")
+        message_time = i.get("timestamp")
+        message_sender = i.get("sender_id")
+        message_type = i.get("message_type")
+        file_name = i.get("file_name")
+        if not message_content or message_type == "string":
 
-                content_label = self.parent.create_temp_message_label(message_content)
+            content_label = self.parent.create_temp_message_label(message_content)
 
-                # second part = Name + timestamp
-                title_label = QLabel()
-                title_label = self.parent.create_temp_message_label("")
+            # second part = Name + timestamp
+            title_label = QLabel()
+            title_label = self.parent.create_temp_message_label("")
+            title_label.setText(
+                f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+            self.layout.addWidget(title_label)
+            self.layout.addWidget(content_label)
+        elif message_type == "image":
+            try:
+                decoded_compressed_image_bytes = base64.b64decode(message_content)
+                image_bytes = zlib.decompress(decoded_compressed_image_bytes)
+
+                image_label = QPushButton(self)
+                image_label.setStyleSheet("background-color: transparent; border: none;")
+
+                self.parent.load_image_from_bytes_to_button(image_bytes, image_label)
+                image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+
+                message = ""
+                title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
                     f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
                     f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-                layout.addWidget(title_label)
-                layout.addWidget(content_label)
-            elif message_type == "image":
-                try:
-                    decoded_compressed_image_bytes = base64.b64decode(message_content)
-                    image_bytes = zlib.decompress(decoded_compressed_image_bytes)
 
-                    image_label = QPushButton(self)
-                    image_label.setStyleSheet("background-color: transparent; border: none;")
+                self.layout.addWidget(title_label)
+                self.layout.addWidget(image_label)
+            except Exception as e:
+                print(f"error in show messages is:{e}")
+        elif message_type == "video":
+            try:
+                decoded_compressed_video_bytes = base64.b64decode(message_content)
+                video_bytes = zlib.decompress(decoded_compressed_video_bytes)
 
-                    self.parent.load_image_from_bytes_to_button(image_bytes, image_label)
-                    image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+                video_label = QPushButton(self)
+                video_label.setStyleSheet("background-color: transparent; border: none;")
+                first_video_frame_bytes = extract_first_frame(video_bytes)
+                self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
 
-                    message = ""
-                    title_label = self.parent.create_temp_message_label(message)
-                    title_label.setText(f'<span style="font-size: {self.parent.parent.font_size+2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                                  f'<span style="font-size: {self.parent.parent.font_size-3}px; color: gray;"> {message_time}</span>')
+                video_label.clicked.connect(
+                    lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
 
-                    layout.addWidget(title_label)
-                    layout.addWidget(image_label)
-                except Exception as e:
-                    print(f"error in show messages is:{e}")
-            elif message_type == "video":
-                try:
-                    decoded_compressed_video_bytes = base64.b64decode(message_content)
-                    video_bytes = zlib.decompress(decoded_compressed_video_bytes)
+                play_button = QPushButton(video_label)
+                play_button_icon_path = "discord_app_assets/play_video_icon.png"
+                play_button_size = (50, 50)
+                play_button.clicked.connect(
+                    lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
+                set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
+                play_button.move(0 + (0.5 * video_label.width() - 0.5 * play_button_size[0]),
+                                 0 + (0.5 * video_label.height() - 0.5 * play_button_size[1]))
+                make_q_object_clear(play_button)
 
-                    video_label = QPushButton(self)
-                    video_label.setStyleSheet("background-color: transparent; border: none;")
-                    first_video_frame_bytes = extract_first_frame(video_bytes)
-                    self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
+                # video_frame = VideoThumbnailWidget(self, video_label, play_button)
+                message = ""
+                title_label = self.parent.create_temp_message_label(message)
+                title_label.setText(
+                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                self.layout.addWidget(title_label)
+                self.layout.addWidget(video_label)
+            except Exception as e:
+                print(f"error in show messages is:{e}")
+        elif message_type == "audio":
+            try:
+                decoded_compressed_audio_bytes = base64.b64decode(message_content)
+                audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
 
-                    video_label.clicked.connect(lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
+                audio_label = QPushButton(f"{file_name}", self)
+                audio_label.setStyleSheet(
+                    f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
 
+                play_button = QPushButton(self)
+                play_button_icon_path = "discord_app_assets/play_video_icon.png"
+                play_button_size = (25, 25)
+                set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
+                play_button.clicked.connect(
+                    lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes,
+                                                                           self.parent.parent.mp3_message_media_player))
+                # audio_label.setGeometry(x_pos, y, 300, 40)
+                make_q_object_clear(play_button)
 
-                    play_button = QPushButton(video_label)
-                    play_button_icon_path = "discord_app_assets/play_video_icon.png"
-                    play_button_size = (50, 50)
-                    play_button.clicked.connect(
-                        lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
-                    set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
-                    play_button.move(0 + (0.5 * video_label.width() - 0.5 * play_button_size[0]),
-                                     0 + (0.5 * video_label.height() - 0.5 * play_button_size[1]))
-                    make_q_object_clear(play_button)
+                message = ""
+                title_label = self.parent.create_temp_message_label(message)
+                title_label.setText(
+                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
-                    #video_frame = VideoThumbnailWidget(self, video_label, play_button)
-                    message = ""
-                    title_label = self.parent.create_temp_message_label(message)
-                    title_label.setText(
-                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-                    layout.addWidget(title_label)
-                    layout.addWidget(video_label)
-                except Exception as e:
-                    print(f"error in show messages is:{e}")
-            elif message_type == "audio":
-                try:
-                    decoded_compressed_audio_bytes = base64.b64decode(message_content)
-                    audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
+                self.layout.addWidget(title_label)
+                self.layout.addWidget(audio_label)
+            except Exception as e:
+                print("error in audio file")
+        elif message_type in basic_files_types:
+            try:
+                decoded_compressed_file_bytes = base64.b64decode(message_content)
+                file_bytes = zlib.decompress(decoded_compressed_file_bytes)
 
-                    audio_label = QPushButton(f"{file_name}", self)
-                    audio_label.setStyleSheet(f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
+                link_label = QPushButton(f"{file_name}", self)
+                link_label.setStyleSheet(
+                    f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
+                if message_type == "txt":
+                    link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
+                elif message_type == "pptx":
+                    link_label.clicked.connect(
+                        lambda _, file_bytes=file_bytes: open_pptx_from_bytes(file_bytes))
+                elif message_type == "py":
+                    link_label.clicked.connect(
+                        lambda _, file_bytes=file_bytes: open_py_from_bytes(file_bytes))
+                elif message_type == "docx":
+                    link_label.clicked.connect(
+                        lambda _, file_bytes=file_bytes: open_docx_from_bytes(file_bytes))
+                elif message_type == "xlsx":
+                    link_label.clicked.connect(
+                        lambda _, file_bytes=file_bytes: open_xlsx_from_bytes(file_bytes))
+                elif message_type == "pdf":
+                    link_label.clicked.connect(
+                        lambda _, file_bytes=file_bytes: open_pdf_from_bytes(file_bytes))
+                link_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                link_label.customContextMenuRequested.connect(
+                    lambda pos, file_bytes=file_bytes, button=link_label, type=message_type,
+                           name=file_name: self.parent.show_context_menu(pos, button,
+                                                                         file_bytes, type, name))
+                # link_label.setGeometry(x_pos, y, 300, 40)
+                message = ""
+                title_label = self.parent.create_temp_message_label(message)
+                title_label.setText(
+                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
 
+                self.layout.addWidget(title_label)
+                self.layout.addWidget(link_label)
+            except Exception as e:
+                print(f"error in show messages is:{e}")
 
+    def clear_layout(self):
+        while self.layout.count():
+            item = self.layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
-                    play_button = QPushButton(self)
-                    play_button_icon_path = "discord_app_assets/play_video_icon.png"
-                    play_button_size = (25, 25)
-                    set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
-                    play_button.clicked.connect(
-                        lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes, self.parent.parent.mp3_message_media_player))
-                    #audio_label.setGeometry(x_pos, y, 300, 40)
-                    make_q_object_clear(play_button)
-
-
-                    message = ""
-                    title_label = self.parent.create_temp_message_label(message)
-                    title_label.setText(
-                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-
-                    layout.addWidget(title_label)
-                    layout.addWidget(audio_label)
-                except Exception as e:
-                    print("error in audio file")
-            elif message_type in basic_files_types:
-                try:
-                    decoded_compressed_file_bytes = base64.b64decode(message_content)
-                    file_bytes = zlib.decompress(decoded_compressed_file_bytes)
-
-                    link_label = QPushButton(f"{file_name}", self)
-                    link_label.setStyleSheet(f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
-                    if message_type == "txt":
-                        link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
-                    elif message_type == "pptx":
-                        link_label.clicked.connect(
-                            lambda _, file_bytes=file_bytes: open_pptx_from_bytes(file_bytes))
-                    elif message_type == "py":
-                        link_label.clicked.connect(
-                            lambda _, file_bytes=file_bytes: open_py_from_bytes(file_bytes))
-                    elif message_type == "docx":
-                        link_label.clicked.connect(
-                            lambda _, file_bytes=file_bytes: open_docx_from_bytes(file_bytes))
-                    elif message_type == "xlsx":
-                        link_label.clicked.connect(
-                            lambda _, file_bytes=file_bytes: open_xlsx_from_bytes(file_bytes))
-                    elif message_type == "pdf":
-                        link_label.clicked.connect(
-                            lambda _, file_bytes=file_bytes: open_pdf_from_bytes(file_bytes))
-                    link_label.setContextMenuPolicy(Qt.CustomContextMenu)
-                    link_label.customContextMenuRequested.connect(
-                        lambda pos, file_bytes=file_bytes, button=link_label, type=message_type, name=file_name: self.parent.show_context_menu(pos, button,
-                                                                                                     file_bytes, type, name))
-                    #link_label.setGeometry(x_pos, y, 300, 40)
-                    message = ""
-                    title_label = self.parent.create_temp_message_label(message)
-                    title_label.setText(
-                        f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                        f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
-
-                    layout.addWidget(title_label)
-                    layout.addWidget(link_label)
-                except Exception as e:
-                    print(f"error in show messages is:{e}")
-
-
-        # Set the inner widget as the scroll area's widget
-        scroll_area.setWidget(inner_widget)
-        scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
-        if self.parent.parent.is_new_chat_clicked:
-            max = scroll_area.verticalScrollBar().maximum()
-            scroll_area.verticalScrollBar().setValue(max)
-            print(f"Scrolled to maximum {max}")
-            self.scroll_value_changed(scroll_area.verticalScrollBar().maximum())
-            # Reset the flag
-            self.parent.parent.is_new_chat_clicked = False
-        else:
-            scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
-
+    def update_messages_layout(self):
+        self.initUI()
 
     def scroll_to_index(self, index):
         # Get the vertical scroll bar of the scroll area
@@ -4351,45 +4385,44 @@ class ScrollableChats(QWidget):
 
     def initUI(self):
         # Create a scroll area
-        scroll_area = QScrollArea(self.parent)
-        scroll_area.setWidgetResizable(True)
+        try:
+            scroll_area = QScrollArea(self.parent)
+            scroll_area.setWidgetResizable(True)
 
-        # Create a widget to contain labels and buttons
-        inner_widget = QWidget()
-        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
+            # Create a widget to contain labels and buttons
+            inner_widget = QWidget()
+            spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+            scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
 
-        # Set fixed width for inner widget to ensure proper layout
-        inner_widget.setFixedWidth(380)
+            # Set fixed width for inner widget to ensure proper layout
+            inner_widget.setFixedWidth(380)
 
-        # Create a layout for the inner widget
-        layout = QVBoxLayout(inner_widget)
-        layout.setSpacing(10)  # Adjust this value as needed
-
-
-        style_sheet = '''
-            color: white;
-            font-size: 15px;
-            margin-bottom: 2px;
-        '''
-        self.friends_button_height = 50
-        friend_starter_y = 170 + (self.parent.chat_box_chats_index * -50)
-        friend_x = 250
-        for chat in self.chats_list:
-            try:
-                button = self.parent.create_friend_button(chat, self, style_sheet, (friend_x, friend_starter_y))
-                layout.addWidget(button)
-            except Exception as e:
-                print(f"error in drew friends button {e}")
-
-        scroll_area.setWidget(inner_widget)
-        scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+            # Create a layout for the inner widget
+            layout = QVBoxLayout(inner_widget)
+            layout.setSpacing(0)  # Adjust this value as needed
 
 
+            style_sheet = '''
+                color: white;
+                font-size: 15px;
+                margin-bottom: 2px;
+            '''
+            self.friends_button_height = 50
+            friend_starter_y = 170 + (self.parent.parent.chat_box_chats_index * -50)
+            friend_x = 250
+            for chat in self.chats_list:
+                try:
+                    #button = self.parent.create_friend_button(chat, self.parent, style_sheet, (friend_x, friend_starter_y))
+                    button = FriendButtonWidget(self.parent, chat, (friend_x, friend_starter_y), style_sheet)
+                    layout.addWidget(button)
+                except Exception as e:
+                    print(f"error in drew friends button {e}")
 
-        # Set the inner widget as the scroll area's widget
-        scroll_area.setWidget(inner_widget)
-        scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+            scroll_area.setWidget(inner_widget)
+            scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
+        except Exception as e:
+            print(f"had error intiating chats widget {e}")
+
 
 
 
@@ -4402,7 +4435,7 @@ class ScrollableChats(QWidget):
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
-        self.parent.parent.chat_start_index = value
+        x = 5
 
 
 class CreateGroupBox(QWidget):
@@ -4569,6 +4602,106 @@ class VideoThumbnailWidget(QWidget):
 
         except Exception as e:
             print(f"Error in creating thumbnail: {e}")
+
+
+class FriendButtonWidget(QWidget):
+    def __init__(self, parent, label, position, style_sheet=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.main_page = self.parent.parent
+        self.label = label
+        self.position = position
+        self.height = self.parent.friends_button_height
+        self.style_sheet = style_sheet
+        self.initUI()
+
+    def initUI(self):
+        px_padding_of_button_text = 55
+        chat_name = self.label
+        text, id = gets_group_attributes_from_format(chat_name)
+        if id:
+            len_group = self.main_page.get_number_of_members_by_group_id(id)
+
+        width, height = (35, 35)
+        profile_image_label = create_custom_circular_label(width, height, self)
+        profile_image_x, profile_image_y = (self.position[0] + (px_padding_of_button_text * 0.25), self.position[1] + ((self.height - height) * 0.5))
+
+        if id:
+            chat_image = self.main_page.get_circular_image_bytes_by_group_id(id)
+        else:
+            chat_image = self.main_page.get_profile_pic_by_username(chat_name)
+        if chat_image is None:
+            icon_path = self.main_page.regular_profile_image_path
+            set_icon_from_path_to_label(profile_image_label, icon_path)
+        else:
+            if id:
+                circular_pic_bytes = chat_image
+            else:
+                circular_pic_bytes = self.main_page.get_circular_image_bytes_by_name(chat_name)
+            set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
+        profile_image_label.move(profile_image_x, profile_image_y)
+
+        button = QPushButton(self)
+        button.setText(text)
+        button.move(self.position[0], self.position[1])
+        button.setFixedHeight(self.height)
+        button.clicked.connect(partial(self.parent.on_friend_button_clicked, self.label))
+
+        if self.style_sheet:
+            button.setStyleSheet(self.style_sheet)
+
+        padding_top = "padding-top: -7px;" if self.label.startswith("(") else ""
+
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.main_page.background_color_hex};
+                border: 2px solid {self.main_page.standard_hover_color};
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: {px_padding_of_button_text}px;
+                {padding_top}
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+
+            QPushButton:hover {{
+                background-color: {self.main_page.standard_hover_color};
+            }}
+
+            QPushButton:pressed {{
+                background-color: #202225;
+                border-color: #72767d;
+            }}
+        """)
+
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        button.setFixedWidth(350)
+        button.raise_()
+        profile_image_label.raise_()
+
+        style = '''
+            color: white;
+            font-size: 10px;
+            margin-bottom: 2px;
+            background-color: rgba(0,0,0,0);
+        '''
+
+        if id:
+            members_label = QLabel(f"{len_group} Members", self)
+            members_label.setStyleSheet(style)
+            memeber_x = self.position[0] + px_padding_of_button_text
+            members_label.move(memeber_x, self.position[1] + 28)
+            members_label.raise_()
+
+
+        self.setLayout(button)
+
+        return button
+
 
 
 
