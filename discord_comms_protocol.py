@@ -243,6 +243,13 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def ask_for_more_messages(self):
+        try:
+            message = {"message_type": "more_messages"}
+            self.send_message_dict(message)
+        except socket.error as e:
+            print(e)
+
     def start_screen_stream(self):
         try:
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": "ScreenStream", "action": "start"}

@@ -134,7 +134,7 @@ def threaded_logged_in_client(n, User):
                                                                                       , numbers_of_starter_message)
                     messages_list_index = numbers_of_starter_message
                     n.send_messages_list(list_dict_of_messages)
-                if message_type == "more_message":
+                if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
                             messages_list_index, messages_list_index+5)
                     messages_list_index += 5
@@ -321,6 +321,8 @@ def thread_recv_messages(n, addr, username):
             message_type = data.get("message_type")
             if message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
+                add_message_for_client(User, data)
+            if message_type == "more_messages":
                 add_message_for_client(User, data)
             if message_type == "messages_list_index":
                 messages_list_index = data.get("messages_list_index")

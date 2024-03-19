@@ -4406,6 +4406,8 @@ class ScrollableWidget(QWidget):
 
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
+        if value == 0:
+            print("scrolled all the way up")
         self.parent.parent.chat_start_index = value
 
 
