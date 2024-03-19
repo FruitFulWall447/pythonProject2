@@ -112,8 +112,9 @@ def threaded_logged_in_client(n, User):
     global list_vc_data_sending
     flag_is_call_sent = False
     client_current_chat = ""
-    messages_list_index = 0
     logger = logging.getLogger(__name__)
+    numbers_of_starter_message = 15
+    messages_list_index = numbers_of_starter_message
     while True:
         time.sleep(0.05)
 
@@ -129,11 +130,15 @@ def threaded_logged_in_client(n, User):
                         database_func.add_chat_to_user(User, client_current_chat)
                         n.add_new_chat(client_current_chat)
                         logger.info(f"added new chat to {User}")
-                    list_dict_of_messages = database_func.get_messages(User, client_current_chat)
+                    list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
+                                                                                      , numbers_of_starter_message)
+                    messages_list_index = numbers_of_starter_message
                     n.send_messages_list(list_dict_of_messages)
-                if message_type == "messages_list_index":
-                    messages_list_index = message.get("messages_list_index")
-                    print(f"{User} new messages list index is: {messages_list_index}")
+                if message_type == "more_message":
+                    list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
+                            messages_list_index, messages_list_index+5)
+                    messages_list_index += 5
+                    n.send_addition_messages_list(list_dict_of_messages)
             if isinstance(message, list):
                 logger.info(f"Sent online users list to {User}")
                 friends_list = database_func.get_user_friends(User)

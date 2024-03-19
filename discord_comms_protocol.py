@@ -768,6 +768,12 @@ class server_net:
                    }
         self.send_message_dict(message)
 
+    def send_addition_messages_list(self, addition_messages_list):
+        json_messages_list = json.dumps(addition_messages_list)
+        message = {"message_type": "message_list_addition", "message_list_addition": json_messages_list
+                   }
+        self.send_message_dict(message)
+
     def send_new_message(self, message):
         message = {"message_type": "new_message", "new_message": message
                    }
