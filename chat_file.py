@@ -1732,7 +1732,8 @@ class ChatBox(QWidget):
         self.parent.create_group_index = 0
         self.parent.updated_chat()
 
-    def add_user_to_group(self, group_id):
+    def add_users_to_group(self):
+        group_id = self.current_group_id
         self.Network.add_user_to_group(group_id, self.parent.selected_group_members)
         print(f"Added user {self.parent.selected_group_members} to group of id {group_id}")
         self.parent.is_create_group_pressed = False
