@@ -677,7 +677,7 @@ class ChatBox(QWidget):
             else:
                 temp_widget_height = self.height_of_chat_box - 130
 
-            if self.parent.is_messages_need_update:
+            if self.parent.is_messages_need_update or self.parent.messages_content_saver is None:
                 temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
                 self.parent.messages_content_saver = temp_widget
                 self.parent.is_messages_need_update = False
@@ -4099,12 +4099,18 @@ class VideoPlayer(QWidget):
         self.position_timer = QTimer(self)
         self.position_timer.timeout.connect(self.update_slider_position)
 
-        # Start the position update timer with a short interval (e.g., 100 milliseconds)
+        # Start the position update timer with a short interval (e.g., 1 milliseconds)
         self.position_timer.start(1)
 
     def update_slider_position(self):
         # Update the slider position based on the current media player position
         position = self.media_player.position()
+        self.slider.setValue(position)
+        # Format the position and duration to MM:SS format
+        position_time = QTime(0, 0).addMSecs(position).toString("mm:ss")
+        duration_time = QTime(0, 0).addMSecs(self.media_player.duration()).toString("mm:ss")
+        # Update the duration label text
+        self.duration_label.setText(f"{position_time} / {duration_time}")
         self.slider.setValue(position)
 
     def toggle_play_pause(self, event):
@@ -4143,8 +4149,6 @@ class VideoPlayer(QWidget):
 
     def update_duration(self, duration):
         self.slider.setMaximum(duration)
-        self.duration_label.setText("Duration: " + QTime(0, 0).addMSecs(duration).toString("mm:ss"))
-
         self.duration_label.adjustSize()
         self.duration_label.raise_()
 
@@ -4158,7 +4162,6 @@ class VideoPlayer(QWidget):
         if position >= self.media_player.duration() - 10:  # Check if less than 100 milliseconds remain
             self.media_player.pause()
             self.media_player.setPosition(0)  # Rewind to the beginning for replay
-
 
     def handle_state_change(self, new_state):
         if new_state == QMediaPlayer.EndOfMedia:
