@@ -4350,7 +4350,7 @@ class ScrollableWidget(QWidget):
                 image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
                 if self.main_page_object.censor_data_from_strangers:
                     if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
-                        image_label.setGraphicsEffect(self.main_page_object.blur_effect)
+                        image_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
 
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
@@ -4378,7 +4378,7 @@ class ScrollableWidget(QWidget):
                 video_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
                 if self.main_page_object.censor_data_from_strangers:
                     if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
-                        video_label.setGraphicsEffect(self.main_page_object.blur_effect)
+                        video_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
 
                 video_label.clicked.connect(
                     lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
