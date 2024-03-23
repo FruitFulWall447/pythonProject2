@@ -652,6 +652,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.background_color_hex = "#141c4b"
         self.background_color = "Blue"
         self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
+
+        self.blur_effect = QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(5)  # Adjust the blur radius as needed
         screen = QDesktopWidget().screenGeometry()
         # Extract the screen width and height
         self.screen_width = screen.width()

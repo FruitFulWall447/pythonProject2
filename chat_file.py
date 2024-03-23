@@ -26,6 +26,14 @@ import platform
 import random
 import string
 
+def replace_non_space_with_star(string):
+    result = ''
+    for char in string:
+        if char not in string.whitespace + string.punctuation:
+            result += '*'
+        else:
+            result += char
+    return result
 
 def generate_random_filename(extension):
     # Generate a random string of characters
@@ -4238,6 +4246,7 @@ class ScrollableWidget(QWidget):
         self.parent = parent
         self.width = width
         self.height = height
+        self.main_page_object = self.parent.parent
         self.x = x
         self.y = y
         self.initUI()
@@ -4309,14 +4318,17 @@ class ScrollableWidget(QWidget):
         file_name = i.get("file_name")
         if not message_content or message_type == "string":
 
+            if self.main_page_object.censor_data_from_strangers:
+                if message_sender not in self.main_page_object.friends_list:
+                    message_content = replace_non_space_with_star(message_content)
             content_label = self.parent.create_temp_message_label(message_content)
 
             # second part = Name + timestamp
             title_label = QLabel()
             title_label = self.parent.create_temp_message_label("")
             title_label.setText(
-                f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                f'<span style="font-size: {self.main_page_object.font_size - 3}px; color: gray;"> {message_time}</span>')
             if not is_insert:
                 self.layout.addWidget(title_label)
                 self.layout.addWidget(content_label)
@@ -4335,16 +4347,15 @@ class ScrollableWidget(QWidget):
                 image_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
 
                 image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
-                blur_effect = QGraphicsBlurEffect()
-                blur_effect.setBlurRadius(5)  # Adjust the blur radius as needed
-                image_label.setGraphicsEffect(blur_effect)
-                image_label.setGraphicsEffect(None)
+                if self.main_page_object.censor_data_from_strangers:
+                    if message_sender not in self.main_page_object.friends_list:
+                        image_label.setGraphicsEffect(self.main_page_object.blur_effect)
 
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
-                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.main_page_object.font_size - 3}px; color: gray;"> {message_time}</span>')
 
                 if not is_insert:
                     self.layout.addWidget(title_label)
@@ -4364,7 +4375,9 @@ class ScrollableWidget(QWidget):
                 first_video_frame_bytes = extract_first_frame(video_bytes)
                 self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
                 video_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
-
+                if self.main_page_object.censor_data_from_strangers:
+                    if message_sender not in self.main_page_object.friends_list:
+                        video_label.setGraphicsEffect(self.main_page_object.blur_effect)
 
                 video_label.clicked.connect(
                     lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
@@ -4383,8 +4396,8 @@ class ScrollableWidget(QWidget):
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
-                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.main_page_object.font_size - 3}px; color: gray;"> {message_time}</span>')
                 if not is_insert:
                     self.layout.addWidget(title_label)
                     self.layout.addWidget(video_label)
@@ -4400,7 +4413,7 @@ class ScrollableWidget(QWidget):
 
                 audio_label = QPushButton(f"{file_name}", self)
                 audio_label.setStyleSheet(
-                    f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
+                    f"background-color: {self.main_page_object.standard_hover_color}; border: none; color: white; font-size: {self.main_page_object.font_size}px; padding-left: 50%;")
 
                 play_button = QPushButton(self)
                 play_button_icon_path = "discord_app_assets/play_video_icon.png"
@@ -4415,8 +4428,8 @@ class ScrollableWidget(QWidget):
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
-                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.main_page_object.font_size - 3}px; color: gray;"> {message_time}</span>')
 
                 if not is_insert:
                     self.layout.addWidget(title_label)
@@ -4433,7 +4446,7 @@ class ScrollableWidget(QWidget):
 
                 link_label = QPushButton(f"{file_name}", self)
                 link_label.setStyleSheet(
-                    f"background-color: {self.parent.parent.standard_hover_color}; border: none; color: white; font-size: {self.parent.parent.font_size}px; padding-left: 50%;")
+                    f"background-color: {self.main_page_object.standard_hover_color}; border: none; color: white; font-size: {self.main_page_object.font_size}px; padding-left: 50%;")
                 if message_type == "txt":
                     link_label.clicked.connect(lambda _, file_bytes=file_bytes: open_text_file_from_bytes(file_bytes))
                 elif message_type == "pptx":
@@ -4460,8 +4473,8 @@ class ScrollableWidget(QWidget):
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
-                    f'<span style="font-size: {self.parent.parent.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
-                    f'<span style="font-size: {self.parent.parent.font_size - 3}px; color: gray;"> {message_time}</span>')
+                    f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'
+                    f'<span style="font-size: {self.main_page_object.font_size - 3}px; color: gray;"> {message_time}</span>')
 
                 if not is_insert:
                     self.layout.addWidget(title_label)
@@ -4502,11 +4515,11 @@ class ScrollableWidget(QWidget):
     def scroll_value_changed(self, value):
         # Update your variable with the current scroll value
         if value == 0 and not self.parent.parent.is_new_chat_clicked:
-            if len(self.parent.parent.list_messages) >= 15:
-                self.parent.parent.Network.ask_for_more_messages()
+            if len(self.main_page_object.list_messages) >= 15:
+                self.main_page_object.Network.ask_for_more_messages()
                 print("asked for more messages")
 
-        self.parent.parent.chat_start_index = value
+        self.main_page_object.chat_start_index = value
 
 
 class CreateGroupBox(QWidget):
