@@ -26,14 +26,15 @@ import platform
 import random
 import string
 
-def replace_non_space_with_star(string):
+def replace_non_space_with_star(string1):
     result = ''
-    for char in string:
-        if char not in string.whitespace + string.punctuation:
+    for char in string1:
+        if char != ' ' and not char.isspace():
             result += '*'
         else:
             result += char
     return result
+
 
 def generate_random_filename(extension):
     # Generate a random string of characters
@@ -4319,7 +4320,7 @@ class ScrollableWidget(QWidget):
         if not message_content or message_type == "string":
 
             if self.main_page_object.censor_data_from_strangers:
-                if message_sender not in self.main_page_object.friends_list:
+                if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                     message_content = replace_non_space_with_star(message_content)
             content_label = self.parent.create_temp_message_label(message_content)
 
@@ -4348,7 +4349,7 @@ class ScrollableWidget(QWidget):
 
                 image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
                 if self.main_page_object.censor_data_from_strangers:
-                    if message_sender not in self.main_page_object.friends_list:
+                    if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                         image_label.setGraphicsEffect(self.main_page_object.blur_effect)
 
                 message = ""
@@ -4376,7 +4377,7 @@ class ScrollableWidget(QWidget):
                 self.parent.load_image_from_bytes_to_button(first_video_frame_bytes, video_label)
                 video_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
                 if self.main_page_object.censor_data_from_strangers:
-                    if message_sender not in self.main_page_object.friends_list:
+                    if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                         video_label.setGraphicsEffect(self.main_page_object.blur_effect)
 
                 video_label.clicked.connect(
