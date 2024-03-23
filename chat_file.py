@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
 from PyQt5.QtCore import pyqtSignal
 from functools import partial
 from discord_comms_protocol import client_net
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
+from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -4335,6 +4335,10 @@ class ScrollableWidget(QWidget):
                 image_label.setMaximumWidth(int(self.width / 3))  # Adjust the maximum width as needed
 
                 image_label.clicked.connect(lambda _, image_bytes=image_bytes: open_image_bytes(image_bytes))
+                blur_effect = QGraphicsBlurEffect()
+                blur_effect.setBlurRadius(5)  # Adjust the blur radius as needed
+                image_label.setGraphicsEffect(blur_effect)
+                image_label.setGraphicsEffect(None)
 
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
