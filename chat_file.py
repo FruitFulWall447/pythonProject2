@@ -3711,41 +3711,30 @@ class SettingsBox(QWidget):
         off_icon_path = "discord_app_assets/off_button.png"
         on_icon_path = "discord_app_assets/on_button.png"
         index = 0
-        for var in list_of_button_vars:
+        for index, (var, var_name) in enumerate(zip(list_of_button_vars, var_names)):
             button = QPushButton(self)
             make_q_object_clear(button)
-            #button.setFixedSize(button_width, button_height)  # Set the size of the button
+            # button.setFixedSize(button_width, button_height)  # Set the size of the button
             if var:
                 set_button_icon(button, on_icon_path, self.privacy_button_width, self.privacy_button_height)
             else:
                 set_button_icon(button, off_icon_path, self.privacy_button_width, self.privacy_button_height)
             button.move(starter_x, starter_y)
             button.clicked.connect(
-                lambda checked=var, btn=button: self.switch_off_variable_plus_change_icon(checked, btn, var_names[index]))
+                lambda checked, btn=button, name=var_name: self.switch_off_variable_plus_change_icon(btn, name)
+            )
             starter_y += space_between
-            index += 1
 
-    def switch_off_variable_plus_change_icon(self, var, button, var_name):
+    def switch_off_variable_plus_change_icon(self, button, var_name):
         off_icon_path = "discord_app_assets/off_button.png"
         on_icon_path = "discord_app_assets/on_button.png"
-        if var:
-            var_value = False
-            set_button_icon(button, on_icon_path, self.privacy_button_width, self.privacy_button_height)
-            if var_name == "is_private_account":
-                self.parent.is_private_account = var_value
-            if var_name == "censor_data_from_strangers":
-                self.parent.censor_data_from_strangers = var_value
-            if var_name == "censor_images":
-                self.parent.censor_images = var_value
-        else:
-            var_value = True
-            set_button_icon(button, off_icon_path, self.privacy_button_width, self.privacy_button_height)
-            if var_name == "is_private_account":
-                self.parent.is_private_account = var_value
-            if var_name == "censor_data_from_strangers":
-                self.parent.censor_data_from_strangers = var_value
-            if var_name == "censor_images":
-                self.parent.censor_images = var_value
+        try:
+            var_value = not getattr(self.parent, var_name)
+            set_button_icon(button, on_icon_path if var_value else off_icon_path, self.privacy_button_width,
+                            self.privacy_button_height)
+            setattr(self.parent, var_name, var_value)
+        except Exception as e:
+            print(f"error in changing privacy button icon {e}")
 
     def background_color_changed(self):
         new_background_color = self.color_combobox.currentText()
