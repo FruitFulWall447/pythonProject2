@@ -4389,9 +4389,17 @@ class ScrollableWidget(QWidget):
                 play_button.clicked.connect(
                     lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
                 set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
-                play_button.move(0 + (0.5 * video_label.width() - 0.5 * play_button_size[0]),
-                                 0 + (0.5 * video_label.height() - 0.5 * play_button_size[1]))
                 make_q_object_clear(play_button)
+                layout = QHBoxLayout(video_label)
+                layout.addWidget(play_button)  # Add the play button to the layout
+
+                # Set the alignment and margins explicitly
+                layout.setAlignment(Qt.AlignCenter)
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)  # Ensure no spacing between widgets
+
+                # Set the layout to the audio label
+                video_label.setLayout(layout)
 
                 # video_frame = VideoThumbnailWidget(self, video_label, play_button)
                 message = ""
@@ -4414,15 +4422,25 @@ class ScrollableWidget(QWidget):
 
                 audio_label = QPushButton(f"{file_name}", self)
                 audio_label.setStyleSheet(
-                    f"background-color: {self.main_page_object.standard_hover_color}; border: none; color: white; font-size: {self.main_page_object.font_size}px; padding-left: 50%;")
-
-                play_button = QPushButton(self)
+                    f"background-color: {self.main_page_object.standard_hover_color}; border: none; color: white; font-size: {self.main_page_object.font_size}px; padding-left: 10%; margin: 0;")
+                audio_label.setFixedHeight(30)
+                play_button = QPushButton(audio_label)
                 play_button_icon_path = "discord_app_assets/play_video_icon.png"
                 play_button_size = (25, 25)
                 set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
                 play_button.clicked.connect(
                     lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes,
                                                                            self.parent.parent.mp3_message_media_player))
+                layout = QHBoxLayout(audio_label)
+                layout.addWidget(play_button)  # Add the play button to the layout
+
+                # Set the alignment and margins explicitly
+                layout.setAlignment(Qt.AlignLeft)
+                layout.setContentsMargins(0, 0, 0, 0)
+                layout.setSpacing(0)  # Ensure no spacing between widgets
+
+                # Set the layout to the audio label
+                audio_label.setLayout(layout)
                 # audio_label.setGeometry(x_pos, y, 300, 40)
                 make_q_object_clear(play_button)
 
@@ -4470,6 +4488,8 @@ class ScrollableWidget(QWidget):
                     lambda pos, file_bytes=file_bytes, button=link_label, type=message_type,
                            name=file_name: self.parent.show_context_menu(pos, button,
                                                                          file_bytes, type, name))
+                link_label.setFixedHeight(30)
+
                 # link_label.setGeometry(x_pos, y, 300, 40)
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)

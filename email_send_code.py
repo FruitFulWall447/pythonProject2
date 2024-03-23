@@ -109,7 +109,7 @@ def send_forget_password_code_to_email(code, receiver_mail, account_name):
 
         If you did not request this code, it is possible that someone else is trying to change your Connectify Account Password- {connectify_account}. Do not forward or give this code to anyone.<br><br>
 
-        You received this message because this email address is listed as the email of your Connectify Account - {connectify_account}. If that is incorrect, please visit our site to remove your email from an Connectify Account.<br><br>
+        You received this message because this email address is listed as the email of your Connectify Account - {connectify_account}. If that is incorrect, please visit our site to remove your email from a Connectify Account.<br><br>
 
         Sincerely yours,<br><br>
 
