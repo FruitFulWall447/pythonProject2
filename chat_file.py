@@ -3415,6 +3415,8 @@ class SettingsBox(QWidget):
         starter_x_of_main_buttons = 350
         starter_y_of_main_buttons = 100
 
+        self.privacy_button_width, self.privacy_button_height = (200, 30)
+
         label_height = 30
         label_width = 300
         self.default_labels_font_size = 10
@@ -3686,8 +3688,64 @@ class SettingsBox(QWidget):
                                                                       y_remove_profile_pic, width_change_profile_pic,
                                                                       height_change_profile_pic, "Remove Avatar")
                 remove_profile_pic_button.clicked.connect(self.remove_profile_pic)
+            elif self.parent.selected_settings == "Privacy & Safety":
+                privacy_page_starter_x, privacy_page_starter_y = (800, 150)
+                space_between_labels = 120
+                option_list = ["Private or Public account", "Censor data from strangers", "Censor images"]
+                self.create_privacy_labels(privacy_page_starter_x, privacy_page_starter_y, option_list, space_between_labels)
+                button_starter_x, button_starter_y = privacy_page_starter_x, privacy_page_starter_y + 50
+                labels_matching_vars_list = [self.parent.is_private_account, self.parent.censor_data_from_strangers, self.parent.censor_images]
+                vars_names = ["is_private_account", "censor_data_from_strangers",
+                                             "censor_images"]
+                self.create_privacy_buttons(button_starter_x, button_starter_y, space_between_labels, labels_matching_vars_list, vars_names)
         except Exception as e:
             print(f"error setting page {e}")
+
+    def create_privacy_labels(self, starter_x, starter_y, list_of_label_content, space_between_labels):
+        for content in list_of_label_content:
+            label1 = self.create_white_label(starter_x, starter_y,
+                                                    self.default_labels_font_size, None, None, content)
+            starter_y += space_between_labels
+
+    def create_privacy_buttons(self, starter_x, starter_y, space_between, list_of_button_vars, var_names):
+        off_icon_path = "discord_app_assets/off_button.png"
+        on_icon_path = "discord_app_assets/on_button.png"
+        index = 0
+        for var in list_of_button_vars:
+            button = QPushButton(self)
+            make_q_object_clear(button)
+            #button.setFixedSize(button_width, button_height)  # Set the size of the button
+            if var:
+                set_button_icon(button, on_icon_path, self.privacy_button_width, self.privacy_button_height)
+            else:
+                set_button_icon(button, off_icon_path, self.privacy_button_width, self.privacy_button_height)
+            button.move(starter_x, starter_y)
+            button.clicked.connect(
+                lambda checked=var, btn=button: self.switch_off_variable_plus_change_icon(checked, btn, var_names[index]))
+            starter_y += space_between
+            index += 1
+
+    def switch_off_variable_plus_change_icon(self, var, button, var_name):
+        off_icon_path = "discord_app_assets/off_button.png"
+        on_icon_path = "discord_app_assets/on_button.png"
+        if var:
+            var_value = False
+            set_button_icon(button, on_icon_path, self.privacy_button_width, self.privacy_button_height)
+            if var_name == "is_private_account":
+                self.parent.is_private_account = var_value
+            if var_name == "censor_data_from_strangers":
+                self.parent.censor_data_from_strangers = var_value
+            if var_name == "censor_images":
+                self.parent.censor_images = var_value
+        else:
+            var_value = True
+            set_button_icon(button, off_icon_path, self.privacy_button_width, self.privacy_button_height)
+            if var_name == "is_private_account":
+                self.parent.is_private_account = var_value
+            if var_name == "censor_data_from_strangers":
+                self.parent.censor_data_from_strangers = var_value
+            if var_name == "censor_images":
+                self.parent.censor_images = var_value
 
     def background_color_changed(self):
         new_background_color = self.color_combobox.currentText()

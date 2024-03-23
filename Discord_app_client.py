@@ -667,6 +667,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.email = None
         self.messages_font_size = 12
 
+        self.censor_data_from_strangers = True
+        self.censor_images = False
+        self.is_private_account = True
+
         self.size_error_label = False
         self.is_chat_box_full = False
         self.is_friends_box_full = False
