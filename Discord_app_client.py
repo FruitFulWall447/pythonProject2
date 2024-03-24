@@ -361,15 +361,15 @@ def thread_play_vc_data():
     global main_page
     try:
         print("started play voice data thread....")
-        # output_device_name = main_page.output_device_name  # Get the output device name from main_page
-        #
-        # output_device_index = find_output_device_index(output_device_name)
-        #
-        # if output_device_index is None:
-        #     print(f"Output device '{output_device_name}' not found.")
-        #     return
-        # else:
-        #     print(f"Output index is {output_device_name}")
+        output_device_name = main_page.output_device_name  # Get the output device name from main_page
+
+        output_device_index = find_output_device_index(output_device_name)
+
+        if output_device_index is None:
+            print(f"Output device '{output_device_name}' not found.")
+            return
+        else:
+            print(f"Output index is {output_device_name}")
 
         output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
         while main_page.vc_play_flag:
@@ -408,14 +408,14 @@ def thread_send_voice_chat_data():
     try:
         accumulated_data = []
         print("started voice chat thread....")
-        # input_device_name = main_page.input_device_name  # Get the output device name from main_page
-        #
-        # input_device_index = find_input_device_index(input_device_name)
-        #
-        # if input_device_index is None:
-        #     print(f"Input device '{input_device_name}' not found.")
-        #     return
-        # print(f"input index is {input_device_index}")
+        input_device_name = main_page.input_device_name  # Get the output device name from main_page
+
+        input_device_index = find_input_device_index(input_device_name)
+
+        if input_device_index is None:
+            print(f"Input device '{input_device_name}' not found.")
+            return
+        print(f"input index is {input_device_index}")
 
         input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
         count = 0
