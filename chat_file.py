@@ -33,7 +33,7 @@ def find_input_device_index(device_name):
 
     for i in range(p.get_device_count()):
         device_info = p.get_device_info_by_index(i)
-        if device_info["name"] == device_name:
+        if device_info["name"].lower() == device_name.lower():
             input_device_index = i
             break
 
@@ -47,7 +47,7 @@ def find_output_device_index(device_name):
 
     for i in range(p.get_device_count()):
         device_info = p.get_device_info_by_index(i)
-        if device_info["name"] == device_name:
+        if device_info["name"].lower() == device_name.lower():
             output_device_index = i
             break
 
@@ -55,7 +55,7 @@ def find_output_device_index(device_name):
     return output_device_index
 
 
-def get_input_devices():
+def get_output_devices():
     input_devices = []
     p = pyaudio.PyAudio()
     for i in range(p.get_device_count()):
@@ -68,7 +68,7 @@ def get_input_devices():
     return input_devices
 
 
-def get_output_devices():
+def get_input_devices():
     output_devices = []
     p = pyaudio.PyAudio()
     for i in range(p.get_device_count()):
@@ -3426,11 +3426,14 @@ class SettingsBox(QWidget):
                 space_between_option_box_and_label = 30
                 output_x, output_y = (800, starter_y)
                 self.output_combobox = self.create_option_box(width, height, output_x, output_y, output_devices)
+                self.output_combobox.currentIndexChanged.connect(self.output_device_changed)
                 output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
+                self.parent.output_device_name = self.output_combobox.currentText()
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
                 self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
+                self.parent.input_device_name = self.input_combobox.currentText()
 
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")
@@ -3528,9 +3531,11 @@ class SettingsBox(QWidget):
 
     def input_device_changed(self):
         self.parent.input_device_name = self.input_combobox.currentText()
+        print(f"changed input device to {self.parent.input_device_name}")
 
     def output_device_changed(self):
         self.parent.output_device_name = self.output_combobox.currentText()
+        print(f"changed output device to {self.parent.input_device_name}")
 
     def camera_device_changed(self):
         self.parent.camera_index = self.camara_devices_combobox.currentIndex()
