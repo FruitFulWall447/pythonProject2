@@ -941,14 +941,20 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updated_chat()
 
     def update_profile_dict_of_user(self, name, new_profile_dict):
-        index = 0
-        for profile_dict in self.list_user_profile_dicts:
-            if profile_dict.get("username") == name:
-                self.list_user_profile_dicts[index] = new_profile_dict
-                encoded_image = new_profile_dict.get("encoded_image_bytes")
-                self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
-                break
-            index += 1
+        try:
+            index = 0
+            for profile_dict in self.list_user_profile_dicts:
+                if profile_dict.get("username") == name:
+                    self.list_user_profile_dicts[index] = new_profile_dict
+                    encoded_image = new_profile_dict.get("encoded_image_bytes")
+                    if encoded_image is not None:
+                        self.update_circular_photo_of_user(name, base64.b64decode(encoded_image))
+                    else:
+                        self.update_circular_photo_of_user(name, encoded_image)
+                    break
+                index += 1
+        except Exception as e:
+            print(f"error in updating profile dict of user: {e}")
 
     def update_profile_pic_dicts_list(self, name, new_image_bytes, circular_pic_bytes=None):
         for profile_dict in self.list_user_profile_dicts:
