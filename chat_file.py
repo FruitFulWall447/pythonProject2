@@ -25,6 +25,34 @@ import subprocess
 import platform
 import random
 import string
+import concurrent.futures
+import warnings
+
+
+def check_camera(i):
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # Ignore OpenCV warnings
+            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            _, frame = cap.read()
+            cap.release()
+            return f"Camera {i}"
+    except Exception as e:
+        pass  # Handle any exceptions that may occur during camera check
+    return None
+
+
+def get_camera_names():
+    camera_names = []
+    for i in range(10):  # You can adjust the range according to your needs
+        cap = cv2.VideoCapture(i)
+        if cap.isOpened():
+            camera_names.append(f"Camera {i}")
+            cap.release()
+        else:
+            break
+    return camera_names
 
 
 def find_input_device_index(device_name):
@@ -55,6 +83,38 @@ def find_output_device_index(device_name):
     return output_device_index
 
 
+def try_to_open_output_stream(index):
+    audio_format = pyaudio.paInt16
+    channels = 1
+    rate = 44100
+    chunk = 1024
+    p = pyaudio.PyAudio()
+    try:
+        output_stream = p.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk,
+                               output_device_index=index)
+        return True
+    except:
+        return False
+
+
+def try_to_open_input_stream(index):
+    audio_format = pyaudio.paInt16
+    channels = 1
+    rate = 44100
+    chunk = 1024
+    p = pyaudio.PyAudio()
+    try:
+        input_stream = p.open(format=audio_format,
+                              channels=channels,
+                              rate=rate,
+                              input=True,
+                              frames_per_buffer=chunk,
+                              input_device_index=index)
+        return True
+    except:
+        return False
+
+
 def get_output_devices():
     input_devices = []
     p = pyaudio.PyAudio()
@@ -63,7 +123,9 @@ def get_output_devices():
         device_name = device_info["name"].lower()
         if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name or "headphones" in device_name):
             if device_info["name"] not in input_devices:
-                input_devices.append(device_info["name"])
+                device_index = i
+                if try_to_open_output_stream(device_index):
+                    input_devices.append(device_info["name"])
     p.terminate()
     return input_devices
 
@@ -76,7 +138,9 @@ def get_input_devices():
         device_name = device_info["name"].lower()
         if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
             if device_info["name"] not in output_devices:
-                output_devices.append(device_info["name"])
+                device_index = i
+                if try_to_open_output_stream(device_index):
+                    output_devices.append(device_info["name"])
     p.terminate()
     return output_devices
 
@@ -3206,34 +3270,6 @@ class CustomComboBox(QComboBox):
     def hidePopup(self):
         super(CustomComboBox, self).hidePopup()
         self.visibility_changed.emit(False)
-
-
-import concurrent.futures
-import warnings
-
-def check_camera(i):
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")  # Ignore OpenCV warnings
-            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
-        if cap.isOpened():
-            _, frame = cap.read()
-            cap.release()
-            return f"Camera {i}"
-    except Exception as e:
-        pass  # Handle any exceptions that may occur during camera check
-    return None
-
-def get_camera_names():
-    camera_names = []
-    for i in range(10):  # You can adjust the range according to your needs
-        cap = cv2.VideoCapture(i)
-        if cap.isOpened():
-            camera_names.append(f"Camera {i}")
-            cap.release()
-        else:
-            break
-    return camera_names
 
 
 class SettingsBox(QWidget):
