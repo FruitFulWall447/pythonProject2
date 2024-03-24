@@ -371,7 +371,8 @@ def thread_play_vc_data():
         else:
             print(f"Output index is {output_device_name}")
 
-        output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
+        output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
+                               output_device_index=output_device_index)
         while main_page.vc_play_flag:
             try:
                 vc_data_tuple = main_page.vc_data_list[0]
@@ -417,7 +418,12 @@ def thread_send_voice_chat_data():
             return
         print(f"input index is {input_device_index}")
 
-        input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+        input_stream = p.open(format=FORMAT,
+                              channels=CHANNELS,
+                              rate=RATE,
+                              input=True,
+                              frames_per_buffer=CHUNK,
+                              input_device_index=input_device_index)
         count = 0
         const = 20
         # Open output stream (speakers)
