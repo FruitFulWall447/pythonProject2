@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
     QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names, make_circular_image
+from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names, \
+    make_circular_image, find_output_device_index, find_input_device_index
 import pyaudio
 import random
 import json
@@ -358,12 +359,21 @@ vc_data_queue = Queue()
 
 def thread_play_vc_data():
     global main_page
-    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
+    output_device_name = main_page.output_device_name  # Get the output device name from main_page
+
+    output_device_index = find_output_device_index(output_device_name)
+
+    if output_device_index is None:
+        print(f"Input device '{output_device_name}' not found.")
+        return
+
+    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
+                           output_device_index=output_device_index)
     while main_page.vc_play_flag:
         try:
             vc_data_tuple = main_page.vc_data_list[0]
             vc_data = vc_data_tuple[0]
-            modified_data_list = audio_datalist_set_volume([vc_data], volume=main_page.volume)  # Adjust volume to 10%
+            modified_data_list = audio_data_list_set_volume([vc_data], volume=main_page.volume)  # Adjust volume to 10%
             modified_data = b''.join(modified_data_list)
             # Play the modified audio data
             output_stream.write(modified_data)
@@ -374,7 +384,7 @@ def thread_play_vc_data():
     output_stream.close()
 
 
-def audio_datalist_set_volume(datalist, volume):
+def audio_data_list_set_volume(datalist, volume):
     """ Change value of list of audio chunks """
     sound_level = (volume / 100.)
     modified_datalist = []
@@ -392,7 +402,15 @@ def thread_send_voice_chat_data():
     global n, main_page
     accumulated_data = []
     print("started voice chat thread....")
-    input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+    input_device_name = main_page.input_device_name  # Get the output device name from main_page
+
+    input_device_index = find_input_device_index(input_device_name)
+
+    if input_device_index is None:
+        print(f"Input device '{input_device_name}' not found.")
+        return
+
+    input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK,  input_device_index=input_device_index)
     count = 0
     const = 20
     # Open output stream (speakers)
@@ -716,6 +734,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.volume = 50
         self.font_size = 12
+        self.camera_index = 0
+        self.input_device_name = ""
+        self.output_device_name = ""
 
         self.is_watching_video = False
         # the scroll widget that contain all of the messages

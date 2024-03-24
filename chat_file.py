@@ -26,6 +26,61 @@ import platform
 import random
 import string
 
+
+def find_input_device_index(device_name):
+    p = pyaudio.PyAudio()
+    input_device_index = None
+
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        if device_info["name"] == device_name:
+            input_device_index = i
+            break
+
+    p.terminate()
+    return input_device_index
+
+
+def find_output_device_index(device_name):
+    p = pyaudio.PyAudio()
+    output_device_index = None
+
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        if device_info["name"] == device_name:
+            output_device_index = i
+            break
+
+    p.terminate()
+    return output_device_index
+
+
+def get_input_devices():
+    input_devices = []
+    p = pyaudio.PyAudio()
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        device_name = device_info["name"].lower()
+        if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name or "headphones" in device_name):
+            if device_info["name"] not in input_devices:
+                input_devices.append(device_info["name"])
+    p.terminate()
+    return input_devices
+
+
+def get_output_devices():
+    output_devices = []
+    p = pyaudio.PyAudio()
+    for i in range(p.get_device_count()):
+        device_info = p.get_device_info_by_index(i)
+        device_name = device_info["name"].lower()
+        if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
+            if device_info["name"] not in output_devices:
+                output_devices.append(device_info["name"])
+    p.terminate()
+    return output_devices
+
+
 def replace_non_space_with_star(string1):
     result = ''
     for char in string1:
@@ -3348,26 +3403,10 @@ class SettingsBox(QWidget):
 
 
             elif self.parent.selected_settings == "Voice & Video":
-
-                p = pyaudio.PyAudio()
-
                 # Check if the device has input capability
-                input_devices = []
-                output_devices = []
+                input_devices = get_input_devices()
+                output_devices = get_output_devices()
 
-                for i in range(p.get_device_count()):
-                    device_info = p.get_device_info_by_index(i)
-                    device_name = device_info["name"].lower()
-
-                    # Check if the device has output capability and is a headset or speaker
-                    if device_info["maxOutputChannels"] > 0 and ("headset" in device_name or "speaker" in device_name or "headphones" in device_name):
-                        if device_info["name"] not in input_devices:
-                            input_devices.append(device_info["name"])
-
-                    # Check if the device has input capability and is a microphone
-                    if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
-                        if device_info["name"] not in output_devices:
-                            output_devices.append(device_info["name"])
                 camera_names_list = self.parent.camera_devices_names
 
                 starter_y = 170
@@ -3391,10 +3430,13 @@ class SettingsBox(QWidget):
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
+                self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
+
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")
                 camera_x, camera_y = (800, 670)
                 self.camara_devices_combobox = self.create_option_box(width, height, camera_x, camera_y, camera_names_list)
+                self.camara_devices_combobox.currentIndexChanged.connect(self.camera_device_changed)
                 camera_label = self.create_white_label(camera_x, camera_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "CAMERA")
 
@@ -3483,6 +3525,15 @@ class SettingsBox(QWidget):
                 self.create_privacy_buttons(button_starter_x, button_starter_y, space_between_labels, labels_matching_vars_list, vars_names)
         except Exception as e:
             print(f"error setting page {e}")
+
+    def input_device_changed(self):
+        self.parent.input_device_name = self.input_combobox.currentText()
+
+    def output_device_changed(self):
+        self.parent.output_device_name = self.output_combobox.currentText()
+
+    def camera_device_changed(self):
+        self.parent.camera_index = self.camara_devices_combobox.currentIndex()
 
     def create_privacy_labels(self, starter_x, starter_y, list_of_label_content, space_between_labels):
         for content in list_of_label_content:
