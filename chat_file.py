@@ -55,6 +55,16 @@ def get_camera_names():
     return camera_names
 
 
+def get_default_output_device_name():
+    p = pyaudio.PyAudio()
+    return p.get_default_output_device_info().get("name").lower()
+
+
+def get_default_input_device_name():
+    p = pyaudio.PyAudio()
+    return p.get_default_input_device_info().get("name").lower()
+
+
 def find_input_device_index(device_name):
     p = pyaudio.PyAudio()
     input_device_index = None
@@ -3464,12 +3474,12 @@ class SettingsBox(QWidget):
                 self.output_combobox = self.create_option_box(width, height, output_x, output_y, output_devices)
                 self.output_combobox.currentIndexChanged.connect(self.output_device_changed)
                 output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
-                self.parent.output_device_name = self.output_combobox.currentText()
+                self.output_combobox.setCurrentText(get_default_output_device_name())
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
                 self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
-                self.parent.input_device_name = self.input_combobox.currentText()
+                self.input_combobox.setCurrentText(get_default_input_device_name())
 
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")
