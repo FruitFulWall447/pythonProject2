@@ -27,6 +27,18 @@ import random
 import string
 import concurrent.futures
 import warnings
+import re
+
+
+def extract_number(s):
+    # Use regular expression to find the number in the string
+    match = re.search(r'\d+', s)
+    if match:
+        # Convert the matched number to an integer and return it
+        return int(match.group())
+    else:
+        # If no number is found, return None or raise an exception, depending on your use case
+        return None  # or raise ValueError("No number found in the string")
 
 
 def check_camera(i):
@@ -3584,7 +3596,8 @@ class SettingsBox(QWidget):
         print(f"changed output device to {self.parent.input_device_name}")
 
     def camera_device_changed(self):
-        self.parent.camera_index = self.camara_devices_combobox.currentIndex()
+        self.parent.camera_index = extract_number(self.camara_devices_combobox.currentText())
+        print(f"changed camera decive index to {self.parent.camera_index}")
 
     def create_privacy_labels(self, starter_x, starter_y, list_of_label_content, space_between_labels):
         for content in list_of_label_content:
