@@ -364,7 +364,7 @@ def thread_play_vc_data():
     output_device_index = find_output_device_index(output_device_name)
 
     if output_device_index is None:
-        print(f"Input device '{output_device_name}' not found.")
+        print(f"Output device '{output_device_name}' not found.")
         return
 
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
