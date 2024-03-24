@@ -1098,6 +1098,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         print("Started Share screen thread")
 
     def start_camera_data_thread(self):
+        self.is_camera_shared = True
         self.send_camera_data_thread.start()
         print("Started Share camera thread")
 
@@ -1108,6 +1109,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
 
     def end_share_camera_thread(self):
+        self.is_camera_shared = False
         self.send_camera_data_thread.join()
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
 
