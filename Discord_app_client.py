@@ -471,7 +471,7 @@ def thread_send_share_camera_data():
     global main_page
     try:
         # Initialize the camera
-        cap = cv2.VideoCapture(0)  # Use 0 for default camera, change as needed
+        cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
 
         while main_page.is_camera_shared:
             # Capture frame-by-frame
@@ -1105,6 +1105,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
 
     def update_share_camera_thread(self):
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
+
+    def end_share_camera_thread(self):
+        self.send_camera_data_thread.join()
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
 
     def update_stream_screen_frame(self, frame):

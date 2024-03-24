@@ -3604,6 +3604,9 @@ class SettingsBox(QWidget):
     def camera_device_changed(self):
         self.parent.camera_index = extract_number(self.camara_devices_combobox.currentText())
         print(f"changed camera decive index to {self.parent.camera_index}")
+        if self.parent.send_camera_data_thread.is_alive():
+            self.parent.end_share_camera_thread()
+            self.parent.start_camera_data_thread()
 
     def create_privacy_labels(self, starter_x, starter_y, list_of_label_content, space_between_labels):
         for content in list_of_label_content:
