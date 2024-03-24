@@ -139,7 +139,7 @@ def get_input_devices():
         if device_info["maxInputChannels"] > 0 and ("microphone" in device_name):
             if device_info["name"] not in output_devices:
                 device_index = i
-                if try_to_open_output_stream(device_index):
+                if try_to_open_input_stream(device_index):
                     output_devices.append(device_info["name"])
     p.terminate()
     return output_devices
