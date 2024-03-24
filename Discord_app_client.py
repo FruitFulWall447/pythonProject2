@@ -180,7 +180,7 @@ def thread_recv_messages():
             compressed_vc_data = data.get("compressed_vc_data")
             speaker = data.get("speaker")
             vc_data = zlib.decompress(compressed_vc_data)
-            vc_data_queue.put(vc_data)
+            main_page.vc_data_list.append((vc_data, speaker))
         if message_type == "share_screen_data":
             compressed_share_screen_data = data.get("compressed_share_screen_data")
             speaker = data.get("speaker")
@@ -265,12 +265,7 @@ def thread_recv_messages():
                         QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
                         QMetaObject.invokeMethod(main_page, "initiating_call_signal", Qt.QueuedConnection)
                         QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                        vc_thread_flag = True
-                        vc_play_flag = True
-                        send_vc_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
-                        recv_vc_data = threading.Thread(target=thread_play_vc_data, args=())
-                        send_vc_thread.start()
-                        recv_vc_data.start()
+                        QMetaObject.invokeMethod(main_page, "start_call_threads_signal", Qt.QueuedConnection)
                     if action == "timeout":
                         print("call timeout passed")
                         QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
@@ -278,10 +273,7 @@ def thread_recv_messages():
                 if action == "ended":
                     print("call ended")
                     vc_data_queue = Queue()
-                    vc_thread_flag = False
-                    vc_play_flag = False
-                    send_vc_thread.join()
-                    recv_vc_data.join()
+                    QMetaObject.invokeMethod(main_page, "close_call_threads_signal", Qt.QueuedConnection)
                     QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
             if call_action_type == "call_dictionary":
                 action = data.get("action")
@@ -365,16 +357,18 @@ vc_data_queue = Queue()
 
 
 def thread_play_vc_data():
-    global vc_data_queue, main_page
+    global main_page
     output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK)
-    while vc_play_flag:
+    while main_page.vc_play_flag:
         try:
-            vc_data = vc_data_queue.get(block=True, timeout=0.1)
+            vc_data_tuple = main_page.vc_data_list[0]
+            vc_data = vc_data_tuple[0]
             modified_data_list = audio_datalist_set_volume([vc_data], volume=main_page.volume)  # Adjust volume to 10%
             modified_data = b''.join(modified_data_list)
             # Play the modified audio data
             output_stream.write(modified_data)
-        except Empty:
+            del main_page.vc_data_list[0]
+        except Exception as e:
             pass  # Handle the case where the queue is empty
     output_stream.stop_stream()
     output_stream.close()
@@ -402,7 +396,7 @@ def thread_send_voice_chat_data():
     count = 0
     const = 20
     # Open output stream (speakers)
-    while vc_thread_flag:
+    while main_page.vc_thread_flag:
         if not main_page.mute and not main_page.deafen:
             input_data = input_stream.read(CHUNK)
             accumulated_data.append(input_data)
@@ -608,9 +602,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     insert_messages_into_message_box_signal = pyqtSignal(list)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     update_message_box_signal = pyqtSignal()
+    close_call_threads_signal = pyqtSignal()
+    start_call_threads_signal = pyqtSignal()
 
     def __init__(self, Netwrok):
         super().__init__()
+        self.vc_data_list = []
+        self.vc_thread_flag = False
+        self.vc_play_flag = False
+        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
+        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=())
+
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
 
         self.blueish_background_color = "#141c4b"
@@ -772,6 +774,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_message_box_signal.connect(self.update_message_box)
         self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
         self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
+        self.close_call_threads_signal.connect(self.close_call_threads)
+        self.start_call_threads_signal.connect(self.start_call_threads)
         self.media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
@@ -821,6 +825,20 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def start_call_threads(self):
+        self.vc_data_list = []
+        self.vc_thread_flag = True
+        self.vc_play_flag = True
+        self.send_vc_data_thread.start()
+        self.play_vc_data_thread.start()
+
+    def close_call_threads(self):
+        self.vc_data_list = []
+        self.vc_thread_flag = False
+        self.vc_play_flag = False
+        self.send_vc_data_thread.join()
+        self.play_vc_data_thread.join()
 
     def scroll_back_to_index_before_update(self, n_last_widgets):
         self.messages_content_saver.scroll_up_by_N_widgets(n_last_widgets)
