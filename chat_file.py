@@ -3590,10 +3590,16 @@ class SettingsBox(QWidget):
     def input_device_changed(self):
         self.parent.input_device_name = self.input_combobox.currentText()
         print(f"changed input device to {self.parent.input_device_name}")
+        if self.parent.play_vc_data_thread.is_alive():
+            self.parent.close_send_vc_thread()
+            self.parent.start_send_vc_thread()
 
     def output_device_changed(self):
         self.parent.output_device_name = self.output_combobox.currentText()
         print(f"changed output device to {self.parent.input_device_name}")
+        if self.parent.play_vc_data_thread.is_alive():
+            self.parent.close_listen_thread()
+            self.parent.start_listen_thread()
 
     def camera_device_changed(self):
         self.parent.camera_index = extract_number(self.camara_devices_combobox.currentText())

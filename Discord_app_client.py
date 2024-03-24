@@ -862,19 +862,31 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def start_call_threads(self):
         self.vc_data_list = []
-        self.vc_thread_flag = True
-        self.vc_play_flag = True
-        self.send_vc_data_thread.start()
-        self.play_vc_data_thread.start()
+        self.start_send_vc_thread()
+        self.start_listen_thread()
 
     def close_call_threads(self):
         self.vc_data_list = []
-        self.vc_thread_flag = False
+        self.close_listen_thread()
+        self.close_send_vc_thread()
+
+    def close_listen_thread(self):
         self.vc_play_flag = False
-        self.send_vc_data_thread.join()
         self.play_vc_data_thread.join()
-        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
         self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=())
+
+    def close_send_vc_thread(self):
+        self.vc_thread_flag = False
+        self.send_vc_data_thread.join()
+        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
+
+    def start_listen_thread(self):
+        self.vc_play_flag = True
+        self.play_vc_data_thread.start()
+
+    def start_send_vc_thread(self):
+        self.vc_thread_flag = True
+        self.send_vc_data_thread.start()
 
     def scroll_back_to_index_before_update(self, n_last_widgets):
         self.messages_content_saver.scroll_up_by_N_widgets(n_last_widgets)
