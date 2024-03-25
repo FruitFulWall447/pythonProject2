@@ -4,13 +4,16 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 import ssl
 import smtplib
+import os
+
+email_password = os.environ.get('email_password')
 
 
 def send_confirmation_to_client_email(receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
     from_email = "appmails742@gmail.com"
-    password = "faxetenwsyseyikl"
+    password = email_password
     to_email = receiver_mail
     subject = "Welcome to connectify!"
     body = f"""
@@ -49,7 +52,7 @@ def send_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
     from_email = "appmails742@gmail.com"
-    password = "faxetenwsyseyikl"
+    password = email_password
     to_email = receiver_mail
     subject = "Verification code for Connectify"
     body = f"""
@@ -95,7 +98,7 @@ def send_code_to_client_email(code, receiver_mail, account_name):
 def send_forget_password_code_to_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
-    from_email = "appmails742@gmail.com"
+    from_email = email_password
     password = "faxetenwsyseyikl"
     to_email = receiver_mail
     subject = "Verification code for Connectify"
@@ -144,7 +147,7 @@ def send_changed_password_to_email(receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
     from_email = "appmails742@gmail.com"
-    password = "faxetenwsyseyikl"
+    password = email_password
     to_email = receiver_mail
     subject = "Welcome to connectify!"
     body = f"""
