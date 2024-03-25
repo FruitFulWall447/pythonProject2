@@ -36,7 +36,7 @@ def create_user_settings(user_id):
     INSERT INTO settings_table 
     (user_id, volume, output_device, input_device, camera_device_index, 
     font_size, font, theme_color, censor_data, private_account, 
-    push_to_talk_bind, 2fa_enabled) 
+    push_to_talk_bind, two_factor_auth) 
     VALUES 
     (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
