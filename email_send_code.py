@@ -5,6 +5,11 @@ from email.mime.image import MIMEImage
 import ssl
 import smtplib
 import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
+import ssl
 
 email_password = os.environ.get('email_password')
 
@@ -41,14 +46,52 @@ def send_confirmation_to_client_email(receiver_mail, account_name):
         smtp.sendmail(from_email, to_email, em.as_string())
 
 
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-import ssl
+def send_login_code_to_client_email(code, receiver_mail):
+    logo_path = 'discord_app_assets/connectify_icon.png'
+    from_email = "appmails742@gmail.com"
+    password = email_password  # Ensure you have email_password defined somewhere
+    to_email = receiver_mail
+    subject = "Login Verification Code for Connectify"
+    body = f"""
+    <p>
+        Dear {to_email},<br><br>
+
+        We received a login request for your Connectify Account. Your verification code is:<br><br>
+
+        <strong>{code}</strong><br><br>
+
+        If you did not initiate this login attempt, please ignore this email.<br><br>
+
+        Sincerely yours,<br><br>
+
+        The Connectify Team
+    </p>
+    <img src="cid:logo">  <!-- This references the inline image -->
+    """
+
+    em = MIMEMultipart()
+    em['From'] = from_email
+    em['To'] = to_email
+    em['Subject'] = subject
+
+    # Attach HTML body
+    body_html = MIMEText(body, 'html')
+    em.attach(body_html)
+
+    # Attach inline logo
+    with open(logo_path, 'rb') as logo_file:
+        logo_attachment = MIMEImage(logo_file.read(), name='logo.png')
+        logo_attachment.add_header('Content-ID', '<logo>')
+        em.attach(logo_attachment)
+
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(from_email, password)
+        smtp.sendmail(from_email, to_email, em.as_string())
 
 
-def send_code_to_client_email(code, receiver_mail, account_name):
+def send_sing_up_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
     from_email = "appmails742@gmail.com"
@@ -65,7 +108,7 @@ def send_code_to_client_email(code, receiver_mail, account_name):
 
         If you did not request this code, it is possible that someone else is trying to create your Connectify Account - {connectify_account}. Do not forward or give this code to anyone.<br><br>
 
-        You received this message because this email address is listed as the email to create your Connectify Account - {connectify_account}. If that is incorrect, please visit our site to remove your email from an Connectify Account.<br><br>
+        You received this message because this email address is listed as the email to create your Connectify Account - {connectify_account}. If that is incorrect, please visit our site to remove your email from a Connectify Account.<br><br>
 
         Sincerely yours,<br><br>
 
@@ -94,6 +137,7 @@ def send_code_to_client_email(code, receiver_mail, account_name):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(from_email, password)
         smtp.sendmail(from_email, to_email, em.as_string())
+
 
 def send_forget_password_code_to_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'

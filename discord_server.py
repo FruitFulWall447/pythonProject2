@@ -216,7 +216,7 @@ def thread_recv_messages(n, addr, username):
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
                         code = random.randint(100000, 999999)
-                        send_code_to_client_email(code, email, username)
+                        send_sing_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
                         attempts_remaining = 3  # Set the maximum number of attempts
                         while attempts_remaining > 0:
