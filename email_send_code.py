@@ -46,7 +46,7 @@ def send_confirmation_to_client_email(receiver_mail, account_name):
         smtp.sendmail(from_email, to_email, em.as_string())
 
 
-def send_login_code_to_client_email(code, receiver_mail):
+def send_login_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     from_email = "appmails742@gmail.com"
     password = email_password  # Ensure you have email_password defined somewhere
@@ -54,7 +54,7 @@ def send_login_code_to_client_email(code, receiver_mail):
     subject = "Login Verification Code for Connectify"
     body = f"""
     <p>
-        Dear {to_email},<br><br>
+        Dear {account_name},<br><br>
 
         We received a login request for your Connectify Account. Your verification code is:<br><br>
 

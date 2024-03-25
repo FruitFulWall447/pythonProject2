@@ -9,7 +9,19 @@ import base64
 
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
-
+default_settings_dict = {
+    "volume": 50,  # Default volume level
+    "output_device": "default",  # Default output device
+    "input_device": "default",  # Default input device
+    "camera_device": "default",  # Default camera device
+    "font_size": 12,  # Default font size
+    "font": "Arial",  # Default font
+    "theme_color": "Blue",  # Default theme color
+    "censor_data": False,  # Default censor data setting
+    "private_account": False,  # Default account privacy setting
+    "push_to_talk_bind": None,  # Default push-to-talk key binding
+    "2fa_enabled": False  # Default 2-factor authentication setting
+}
 
 def decode_base64(message):
     message_content = base64.b64decode(message)
@@ -74,6 +86,32 @@ def retrieve_salt_by_username(username):
         print(f"MySQL Error: {e}")
         return None
 
+
+def retrieve_user_id_by_username(username):
+    try:
+        # Establish a connection to the database
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SELECT query to retrieve the salt
+        query = f"SELECT id FROM sign_up_table WHERE username = '{username}'"
+        cursor.execute(query)
+
+        # Fetch the salt
+        result = cursor.fetchone()
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Return the salt (or None if user not found)
+        return result[0] if result else None
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return None
 
 
 def login(username, password):

@@ -3484,12 +3484,14 @@ class SettingsBox(QWidget):
                 space_between_option_box_and_label = 30
                 output_x, output_y = (800, starter_y)
                 self.output_combobox = self.create_option_box(width, height, output_x, output_y, output_devices)
+                self.output_combobox.addItem("Default")
                 self.output_combobox.currentIndexChanged.connect(self.output_device_changed)
                 output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
                 self.output_combobox.setCurrentText(get_default_output_device_name())
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
+                self.input_combobox.addItem("Default")
                 self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
                 self.input_combobox.setCurrentText(get_default_input_device_name())
 

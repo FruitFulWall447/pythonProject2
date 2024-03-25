@@ -6,7 +6,8 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
 from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names, \
-    make_circular_image, find_output_device_index, find_input_device_index
+    make_circular_image, find_output_device_index, find_input_device_index, \
+    get_default_output_device_name, get_default_input_device_name
 import pyaudio
 import random
 import json
@@ -363,7 +364,11 @@ def thread_play_vc_data():
         print("started play voice data thread....")
         output_device_name = main_page.output_device_name  # Get the output device name from main_page
 
-        output_device_index = find_output_device_index(output_device_name)
+        if output_device_name == "Default":
+            def_device_name = get_default_output_device_name()
+            output_device_index = find_output_device_index(def_device_name)
+        else:
+            output_device_index = find_output_device_index(output_device_name)
 
         if output_device_index is None:
             print(f"Output device '{output_device_name}' not found.")
@@ -410,7 +415,11 @@ def thread_send_voice_chat_data():
         print("started voice chat thread....")
         input_device_name = main_page.input_device_name  # Get the output device name from main_page
 
-        input_device_index = find_input_device_index(input_device_name)
+        if input_device_name == "Default":
+            def_device_name = get_default_input_device_name()
+            input_device_index = find_input_device_index(def_device_name)
+        else:
+            input_device_index = find_input_device_index(input_device_name)
 
         if input_device_index is None:
             print(f"Input device '{input_device_name}' not found.")
