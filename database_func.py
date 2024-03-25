@@ -13,7 +13,7 @@ default_settings_dict = {
     "volume": 50,  # Default volume level
     "output_device": "default",  # Default output device
     "input_device": "default",  # Default input device
-    "camera_device": "default",  # Default camera device
+    "camera_device_index": 0,  # Default camera device
     "font_size": 12,  # Default font size
     "font": "Arial",  # Default font
     "theme_color": "Blue",  # Default theme color
@@ -53,6 +53,37 @@ def create_user_settings(user_id):
     # Close the cursor and database connection
     cursor.close()
     connection.close()
+
+
+def get_user_settings(user_id):
+    try:
+        # Connect to the database
+        db_connection = connect_to_kevindb()
+
+        # Create a cursor object to execute SQL queries
+        cursor = db_connection.cursor(dictionary=True)
+
+        # Define the table name
+        table_name = "settings_table"
+
+        # Define the SQL SELECT statement to retrieve settings for the given user_id
+        select_query = f"SELECT * FROM {table_name} WHERE user_id = %s"
+
+        # Execute the SELECT statement with parameterized values
+        cursor.execute(select_query, (user_id,))
+
+        # Fetch all settings rows for the given user_id
+        user_settings = cursor.fetchall()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db_connection.close()
+
+        return user_settings
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return None
 
 
 def decode_base64(message):
