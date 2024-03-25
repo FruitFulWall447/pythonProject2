@@ -23,6 +23,38 @@ default_settings_dict = {
     "2fa_enabled": False  # Default 2-factor authentication setting
 }
 
+
+def create_user_settings(user_id):
+    # Connect to the database
+    connection = connect_to_kevindb()
+
+    # Create a cursor object to execute SQL queries
+    cursor = connection.cursor()
+
+    # Prepare the SQL query to insert a new row into settings_table
+    insert_query = """
+    INSERT INTO settings_table 
+    (user_id, volume, output_device, input_device, camera_device_index, 
+    font_size, font, theme_color, censor_data, private_account, 
+    push_to_talk_bind, 2fa_enabled) 
+    VALUES 
+    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    # Extract default settings values from the default_settings_dict
+    default_settings_values = [default_settings_dict[key] for key in default_settings_dict]
+
+    # Insert the new row with user_id and default settings
+    cursor.execute(insert_query, (user_id,) + tuple(default_settings_values))
+
+    # Commit the transaction
+    connection.commit()
+
+    # Close the cursor and database connection
+    cursor.close()
+    connection.close()
+
+
 def decode_base64(message):
     message_content = base64.b64decode(message)
     return message_content
@@ -309,6 +341,7 @@ def insert_user(username, password, email):
         cursor.execute(insert_query, (username, hashed_password_with_salt+pepper, email, salt, security_token))
 
         # Commit the changes to the database
+        user_id = cursor.lastrowid
         connection.commit()
 
         # Close the cursor and connection when done
@@ -316,6 +349,9 @@ def insert_user(username, password, email):
         connection.close()
 
         print("User inserted successfully.")
+
+        create_user_settings(user_id)
+
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         print("Failed to insert user.")
