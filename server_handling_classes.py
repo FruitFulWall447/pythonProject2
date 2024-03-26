@@ -400,6 +400,7 @@ class Communication:
         self.rings = []
         self.nets_dict = {}
         self.online_users = []
+        self.udp_socket = None
         self.logger = logging.getLogger(__name__)
 
     def send_new_group_to_members(self, group_id):

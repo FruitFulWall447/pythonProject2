@@ -19,7 +19,9 @@ logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as 
 
 server = "127.0.0.1"
 port = 4444
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+udp_server_socket.bind((server, port))
 
 # ringing_list made by tuples of len = 2 the [0] in the tuple is the caller and the [1] is the one being called
 ringing_list = []
@@ -523,33 +525,40 @@ Communication = Communication()
 def tcp_server():
     logger = logging.getLogger(__name__)
     try:
-        s.bind((server, port))
+       tcp_server_socket.bind((server, port))
     except socket.error as e:
         logger.critical(e)
 
-    s.listen(20)
+    tcp_server_socket.listen(20)
     logger.info("Waiting for a connection , Server started")
 
     while True:
-        conn, addr = s.accept()
+        conn, addr = tcp_server_socket.accept()
         logger.info(f"connect to: {addr}")
         n = server_net(conn, addr)
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
-
 
 def handle_udp_message(data, address):
     print(f"UDP message from {address}: {data.decode()}")
 
 
-def listen_udp(udp_socket):
+def listen_udp():
+    Communication.udp_socket = udp_server_socket
     while True:
-        data, address = udp_socket.recvfrom(1024)
-        threading.Thread(target=handle_udp_message, args=(data, address)).start()
-
+        try:
+            len_data, address = udp_server_socket.recvfrom(1024)
+            data, address = udp_server_socket.recvfrom(1024)
+            threading.Thread(target=handle_udp_message, args=(data, address)).start()
+        except OSError as os_err:
+            print(f"OS error: {os_err}")
+        except Exception as e:
+            print(f"Exception: {e}")
 
 def main():
     tcp_thread = threading.Thread(target=tcp_server)
     tcp_thread.start()
+    udp_thread = threading.Thread(target=listen_udp)
+    udp_thread.start()
 
 if __name__ == '__main__':
     main()
