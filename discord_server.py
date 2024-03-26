@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as 
 
 server = "127.0.0.1"
 port = 4444
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # ringing_list made by tuples of len = 2 the [0] in the tuple is the caller and the [1] is the one being called
 ringing_list = []
