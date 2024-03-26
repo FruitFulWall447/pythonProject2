@@ -539,16 +539,18 @@ def tcp_server():
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 def handle_udp_message(data, address):
-    print(f"UDP message from {address}: {data.decode()}")
+    print(f"got message from {address} of size {len(data)}")
 
 
 def listen_udp():
     Communication.udp_socket = udp_server_socket
     while True:
         try:
-            len_data, address = udp_server_socket.recvfrom(1024)
-            data, address = udp_server_socket.recvfrom(1024)
-            threading.Thread(target=handle_udp_message, args=(data, address)).start()
+            entire_data = b""
+            for i in range(10):
+                fragment_data, address = udp_server_socket.recvfrom(100000)
+                entire_data += fragment_data
+            threading.Thread(target=handle_udp_message, args=(entire_data, address)).start()
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:

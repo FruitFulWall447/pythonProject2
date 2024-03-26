@@ -238,38 +238,63 @@ class client_net:
             # Release the lock
             self.sending_tcp_data_lock.release()
 
-    def send_message_dict(self, message_dict):
+    def send_bytes_udp(self, data, num_fragments=10):
+        try:
+            # Encrypt the data if encryption is enabled
+            if self.aes_key is not None:
+                encrypted_data = encrypt_with_aes(self.aes_key, data)
+                data = encrypted_data
+
+            # Split the data into fragments
+            # Calculate the fragment size based on the total data size and number of fragments
+            fragment_size = len(data) // num_fragments
+            fragments = [data[i:i + fragment_size] for i in range(0, len(data), fragment_size)]
+
+            # Send each fragment individually
+            for fragment in fragments:
+                self.client_udp_socket.sendto(fragment, self.addr)
+        except socket.error as e:
+            print(f"error in sending udp {e} , data size = {len(data)}")
+
+    def send_message_dict_tcp(self, message_dict):
         try:
             pickled_data = pickle.dumps(message_dict)
             self.send_bytes(pickled_data)
         except Exception as e:
             print(e)
 
+    def send_message_dict_udp(self, message_dict):
+        try:
+            pickled_data = pickle.dumps(message_dict)
+            self.send_bytes_udp(pickled_data)
+        except Exception as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
             message = {"message_type": "current_chat", "current_chat": current_chat}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def ask_for_more_messages(self):
         try:
             message = {"message_type": "more_messages"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def start_screen_stream(self):
         try:
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": "ScreenStream", "action": "start"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def close_screen_stream(self):
         try:
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": "ScreenStream", "action": "close"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -277,7 +302,7 @@ class client_net:
         try:
             stream_type = "CameraStream"
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type, "action": "start"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -285,7 +310,7 @@ class client_net:
         try:
             stream_type = "CameraStream"
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type, "action": "close"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -294,7 +319,7 @@ class client_net:
             stream_type = "ScreenStream"
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type,
                        "action": "watch", "user_to_watch": user}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -303,7 +328,7 @@ class client_net:
             stream_type = "CameraStream"
             message = {"message_type": "call", "call_action_type": "stream", "stream_type": stream_type,
                        "action": "watch", "user_to_watch": user}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -311,7 +336,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "stream",
                        "action": "stop_watch"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -320,7 +345,7 @@ class client_net:
             # Convert the length of the data to a string
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "ended"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -328,7 +353,7 @@ class client_net:
         try:
             message = {"message_type": "password",
                        "action": "new_password", "new_password": new_password}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -336,24 +361,24 @@ class client_net:
         encoded_b64_image = base64.b64encode(image_bytes).decode('utf-8')
         message = {"message_type": "group",
                    "action": "update_image", "group_id": group_id, "encoded_b64_image": encoded_b64_image}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def create_group(self, group_members_list):
         json_group_members_list = json.dumps(group_members_list)
         message = {"message_type": "group",
                    "action": "create", "group_members_list": json_group_members_list}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def add_user_to_group(self, group_id, users_list):
         message = {"message_type": "group", "action": "add_user",
                    "group_id": group_id, "users_to_add": json.dumps(users_list)}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_calling_user(self, user_that_is_called):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "calling", "calling_to": user_that_is_called}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -361,7 +386,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "change_calling_status",
                        "action": "stop!"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -369,7 +394,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "join_call", "group_id": group_id}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -377,7 +402,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "accepted_call", "accepted_caller": accepted_caller}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -385,7 +410,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "rejected_call", "rejected_caller": rejected_caller}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -393,7 +418,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "mute_myself"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -401,7 +426,7 @@ class client_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "deafen_myself"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -409,24 +434,24 @@ class client_net:
 
         message = {"message_type": "login", "username": username,
                    "password": password}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_sign_up_info(self, username, password, email):
         message_format = "sign_up"
         message = {"message_type": message_format, "username": username,
                    "password": password, "email": email}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_security_token(self, security_token):
         message_format = "security_token"
         message = {"message_type": message_format, "security_token": security_token}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_username_and_email_froget_password(self, username, password, email):
         message_format = "forget password"
         message = {"message_type": message_format, "username": username,
                    "email": email}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_message(self, sender, receiver, content, type, file_name):
         if isinstance(content, bytes):
@@ -439,7 +464,7 @@ class client_net:
                    "type": type,
                    "file_name": file_name
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_profile_pic(self, profile_pic):
         if isinstance(profile_pic, bytes):
@@ -451,7 +476,7 @@ class client_net:
         message_format = "update_profile_pic"
         message = {"message_type": message_format, "b64_encoded_profile_pic": content
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_vc_data(self, vc_data):
         try:
@@ -460,7 +485,8 @@ class client_net:
             message_format = "vc_data"
             message = {"message_type": message_format, "compressed_vc_data": compressed_message
                        }
-            self.send_message_dict(message)
+            #self.send_message_dict_tcp(message)
+            self.send_message_dict_udp(message)
         except Exception as e:
             print(f"error in send vc data is: {e}")
 
@@ -472,7 +498,7 @@ class client_net:
             message = {"message_type": message_format, "compressed_share_screen_data": compressed_message,
                        "shape_of_frame": shape_of_frame
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_udp(message)
         except Exception as e:
             print(f"error is in send share screen data: {e}")
 
@@ -484,7 +510,7 @@ class client_net:
             message = {"message_type": message_format, "compressed_share_camera_data": compressed_message,
                        "shape_of_frame": shape_of_frame
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_udp(message)
         except Exception as e:
             print(f"error is send share camera data: {e}")
 
@@ -493,7 +519,7 @@ class client_net:
             # Convert the length of the data to a string
             message = {"message_type": "friend_request", "username_for_request": friend_username
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -502,7 +528,7 @@ class client_net:
             # Convert the length of the data to a string
             message = {"message_type": "messages_list_index", "messages_list_index": index
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -510,7 +536,7 @@ class client_net:
         try:
             message = {"message_type": "friend_remove", "username_to_remove": friend_username
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -518,7 +544,7 @@ class client_net:
         try:
             message = {"message_type": "block", "user_to_block": user_to_block
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -526,7 +552,7 @@ class client_net:
         try:
             message = {"message_type": "unblock", "user_to_unblock": user_to_unblock
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -534,7 +560,7 @@ class client_net:
         try:
             message = {"message_type": "friend_request_status", "action": "reject", "rejected_user": rejected_user
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -542,7 +568,7 @@ class client_net:
         try:
             message = {"message_type": "friend_request_status", "action": "accept", "accepted_user": accepted_user
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -550,7 +576,7 @@ class client_net:
         try:
             message = {"message_type": "security_token", "action": "needed"
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -558,7 +584,7 @@ class client_net:
         try:
             message = {"message_type": "sign_up", "action": "verification_code", "code": code
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -771,7 +797,7 @@ class server_net:
             # Release the lock
             self.sending_tcp_data_lock.release()
 
-    def send_message_dict(self, message_dict):
+    def send_message_dict_tcp(self, message_dict):
         try:
             pickled_data = pickle.dumps(message_dict)
             self.send_bytes(pickled_data)
@@ -782,36 +808,36 @@ class server_net:
         json_messages_list = json.dumps(messages_list)
         message = {"message_type": "messages_list", "messages_list": json_messages_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_addition_messages_list(self, addition_messages_list):
         json_messages_list = json.dumps(addition_messages_list)
         message = {"message_type": "message_list_addition", "message_list_addition": json_messages_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_new_message(self, message):
         message = {"message_type": "new_message", "new_message": message
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_new_message_of_other_chat(self):
         message = {"message_type": "new_message", "new_message": ""
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_requests_list(self, list):
         json_requests_list = json.dumps(list)
         message = {"message_type": "requests_list", "requests_list": json_requests_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def sent_code_to_mail(self):
         try:
             # Convert the length of the data to a string
             message = {"message_type": "code", "action": "sent", "sent_to": "email"
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -819,7 +845,7 @@ class server_net:
         try:
             # Convert the length of the data to a string
             message = {"message_type": "friend_request", "friend_request_status": status}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -828,7 +854,7 @@ class server_net:
             compressed_vc_data = zlib.compress(vc_data)
             message = {"message_type": "vc_data", "compressed_vc_data": compressed_vc_data, "speaker": speaker
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except Exception as e:
             print(f"error in send vc data is: {e}")
 
@@ -838,7 +864,7 @@ class server_net:
             message = {"message_type": "share_screen_data", "compressed_share_screen_data":
                 compressed_share_screen_data, "speaker": speaker, "frame_shape": shape_of_frame_bytes
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except Exception as e:
             print(f"error in send share screen data is: {e}")
 
@@ -849,7 +875,7 @@ class server_net:
                        "compressed_share_camera_data": compressed_share_screen_data,
                        "speaker": speaker, "frame_shape": shape_of_frame_bytes
                        }
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except Exception as e:
             print(f"error in send camera data is: {e}")
 
@@ -857,66 +883,66 @@ class server_net:
         message = {"message_type": "messages_status",
                    "messages_status": "up_to_data"
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def add_new_chat(self, chat_to_add):
         message = {"message_type": "add_chat",
                    "chat_to_add": chat_to_add
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_new_group(self, group_dict):
         message = {"message_type": "new_group_dict",
                    "group_dict": json.dumps(group_dict)
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def update_group(self, group_dict):
         message = {"message_type": "update_group_dict",
                    "group_dict": json.dumps(group_dict)
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_friends_list(self, friends_list):
         json_friends_list = json.dumps(friends_list)
         message = {"message_type": "friends_list",
                    "friends_list": json_friends_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_blocked_list(self, blocked_list):
         json_blocked_list = json.dumps(blocked_list)
         message = {"message_type": "blocked_list",
                    "blocked_list": json_blocked_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_online_users_list(self, online_users_list):
         json_online_users_list = json.dumps(online_users_list)
         message = {"message_type": "online_users_list",
                    "online_users_list": json_online_users_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_user_groups_list(self, group_list):
         json_group_list = json.dumps(group_list)
         message = {"message_type": "groups_list",
                    "groups_list": json_group_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_user_chats_list(self, chats_list):
         json_chats_list = json.dumps(chats_list)
         message = {"message_type": "chats_list",
                    "chats_list": json_chats_list
                    }
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_user_that_calling(self, user_that_is_calling):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "calling", "user_that_called": user_that_is_calling}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -924,7 +950,7 @@ class server_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "ended"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -932,7 +958,7 @@ class server_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "accepted"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -940,36 +966,36 @@ class server_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "timeout"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_call_dict(self, call_dict):
         message = {"message_type": "call", "call_action_type": "call_dictionary",
                    "action": "dict", "dict": call_dict}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_call_list_of_dicts(self, call_dicts_list):
         json_call_dicts_list = json.dumps(call_dicts_list)
         message = {"message_type": "call", "call_action_type": "call_dictionary",
                    "action": "list_call_dicts", "list_call_dicts": json_call_dicts_list}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_profile_list_of_dicts(self, profile_dicts_list):
         json_profile_dicts_list = json.dumps(profile_dicts_list)
         message = {"message_type": "profile_dicts_list", "profile_dicts_list": json_profile_dicts_list}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def send_profile_dict_of_user(self, profile_dict, user):
         json_profile_dict = json.dumps(profile_dict)
         message = {"message_type": "updated_profile_dict", "profile_dict": json_profile_dict, "username": user}
-        self.send_message_dict(message)
+        self.send_message_dict_tcp(message)
 
     def remove_call_to_user_of_id(self, call_id):
         try:
             message = {"message_type": "call", "call_action_type": "update_calls",
                        "action": "remove_id", "removed_id": call_id}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
@@ -977,126 +1003,126 @@ class server_net:
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
                        "action": "stream_stopped", "user_that_stopped": user}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_confirm_login(self):
         try:
             message = {"message_type": "login", "login_status": "confirm"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_invalid_login(self):
         try:
             message = {"message_type": "login", "login_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_already_logged_in(self):
         try:
             message = {"message_type": "login", "login_status": "already_logged_in"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_confirm(self):
         try:
             message = {"message_type": "sign_up", "sign_up_status": "confirm"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_invalid(self):
         try:
             message = {"message_type": "sign_up", "sign_up_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_code_invalid(self):
         try:
             message = {"message_type": "sign_up", "action": "code", 'code_status': "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_sign_up_code_valid(self):
         try:
             message = {"message_type": "sign_up", "action": "code", 'code_status': "valid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_all_data_received(self):
         try:
             message = {"message_type": "data", "action": "receive", 'receive_status': "done"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_to_client(self, security_token):
         try:
             message = {"message_type": "security_token", "security_token": security_token}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_valid(self):
         try:
             message = {"message_type": "security_token", "security_status": "valid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_security_token_invalid(self):
         try:
             message = {"message_type": "security_token", "security_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_username_to_client_login_valid(self, username):
         try:
             message = {"message_type": "login_action", "username": username, "login_status": "valid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_username_to_client_login_invalid(self, username):
         try:
             message = {"message_type": "login_action", "username": username, "login_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_info_valid(self):
         try:
             message = {"message_type": "forget_password", "forget_password_status": "valid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_info_invalid(self):
         try:
             message = {"message_type": "forget_password", "forget_password_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_code_valid(self):
         try:
             message = {"message_type": "forget_password", "action": "code", "code_status": "valid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def send_forget_password_code_invalid(self):
         try:
             message = {"message_type": "forget_password", "action": "code", "code_status": "invalid"}
-            self.send_message_dict(message)
+            self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
