@@ -6,6 +6,7 @@ import copy
 from discord_comms_protocol import server_net
 import threading
 import base64
+import pickle
 
 
 def create_profile_pic_dict(username, image_bytes_encoded):
@@ -402,6 +403,7 @@ class Communication:
         self.online_users = []
         self.udp_socket = None
         self.logger = logging.getLogger(__name__)
+        self.UDPClientHandler_list = []
 
     def send_new_group_to_members(self, group_id):
         group_members = database_func.get_group_members(group_id)
@@ -685,6 +687,15 @@ class Communication:
             if spectator in call.participants:
                 call.remove_spectator_for_stream(spectator)
 
+    def handle_udp_fragment(self, fragment, address):
+        for udp_handler_object in self.UDPClientHandler_list:
+            if udp_handler_object.address == address:
+                udp_handler_object.handle_fragments(fragment)
+
+    def create_and_add_udp_handler_object(self, username, address):
+        udp_handler_object = UDPClientHandler(address, self, username)
+        self.UDPClientHandler_list.append(udp_handler_object)
+
 
 class VideoStream:
     def __init__(self, Comms_object, streamer, call_object, stream_type, group_id=None):
@@ -752,3 +763,32 @@ class VideoStream:
     def adding_share_screen_data_to_user_call_thread_queue(self, user, share_screen_data, shape_bytes_of_frame):
         if len(self.spectators) > 0:
             self.data_collection.append((user, share_screen_data, shape_bytes_of_frame))
+
+
+class UDPClientHandler:
+    def __init__(self, address, communication_object, client_username):
+        self.logger = logging.getLogger(__name__)
+        self.address = address
+        self.is_next_data = False
+        self.fragments_count = 0
+        self.udp_temp_data = b''
+        self.communication_object = communication_object
+        self.client_username = client_username
+        self.logger.info(f"create udp client handler of address {self.address} of username {self.client_username}")
+
+
+    def handle_fragments(self, fragment):
+        if self.is_next_data:
+            self.udp_temp_data += fragment
+            self.fragments_count -= 1
+            if self.fragments_count == 0:
+                self.communication_object.handle_udp_data(self.udp_temp_data, self.client_username)
+                self.udp_temp_data = b''
+        else:
+            # got dict of number of fragment
+            data_dict = pickle.loads(fragment)
+            self.fragments_count = data_dict.get("fragment_count")
+            self.is_next_data = True
+
+
+

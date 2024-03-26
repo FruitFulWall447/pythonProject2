@@ -326,6 +326,9 @@ def thread_recv_messages(n, addr):
                 Communication.user_offline(User)
                 break
             message_type = data.get("message_type")
+            if message_type == "connect_udp_port":
+                udp_port_address = data.get("udp_port_address")
+                Communication.create_and_add_udp_handler_object(User, udp_port_address)
             if message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
                 add_message_for_client(User, data)
@@ -538,6 +541,7 @@ def tcp_server():
         n = server_net(conn, addr)
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
+
 def handle_udp_message(data, address):
     print(f"got message from {address} of size {len(data)}")
 
@@ -546,15 +550,13 @@ def listen_udp():
     Communication.udp_socket = udp_server_socket
     while True:
         try:
-            entire_data = b""
-            for i in range(10):
-                fragment_data, address = udp_server_socket.recvfrom(100000)
-                entire_data += fragment_data
+            fragment_data, address = udp_server_socket.recvfrom(100000)
             threading.Thread(target=handle_udp_message, args=(entire_data, address)).start()
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:
             print(f"Exception: {e}")
+
 
 def main():
     tcp_thread = threading.Thread(target=tcp_server)

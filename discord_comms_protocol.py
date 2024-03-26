@@ -161,6 +161,7 @@ class client_net:
         self.addr = (self.server_ip, self.port)
         self.logger.debug(f"trying to connect to addr: {self.addr}")
         self.connect_tcp()
+        self.connect_udp()
         self.size = 0000000
         self.original_len = 10
         self.aes_key = None
@@ -179,6 +180,8 @@ class client_net:
         try:
             self.client_udp_socket.connect(self.addr)
             self.logger.info("udp socket connected to server")
+            address = self.client_udp_socket.getsockname()
+            print("Socket address:", address)
         except:
             self.logger.info("couldn't connect udp socket to server")
             pass
@@ -269,6 +272,11 @@ class client_net:
             self.send_bytes_udp(pickled_data)
         except Exception as e:
             print(e)
+
+    def connect_between_udp_port_address_to_username(self):
+        address = self.client_udp_socket.getsockname()
+        message = {"message_type": "connect_udp_port", "udp_port_address": address}
+        self.send_message_dict_tcp(message)
 
     def updated_current_chat(self, current_chat):
         try:

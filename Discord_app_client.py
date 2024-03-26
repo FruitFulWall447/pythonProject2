@@ -1971,6 +1971,7 @@ class Login_page(QWidget):
             login_status = data.get("login_status")
             if login_status == "confirm":
                 print("logged in successfully")
+                n.connect_between_udp_port_address_to_username()
                 self.hide()
 
                 if self.remember_me_status:
