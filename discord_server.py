@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as 
 
 server = "127.0.0.1"
 port = 4444
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # ringing_list made by tuples of len = 2 the [0] in the tuple is the caller and the [1] is the one being called
 ringing_list = []
@@ -178,7 +178,7 @@ share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
 
-def thread_recv_messages(n, addr, username):
+def thread_recv_messages(n, addr):
     global ringing_list, online_users, current_calls_list
     User = ""
     is_logged_in = False
@@ -531,12 +531,10 @@ def main():
     logger.info("Waiting for a connection , Server started")
 
     while True:
-        username1 = "0000"
         conn, addr = s.accept()
         logger.info(f"connect to: {addr}")
         n = server_net(conn, addr)
-        threading.Thread(target=thread_recv_messages, args=(n, addr, username1)).start()
-        #Process(target=thread_recv_messages, args=(n, addr, username1)).start()
+        threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 if __name__ == '__main__':
     main()
