@@ -689,13 +689,19 @@ class Communication:
 
     def handle_udp_fragment(self, fragment, address):
         for udp_handler_object in self.UDPClientHandler_list:
-            if udp_handler_object.address == address:
+            if udp_handler_object.udp_address == address:
                 udp_handler_object.handle_fragments(fragment)
 
-    def create_and_add_udp_handler_object(self, username, address):
-        udp_handler_object = UDPClientHandler(address, self, username)
+    def create_and_add_udp_handler_object(self, username, udp_address, tcp_address):
+        udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
         self.UDPClientHandler_list.append(udp_handler_object)
 
+    def handle_udp_data(self, data, username):
+        print(5)
+
+    def get_aes_key_by_tcp_address(self, username):
+        user_net = self.get_net_by_name(username)
+        return user_net.get_aes_key()
 
 class VideoStream:
     def __init__(self, Comms_object, streamer, call_object, stream_type, group_id=None):
@@ -766,16 +772,17 @@ class VideoStream:
 
 
 class UDPClientHandler:
-    def __init__(self, address, communication_object, client_username):
+    def __init__(self, udp_address, tcp_address, communication_object, client_username):
         self.logger = logging.getLogger(__name__)
-        self.address = address
+        self.udp_address = udp_address
+        self.tcp_address = tcp_address
         self.is_next_data = False
         self.fragments_count = 0
         self.udp_temp_data = b''
         self.communication_object = communication_object
         self.client_username = client_username
         self.logger.info(f"create udp client handler of address {self.address} of username {self.client_username}")
-
+        self.aes_key = self.communication_object.get_aes_key_by_tcp_address(self.tcp_address)
 
     def handle_fragments(self, fragment):
         if self.is_next_data:
@@ -786,6 +793,7 @@ class UDPClientHandler:
                 self.udp_temp_data = b''
         else:
             # got dict of number of fragment
+
             data_dict = pickle.loads(fragment)
             self.fragments_count = data_dict.get("fragment_count")
             self.is_next_data = True

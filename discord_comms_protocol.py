@@ -274,8 +274,9 @@ class client_net:
             print(e)
 
     def connect_between_udp_port_address_to_username(self):
-        address = self.client_udp_socket.getsockname()
-        message = {"message_type": "connect_udp_port", "udp_port_address": address}
+        udp_address = self.client_udp_socket.getsockname()
+        tcp_address = self.client_tcp_socket.getsockname()
+        message = {"message_type": "connect_udp_port", "udp_address": udp_address, "tcp_address": tcp_address}
         self.send_message_dict_tcp(message)
 
     def updated_current_chat(self, current_chat):
@@ -681,6 +682,9 @@ class client_net:
             self.client_tcp_socket.close()
         except socket.error as e:
             print(e)
+
+    def get_aes_key(self):
+        return self.aes_key
 
     def initiate_rsa_protocol(self):
         # create 256 bytes key
