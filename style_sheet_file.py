@@ -437,18 +437,17 @@ def thread_send_voice_chat_data():
         while main_page.vc_thread_flag:
             if not main_page.mute and not main_page.deafen:
                 input_data = input_stream.read(CHUNK)
-                #accumulated_data.append(input_data)
+                accumulated_data.append(input_data)
 
-                # count += 1
-                # if count % const == 0:  # Send every 10 chunks (adjust as needed)
-                #     # Send the accumulated data over the network
-                #
-                #     data = b''.join(accumulated_data)
-                #     # output_stream.write(data)
-                #
-                #     n.send_vc_data(data)
-                #     accumulated_data = []  # Reset accumulated data
-                n.send_vc_data(input_data)
+                count += 1
+                if count % const == 0:  # Send every 10 chunks (adjust as needed)
+                    # Send the accumulated data over the network
+
+                    data = b''.join(accumulated_data)
+                    # output_stream.write(data)
+
+                    n.send_vc_data(data)
+                    accumulated_data = []  # Reset accumulated data
             else:
                 time.sleep(0.1)
         input_stream.stop_stream()
