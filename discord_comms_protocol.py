@@ -154,30 +154,39 @@ class client_net:
 
         # Add the StreamHandler to the logger
         self.logger.addHandler(stream_handler)
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_ip = "127.0.0.1"
         self.port = 4444
         self.addr = (self.server_ip, self.port)
         self.logger.debug(f"trying to connect to addr: {self.addr}")
-        self.id = self.connect()
+        self.connect_tcp()
         self.size = 0000000
         self.original_len = 10
         self.aes_key = None
-        self.sending_data_lock = threading.Lock()
+        self.sending_tcp_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
 
-    def connect(self):
+    def connect_tcp(self):
         try:
-            self.client.connect(self.addr)
-            self.logger.info("connected to server")
+            self.client_tcp_socket.connect(self.addr)
+            self.logger.info("tcp socket connected to server")
         except:
-            self.logger.info("couldn't connect to server")
+            self.logger.info("couldn't connect tcp socket to server")
+            pass
+
+    def connect_udp(self):
+        try:
+            self.client_udp_socket.connect(self.addr)
+            self.logger.info("udp socket connected to server")
+        except:
+            self.logger.info("couldn't connect udp socket to server")
             pass
 
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
-            self.sending_data_lock.acquire()
+            self.sending_tcp_data_lock.acquire()
             encoded_data = data.encode('utf-8')
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
@@ -190,29 +199,29 @@ class client_net:
             size = ("0" * number_of_zero) + size_str
 
             # Send the size as a string
-            self.client.send(size.encode('utf-8'))
+            self.client_tcp_socket.send(size.encode('utf-8'))
 
             # Send the actual data
-            self.client.send(encoded_encrypted_data)
+            self.client_tcp_socket.send(encoded_encrypted_data)
         except socket.error as e:
             print(e)
         finally:
             # Release the lock
-            self.sending_data_lock.release()
+            self.sending_tcp_data_lock.release()
 
     def send_bytes(self, data):
         try:
             # Convert the length of the data to a string
-            self.sending_data_lock.acquire()
+            self.sending_tcp_data_lock.acquire()
             if self.aes_key is None:
                 size_str = str(len(data))
                 size = str(self.size + int(size_str))
                 number_of_zero = self.original_len - len(size)
                 size = ("0" * number_of_zero) + size
                 # Send the size as a string
-                self.client.send(size.encode('utf-8'))
+                self.client_tcp_socket.send(size.encode('utf-8'))
                 # Send the actual data as bytes
-                self.client.send(data)
+                self.client_tcp_socket.send(data)
             else:
                 encrypted_data = encrypt_with_aes(self.aes_key, data)
                 size_str = str(len(encrypted_data))
@@ -220,14 +229,14 @@ class client_net:
                 number_of_zero = self.original_len - len(size)
                 size = ("0" * number_of_zero) + size
                 # Send the size as a string
-                self.client.send(size.encode('utf-8'))
+                self.client_tcp_socket.send(size.encode('utf-8'))
                 # Send the actual data as bytes
-                self.client.send(encrypted_data)
+                self.client_tcp_socket.send(encrypted_data)
         except socket.error as e:
             print(e)
         finally:
             # Release the lock
-            self.sending_data_lock.release()
+            self.sending_tcp_data_lock.release()
 
     def send_message_dict(self, message_dict):
         try:
@@ -559,7 +568,7 @@ class client_net:
         while len(received_data) < size:
             remaining_size = size - len(received_data)
             try:
-                chunk = self.client.recv(min(buffer_size, remaining_size))
+                chunk = self.client_tcp_socket.recv(min(buffer_size, remaining_size))
             except socket.error as e:
                 # Handle socket errors, e.g., connection reset
                 print(f"Socket error: {e}")
@@ -575,7 +584,7 @@ class client_net:
 
     def recv_login_info(self):
         try:
-            size_str = self.client.recv(self.original_len).decode('utf-8')
+            size_str = self.client_tcp_socket.recv(self.original_len).decode('utf-8')
 
             # Convert the size string to an integer
             size = int(size_str)
@@ -593,7 +602,7 @@ class client_net:
     def recv_str(self):
         try:
             # Receive the size as binary data and convert it to an integer
-            size_str = self.client.recv(self.original_len).decode('utf-8')
+            size_str = self.client_tcp_socket.recv(self.original_len).decode('utf-8')
 
             # Convert the size string to an integer
             size = int(size_str)
@@ -617,7 +626,7 @@ class client_net:
     def recv_bytes(self):
         try:
             # Receive the size as binary data and convert it to an integer
-            size_str = self.client.recv(self.original_len).decode('utf-8')
+            size_str = self.client_tcp_socket.recv(self.original_len).decode('utf-8')
 
             # Convert the size string to an integer
             size = int(size_str)
@@ -631,11 +640,11 @@ class client_net:
             return None  # Return None in case of an error
 
     def return_socket(self):
-        return self.client
+        return self.client_tcp_socket
 
     def close(self):
         try:
-            self.client.close()
+            self.client_tcp_socket.close()
         except socket.error as e:
             print(e)
 
@@ -674,7 +683,7 @@ class client_net:
 
 class server_net:
     def __init__(self, s, addr):
-        self.client_address = addr
+        self.client_tcp_socket_address = addr
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
@@ -687,7 +696,7 @@ class server_net:
         self.size = 0000000
         self.original_len = 10
         self.aes_key = None
-        self.sending_data_lock = threading.Lock()
+        self.sending_tcp_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
 
     def receive_by_size(self, size, buffer_size=16384):
@@ -713,7 +722,7 @@ class server_net:
     def send_str(self, data):
         try:
             # Convert the length of the data to a string
-            self.sending_data_lock.acquire()
+            self.sending_tcp_data_lock.acquire()
             encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
@@ -732,11 +741,11 @@ class server_net:
             print(e)
         finally:
             # Release the lock
-            self.sending_data_lock.release()
+            self.sending_tcp_data_lock.release()
 
     def send_bytes(self, data):
         try:
-            self.sending_data_lock.acquire()
+            self.sending_tcp_data_lock.acquire()
             if self.aes_key is None:
                 size_str = str(len(data))
                 size = str(self.size + int(size_str))
@@ -760,7 +769,7 @@ class server_net:
             print(e)
         finally:
             # Release the lock
-            self.sending_data_lock.release()
+            self.sending_tcp_data_lock.release()
 
     def send_message_dict(self, message_dict):
         try:
@@ -1198,7 +1207,7 @@ class server_net:
         if received_encrypted_symmetric_key_bytes is not None:
             decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
             aes_key = generate_aes_key()
-            self.logger.info(f"Started to communicate with client {self.client_address}, with AES key {aes_key}")
+            self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with AES key {aes_key}")
             try:
                 encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
                 self.send_bytes(symmetric_key_byte_sequence + encrypted_aes_key)

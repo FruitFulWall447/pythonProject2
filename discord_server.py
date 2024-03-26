@@ -520,7 +520,7 @@ def thread_recv_messages(n, addr):
 Communication = Communication()
 
 
-def main():
+def tcp_server():
     logger = logging.getLogger(__name__)
     try:
         s.bind((server, port))
@@ -535,6 +535,21 @@ def main():
         logger.info(f"connect to: {addr}")
         n = server_net(conn, addr)
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
+
+
+def handle_udp_message(data, address):
+    print(f"UDP message from {address}: {data.decode()}")
+
+
+def listen_udp(udp_socket):
+    while True:
+        data, address = udp_socket.recvfrom(1024)
+        threading.Thread(target=handle_udp_message, args=(data, address)).start()
+
+
+def main():
+    tcp_thread = threading.Thread(target=tcp_server)
+    tcp_thread.start()
 
 if __name__ == '__main__':
     main()
