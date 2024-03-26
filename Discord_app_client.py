@@ -485,8 +485,10 @@ def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
 
 
+CAMERA_FPS = 60
 def thread_send_share_camera_data():
     global main_page
+    time_between_frame = 60 / CAMERA_FPS
     try:
         # Initialize the camera
         cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
@@ -507,7 +509,7 @@ def thread_send_share_camera_data():
             # Send the frame to the server
             n.send_share_camera_data(frame_bytes, frame_np.shape)
 
-            time.sleep(0.04)  # Adjust the sleep time based on your needs
+            time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
 
         # Release the camera and close thread
         cap.release()
