@@ -1417,6 +1417,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                            None)
                             print("Sent message to server")
                             self.chat_box.text_entry.setText("")
+                            if self.selected_chat != self.chats_list[0]:
+                                self.chats_list.remove(self.selected_chat)
+                                self.chats_list.insert(0, self.selected_chat)
                             self.chat_box.text_entry.setFocus()
                             self.is_new_chat_clicked = True
                             self.updated_chat()
@@ -1462,6 +1465,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.file_to_send = None
                     self.file_name = ""
                     self.is_new_chat_clicked = True
+                    if self.selected_chat != self.chats_list[0]:
+                        self.chats_list.remove(self.selected_chat)
+                        self.chats_list.insert(0, self.selected_chat)
                     self.updated_chat()
                     self.chat_box.text_entry.setFocus(True)
                 elif social_clicked:

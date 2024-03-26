@@ -86,6 +86,84 @@ def get_user_settings(user_id):
         return None
 
 
+# settings names: volume, output_device, input_device, camera_device_index
+# font_size, font, theme_color, censor_data, private_account, push_to_talk_key, two_factor_auth
+
+
+def change_user_setting(user_id, setting_name, new_value):
+    try:
+        # Connect to the database
+        db_connection = connect_to_kevindb()
+        # Create a cursor object to execute SQL queries
+        cursor = db_connection.cursor()
+
+        # Define the table name
+        table_name = "settings_table"
+
+        # Define the SQL UPDATE statement to change the setting for the given user_id
+        update_query = f"UPDATE {table_name} SET {setting_name} = %s WHERE user_id = %s"
+
+        # Execute the UPDATE statement with parameterized values
+        cursor.execute(update_query, (new_value, user_id))
+
+        # Commit the transaction
+        db_connection.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db_connection.close()
+
+        print(f"Setting '{setting_name}' changed successfully.")
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        print("Failed to change setting.")
+
+
+def change_volume(user_id, new_volume):
+    change_user_setting(user_id, "volume", new_volume)
+
+
+def change_output_device(user_id, new_output_device):
+    change_user_setting(user_id, "output_device", new_output_device)
+
+
+def change_input_device(user_id, new_input_device):
+    change_user_setting(user_id, "input_device", new_input_device)
+
+
+def change_camera_device_index(user_id, new_camera_device_index):
+    change_user_setting(user_id, "camera_device_index", new_camera_device_index)
+
+
+def change_font_size(user_id, new_font_size):
+    change_user_setting(user_id, "font_size", new_font_size)
+
+
+def change_font(user_id, new_font):
+    change_user_setting(user_id, "font", new_font)
+
+
+def change_theme_color(user_id, new_theme_color):
+    change_user_setting(user_id, "theme_color", new_theme_color)
+
+
+def change_censor_data(user_id, new_censor_data):
+    change_user_setting(user_id, "censor_data", new_censor_data)
+
+
+def change_private_account(user_id, new_private_account):
+    change_user_setting(user_id, "private_account", new_private_account)
+
+
+def change_push_to_talk_bind(user_id, new_push_to_talk_bind):
+    change_user_setting(user_id, "push_to_talk_bind", new_push_to_talk_bind)
+
+
+def change_2fa_enabled(user_id, new_2fa_value):
+    change_user_setting(user_id, "two_factor_auth", new_2fa_value)
+
+
 def decode_base64(message):
     message_content = base64.b64decode(message)
     return message_content
