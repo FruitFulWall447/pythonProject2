@@ -476,12 +476,21 @@ def thread_send_share_screen_data():
         print(f"Screen sharing error: {e}")
 
 
+def set_camera_properties(cap):
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Set frame width to 1280 pixels
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Set frame height to 720 pixels
+    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # Disable autofocus
+    cap.set(cv2.CAP_PROP_FOCUS, 0)  # Set focus to minimum (if supported)
+    cap.set(cv2.CAP_PROP_ZOOM, 1)  # Set zoom to minimum (if supported)
+    cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
+
+
 def thread_send_share_camera_data():
     global main_page
     try:
         # Initialize the camera
         cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
-
+        set_camera_properties(cap)
         while main_page.is_camera_shared:
             # Capture frame-by-frame
             ret, frame = cap.read()
