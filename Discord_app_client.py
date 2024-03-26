@@ -457,8 +457,10 @@ def thread_send_voice_chat_data():
         print(f"error in thread_send_voice_chat_data {e}")
 
 
+SCREEN_FPS = 30
 def thread_send_share_screen_data():
     global main_page
+    time_between_frame = 1 / SCREEN_FPS
     try:
         while main_page.is_screen_shared:
             # Capture the screen using PyAutoGUI
@@ -470,7 +472,7 @@ def thread_send_share_screen_data():
             # Send the frame to the server
             n.send_share_screen_data(frame_bytes, frame.shape)
 
-            time.sleep(0.04)  # Adjust the sleep time based on your needs
+            time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
         print("send share screen data thread closed")
     except Exception as e:
         print(f"Screen sharing error: {e}")
@@ -488,7 +490,7 @@ def set_camera_properties(cap):
 CAMERA_FPS = 60
 def thread_send_share_camera_data():
     global main_page
-    time_between_frame = 60 / CAMERA_FPS
+    time_between_frame = 1 / CAMERA_FPS
     try:
         # Initialize the camera
         cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
