@@ -1,34 +1,24 @@
-import socket
-import threading
+import subprocess
 
-server = "127.0.0.1"
-port = 4444
-udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp_server_socket.bind((server, port))
-print("server runs")
-
-def handle_udp_message(data, address):
-    print(f"UDP message from {address}: {data.decode()}")
-
-
-def listen_udp():
-    while True:
+def get_pc_mtu():
+    if subprocess.OS.name == 'nt':  # Windows
         try:
-            # Receive the message length (4 bytes)
-            len, _ = udp_server_socket.recvfrom(4)
-            print(len)
-            data, address = udp_server_socket.recvfrom(1024)
-            threading.Thread(target=handle_udp_message, args=(data, address)).start()
-        except OSError as os_err:
-            print(f"OS error: {os_err}")
-        except Exception as e:
-            print(f"Exception: {e}")
+            output = subprocess.check_output(["netsh", "interface", "ipv4", "show", "subinterfaces"]).decode()
+            for line in output.splitlines():
+                if "MTU" in line:
+                    return int(line.split(":")[-1].strip())
+        except subprocess.CalledProcessError:
+            pass
+    else:  # Linux/macOS
+        try:
+            output = subprocess.check_output(["ifconfig"]).decode()
+            for line in output.splitlines():
+                if "mtu" in line:
+                    return int(line.split()[4])
+        except subprocess.CalledProcessError:
+            pass
+    return None
 
-
-def main():
-    udp_thread = threading.Thread(target=listen_udp)
-    udp_thread.start()
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    pc_mtu = get_pc_mtu()
+    print("PC MTU:", pc_mtu, "bytes" if pc_mtu else "Not found")

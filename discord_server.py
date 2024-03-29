@@ -552,7 +552,6 @@ def listen_udp():
     while True:
         try:
             fragment_data, address = udp_server_socket.recvfrom(100000)
-            #print(f"got {fragment_data} from address {address}")
             Communication.handle_udp_fragment(fragment_data, address)
         except OSError as os_err:
             print(f"OS error: {os_err}")

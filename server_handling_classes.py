@@ -865,14 +865,9 @@ class UDPClientHandler:
                 else:
                     self.share_camera_data.append(data.get("sliced_data"))
             self.gotten_packets += 1
-            if self.gotten_packets % 10 == 0:
-                self.logger.info(f"got {self.gotten_packets} packets")
-
         except:
-            # means lost packets on the way
             self.lost_packets += 1
             self.gotten_packets += 1
-            self.logger.info(f"lost {self.lost_packets} out of {self.gotten_packets}")
 
 
 
