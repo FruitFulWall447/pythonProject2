@@ -28,6 +28,8 @@ import string
 import concurrent.futures
 import warnings
 import re
+import pyaudio
+import cv2
 
 
 def extract_number(s):
@@ -786,7 +788,6 @@ class ChatBox(QWidget):
         self.text_entry = QLineEdit(self)
         self.text_entry.hide()
 
-
         self.square_pos = (600, 0)
         self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
                                       self.height_of_chat_box)
@@ -832,9 +833,7 @@ class ChatBox(QWidget):
                 self.parent.messages_content_saver = temp_widget
                 self.parent.is_messages_need_update = False
             else:
-                temp_widget = self.parent.messages_content_saver.update_scroll_area_parent(self)
-                self.parent.messages_content_saver = temp_widget
-
+                self.parent.messages_content_saver.update_scroll_area_parent(self)
             self.around_name.raise_()
             self.ringing_square_label = QLabel(self)
             ringing_square_label_x = 1500
@@ -1346,12 +1345,13 @@ class ChatBox(QWidget):
             friend_starter_y = 170
             friend_x = 250
             if not self.parent.current_chat_box_search:
-                self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
-                #chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
+                # self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
+                chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
+                # chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
             else:
-
-                self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
-                #chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
+                chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                # self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
+                # chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
         except Exception as e:
             print(f"error in showing chats list{e}")
 
@@ -1413,7 +1413,7 @@ class ChatBox(QWidget):
                 create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "create")
             create_group_box.raise_()
             #self.display_create_group_box()
-        #chats_widget.raise_()
+        chats_widget.raise_()
         self.raise_needed_elements()
 
     def add_user_to_group_pressed(self):
@@ -1674,12 +1674,12 @@ class ChatBox(QWidget):
                 if len(self.find_contact_text_entry.text()) > 0:
                     self.parent.current_chat_box_search = True
                     self.parent.temp_search_list = self.return_search_list()
-                    self.parent.updated_chat()
+                    self.parent.update_chat_for_chats_scroll()
                 else:
                     try:
                         self.parent.current_chat_box_search = False
                         self.parent.temp_search_list = []
-                        self.parent.updated_chat()
+                        self.parent.update_chat_for_chats_scroll()
                     except Exception as e:
                         print(f"text_changed error :{e}")
         except Exception as e:
@@ -1710,19 +1710,13 @@ class ChatBox(QWidget):
             button.deleteLater()
 
         self.chats_buttons_list.clear()
-
-        style_sheet = '''
-            color: white;
-            font-size: 15px;
-            margin-bottom: 2px;
-        '''
         self.friends_button_height = 50
         friend_starter_y = 170 + (self.parent.chat_box_chats_index * -50)
         self.parent.chat_box_index_y_start = friend_starter_y
         friend_x = 250
         for chat in list:
             try:
-                button = self.create_friend_button(chat, self, style_sheet, (friend_x, friend_starter_y))
+                button = self.create_friend_button(chat, (friend_x, friend_starter_y))
                 self.chats_buttons_list.append((chat, button))
                 friend_starter_y += self.friends_button_height
             except Exception as e:
@@ -1769,7 +1763,7 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"error in raising elements {e}")
 
-    def create_friend_button(self, label, parent, style_sheet, position):
+    def create_friend_button(self, label, position):
 
         px_padding_of_button_text = 55
         chat_name = label
@@ -1798,9 +1792,7 @@ class ChatBox(QWidget):
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_x, profile_image_y)
 
-
-
-        button = QPushButton(parent)
+        button = QPushButton(self)
         button.setText(button_text)
         button.move(position[0], position[1])
         button.setFixedHeight(self.friends_button_height)
@@ -2977,7 +2969,6 @@ class FriendsBox(QWidget):
         self.Network.unblock_user(friend)
         print(f"unblocked {friend}")
 
-
     def draw_circle(self, widget, color_of_circle):
         pixmap = QPixmap(20, 20)
         pixmap.fill(QColor(color_of_circle))
@@ -3029,9 +3020,6 @@ class FriendsBox(QWidget):
         # Remove the friend from the requests list
         del self.requests_items[index:index + 3]
         self.parent.updated_requests()
-
-import pyaudio
-import cv2
 
 
 class CustomComboBox(QComboBox):
@@ -4414,6 +4402,35 @@ class VideoThumbnailWidget(QWidget):
 
         except Exception as e:
             print(f"Error in creating thumbnail: {e}")
+
+
+class FriendsChatListWidget(QWidget):
+    def __init__(self, chat_box_object, chats_list):
+        super().__init__()
+        self.chat_box_object = chat_box_object
+        self.friends_button_height = 50
+        self.draw_friends_buttons(chats_list)
+
+    def draw_friends_buttons(self, friend_list):
+        # Clear the existing buttons
+        for _, button in self.chat_box_object.chats_buttons_list:
+            button.setParent(None)
+            button.deleteLater()
+
+        self.chat_box_object.chats_buttons_list.clear()
+
+        friend_starter_y = 170 + (self.chat_box_object.parent.chat_box_chats_index * -50)
+        friend_x = 250
+        if friend_list is not None:
+            for friend in friend_list:
+                try:
+                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y))
+                    button.setGeometry(friend_x, friend_starter_y, 100, self.chat_box_object.friends_button_height)
+                    self.chat_box_object.chats_buttons_list.append((friend, button))
+                    friend_starter_y += self.chat_box_object.friends_button_height
+                except Exception as e:
+                    print(f"Error in drawing friends button: {e}")
+            self.chat_box_object.raise_needed_elements()
 
 
 

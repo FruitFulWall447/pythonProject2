@@ -1085,7 +1085,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     return base64.b64decode(image_bytes_encoded)
                 else:
                     return None
-        print("no profile by that name")
 
     def set_page_index_by_clicked(self):
         global chat_clicked, setting_clicked, social_clicked
