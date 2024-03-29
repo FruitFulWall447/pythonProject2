@@ -7,8 +7,9 @@ from discord_comms_protocol import server_net
 import threading
 import base64
 import pickle
-from discord_comms_protocol import decrypt_with_aes
+from discord_comms_protocol import decrypt_with_aes, encrypt_with_aes, slice_up_data
 import zlib
+import socket
 
 
 def create_profile_pic_dict(username, image_bytes_encoded):
@@ -230,7 +231,9 @@ class Call:
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
             if name != user and net is not None and name not in self.deafened and name in self.participants:
-                net.send_vc_data(vc_data, user)
+                #net.send_vc_data(vc_data, user)
+                compressed_vc_data = zlib.compress(vc_data)
+                self.parent.send_large_udp_data(user, name, compressed_vc_data, "vc_data", None)
                 # self.logger.debug(f"Sent voice chat data to {name}")
 
     def is_a_group_a_call(self):
@@ -402,10 +405,70 @@ class Communication:
         self.calls = []
         self.rings = []
         self.nets_dict = {}
+        self.udp_addresses_dict = {}
         self.online_users = []
         self.udp_socket = None
         self.logger = logging.getLogger(__name__)
+        self.udp_socket = None
         self.UDPClientHandler_list = []
+        self.server_mtu = None
+
+    def add_udp_address(self, address, user):
+        self.udp_addresses_dict[user] = address
+
+    def send_bytes_udp(self, data, address_destination, sending_to_user):
+        try:
+            # Encrypt the data if encryption is enabled
+            aes_key = None
+            if sending_to_user is not None:
+                aes_key = self.get_aes_key_by_by_username(sending_to_user)
+            if aes_key is not None:
+                encrypted_data = encrypt_with_aes(aes_key, data)
+                data = encrypted_data
+            self.udp_socket.sendto(data, address_destination)
+        except socket.error as e:
+            print(f"error in sending udp {e} , data size = {len(data)}")
+            raise
+
+    def send_message_dict_udp(self, message_dict, address, username):
+        try:
+            pickled_data = pickle.dumps(message_dict)
+            self.send_bytes_udp(pickled_data, address, username)
+        except Exception as e:
+            print(e)
+
+    def send_large_udp_data(self, sender, sending_to, data, data_type, shape_of_frame=None):
+        address_to_send = self.udp_addresses_dict.get(sending_to)
+        if len(data) > self.server_mtu:
+            sliced_data = slice_up_data(data, int(self.server_mtu * 0.7))
+        else:
+            sliced_data = [data]
+        index = 0
+        for data_slice in sliced_data:
+            if index == 0:
+                is_first = True
+            else:
+                is_first = False
+            if index == len(sliced_data)-1:
+                is_last = True
+            else:
+                is_last = False
+            message = {"message_type": data_type,
+                       "is_first": is_first, "is_last": is_last,
+                       "sliced_data": data_slice, "shape_of_frame": shape_of_frame, "speaker": sender}
+            self.send_message_dict_udp(message, address_to_send, sending_to)
+            index += 1
+
+    def check_max_packet_size_udp(self, temp_address):
+        data = b'a'
+        destination_address = temp_address  # Using Google's DNS server address
+        try:
+            while True:
+                self.send_bytes_udp(data, destination_address, None)
+                data += (b'a' * 100)
+        except socket.error as e:
+            self.logger.info(f"Network MTU is: {len(data) - 10}")
+            self.server_mtu = len(data) - 10
 
     def send_new_group_to_members(self, group_id):
         group_members = database_func.get_group_members(group_id)
@@ -695,6 +758,7 @@ class Communication:
                 udp_handler_object.handle_udp_message(fragment)
 
     def create_and_add_udp_handler_object(self, username, udp_address, tcp_address):
+        self.add_udp_address(udp_address, username)
         udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
         self.UDPClientHandler_list.append(udp_handler_object)
 
@@ -760,9 +824,14 @@ class VideoStream:
         for name, net in self.call_parent.call_nets.items():
             if name != user and net is not None and name in self.spectators:
                 if self.stream_type == "CameraStream":
-                    net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                    # net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                    compressed_share_screen_data = zlib.compress(share_screen_data)
+                    self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data, "share_camera_data", share_screen_frame_shape_bytes)
                 else:
-                    net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                    # net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
+                    compressed_share_screen_data = zlib.compress(share_screen_data)
+                    self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data,
+                                                          "share_screen_data", share_screen_frame_shape_bytes)
 
     def end_stream(self):
         if len(self.spectators) > 0:

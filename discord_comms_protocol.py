@@ -272,7 +272,7 @@ class client_net:
                 is_last = True
             else:
                 is_last = False
-            message = {"message_type": data_type, "fragment_number": index,
+            message = {"message_type": data_type,
                        "is_first": is_first, "is_last": is_last,
                        "sliced_data": data_slice, "shape_of_frame": shape_of_frame}
             self.send_message_dict_udp(message)
@@ -717,6 +717,10 @@ class client_net:
         except (socket.error, ValueError) as e:
             print(f"Error: {e}")
             return None  # Return None in case of an error
+
+    def recv_udp(self):
+        fragment_data, address = self.client_udp_socket.recvfrom(100000)
+        return decrypt_with_aes(self.aes_key, fragment_data), address
 
     def return_socket(self):
         return self.client_tcp_socket

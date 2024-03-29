@@ -3961,7 +3961,6 @@ class ScrollableWidget(QWidget):
         message_type = i.get("message_type")
         file_name = i.get("file_name")
         if not message_content or message_type == "string":
-
             if self.main_page_object.censor_data_from_strangers:
                 if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                     message_content = replace_non_space_with_star(message_content)

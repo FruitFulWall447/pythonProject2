@@ -345,6 +345,94 @@ def thread_recv_messages():
                 main_page.friends_box.request_is_pending()
 
 
+def listen_udp(main_page_object):
+    print("started listen_udp thread")
+    network = main_page_object.Network
+    vc_data = []
+    share_screen_data = []
+    share_camera_data = []
+    while main_page_object.listen_udp:
+        try:
+            fragment_data, address = network.recv_udp()
+            data = pickle.loads(fragment_data)
+            message_type = data.get("message_type")
+            if message_type == "vc_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_vc_data = data.get("sliced_data")
+                    speaker = data.get("speaker")
+                    if compressed_vc_data is not None:
+                        vc_data = zlib.decompress(compressed_vc_data)
+                        main_page_object.vc_data_list.append((vc_data, speaker))
+                elif is_last:
+                    vc_data.append(data.get("sliced_data"))
+                    speaker = data.get("speaker")
+                    full_compressed_vc_data = b''.join(vc_data)
+                    vc_data = zlib.decompress(full_compressed_vc_data)
+                    main_page_object.vc_data_list.append((vc_data, speaker))
+                    vc_data = []
+                elif is_first:
+                    vc_data = []
+                    vc_data.append(data.get("sliced_data"))
+                else:
+                    vc_data.append(data.get("sliced_data"))
+            elif message_type == "share_screen_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_share_screen_data = data.get("sliced_data")
+                    shape_of_frame = data.get("shape_of_frame")
+                    speaker = data.get("speaker")
+                    if compressed_share_screen_data is not None:
+                        share_screen_data = zlib.decompress(compressed_share_screen_data)
+                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                        main_page_object.update_stream_screen_frame(decompressed_frame)
+                elif is_last:
+                    share_screen_data.append(data.get("sliced_data"))
+                    shape_of_frame = data.get("shape_of_frame")
+                    speaker = data.get("speaker")
+                    compressed_share_screen_data = b''.join(share_screen_data)
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                    main_page_object.update_stream_screen_frame(decompressed_frame)
+                    share_screen_data = []
+                elif is_first:
+                    share_screen_data = []
+                    share_screen_data.append(data.get("sliced_data"))
+                else:
+                    share_screen_data.append(data.get("sliced_data"))
+            elif message_type == "share_camera_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_share_camera_data = data.get("sliced_data")
+                    shape_of_frame = data.get("shape_of_frame")
+                    speaker = data.get("speaker")
+                    if compressed_share_camera_data is not None:
+                        share_screen_data = zlib.decompress(compressed_share_camera_data)
+                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                        main_page.update_stream_screen_frame(decompressed_frame)
+                elif is_last:
+                    share_camera_data.append(data.get("sliced_data"))
+                    shape_of_frame = data.get("shape_of_frame")
+                    speaker = data.get("speaker")
+                    compressed_share_screen_data = b''.join(share_camera_data)
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                    main_page.update_stream_screen_frame(decompressed_frame)
+                    share_camera_data = []
+                elif is_first:
+                    share_camera_data = []
+                    share_camera_data.append(data.get("sliced_data"))
+                else:
+                    share_camera_data.append(data.get("sliced_data"))
+        except OSError as os_err:
+            print(f"OS error: {os_err}")
+        except Exception as e:
+            print(f"Exception: {e}")
+
+
 flag_updates = True
 
 FORMAT = pyaudio.paInt16
@@ -665,6 +753,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.vc_play_flag = False
         self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
         self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=())
+        self.listen_udp_thread = threading.Thread(target=listen_udp, args=(self,))
 
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
 
@@ -802,6 +891,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.blocked_list = []
         self.groups_list = []
 
+        self.listen_udp = True
         self.is_screen_shared = False
         self.is_watching_screen = False
         self.watching_user = ""
@@ -881,6 +971,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def start_listen_udp_thread(self):
+        self.listen_udp_thread.start()
 
     def start_call_threads(self):
         self.vc_data_list = []
@@ -1981,6 +2074,7 @@ class Login_page(QWidget):
                 main_page.update_values()
                 is_logged_in = True
                 threading.Thread(target=thread_recv_messages, args=()).start()
+                main_page.start_listen_udp_thread()
                 splash_page = SplashScreen()
                 splash_page.showMaximized()
             elif login_status == "already_logged_in":

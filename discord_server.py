@@ -329,6 +329,8 @@ def thread_recv_messages(n, addr):
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
                 tcp_address = data.get("tcp_address")
+                if Communication.server_mtu is None:
+                    Communication.check_max_packet_size_udp(udp_address)
                 Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
             if message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
