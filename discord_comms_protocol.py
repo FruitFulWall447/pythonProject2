@@ -22,6 +22,16 @@ share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
 
+def slice_up_data(data, mtu):
+    sliced_data = []
+    start_index = 0
+    while start_index < len(data):
+        end_index = min(start_index + mtu, len(data))
+        sliced_data.append(data[start_index:end_index])
+        start_index = end_index
+    return sliced_data
+
+
 def create_dictionary_with_message_type(message_type, keys, values):
     # Ensure both lists have the same length
     if len(keys) != len(values):
@@ -142,7 +152,6 @@ def send_data_in_chunks(sock, data):
 
 
 class client_net:
-
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -167,6 +176,8 @@ class client_net:
         self.aes_key = None
         self.sending_tcp_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
+        self.mtu = None
+        self.check_max_packet_size_udp()
 
     def connect_tcp(self):
         try:
@@ -241,35 +252,65 @@ class client_net:
             # Release the lock
             self.sending_tcp_data_lock.release()
 
-    def send_bytes_udp(self, data, num_fragments=10):
+    def send_fragment_count(self, count):
+        message = {"message_type": "fragment_count", "fragment_count": count}
+        pickled_data = pickle.dumps(message)
+        self.send_bytes_udp(pickled_data)
+
+    def send_large_udp_data(self, data, data_type, shape_of_frame=None):
+        if len(data) > self.mtu:
+            sliced_data = slice_up_data(data, int(self.mtu * 0.8))
+        else:
+            sliced_data = [data]
+        index = 0
+        for data_slice in sliced_data:
+            if index == 0:
+                is_first = True
+            else:
+                is_first = False
+            if index == len(sliced_data)-1:
+                is_last = True
+            else:
+                is_last = False
+            message = {"message_type": data_type, "fragment_number": index,
+                       "is_first": is_first, "is_last": is_last,
+                       "sliced_data": data_slice, "shape_of_frame": shape_of_frame}
+            self.send_message_dict_udp(message)
+            index += 1
+
+    def send_bytes_udp(self, data):
         try:
             # Encrypt the data if encryption is enabled
             if self.aes_key is not None:
                 encrypted_data = encrypt_with_aes(self.aes_key, data)
                 data = encrypted_data
 
-            # Split the data into fragments
-            # Calculate the fragment size based on the total data size and number of fragments
-            fragment_size = len(data) // num_fragments
-            fragments = [data[i:i + fragment_size] for i in range(0, len(data), fragment_size)]
-
-            # Send each fragment individually
-            for fragment in fragments:
-                self.client_udp_socket.sendto(fragment, self.addr)
+            self.client_udp_socket.sendto(data, self.addr)
         except socket.error as e:
             print(f"error in sending udp {e} , data size = {len(data)}")
+            raise
 
-    def send_message_dict_tcp(self, message_dict):
+    def check_max_packet_size_udp(self):
+        data = b'a'
         try:
-            pickled_data = pickle.dumps(message_dict)
-            self.send_bytes(pickled_data)
-        except Exception as e:
-            print(e)
+            while True:
+                self.send_bytes_udp(data)
+                data += (b'a' * 100)
+        except socket.error as e:
+            self.logger.info(f"Network mtu is: {len(data) - 10}")
+            self.mtu = len(data) - 10
 
     def send_message_dict_udp(self, message_dict):
         try:
             pickled_data = pickle.dumps(message_dict)
             self.send_bytes_udp(pickled_data)
+        except Exception as e:
+            print(e)
+
+    def send_message_dict_tcp(self, message_dict):
+        try:
+            pickled_data = pickle.dumps(message_dict)
+            self.send_bytes(pickled_data)
         except Exception as e:
             print(e)
 
@@ -492,10 +533,11 @@ class client_net:
             full_message = vc_data
             compressed_message = zlib.compress(full_message)
             message_format = "vc_data"
-            message = {"message_type": message_format, "compressed_vc_data": compressed_message
-                       }
-            #self.send_message_dict_tcp(message)
-            self.send_message_dict_udp(message)
+            # message = {"message_type": message_format, "compressed_vc_data": compressed_message
+            #            }
+            # self.send_message_dict_tcp(message)
+            # self.send_message_dict_udp(message)
+            self.send_large_udp_data(compressed_message, message_format)
         except Exception as e:
             print(f"error in send vc data is: {e}")
 
@@ -504,10 +546,11 @@ class client_net:
             full_message = share_screen_data
             compressed_message = zlib.compress(full_message)
             message_format = "share_screen_data"
-            message = {"message_type": message_format, "compressed_share_screen_data": compressed_message,
-                       "shape_of_frame": shape_of_frame
-                       }
-            self.send_message_dict_udp(message)
+            # message = {"message_type": message_format, "compressed_share_screen_data": compressed_message,
+            #            "shape_of_frame": shape_of_frame
+            #            }
+            # self.send_message_dict_udp(message)
+            self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:
             print(f"error is in send share screen data: {e}")
 
@@ -516,10 +559,11 @@ class client_net:
             full_message = share_camera_data
             compressed_message = zlib.compress(full_message)
             message_format = "share_camera_data"
-            message = {"message_type": message_format, "compressed_share_camera_data": compressed_message,
-                       "shape_of_frame": shape_of_frame
-                       }
-            self.send_message_dict_udp(message)
+            # message = {"message_type": message_format, "compressed_share_camera_data": compressed_message,
+            #            "shape_of_frame": shape_of_frame
+            #            }
+            # self.send_message_dict_udp(message)
+            self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:
             print(f"error is send share camera data: {e}")
 
@@ -683,9 +727,6 @@ class client_net:
         except socket.error as e:
             print(e)
 
-    def get_aes_key(self):
-        return self.aes_key
-
     def initiate_rsa_protocol(self):
         # create 256 bytes key
         client_symmetric_key = generate_secure_symmetric_key()
@@ -736,6 +777,9 @@ class server_net:
         self.aes_key = None
         self.sending_tcp_data_lock = threading.Lock()
         self.initiate_rsa_protocol()
+
+    def get_aes_key(self):
+        return self.aes_key
 
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()

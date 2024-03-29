@@ -7,6 +7,8 @@ from discord_comms_protocol import server_net
 import threading
 import base64
 import pickle
+from discord_comms_protocol import decrypt_with_aes
+import zlib
 
 
 def create_profile_pic_dict(username, image_bytes_encoded):
@@ -690,18 +692,19 @@ class Communication:
     def handle_udp_fragment(self, fragment, address):
         for udp_handler_object in self.UDPClientHandler_list:
             if udp_handler_object.udp_address == address:
-                udp_handler_object.handle_fragments(fragment)
+                udp_handler_object.handle_udp_message(fragment)
 
     def create_and_add_udp_handler_object(self, username, udp_address, tcp_address):
         udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
         self.UDPClientHandler_list.append(udp_handler_object)
 
     def handle_udp_data(self, data, username):
-        print(5)
+        x = 5
 
-    def get_aes_key_by_tcp_address(self, username):
+    def get_aes_key_by_by_username(self, username):
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
+
 
 class VideoStream:
     def __init__(self, Comms_object, streamer, call_object, stream_type, group_id=None):
@@ -776,27 +779,102 @@ class UDPClientHandler:
         self.logger = logging.getLogger(__name__)
         self.udp_address = udp_address
         self.tcp_address = tcp_address
-        self.is_next_data = False
-        self.fragments_count = 0
-        self.udp_temp_data = b''
         self.communication_object = communication_object
         self.client_username = client_username
-        self.logger.info(f"create udp client handler of address {self.address} of username {self.client_username}")
-        self.aes_key = self.communication_object.get_aes_key_by_tcp_address(self.tcp_address)
+        self.logger.info(f"create udp client handler of udp address {self.udp_address} and tcp address of {self.tcp_address} of username {self.client_username}")
+        self.aes_key = self.communication_object.get_aes_key_by_by_username(self.client_username)
+        self.lost_packets = 0
+        self.gotten_packets = 0
+        self.vc_data = []
+        self.share_screen_data = []
+        self.share_camera_data = []
 
-    def handle_fragments(self, fragment):
-        if self.is_next_data:
-            self.udp_temp_data += fragment
-            self.fragments_count -= 1
-            if self.fragments_count == 0:
-                self.communication_object.handle_udp_data(self.udp_temp_data, self.client_username)
-                self.udp_temp_data = b''
-        else:
-            # got dict of number of fragment
+    def decrypt_data(self, data):
+        return decrypt_with_aes(self.aes_key, data)
 
-            data_dict = pickle.loads(fragment)
-            self.fragments_count = data_dict.get("fragment_count")
-            self.is_next_data = True
+    def handle_udp_message(self, fragment):
+        pickled_data = self.decrypt_data(fragment)
+        try:
+            data = pickle.loads(pickled_data)
+            message_type = data.get("message_type")
+            if message_type == "vc_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_vc_data = data.get("sliced_data")
+                    if compressed_vc_data is not None:
+                        vc_data = zlib.decompress(compressed_vc_data)
+                        self.communication_object.send_vc_data_to_call(vc_data, self.client_username)
+                elif is_last:
+                    self.vc_data.append(data.get("sliced_data"))
+                    full_compressed_vc_data = b''.join(self.vc_data)
+                    vc_data = zlib.decompress(full_compressed_vc_data)
+                    self.communication_object.send_vc_data_to_call(vc_data, self.client_username)
+                    self.vc_data = []
+                elif is_first:
+                    self.vc_data = []
+                    self.vc_data.append(data.get("sliced_data"))
+                else:
+                    self.vc_data.append(data.get("sliced_data"))
+            elif message_type == "share_screen_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_share_screen_data = data.get("sliced_data")
+                    shape_of_frame = data.get("shape_of_frame")
+                    if compressed_share_screen_data is not None:
+                        share_screen_data = zlib.decompress(compressed_share_screen_data)
+                        self.communication_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
+                                                                     "ScreenStream")
+                elif is_last:
+                    self.share_screen_data.append(data.get("sliced_data"))
+                    shape_of_frame = data.get("shape_of_frame")
+                    compressed_share_screen_data = b''.join(self.share_screen_data)
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    self.communication_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame,
+                                                                             self.client_username,
+                                                                             "ScreenStream")
+                    self.share_screen_data = []
+                elif is_first:
+                    self.share_screen_data = []
+                    self.share_screen_data.append(data.get("sliced_data"))
+                else:
+                    self.share_screen_data.append(data.get("sliced_data"))
+            elif message_type == "share_camera_data":
+                is_last = data.get("is_last")
+                is_first = data.get("is_first")
+                if is_last and is_first:
+                    compressed_share_camera_data = data.get("sliced_data")
+                    shape_of_frame = data.get("shape_of_frame")
+                    if compressed_share_camera_data is not None:
+                        share_screen_data = zlib.decompress(compressed_share_camera_data)
+                        self.communication_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
+                                                                     "CameraStream")
+                elif is_last:
+                    self.share_camera_data.append(data.get("sliced_data"))
+                    shape_of_frame = data.get("shape_of_frame")
+                    compressed_share_screen_data = b''.join(self.share_camera_data)
+                    share_screen_data = zlib.decompress(compressed_share_screen_data)
+                    self.communication_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame,
+                                                                             self.client_username,
+                                                                             "CameraStream")
+                    self.share_camera_data = []
+                elif is_first:
+                    self.share_camera_data = []
+                    self.share_camera_data.append(data.get("sliced_data"))
+                else:
+                    self.share_camera_data.append(data.get("sliced_data"))
+            self.gotten_packets += 1
+            if self.gotten_packets % 10 == 0:
+                self.logger.info(f"got {self.gotten_packets} packets")
+
+        except:
+            # means lost packets on the way
+            self.lost_packets += 1
+            self.gotten_packets += 1
+            self.logger.info(f"lost {self.lost_packets} out of {self.gotten_packets}")
+
+
 
 
 
