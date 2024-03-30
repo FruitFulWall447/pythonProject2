@@ -937,6 +937,8 @@ class UDPClientHandler:
         except:
             self.lost_packets += 1
             self.gotten_packets += 1
+            if self.lost_packets % 100 == 0:
+                self.logger.info(f"lost {self.lost_packets} out of {self.gotten_packets}, {(self.lost_packets / self.gotten_packets) * 100}%")
 
 
 
