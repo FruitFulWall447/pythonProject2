@@ -562,6 +562,7 @@ def listen_udp():
 
 
 def main():
+    database_func.create_tables_if_not_exist()
     tcp_thread = threading.Thread(target=tcp_server)
     tcp_thread.start()
     udp_thread = threading.Thread(target=listen_udp)

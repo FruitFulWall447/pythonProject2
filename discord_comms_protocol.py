@@ -533,10 +533,6 @@ class client_net:
             full_message = vc_data
             compressed_message = zlib.compress(full_message)
             message_format = "vc_data"
-            # message = {"message_type": message_format, "compressed_vc_data": compressed_message
-            #            }
-            # self.send_message_dict_tcp(message)
-            # self.send_message_dict_udp(message)
             self.send_large_udp_data(compressed_message, message_format)
         except Exception as e:
             print(f"error in send vc data is: {e}")

@@ -1342,16 +1342,11 @@ class ChatBox(QWidget):
         self.friends_button.clicked.connect(self.parent.Social_clicked)
 
         try:
-            friend_starter_y = 170
             friend_x = 250
             if not self.parent.current_chat_box_search:
-                # self.drew_friends_buttons_on_screen_by_list(self.parent.chats_list)
                 chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
-                # chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.chats_list)
             else:
                 chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
-                # self.drew_friends_buttons_on_screen_by_list(self.parent.temp_search_list)
-                # chats_widget = ScrollableChats(self, 350, 900, friend_x, friend_starter_y, self.parent.temp_search_list)
         except Exception as e:
             print(f"error in showing chats list{e}")
 
@@ -1394,7 +1389,7 @@ class ChatBox(QWidget):
         settings_button_icon = QIcon(QPixmap("discord_app_assets/Setting_logo.png"))
         settings_button.setIcon(settings_button_icon)
         settings_button.setIconSize(settings_button_icon.actualSize(QSize(50, 50)))  # Adjust the size as needed
-        settings_button.move(friend_x + 260, info_y + 5)
+        settings_button.move(friend_x + 280, info_y + 5)
         settings_button.setStyleSheet('''
             QPushButton {
                 background-color: transparent;
@@ -1594,7 +1589,7 @@ class ChatBox(QWidget):
             self.parent.create_group_index = 0
         else:
             self.parent.is_create_group_pressed = True
-        self.parent.updated_chat()
+        self.parent.update_chat_page_without_messages()
 
         # Create Group button
 
@@ -1780,7 +1775,6 @@ class ChatBox(QWidget):
             chat_image = self.parent.get_circular_image_bytes_by_group_id(id)
         else:
             chat_image = self.parent.get_profile_pic_by_username(chat_name)
-            #chat_image = self.parent.get_circular_image_bytes_by_name(chat_name)
         if chat_image is None:
             icon_path = self.parent.regular_profile_image_path
             set_icon_from_path_to_label(profile_image_label, icon_path)
@@ -1917,7 +1911,6 @@ class ChatBox(QWidget):
                 self.filename_label.show()
                 self.parent.updated_chat()
                 self.parent.activateWindow()
-
 
     def open_image_file_dialog(self):
         self.open_file_dialog()
@@ -4411,13 +4404,6 @@ class FriendsChatListWidget(QWidget):
         self.draw_friends_buttons(chats_list)
 
     def draw_friends_buttons(self, friend_list):
-        # Clear the existing buttons
-        for _, button in self.chat_box_object.chats_buttons_list:
-            button.setParent(None)
-            button.deleteLater()
-
-        self.chat_box_object.chats_buttons_list.clear()
-
         friend_starter_y = 170 + (self.chat_box_object.parent.chat_box_chats_index * -50)
         friend_x = 250
         if friend_list is not None:
@@ -4425,11 +4411,9 @@ class FriendsChatListWidget(QWidget):
                 try:
                     button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y))
                     button.setGeometry(friend_x, friend_starter_y, 100, self.chat_box_object.friends_button_height)
-                    self.chat_box_object.chats_buttons_list.append((friend, button))
                     friend_starter_y += self.chat_box_object.friends_button_height
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
-            self.chat_box_object.raise_needed_elements()
 
 
 

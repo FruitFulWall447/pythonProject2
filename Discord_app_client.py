@@ -348,93 +348,97 @@ def thread_recv_messages():
 def listen_udp(main_page_object):
     print("started listen_udp thread")
     network = main_page_object.Network
-    vc_data = []
-    share_screen_data = []
-    share_camera_data = []
     while main_page_object.listen_udp:
         try:
             fragment_data, address = network.recv_udp()
             data = pickle.loads(fragment_data)
-            message_type = data.get("message_type")
-            if message_type == "vc_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_vc_data = data.get("sliced_data")
-                    speaker = data.get("speaker")
-                    if compressed_vc_data is not None:
-                        vc_data = zlib.decompress(compressed_vc_data)
-                        main_page_object.vc_data_list.append((vc_data, speaker))
-                elif is_last:
-                    vc_data.append(data.get("sliced_data"))
-                    speaker = data.get("speaker")
-                    full_compressed_vc_data = b''.join(vc_data)
-                    vc_data = zlib.decompress(full_compressed_vc_data)
-                    main_page_object.vc_data_list.append((vc_data, speaker))
-                    vc_data = []
-                elif is_first:
-                    vc_data = []
-                    vc_data.append(data.get("sliced_data"))
-                else:
-                    vc_data.append(data.get("sliced_data"))
-            elif message_type == "share_screen_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_screen_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    if compressed_share_screen_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_screen_data)
-                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                        main_page_object.update_stream_screen_frame(decompressed_frame)
-                elif is_last:
-                    share_screen_data.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    compressed_share_screen_data = b''.join(share_screen_data)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                    main_page_object.update_stream_screen_frame(decompressed_frame)
-                    share_screen_data = []
-                elif is_first:
-                    share_screen_data = []
-                    share_screen_data.append(data.get("sliced_data"))
-                else:
-                    share_screen_data.append(data.get("sliced_data"))
-            elif message_type == "share_camera_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_camera_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    if compressed_share_camera_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_camera_data)
-                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                        main_page.update_stream_screen_frame(decompressed_frame)
-                elif is_last:
-                    share_camera_data.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    compressed_share_screen_data = b''.join(share_camera_data)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                    main_page.update_stream_screen_frame(decompressed_frame)
-                    share_camera_data = []
-                elif is_first:
-                    share_camera_data = []
-                    share_camera_data.append(data.get("sliced_data"))
-                else:
-                    share_camera_data.append(data.get("sliced_data"))
+            handle_udp_data(data, main_page_object)
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:
             print(f"Exception: {e}")
 
 
-flag_updates = True
+vc_data = []
+share_screen_data = []
+share_camera_data = []
+def handle_udp_data(data, main_page_object):
+    global vc_data, share_screen_data, share_camera_data
+    message_type = data.get("message_type")
+    if message_type == "vc_data":
+        is_last = data.get("is_last")
+        is_first = data.get("is_first")
+        if is_last and is_first:
+            compressed_vc_data = data.get("sliced_data")
+            speaker = data.get("speaker")
+            if compressed_vc_data is not None:
+                vc_data = zlib.decompress(compressed_vc_data)
+                main_page_object.vc_data_list.append((vc_data, speaker))
+        elif is_last:
+            vc_data.append(data.get("sliced_data"))
+            speaker = data.get("speaker")
+            full_compressed_vc_data = b''.join(vc_data)
+            vc_data = zlib.decompress(full_compressed_vc_data)
+            main_page_object.vc_data_list.append((vc_data, speaker))
+            vc_data = []
+        elif is_first:
+            vc_data = []
+            vc_data.append(data.get("sliced_data"))
+        else:
+            vc_data.append(data.get("sliced_data"))
+    elif message_type == "share_screen_data":
+        is_last = data.get("is_last")
+        is_first = data.get("is_first")
+        if is_last and is_first:
+            compressed_share_screen_data = data.get("sliced_data")
+            shape_of_frame = data.get("shape_of_frame")
+            speaker = data.get("speaker")
+            if compressed_share_screen_data is not None:
+                share_screen_data = zlib.decompress(compressed_share_screen_data)
+                decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                main_page_object.update_stream_screen_frame(decompressed_frame)
+        elif is_last:
+            share_screen_data.append(data.get("sliced_data"))
+            shape_of_frame = data.get("shape_of_frame")
+            speaker = data.get("speaker")
+            compressed_share_screen_data = b''.join(share_screen_data)
+            share_screen_data = zlib.decompress(compressed_share_screen_data)
+            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+            main_page_object.update_stream_screen_frame(decompressed_frame)
+            share_screen_data = []
+        elif is_first:
+            share_screen_data = []
+            share_screen_data.append(data.get("sliced_data"))
+        else:
+            share_screen_data.append(data.get("sliced_data"))
+    elif message_type == "share_camera_data":
+        is_last = data.get("is_last")
+        is_first = data.get("is_first")
+        if is_last and is_first:
+            compressed_share_camera_data = data.get("sliced_data")
+            shape_of_frame = data.get("shape_of_frame")
+            speaker = data.get("speaker")
+            if compressed_share_camera_data is not None:
+                share_screen_data = zlib.decompress(compressed_share_camera_data)
+                decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+                main_page.update_stream_screen_frame(decompressed_frame)
+        elif is_last:
+            share_camera_data.append(data.get("sliced_data"))
+            shape_of_frame = data.get("shape_of_frame")
+            speaker = data.get("speaker")
+            compressed_share_screen_data = b''.join(share_camera_data)
+            share_screen_data = zlib.decompress(compressed_share_screen_data)
+            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
+            main_page.update_stream_screen_frame(decompressed_frame)
+            share_camera_data = []
+        elif is_first:
+            share_camera_data = []
+            share_camera_data.append(data.get("sliced_data"))
+        else:
+            share_camera_data.append(data.get("sliced_data"))
 
+
+flag_updates = True
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
@@ -530,10 +534,7 @@ def thread_send_voice_chat_data():
                 count += 1
                 if count % const == 0:  # Send every 10 chunks (adjust as needed)
                     # Send the accumulated data over the network
-
                     data = b''.join(accumulated_data)
-                    # output_stream.write(data)
-
                     n.send_vc_data(data)
                     accumulated_data = []  # Reset accumulated data
             else:
@@ -1647,11 +1648,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Scrolling up
 
                 self.chat_box_chats_index += 1
-                self.update_chat_for_chats_scroll()
+                self.update_chat_page_without_messages()
             elif delta < 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos):
                 # Scrolling down, but prevent scrolling beyond the first message
                 self.chat_box_chats_index -= 1
-                self.update_chat_for_chats_scroll()
+                self.update_chat_page_without_messages()
         if social_clicked:
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
@@ -1680,7 +1681,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def updated_chat(self):
         self.update_chat_page(True)
 
-    def update_chat_for_chats_scroll(self):
+    def update_chat_page_without_messages(self):
         self.update_chat_page(False)
 
     def update_chat_page(self, is_update_messages_box):
@@ -1695,6 +1696,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"error in updated chat {e}")
             has_had_focus_of_search_bar = self.chat_box.find_contact_text_entry.hasFocus()
             self.stacked_widget.removeWidget(self.chat_box)
+            self.chat_box.deleteLater()  # Schedule deletion of the old ChatBox widget
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
             try:

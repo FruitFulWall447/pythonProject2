@@ -6,6 +6,8 @@ import secrets
 import json
 from datetime import datetime
 import base64
+import string
+import random
 
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
@@ -22,6 +24,39 @@ default_settings_dict = {
     "push_to_talk_bind": None,  # Default push-to-talk key binding
     "2fa_enabled": False  # Default 2-factor authentication setting
 }
+
+
+def file_to_bytes(file_path):
+    """Read file bytes from the given file path."""
+    try:
+        with open(file_path, 'rb') as file:
+            file_bytes = file.read()
+        return file_bytes
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return None
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return None
+
+
+def generate_random_filename(length=24, extension=''):
+    """Generate a random filename."""
+    characters = string.ascii_letters + string.digits
+    random_string = ''.join(random.choice(characters) for _ in range(length))
+    if extension:
+        return random_string + '.' + extension
+    else:
+        return random_string
+
+
+def save_file(file_bytes, file_path):
+    try:
+        with open(file_path, 'wb') as file:
+            file.write(file_bytes)
+        print(f"File saved successfully at: {file_path}")
+    except Exception as e:
+        print(f"Error saving file: {e}")
 
 
 def create_user_settings(user_id):
@@ -567,7 +602,7 @@ def is_table_exist(table_name):
     return result is not None
 
 
-def add_message(sender_name, receiver_name, message_content, message_type, file_name):
+def add_message(sender_name, receiver_name, message_content, message_type, file_original_name):
     try:
         # Establish a connection to the MySQL server
         connection = connect_to_kevindb()
@@ -578,8 +613,18 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
             if message_type in basic_files_types:
                 encoded_base64_bytes = message_content
                 message_content = base64.b64decode(encoded_base64_bytes)
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_bytes, type, file_name) VALUES (%s, %s, %s, %s, %s)"
-                data = (sender_name, receiver_name, message_content, message_type, file_name)
+                folder_path = r'C:\discord_app_files'
+                if not os.path.exists(folder_path):
+                    os.makedirs(folder_path)
+                file_name = generate_random_filename(24)
+                file_path = os.path.join(folder_path, file_name)
+                if os.path.exists(file_path):
+                    while os.path.exists(file_path):
+                        file_name = generate_random_filename(24)
+                        file_path = os.path.join(folder_path, file_name)
+                save_file(message_content, file_path)
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (%s, %s, %s, %s, %s)"
+                data = (sender_name, receiver_name, file_path, message_type, file_original_name)
             else:
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
                 data = (sender_name, receiver_name, message_content, message_type)
@@ -648,12 +693,13 @@ def get_messages(sender, receiver):
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%' ORDER BY timestamp".format(
+            query = "SELECT IF(message_content IS NULL, message_content_path, message_content), sender_id, " \
+                    "timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%' ORDER BY timestamp".format(
                 id_format.replace('\'', '\'\''))
         else:
             query = """
-                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type, file_name 
-                FROM messages
+                SELECT IF(message_content IS NULL, message_content_path, message_content), sender_id, timestamp, type, 
+                file_name FROM messages
                 WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}') ORDER BY timestamp
 
             """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
@@ -668,9 +714,11 @@ def get_messages(sender, receiver):
         for message in messages:
             if message[3] != "string":
                 # If content is bytes, encode it as a Base64 string
-                content = base64.b64encode(message[0]).decode('utf-8')
+                path = message[0]
+                content_bytes = file_to_bytes(path)
+                content = base64.b64encode(content_bytes).decode('utf-8')
             else:
-                content = message[0].decode('utf-8')
+                content = message[0]
             message_dict = {
                 "content": content,
                 "sender_id": message[1],
@@ -709,11 +757,11 @@ def get_last_amount_of_messages(sender, receiver, first_message_index, last_mess
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver)
             id_format = f"({str(group_id)})"
-            query = "SELECT IFNULL(message_content, message_content_bytes), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%'".format(
+            query = "SELECT IFNULL(message_content, message_content_path), sender_id, timestamp, type, file_name FROM messages WHERE receiver_id LIKE '{0}%'".format(
                 id_format.replace('\'', '\'\''))
         else:
             query = """
-                SELECT IF(message_content IS NULL, message_content_bytes, message_content), sender_id, timestamp, type, file_name 
+                SELECT IF(message_content IS NULL, message_content_path, message_content), sender_id, timestamp, type, file_name 
                 FROM messages
                 WHERE (sender_id = '{0}' AND receiver_id = '{1}') OR (sender_id = '{1}' AND receiver_id = '{0}')
             """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
@@ -731,9 +779,11 @@ def get_last_amount_of_messages(sender, receiver, first_message_index, last_mess
         for message in messages:
             if message[3] != "string":
                 # If content is bytes, encode it as a Base64 string
-                content = base64.b64encode(message[0]).decode('utf-8')
+                path = message[0]
+                content_bytes = file_to_bytes(path)
+                content = base64.b64encode(content_bytes).decode('utf-8')
             else:
-                content = message[0].decode('utf-8')
+                content = message[0]
             message_dict = {
                 "content": content,
                 "sender_id": message[1],
@@ -1668,10 +1718,11 @@ def create_messages_table():
                 sender_id VARCHAR(255),
                 receiver_id VARCHAR(255),
                 message_content TEXT,
-                message_content_bytes LONGBLOB,
+                message_content_path VARCHAR(255),
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 has_read TINYINT(1) DEFAULT 0,
                 type VARCHAR(255),
+                file_name VARCHAR(255)
             )
         """
         cursor.execute(create_table_query)
@@ -1687,6 +1738,172 @@ def create_messages_table():
         if 'connection' in locals() and connection.is_connected():
             connection.close()
             print("Connection closed.")
+
+
+def create_friends_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SQL code to create the table
+        create_table_query = """
+            CREATE TABLE friends (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255),
+                friend_user_name VARCHAR(255),
+                friendship_status ENUM('pending','accepted','rejected')
+            )
+        """
+        cursor.execute(create_table_query)
+        print("Table 'messages' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
+
+def create_groups_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SQL code to create the table
+        create_table_query = """
+            CREATE TABLE my_groups (
+                group_id INT AUTO_INCREMENT PRIMARY KEY,
+                group_name VARCHAR(255),
+                group_manager VARCHAR(255),
+                creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                group_members_list TEXT,
+                group_image LONGBLOB
+            )
+        """
+        cursor.execute(create_table_query)
+        print("Table 'messages' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
+
+def create_settings_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SQL code to create the table
+        create_table_query = """
+            CREATE TABLE settings_table (
+                user_id INT,
+                volume INT,
+                output_device VARCHAR(255),
+                input_device VARCHAR(255),
+                camera_device_index INT,
+                font_size INT,
+                font VARCHAR(255),
+                theme_color VARCHAR(255),
+                censor_data TINYINT(1),
+                private_account TINYINT(1),
+                push_to_talk_bind VARCHAR(255),
+                two_factor_auth TINYINT(1)
+            )
+        """
+        cursor.execute(create_table_query)
+        print("Table 'messages' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
+
+def create_sign_up_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+
+        # Execute the SQL code to create the table
+        create_table_query = """
+            CREATE TABLE sign_up_table (
+                id INT,
+                username VARCHAR(255),
+                password VARCHAR(255),
+                email VARCHAR(255),
+                salt VARCHAR(255),
+                security_token VARCHAR(255),
+                chats_list TEXT,
+                profile_pic_bytes LONGBLOB,
+                blocked_list TEXT
+            )
+        """
+        cursor.execute(create_table_query)
+        print("Table 'messages' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
+
+def create_tables_if_not_exist():
+    current_table = "sign_up_table"
+    if not is_table_exist(current_table):
+        create_sign_up_table()
+        print(f"created {current_table}")
+    current_table = "settings_table"
+    if not is_table_exist(current_table):
+        create_settings_table()
+        print(f"created {current_table}")
+    current_table = "friends"
+    if not is_table_exist(current_table):
+        create_friends_table()
+        print(f"created {current_table}")
+    current_table = "messages"
+    if not is_table_exist(current_table):
+        create_messages_table()
+        print(f"created {current_table}")
+    current_table = "my_groups"
+    if not is_table_exist(current_table):
+        create_groups_table()
+        print(f"created {current_table}")
 
 
 def connect_to_kevindb():
