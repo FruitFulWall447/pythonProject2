@@ -923,15 +923,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
         self.close_call_threads_signal.connect(self.close_call_threads)
         self.start_call_threads_signal.connect(self.start_call_threads)
-        self.media_player = QMediaPlayer()
+        self.sound_effect_media_player = QMediaPlayer()
 
         self.mp3_message_media_player = QMediaPlayer()
         self.mp3_message_media_player.setVolume(50)
-        self.media_player.stateChanged.connect(self.handle_state_changed)
-        self.media_player.setVolume(50)
+        self.playlist_media_player = QMediaPlayer()
+        self.playlist_media_player.setVolume(50)
+        self.sound_effect_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
+        self.sound_effect_media_player.setVolume(50)
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
-        self.media_player.setMedia(self.ringtone)
+        self.sound_effect_media_player.setMedia(self.ringtone)
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
         self.init_ui()
@@ -1028,7 +1030,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)
-        self.media_player.setVolume(value)
+        self.sound_effect_media_player.setVolume(value)
+
+    def pause_or_unpause_mp3_files_player(self):
+        if self.mp3_message_media_player.state() == QMediaPlayer.PlayingState:
+            self.mp3_message_media_player.pause()
+        elif self.mp3_message_media_player.state() == QMediaPlayer.PausedState:
+            self.mp3_message_media_player.play()
 
     def update_every_screen(self):
         try:
@@ -1201,12 +1209,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"error in stopping video: {e}")
 
     def start_watching_video(self, video_bytes):
-        self.is_watching_video = True
-        video_player = VideoPlayer(video_bytes, self)
-        number_of_widgets = self.stacked_widget.count()
-        self.stacked_widget.addWidget(video_player)
-        self.stacked_widget.setCurrentIndex(number_of_widgets)
-        video_player.play_video()
+        try:
+            self.is_watching_video = True
+            video_player = VideoPlayer(video_bytes, self)
+            number_of_widgets = self.stacked_widget.count()
+            self.stacked_widget.addWidget(video_player)
+            self.stacked_widget.setCurrentIndex(number_of_widgets)
+            video_player.play_video()
+        except Exception as e:
+            print(f"had error trying to show video: {e}")
 
     def start_share_screen_send_thread(self):
         self.send_share_screen_thread.start()
@@ -1398,36 +1409,36 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in initiating call is {e}")
 
-    def handle_state_changed(self, state):
+    def handle_state_changed_sound_effect(self, state):
         if state == QMediaPlayer.StoppedState:
             if self.is_getting_called:
-                self.media_player.setMedia(self.ringtone)
-                self.media_player.play()
+                self.sound_effect_media_player.setMedia(self.ringtone)
+                self.sound_effect_media_player.play()
 
     def getting_a_call(self):
         try:
-            self.media_player.setMedia(self.ringtone)
-            self.media_player.play()
+            self.sound_effect_media_player.setMedia(self.ringtone)
+            self.sound_effect_media_player.play()
         except Exception as e:
             print(f"::{e}")
 
     def new_message_play_audio(self):
         try:
-            self.media_player.setMedia(self.new_message_audio)
-            self.media_player.play()
+            self.sound_effect_media_player.setMedia(self.new_message_audio)
+            self.sound_effect_media_player.play()
         except Exception as e:
             print(f"::{e}")
 
     def play_sound(self, sound):
         try:
-            self.media_player.setMedia(sound)
-            self.media_player.play()
+            self.sound_effect_media_player.setMedia(sound)
+            self.sound_effect_media_player.play()
         except Exception as e:
             print(f"::{e}")
 
     def stop_sound(self):
         try:
-            self.media_player.stop()
+            self.sound_effect_media_player.stop()
         except Exception as e:
             print(f"Error stopping sound: {e}")
 

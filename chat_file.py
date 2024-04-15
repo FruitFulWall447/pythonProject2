@@ -821,7 +821,7 @@ class ChatBox(QWidget):
         self.call_profiles_list = []
 
         if self.parent.selected_chat != "":
-            temp_widget_x, temp_widget_y = (600, height_of_around_name)
+            temp_widget_x, temp_widget_y = (610, height_of_around_name)
             temp_widget_width = self.width_of_chat_box
             if height_of_around_name != start_height_of_around_name:
                 temp_widget_height = self.height_of_chat_box - 130 - self.around_name_delta
@@ -1382,14 +1382,13 @@ class ChatBox(QWidget):
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_label_position[0], profile_image_label_position[1])
 
-
         settings_button = QPushButton(self)
         settings_button.setFixedSize(50, 50)  # Set the fixed size of the button
         # Set the icon for the chat button
         settings_button_icon = QIcon(QPixmap("discord_app_assets/Setting_logo.png"))
         settings_button.setIcon(settings_button_icon)
         settings_button.setIconSize(settings_button_icon.actualSize(QSize(50, 50)))  # Adjust the size as needed
-        settings_button.move(friend_x + 280, info_y + 5)
+        settings_button.move(friend_x + 295, info_y + 10)
         settings_button.setStyleSheet('''
             QPushButton {
                 background-color: transparent;
@@ -1397,6 +1396,17 @@ class ChatBox(QWidget):
 
         ''')
         settings_button.clicked.connect(self.parent.Settings_clicked)
+        pause_mp3_files_button = QPushButton(self)
+        mp3_pause_path = "discord_app_assets/pause_and_play_icon.png"
+        set_button_icon(pause_mp3_files_button, mp3_pause_path, 40, 40)
+        pause_mp3_files_button.move(friend_x + 240, info_y + 10)
+        pause_mp3_files_button.setStyleSheet('''
+            QPushButton {
+                background-color: transparent;
+            }
+
+        ''')
+        pause_mp3_files_button.clicked.connect(self.parent.pause_or_unpause_mp3_files_player)
 
         if self.parent.is_create_group_pressed:
            create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
@@ -3214,7 +3224,7 @@ class SettingsBox(QWidget):
                 self.volume_slider = self.create_slider(slider_min_value, slider_max_value, self.parent.volume, self.set_volume, volume_slider__x, volume_slider_y
                                                         , width, height, self.volume_slider_style_sheet)
 
-                volume_slider_label = self.create_white_label(volume_slider_label_x, volume_slider_label_y, self.default_labels_font_size, None, None, "INPUT VOLUME")
+                volume_slider_label = self.create_white_label(volume_slider_label_x, volume_slider_label_y, self.default_labels_font_size, None, None, "OUTPUT VOLUME")
                 self.volume_label = self.create_white_label(volume_slider_label_x + width + 10, volume_slider_y+7, self.default_labels_font_size, 100, 30, str(self.parent.volume))
 
                 space_between_option_box_and_label = 30
@@ -3787,6 +3797,7 @@ class VideoPlayer(QWidget):
         self.media_player.durationChanged.connect(self.update_duration)
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.stateChanged.connect(self.handle_state_change)
+        self.media_player.setVolume(self.parent.volume)
 
         self.position_timer = QTimer(self)
         self.position_timer.timeout.connect(self.update_slider_position)
@@ -3892,6 +3903,17 @@ class ScrollableWidget(QWidget):
         # Create a scroll area
         try:
             self.scroll_area = QScrollArea(self.parent)
+            self.scroll_area.setStyleSheet("""
+                QScrollArea {
+                    border: none;
+                }
+                QScrollBar:vertical {
+                    border: none;
+                }
+                QScrollBar:horizontal {
+                    border: none;
+                }
+            """)
             self.scroll_area.setWidgetResizable(True)
 
             # Create a widget to contain labels and buttons
@@ -4176,6 +4198,38 @@ class ScrollableWidget(QWidget):
                 print("asked for more messages")
 
         self.main_page_object.chat_start_index = value
+
+
+class PlaylistWidget(QWidget):
+    def __init__(self, main_page_widget):
+        self.parent = main_page_widget
+        super().__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        layout = QVBoxLayout()
+
+        # Create a table widget
+        table = QTableWidget(self)
+        table.setColumnCount(3)
+        table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration"])
+
+        # Add dummy data to the table
+        data = [
+            ("Song 1", "2024-04-14", "3:45"),
+            ("Song 2", "2024-04-15", "4:20"),
+            ("Song 3", "2024-04-16", "2:55"),
+            # Add more rows as needed
+        ]
+        for row, item in enumerate(data):
+            for col, value in enumerate(item):
+                table.setItem(row, col, QTableWidgetItem(value))
+
+        # Adjust column widths to fit contents
+        table.resizeColumnsToContents()
+
+        layout.addWidget(table)
+        self.setLayout(layout)
 
 
 class CreateGroupBox(QWidget):
