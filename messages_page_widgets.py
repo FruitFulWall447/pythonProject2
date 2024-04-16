@@ -1190,6 +1190,18 @@ class ChatBox(QWidget):
         ''')
         pause_mp3_files_button.clicked.connect(self.parent.pause_or_unpause_mp3_files_player)
 
+        music_page_button = QPushButton(self)
+        mp3_pause_path = "discord_app_assets/music_icon.png"
+        set_button_icon(music_page_button, mp3_pause_path, 40, 40)
+        music_page_button.move(friend_x + 185, info_y + 10)
+        music_page_button.setStyleSheet('''
+            QPushButton {
+                background-color: transparent;
+            }
+
+        ''')
+        music_page_button.clicked.connect(self.parent.music_button_clicked)
+
         if self.parent.is_create_group_pressed:
            create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
            create_group_box.raise_()

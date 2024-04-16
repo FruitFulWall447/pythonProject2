@@ -10,7 +10,7 @@ from social_page_widgets import FriendsBox
 from settings_page_widgets import SettingsBox
 from chat_file import VideoPlayer, get_camera_names, \
     make_circular_image, find_output_device_index, find_input_device_index, \
-    get_default_output_device_name, get_default_input_device_name
+    get_default_output_device_name, get_default_input_device_name, PlaylistWidget
 import pyaudio
 import random
 import json
@@ -719,9 +719,7 @@ class SplashScreen(QWidget):
                             self.close()
 
 
-chat_clicked = True
-social_clicked = False
-setting_clicked = False
+
 friends_list = []
 list_last_messages = []
 chat_messages_max = 33
@@ -902,6 +900,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.watching_type = None
         self.is_camera_shared = False
 
+        self.chat_clicked = True
+        self.social_clicked = False
+        self.setting_clicked = False
+        self.music_clicked = False
+
         self.is_new_chat_clicked = True
 
         self.current_chat_box_search = False
@@ -953,7 +956,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 }}
             ''')
             # Create an instance of ChatBox
-            if chat_clicked:
+            if self.chat_clicked:
                 self.chat_box = ChatBox(self.selected_chat, self.list_messages, self.friends_list, parent=self,
                                         Network=n)  # Set the parent widget
 
@@ -967,16 +970,25 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.friends_box.hide()
             self.settings_box = SettingsBox(parent=self)
             self.settings_box.hide()
+            self.music_box = PlaylistWidget(main_page_widget=self)
+            self.music_box.hide()
             self.stacked_widget = QStackedWidget(self)
             self.stacked_widget.addWidget(self.chat_box)
             self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
             self.stacked_widget.addWidget(self.friends_box)
-
+            self.stacked_widget.addWidget(self.music_box)
             self.main_layout.addWidget(self.stacked_widget)
 
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def music_button_clicked(self):
+        self.chat_clicked = False
+        self.social_clicked = False
+        self.setting_clicked = False
+        self.music_clicked = True
+        self.stacked_widget.setCurrentIndex(3)
 
     def start_listen_udp_thread(self):
         self.listen_udp_thread.start()
@@ -1192,12 +1204,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     return None
 
     def set_page_index_by_clicked(self):
-        global chat_clicked, setting_clicked, social_clicked
-        if chat_clicked:
+        if self.chat_clicked:
             self.stacked_widget.setCurrentIndex(0)
-        elif social_clicked:
+        elif self.social_clicked:
             self.stacked_widget.setCurrentIndex(2)
-        elif setting_clicked:
+        elif self.setting_clicked:
             self.stacked_widget.setCurrentIndex(1)
 
     def stop_watching_video(self):
@@ -1446,39 +1457,35 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Error stopping sound: {e}")
 
     def Chat_clicked(self):
-        global chat_clicked, setting_clicked, social_clicked
-        if not chat_clicked:
+        if not self.chat_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.temp_search_list = []
-            chat_clicked = True
+            self.chat_clicked = True
             self.stacked_widget.setCurrentIndex(0)
-            setting_clicked = False
-            social_clicked = False
+            self.setting_clicked = False
+            self.social_clicked = False
 
     def Settings_clicked(self):
-        global chat_clicked, setting_clicked, social_clicked
-        if not setting_clicked:
+        if not self.setting_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.stacked_widget.setCurrentIndex(1)
-            chat_clicked = False
-            setting_clicked = True
-            social_clicked = False
+            self.chat_clicked = False
+            self.setting_clicked = True
+            self.social_clicked = False
 
     def Social_clicked(self):
-        global chat_clicked, setting_clicked, social_clicked
-        if not social_clicked:
+        if not self.social_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.temp_search_list = []
             self.stacked_widget.setCurrentIndex(2)
-            chat_clicked = False
-            setting_clicked = False
-            social_clicked = True
+            self.chat_clicked = False
+            self.setting_clicked = False
+            self.social_clicked = True
 
     def updated_requests(self):
-        global social_clicked
         try:
             if self.friends_box_page == "add friend":
                 self.stacked_widget.removeWidget(self.friends_box)
@@ -1486,7 +1493,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                               requests_list=self.request_list, Network=n, username=self.username,
                                               parent=self)
                 self.stacked_widget.insertWidget(2, self.friends_box)
-                if social_clicked:
+                if self.social_clicked:
                     self.stacked_widget.setCurrentIndex(2)
             else:
                 search_bar_text = self.friends_box.search.text()
@@ -1506,7 +1513,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         self.friends_box.search.setFocus(True)
                         self.friends_box.search.deselect()
 
-                if social_clicked:
+                if self.social_clicked:
                     self.stacked_widget.setCurrentIndex(2)
         except Exception as e:
             print(f"error in updating social page{e}")
@@ -1522,10 +1529,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"error in updated_settings_page error:{e}")
 
     def keyPressEvent(self, event):
-        global n, chat_clicked, social_clicked
+        global n
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
-                if chat_clicked and self.chat_box.chat_name_label.text() != "" or setting_clicked:
+                if self.chat_clicked and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
                     if self.chat_box.check_editing_status():
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
@@ -1590,12 +1597,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         self.chats_list.insert(0, self.selected_chat)
                     self.updated_chat()
                     self.chat_box.text_entry.setFocus(True)
-                elif social_clicked:
+                elif self.social_clicked:
                     self.friends_box.send_friend_request()
             except Exception as e:
                 print(f"expection in key press event:{e}")
         elif event.key() == Qt.Key_Escape:
-            if not chat_clicked:
+            if not self.chat_clicked:
                 self.Chat_clicked()
                 self.updated_chat()
             else:
@@ -1604,7 +1611,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.selected_group_members.clear()
                     self.updated_chat()
         else:
-            if setting_clicked and self.is_editing_push_to_talk_button:
+            if self.setting_clicked and self.is_editing_push_to_talk_button:
                 key = event.key()
                 special_keys_mapping = {
                     Qt.Key_Return: "Return",
@@ -1652,9 +1659,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.updated_settings_page()
 
     def wheelEvent(self, event):
-        global chat_clicked
         # Handle the wheel event (scrolling)
-        if chat_clicked:
+        if self.chat_clicked:
             delta = event.angleDelta().y() / 120  # Normalize the delta
             mouse_pos = event.pos()
             if delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (
@@ -1667,7 +1673,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Scrolling down, but prevent scrolling beyond the first message
                 self.chat_box_chats_index -= 1
                 self.update_chat_page_without_messages()
-        if social_clicked:
+        if self.social_clicked:
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
                 mouse_pos = event.pos()
@@ -1699,7 +1705,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_chat_page(False)
 
     def update_chat_page(self, is_update_messages_box):
-        global chat_clicked
         try:
             if is_update_messages_box:
                 self.is_messages_need_update = True
@@ -1729,7 +1734,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 if has_had_focus_of_search_bar:
                     self.chat_box.find_contact_text_entry.setFocus(True)
                     self.chat_box.find_contact_text_entry.deselect()
-            if chat_clicked:
+            if self.chat_clicked:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
             print(f"error in updated chat {e}")

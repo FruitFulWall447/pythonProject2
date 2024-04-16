@@ -842,12 +842,11 @@ class VideoPlayer(QWidget):
 
 class PlaylistWidget(QWidget):
     def __init__(self, main_page_widget):
-        self.parent = main_page_widget
         super().__init__()
+        self.parent = main_page_widget
         self.init_ui()
 
     def init_ui(self):
-        layout = QVBoxLayout()
 
         # Create a table widget
         table = QTableWidget(self)
@@ -868,8 +867,7 @@ class PlaylistWidget(QWidget):
         # Adjust column widths to fit contents
         table.resizeColumnsToContents()
 
-        layout.addWidget(table)
-        self.setLayout(layout)
+
 
 
 
