@@ -5,7 +5,10 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
     QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from chat_file import ChatBox, FriendsBox, SettingsBox, VideoPlayer, get_camera_names, \
+from messages_page_widgets import ChatBox
+from social_page_widgets import FriendsBox
+from settings_page_widgets import SettingsBox
+from chat_file import VideoPlayer, get_camera_names, \
     make_circular_image, find_output_device_index, find_input_device_index, \
     get_default_output_device_name, get_default_input_device_name
 import pyaudio
