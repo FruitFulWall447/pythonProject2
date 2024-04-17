@@ -320,6 +320,13 @@ class client_net:
         message = {"message_type": "connect_udp_port", "udp_address": udp_address, "tcp_address": tcp_address}
         self.send_message_dict_tcp(message)
 
+    def send_song_search(self, search_str):
+        try:
+            message = {"message_type": "song_search", "search_str": search_str}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
             message = {"message_type": "current_chat", "current_chat": current_chat}
@@ -859,6 +866,11 @@ class server_net:
             self.send_bytes(pickled_data)
         except Exception as e:
             print(e)
+
+    def send_searched_song_info(self, searched_song_dict):
+        message = {"message_type": "searched_song_result", "searched_song_dict": searched_song_dict
+                   }
+        self.send_message_dict_tcp(message)
 
     def send_messages_list(self, messages_list):
         json_messages_list = json.dumps(messages_list)

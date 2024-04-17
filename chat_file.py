@@ -30,6 +30,7 @@ import warnings
 import re
 import pyaudio
 import cv2
+from datetime import datetime
 
 
 def extract_number(s):
@@ -849,23 +850,187 @@ class PlaylistWidget(QWidget):
     def init_ui(self):
 
         # Create a table widget
-        table = QTableWidget(self)
-        table.setColumnCount(3)
-        table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration"])
+        self.search_table = QTableWidget(self)
+        self.search_table.setStyleSheet(f"""
+            QTableWidget {{
+                background-color: #e0e0e0;
+                border: 1px solid #d0d0d0;
+                selection-background-color: #c0c0c0;
+                        color: #000000;  /* Black text color */
+            }}
+            QHeaderView::section {{
+                background-color: #e0e0e0;
+                border: 1px solid #d0d0d0;
+                padding: 4px;
+            }}
+            QHeaderView::section:checked {{
+                background-color: #c0c0c0;
+            }}
+            QTableWidget::item:selected {{
+                background-color: #c0c0c0;
+            }}""")
+        self.search_table.setColumnCount(4)
+        self.search_table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
+        self.search_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.search_table.insertRow(0)
+        table_x, table_y = 0, 70
+        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.06)
+        self.search_table.setGeometry(table_x, table_y, table_width, table_height)
+        self.search_table.resizeColumnsToContents()
+        search_table_horizontal_header = self.search_table.horizontalHeader()
+        search_table_horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
 
-        # Add dummy data to the table
+        self.table = QTableWidget(self)
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
+
+        # Set the number of rows in the table
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        # Add dummy dat a to the table
+        pixmap = QPixmap("discord_app_assets/connectify_icon.png")
+        pixmap = pixmap.scaled(100, 100)
+        icon = QIcon(pixmap)
+
         data = [
-            ("Song 1", "2024-04-14", "3:45"),
-            ("Song 2", "2024-04-15", "4:20"),
-            ("Song 3", "2024-04-16", "2:55"),
+            ("Song 1", "2024-04-14", "3:45", icon),
+            ("Song 2", "2024-04-15", "4:20", icon),
+            ("Song 3", "2024-04-16", "2:55", icon),
             # Add more rows as needed
         ]
-        for row, item in enumerate(data):
+        for item in data:
+            row_position = self.table.rowCount()  # Get the current row count
+            self.table.insertRow(row_position)
+
             for col, value in enumerate(item):
-                table.setItem(row, col, QTableWidgetItem(value))
+                try:
+                    if col == 3:  # If it's the column for the photo
+                        item = QTableWidgetItem()
+                        item.setIcon(value)
+                    else:
+                        item = QTableWidgetItem(value)
+                    self.table.setItem(row_position, col, item)
+                except Exception as e:
+                    print(e)
+
+        self.search_song_entry = QLineEdit(self)
+        if self.parent.background_color == "Black and White":
+            text_entry_color = "black"
+        else:
+            text_entry_color = "white"
+        self.search_song_entry.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+        search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
+        width, height = 450, 40
+        self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
+        self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
+
+        search_result_label = QLabel(self)
+        search_result_label.setStyleSheet(
+            f"color: {text_entry_color}; font-size: 20px;")
+        search_result_label.setText("Search Result:")
+        search_result_label_x, search_result_label_y = 0, int(self.parent.screen_height * 0.03)
+        search_result_label.move(search_result_label_x, search_result_label_y)
+
+        button_x, button_y = int(self.parent.screen_width * 0.015), int(self.parent.screen_height * 0.069)
+        pause_and_play_button_search = QPushButton(self)
+        pause_and_play_button_icon_path = "discord_app_assets/play_video_icon.png"
+        set_button_icon(pause_and_play_button_search, pause_and_play_button_icon_path, 30, 30)
+        make_q_object_clear(pause_and_play_button_search)
+        pause_and_play_button_search.move(button_x, button_y)
+        pause_and_play_button_search.clicked.connect(self.parent.play_search_result)
+
+
+        table_x, table_y = 0, self.parent.screen_height // 5.4
+        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
+        self.table.setGeometry(table_x, table_y, table_width, table_height)
+
+        last_song_button = QPushButton(self)
+        next_song_button = QPushButton(self)
+        pause_and_play_button = QPushButton(self)
+        last_song_button_icon_path = "discord_app_assets/last_song_icon.png"
+        next_song_button_icon_path = "discord_app_assets/next_song_icon.png"
+        pause_and_play_button_icon_path = "discord_app_assets/pause_and_play_icon.png"
+        set_button_icon(last_song_button, last_song_button_icon_path, 50, 50)
+        set_button_icon(next_song_button, next_song_button_icon_path, 50, 50)
+        set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, 50, 50)
+        first_button_x = int(self.parent.screen_width * 0.43)
+        buttons_y = int(self.parent.screen_height * 0.842)
+        last_song_button.move(first_button_x, buttons_y)
+        pause_and_play_button.move(first_button_x+60, buttons_y)
+        next_song_button.move(first_button_x+120, buttons_y)
+        make_q_object_clear(last_song_button)
+        make_q_object_clear(next_song_button)
+        make_q_object_clear(pause_and_play_button)
+        last_song_button.raise_()
+        next_song_button.raise_()
+        pause_and_play_button.raise_()
+        pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
+        self.table.cellPressed.connect(self.cell_pressed)
+
 
         # Adjust column widths to fit contents
-        table.resizeColumnsToContents()
+        self.table.resizeColumnsToContents()
+
+        # Spread the titles evenly across the table
+        horizontal_header = self.table.horizontalHeader()
+        horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
+        self.table.setStyleSheet(f"""
+            QTableWidget {{
+                background-color: #e0e0e0;
+                border: 1px solid #d0d0d0;
+                selection-background-color: #c0c0c0;
+                        color: #000000;  /* Black text color */
+            }}
+            QHeaderView::section {{
+                background-color: #e0e0e0;
+                border: 1px solid #d0d0d0;
+                padding: 4px;
+            }}
+            QHeaderView::section:checked {{
+                background-color: #c0c0c0;
+            }}
+            QTableWidget::item:selected {{
+                background-color: #c0c0c0;
+            }}
+        """)
+        # Ensure the data is visible
+
+        self.table.show()
+
+    def insert_search_data(self, video_info_dict):
+        try:
+            row_position = 0
+
+            # Extract data from the dictionary
+            title = video_info_dict.get('title', '')
+            thumbnail_bytes = video_info_dict.get('thumbnail')
+            audio_bytes = video_info_dict.get('audio_bytes')
+            video_duration = video_info_dict.get('video_duration', '')
+
+            # Set the current date as the "Date Added"
+            date_added = datetime.now().strftime('%Y-%m-%d')
+
+            # Insert data into the table
+            for col, value in enumerate([title, date_added, video_duration, thumbnail_bytes]):
+                if col == 3:  # If it's the column for the photo
+                    item = QTableWidgetItem()
+                    pixmap = QPixmap()
+                    pixmap.loadFromData(thumbnail_bytes)
+                    pixmap = pixmap.scaled(100, 100)
+                    item.setIcon(QIcon(pixmap))
+                else:
+                    item = QTableWidgetItem(str(value))
+                self.search_table.setItem(row_position, col, item)
+        except Exception as e:
+            print(e)
+
+    def cell_pressed(self, row, col):
+        # Get the item text when a cell is pressed
+        item = self.table.item(row, col)
+        if item:
+            print("Cell Pressed:", item.text())
+
 
 
 

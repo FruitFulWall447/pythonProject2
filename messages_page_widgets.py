@@ -604,7 +604,7 @@ class ChatBox(QWidget):
 
         if self.parent.selected_chat != "":
             temp_widget_x, temp_widget_y = (610, height_of_around_name)
-            temp_widget_width = self.width_of_chat_box
+            temp_widget_width = int(self.width_of_chat_box * 0.98)
             if height_of_around_name != start_height_of_around_name:
                 temp_widget_height = self.height_of_chat_box - 130 - self.around_name_delta
             else:
@@ -1746,14 +1746,14 @@ class ChatBox(QWidget):
         try:
             if self.parent.mute:
                 media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
-                self.parent.play_sound(media_content)
+                self.parent.play_sound_effect(media_content)
                 print("mic is not muted")
                 self.parent.mute = False
                 self.mic_button.setIcon(self.unmuted_mic_icon)
                 self.Network.toggle_mute_for_myself()
             else:
                 media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
-                self.parent.play_sound(media_content)
+                self.parent.play_sound_effect(media_content)
                 print("mic is muted")
                 self.parent.mute = True
                 self.mic_button.setIcon(self.muted_mic_icon)
@@ -1764,13 +1764,13 @@ class ChatBox(QWidget):
     def deafen_and_undeafen(self):
         if self.parent.deafen:
             media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
-            self.parent.play_sound(media_content)
+            self.parent.play_sound_effect(media_content)
             self.parent.deafen = False
             self.deafen_button.setIcon(self.not_deafened_icon)
             self.Network.toggle_deafen_for_myself()
         else:
             media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Discord_mute_sound_effect.mp3'))
-            self.parent.play_sound(media_content)
+            self.parent.play_sound_effect(media_content)
             self.parent.deafen = True
             self.deafen_button.setIcon(self.deafened_icon)
             self.Network.toggle_deafen_for_myself()
@@ -1834,7 +1834,7 @@ class ChatBox(QWidget):
                 else:
                     print(f"Calling User...{self.parent.selected_chat}")  # Replace this with your actual functionality
                 media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Phone_Internal_RingingCalling - Sound Effect.mp3'))
-                self.parent.play_sound(media_content)
+                self.parent.play_calling_sound_effect(media_content)
                 self.Network.send_calling_user(self.parent.selected_chat)
                 self.ringing_user(self.parent.selected_chat)
         except Exception as e:

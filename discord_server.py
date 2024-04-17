@@ -11,8 +11,7 @@ import time
 import zlib
 import logging
 import base64
-from multiprocessing import Process
-
+from song_search_engine import extract_audio_bytes
 
 # Set up the logging configuration
 logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as needed
@@ -45,6 +44,16 @@ def is_json_serialized(file_path):
         return False
     except FileNotFoundError:
         return False
+
+
+def create_video_info_dict(audio_bytes, title, thumbnail_bytes, video_duration):
+    video_info = {
+        "audio_bytes": audio_bytes,
+        "title": title,
+        "thumbnail_bytes": thumbnail_bytes,
+        "video_duration": video_duration
+    }
+    return video_info
 
 
 def is_string(variable):
@@ -332,15 +341,24 @@ def thread_recv_messages(n, addr):
                 if Communication.server_mtu is None:
                     Communication.check_max_packet_size_udp(udp_address)
                 Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
-            if message_type == "current_chat":
+            elif message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
                 add_message_for_client(User, data)
-            if message_type == "more_messages":
+            elif message_type == "song_search":
+                search_str = data.get("search_str")
+                logger.info(f"searching for {search_str} for {User}")
+                try:
+                    audio_bytes, video_title, thumbnail_bytes, duration_min_sec = extract_audio_bytes(search_str)
+                    info_dict = create_video_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
+                    n.send_searched_song_info(info_dict)
+                except Exception as e:
+                    logger.error(f"error with search engine: {e}")
+            elif message_type == "more_messages":
                 add_message_for_client(User, data)
-            if message_type == "messages_list_index":
+            elif message_type == "messages_list_index":
                 messages_list_index = data.get("messages_list_index")
                 add_message_for_client(User, data)
-            if message_type == "call":
+            elif message_type == "call":
                 call_action_type = data.get("call_action_type")
                 if call_action_type == "stream":
                     stream_type = data.get("stream_type")
@@ -400,7 +418,7 @@ def thread_recv_messages(n, addr):
                     action = data.get("action")
                     if action == "stop!":
                         Communication.cancel_ring_by_the_ringer(User)
-            if message_type == "add_message":
+            elif message_type == "add_message":
                 sender = data.get("sender")
                 receiver = data.get("receiver")
                 content = data.get("content")
@@ -417,7 +435,7 @@ def thread_recv_messages(n, addr):
                     for member in group_members:
                         add_message_for_client(member, f"got_new_message:{receiver}")
                 logger.info(f"added new message from {User} to {receiver}")
-            if message_type == "update_profile_pic":
+            elif message_type == "update_profile_pic":
                 b64_encoded_profile_pic = data.get("b64_encoded_profile_pic")
                 if b64_encoded_profile_pic == "None":
                     b64_encoded_profile_pic = None
@@ -425,30 +443,30 @@ def thread_recv_messages(n, addr):
                 database_func.update_profile_pic(User, b64_encoded_profile_pic)
                 logger.info(f"updated client profile pic of {User}")
                 Communication.update_profiles_list_for_everyone_by_user(User, b64_encoded_profile_pic)
-            if message_type == "security_token":
+            elif message_type == "security_token":
                 action = data.get("action")
                 if action == "needed":
                     user_security_token = database_func.get_security_token(User)
                     n.send_security_token_to_client(user_security_token)
                     logger.info(f"Sent security token to - {User} , {user_security_token}")
-            if message_type == "vc_data":
+            elif message_type == "vc_data":
                 compressed_vc_data = data.get("compressed_vc_data")
                 if compressed_vc_data is not None:
                     vc_data = zlib.decompress(compressed_vc_data)
                     Communication.send_vc_data_to_call(vc_data, User)
-            if message_type == "share_screen_data":
+            elif message_type == "share_screen_data":
                 compressed_share_screen_data = data.get("compressed_share_screen_data")
                 shape_of_frame = data.get("shape_of_frame")
                 if compressed_share_screen_data is not None:
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
                     Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
-            if message_type == "share_camera_data":
+            elif message_type == "share_camera_data":
                 compressed_share_camera_data = data.get("compressed_share_camera_data")
                 shape_of_frame = data.get("shape_of_frame")
                 if compressed_share_camera_data is not None:
                     share_screen_data = zlib.decompress(compressed_share_camera_data)
                     Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
-            if message_type == "friend_request":
+            elif message_type == "friend_request":
                 username_for_request = data.get("username_for_request")
                 user = User
                 friend_user = username_for_request
@@ -467,7 +485,7 @@ def thread_recv_messages(n, addr):
                         n.sent_friend_request_status("not exist")
                     else:
                         n.sent_friend_request_status("already friends")
-            if message_type == "friend_request_status":
+            elif message_type == "friend_request_status":
                 status = data.get("action")
                 if status == "accept":
                     accepted_or_rejected_user = data.get("accepted_user")
@@ -483,21 +501,21 @@ def thread_recv_messages(n, addr):
                     logger.info(f"{User} rejected {accepted_or_rejected_user} friend request")
                     add_message_for_client(User, "friends_request:send")
                     add_message_for_client(accepted_or_rejected_user, "friends_request:send")
-            if message_type == "friend_remove":
+            elif message_type == "friend_remove":
                 friends_to_remove = data.get("username_to_remove")
                 database_func.remove_friend(User, friends_to_remove)
                 if friends_to_remove in online_users:
                     add_message_for_client(friends_to_remove, "friends_list:send")
                 logger.info(f"{User} removed {friends_to_remove} as friend")
-            if message_type == "block":
+            elif message_type == "block":
                 user_to_block = data.get("user_to_block")
                 database_func.block_user(User, user_to_block)
                 logger.info(f"{User} blocked {user_to_block}")
-            if message_type == "unblock":
+            elif message_type == "unblock":
                 user_to_unblock = data.get("user_to_unblock")
                 database_func.unblock_user(User, user_to_unblock)
                 logger.info(f"{User} unblocked {user_to_unblock}")
-            if message_type == "group":
+            elif message_type == "group":
                 action = data.get("action")
                 if action == "create":
                     members_list = json.loads(data.get("group_members_list"))

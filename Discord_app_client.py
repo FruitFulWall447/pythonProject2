@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
     QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
-from messages_page_widgets import ChatBox
+from messages_page_widgets import ChatBox, play_mp3_from_bytes
 from social_page_widgets import FriendsBox
 from settings_page_widgets import SettingsBox
 from chat_file import VideoPlayer, get_camera_names, \
@@ -113,6 +113,7 @@ Flag_recv_messages = True
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
+CAMERA_FPS = 60
 
 
 def return_vc_bytes_parameters(vc_bytes):
@@ -164,7 +165,11 @@ def thread_recv_messages():
             main_page.is_messages_need_update = True
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the messages list")
-        if message_type == "message_list_addition":
+        elif message_type == "searched_song_result":
+            info_dict = data.get("searched_song_dict")
+            main_page.insert_search_result_signal.emit(info_dict)
+            print("got song search info")
+        elif message_type == "message_list_addition":
             message_list_addition = json.loads(data.get("message_list_addition"))
             main_page.list_messages = main_page.list_messages + message_list_addition
             #main_page.is_messages_need_update = True
@@ -172,35 +177,35 @@ def thread_recv_messages():
             #main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
             main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
             main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
-        if message_type == "new_message":
+        elif message_type == "new_message":
             new_message = data.get("new_message")
             QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
             print("got new message")
-        if message_type == "requests_list":
+        elif message_type == "requests_list":
             requests_list = json.loads(data.get("requests_list"))
             main_page.request_list = requests_list
             QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
             print("Updated the requests list")
-        if message_type == "vc_data":
+        elif message_type == "vc_data":
             compressed_vc_data = data.get("compressed_vc_data")
             speaker = data.get("speaker")
             vc_data = zlib.decompress(compressed_vc_data)
             main_page.vc_data_list.append((vc_data, speaker))
-        if message_type == "share_screen_data":
+        elif message_type == "share_screen_data":
             compressed_share_screen_data = data.get("compressed_share_screen_data")
             speaker = data.get("speaker")
             frame_shape = data.get("frame_shape")
             share_screen_data = zlib.decompress(compressed_share_screen_data)
             decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
             main_page.update_stream_screen_frame(decompressed_frame)
-        if message_type == "share_camera_data":
+        elif message_type == "share_camera_data":
             compressed_share_camera_data = data.get("compressed_share_camera_data")
             speaker = data.get("speaker")
             frame_shape = data.get("frame_shape")
             share_screen_data = zlib.decompress(compressed_share_camera_data)
             decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
             main_page.update_stream_screen_frame(decompressed_frame)
-        if message_type == "friends_list":
+        elif message_type == "friends_list":
             json_friends_list = data.get("friends_list")
             friends_list = json.loads(json_friends_list)
             main_page.friends_list = friends_list
@@ -208,41 +213,41 @@ def thread_recv_messages():
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print(f"Got friends list: {main_page.friends_list}")
             print("Updated friends_list list")
-        if message_type == "online_users_list":
+        elif message_type == "online_users_list":
             online_users_list = json.loads(data.get("online_users_list"))
             main_page.online_users_list = online_users_list
             QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print(f"Got online users list: {online_users_list}")
-        if message_type == "blocked_list":
+        elif message_type == "blocked_list":
             blocked_list = json.loads(data.get("blocked_list"))
             main_page.blocked_list = blocked_list
             QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
             print("Updated the requests list")
-        if message_type == "groups_list":
+        elif message_type == "groups_list":
             groups_list = json.loads(data.get("groups_list"))
             main_page.groups_list = groups_list
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
             print("Updated the Groups list")
-        if message_type == "chats_list":
+        elif message_type == "chats_list":
             chats_list = json.loads(data.get("chats_list"))
             main_page.chats_list = chats_list
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the chats list")
             print(f"chats list is: {main_page.chats_list}")
-        if message_type == "add_chat":
+        elif message_type == "add_chat":
             new_chat = data.get("chat_to_add")
             main_page.chats_list.insert(0, new_chat)
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the chats list")
             print(f"chats list is: {main_page.chats_list}")
-        if message_type == "new_group_dict":
+        elif message_type == "new_group_dict":
             new_group_dict = json.loads(data.get("group_dict"))
             main_page.groups_list.append(new_group_dict)
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Added new group to group_list")
-        if message_type == "call":
+        elif message_type == "call":
             call_action_type = data.get("call_action_type")
             if call_action_type == "in_call_action":
                 action = data.get("action")
@@ -311,32 +316,32 @@ def thread_recv_messages():
                 if action == "remove_id":
                     id_to_remove = data.get("removed_id")
                     main_page.remove_call_dict_by_id(id_to_remove)
-        if message_type == "profile_dicts_list":
+        elif message_type == "profile_dicts_list":
             profile_dicts_list = json.loads(data.get("profile_dicts_list"))
             main_page.list_user_profile_dicts = profile_dicts_list
             QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
             print("got list of profile dictionaries")
-        if message_type == "updated_profile_dict":
+        elif message_type == "updated_profile_dict":
             profile_dict = json.loads(data.get("profile_dict"))
             name_of_profile_dict = data.get("username")
             main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
-        if message_type == "update_group_dict":
+        elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
             main_page.update_group_lists_by_group.emit(group_dict)
             print(f"got updated group dic {group_dict.get('group_id')}")
-        if message_type == "data":
+        elif message_type == "data":
             action = data.get("action")
             if action == "receive":
                 receive_status = data.get("receive_status")
                 if receive_status == "done":
                     QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
-        if message_type == "security_token":
+        elif message_type == "security_token":
             security_token = data.get("security_token")
             save_token(security_token)
-        if message_type == "friend_request":
+        elif message_type == "friend_request":
             status = data.get("friend_request_status")
             if status == "not exist":
                 main_page.friends_box.friend_not_found()
@@ -365,6 +370,8 @@ def listen_udp(main_page_object):
 vc_data = []
 share_screen_data = []
 share_camera_data = []
+
+
 def handle_udp_data(data, main_page_object):
     global vc_data, share_screen_data, share_camera_data
     message_type = data.get("message_type")
@@ -550,6 +557,8 @@ def thread_send_voice_chat_data():
 
 
 SCREEN_FPS = 30
+
+
 def thread_send_share_screen_data():
     global main_page
     time_between_frame = 1 / SCREEN_FPS
@@ -579,7 +588,6 @@ def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
 
 
-CAMERA_FPS = 60
 def thread_send_share_camera_data():
     global main_page
     time_between_frame = 1 / CAMERA_FPS
@@ -744,6 +752,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     update_group_lists_by_group = pyqtSignal(dict)
     insert_messages_into_message_box_signal = pyqtSignal(list)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
+    insert_search_result_signal = pyqtSignal(dict)
     update_message_box_signal = pyqtSignal()
     close_call_threads_signal = pyqtSignal()
     start_call_threads_signal = pyqtSignal()
@@ -812,6 +821,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.is_rename_group_pressed = False
         self.is_add_users_to_group_pressed = False
 
+        self.current_search_audio_bytes = None
         self.phone_number = None
         self.email = None
         self.messages_font_size = 12
@@ -927,17 +937,28 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_message_box_signal.connect(self.update_message_box)
         self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
         self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
+        self.insert_search_result_signal.connect(self.insert_search_result)
         self.close_call_threads_signal.connect(self.close_call_threads)
         self.start_call_threads_signal.connect(self.start_call_threads)
+
         self.sound_effect_media_player = QMediaPlayer()
+        self.sound_effect_media_player.setVolume(50)
 
         self.mp3_message_media_player = QMediaPlayer()
         self.mp3_message_media_player.setVolume(50)
+
+        self.calling_media_player = QMediaPlayer()
+        self.calling_media_player.setVolume(50)
+
         self.playlist_media_player = QMediaPlayer()
         self.playlist_media_player.setVolume(50)
-        self.sound_effect_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
-        self.sound_effect_media_player.setVolume(50)
+
+        self.ringtone_media_player = QMediaPlayer()
+        self.ringtone_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
+        self.ringtone_media_player.setVolume(50)
+
         self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
+        self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.sound_effect_media_player.setMedia(self.ringtone)
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
@@ -989,6 +1010,21 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.setting_clicked = False
         self.music_clicked = True
         self.stacked_widget.setCurrentIndex(3)
+
+    def insert_search_result(self, result_dict):
+        self.play_ding_sound_effect()
+        self.current_search_audio_bytes = result_dict.get("audio_bytes")
+        self.music_box.insert_search_data(result_dict)
+
+    def play_search_result(self):
+        if self.current_search_audio_bytes is not None:
+            play_mp3_from_bytes(self.current_search_audio_bytes, self.playlist_media_player)
+
+    def pause_and_unpause_playlist(self):
+        if self.playlist_media_player.state() == QMediaPlayer.PlayingState:
+            self.playlist_media_player.pause()
+        elif self.playlist_media_player.state() == QMediaPlayer.PausedState:
+            self.playlist_media_player.play()
 
     def start_listen_udp_thread(self):
         self.listen_udp_thread.start()
@@ -1046,6 +1082,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)
         self.sound_effect_media_player.setVolume(value)
+        self.playlist_media_player.setVolume(value)
+        self.ringtone_media_player.setVolume(value)
+        self.calling_media_player.setVolume(value)
 
     def pause_or_unpause_mp3_files_player(self):
         if self.mp3_message_media_player.state() == QMediaPlayer.PlayingState:
@@ -1333,11 +1372,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     different_users = self.find_difference(updated_participants, participants_before)
                     if len(different_users) == 1 and self.username not in different_users:
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
-                        self.play_sound(join_sound)
+                        self.play_sound_effect_effect(join_sound)
                 elif len(updated_participants) < len(participants_before) and self.username in updated_participants:
                     user_left_sound = QMediaContent(
                         QUrl.fromLocalFile('discord_app_assets/leave_call_sound_effect.mp3'))
-                    self.play_sound(user_left_sound)
+                    self.play_sound_effect_effect(user_left_sound)
         self.call_dicts.append(updated_call_dict)
 
     def reset_call_var(self):
@@ -1426,13 +1465,19 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def handle_state_changed_sound_effect(self, state):
         if state == QMediaPlayer.StoppedState:
             if self.is_getting_called:
-                self.sound_effect_media_player.setMedia(self.ringtone)
-                self.sound_effect_media_player.play()
+                self.ringtone_media_player.setMedia(self.ringtone)
+                self.ringtone_media_player.play()
+
+    def play_ding_sound_effect(self):
+        try:
+            self.play_sound_effect_effect(self.ding_sound_effect)
+        except Exception as e:
+            print(f"::{e}")
 
     def getting_a_call(self):
         try:
-            self.sound_effect_media_player.setMedia(self.ringtone)
-            self.sound_effect_media_player.play()
+            self.ringtone_media_player.setMedia(self.ringtone)
+            self.ringtone_media_player.play()
         except Exception as e:
             print(f"::{e}")
 
@@ -1443,10 +1488,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"::{e}")
 
-    def play_sound(self, sound):
+    def play_sound_effect_effect(self, sound):
         try:
             self.sound_effect_media_player.setMedia(sound)
             self.sound_effect_media_player.play()
+        except Exception as e:
+            print(f"::{e}")
+
+    def play_calling_sound_effect(self, sound):
+        try:
+            self.calling_media_player.setMedia(sound)
+            self.calling_media_player.play()
         except Exception as e:
             print(f"::{e}")
 
@@ -1599,6 +1651,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.chat_box.text_entry.setFocus(True)
                 elif self.social_clicked:
                     self.friends_box.send_friend_request()
+                elif self.music_clicked:
+                    search_str = self.music_box.search_song_entry.text()
+                    if len(search_str) > 0:
+                        n.send_song_search(search_str)
+                    self.music_box.search_song_entry.setText("")
             except Exception as e:
                 print(f"expection in key press event:{e}")
         elif event.key() == Qt.Key_Escape:
