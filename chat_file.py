@@ -887,32 +887,6 @@ class PlaylistWidget(QWidget):
         # Set the number of rows in the table
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        # Add dummy dat a to the table
-        pixmap = QPixmap("discord_app_assets/connectify_icon.png")
-        pixmap = pixmap.scaled(100, 100)
-        icon = QIcon(pixmap)
-
-        data = [
-            ("Song 1", "2024-04-14", "3:45", icon),
-            ("Song 2", "2024-04-15", "4:20", icon),
-            ("Song 3", "2024-04-16", "2:55", icon),
-            # Add more rows as needed
-        ]
-        for item in data:
-            row_position = self.table.rowCount()  # Get the current row count
-            self.table.insertRow(row_position)
-
-            for col, value in enumerate(item):
-                try:
-                    if col == 3:  # If it's the column for the photo
-                        item = QTableWidgetItem()
-                        item.setIcon(value)
-                    else:
-                        item = QTableWidgetItem(value)
-                    self.table.setItem(row_position, col, item)
-                except Exception as e:
-                    print(e)
-
         self.search_song_entry = QLineEdit(self)
         if self.parent.background_color == "Black and White":
             text_entry_color = "black"
@@ -931,6 +905,24 @@ class PlaylistWidget(QWidget):
         search_result_label.setText("Search Result:")
         search_result_label_x, search_result_label_y = 0, int(self.parent.screen_height * 0.03)
         search_result_label.move(search_result_label_x, search_result_label_y)
+
+        add_to_playlist_button = QPushButton("Add searched song", self)
+        make_q_object_clear(add_to_playlist_button)
+        add_to_playlist_button.setFixedSize(120, 30)  # Set button size to 50x50
+        add_to_playlist_button_x, add_to_playlist_button_y = int(self.parent.screen_height * 0.15), search_result_label_y
+        add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
+        add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
+
+        # Apply stylesheet to change background color
+        add_to_playlist_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}")
+
+        playlist_label = QLabel(self)
+        playlist_label.setStyleSheet(
+            f"color: {text_entry_color}; font-size: 20px;")
+        playlist_label.setText("Your Playlist:")
+        playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
+        playlist_label.move(playlist_label_x, playlist_label_y)
+
 
         button_x, button_y = int(self.parent.screen_width * 0.015), int(self.parent.screen_height * 0.069)
         pause_and_play_button_search = QPushButton(self)
@@ -1001,18 +993,17 @@ class PlaylistWidget(QWidget):
     def insert_search_data(self, video_info_dict):
         try:
             row_position = 0
-
             # Extract data from the dictionary
-            title = video_info_dict.get('title', '')
+            title = video_info_dict.get('title')
             thumbnail_bytes = video_info_dict.get('thumbnail')
             audio_bytes = video_info_dict.get('audio_bytes')
-            video_duration = video_info_dict.get('video_duration', '')
+            audio_duration = video_info_dict.get('audio_duration')
 
             # Set the current date as the "Date Added"
             date_added = datetime.now().strftime('%Y-%m-%d')
 
             # Insert data into the table
-            for col, value in enumerate([title, date_added, video_duration, thumbnail_bytes]):
+            for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
                 if col == 3:  # If it's the column for the photo
                     item = QTableWidgetItem()
                     pixmap = QPixmap()
@@ -1022,6 +1013,33 @@ class PlaylistWidget(QWidget):
                 else:
                     item = QTableWidgetItem(str(value))
                 self.search_table.setItem(row_position, col, item)
+        except Exception as e:
+            print(e)
+
+    def insert_playlist_songs(self, list_video_info_dict):
+        try:
+            row_position = 0
+            for video_info_dict in list_video_info_dict:
+                self.table.insertRow(row_position)
+                # Extract data from the dictionary
+                title = video_info_dict.get('title')
+                thumbnail_bytes = video_info_dict.get('thumbnail')
+                audio_bytes = video_info_dict.get('audio_bytes')
+                audio_duration = video_info_dict.get('audio_duration')
+                date_added = video_info_dict.get('timestamp')
+
+                # Insert data into the table
+                for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
+                    if col == 3:  # If it's the column for the photo
+                        item = QTableWidgetItem()
+                        pixmap = QPixmap()
+                        pixmap.loadFromData(thumbnail_bytes)
+                        pixmap = pixmap.scaled(100, 100)
+                        item.setIcon(QIcon(pixmap))
+                    else:
+                        item = QTableWidgetItem(str(value))
+                    self.table.setItem(row_position, col, item)
+                row_position += 1
         except Exception as e:
             print(e)
 

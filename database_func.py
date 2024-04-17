@@ -8,6 +8,7 @@ from datetime import datetime
 import base64
 import string
 import random
+import tempfile
 
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
@@ -24,6 +25,11 @@ default_settings_dict = {
     "push_to_talk_bind": None,  # Default push-to-talk key binding
     "2fa_enabled": False  # Default 2-factor authentication setting
 }
+
+
+def save_bytes_to_file(data_bytes, file_path):
+    with open(file_path, 'wb') as file:
+        file.write(data_bytes)
 
 
 def file_to_bytes(file_path):
@@ -88,6 +94,45 @@ def create_user_settings(user_id):
     # Close the cursor and database connection
     cursor.close()
     connection.close()
+
+
+def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
+    try:
+        # Connect to your MySQL database
+        with connect_to_kevindb() as connection:
+            # Create a cursor object
+            with connection.cursor() as cursor:
+                # Construct the SQL query to insert a song into the table
+                insert_query = """
+                    INSERT INTO songs (title, mp3_file_path, owner, duration, timestamp, thumbnail_path)
+                    VALUES (%s, %s, %s, %s, NOW(), %s)
+                """
+
+                # Generate unique filenames
+                folder_path = r'C:\discord_app_files'
+                mp3_file_name = generate_random_filename(24, folder_path)
+                mp3_file_path = os.path.join(folder_path, mp3_file_name)
+
+                thumbnail_photo_name = generate_random_filename(24, folder_path)
+                thumbnail_photo_path = os.path.join(folder_path, thumbnail_photo_name)
+
+                # Save files
+                save_bytes_to_file(mp3_file_bytes, mp3_file_path)
+                if thumbnail_photo_bytes is not None:
+                    save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
+                else:
+                    thumbnail_photo_path = None
+
+                # Execute the SQL query with the song data
+                cursor.execute(insert_query, (title, mp3_file_path, owner, duration, thumbnail_photo_path))
+
+                # Commit the transaction
+                connection.commit()
+
+                print("Song added successfully!")
+
+    except Exception as error:
+        print("Error while adding song to the table:", error)
 
 
 def get_user_settings(user_id):
@@ -1758,7 +1803,7 @@ def create_friends_table():
             )
         """
         cursor.execute(create_table_query)
-        print("Table 'messages' created successfully.")
+        print("Table 'friends' created successfully.")
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -1792,7 +1837,7 @@ def create_groups_table():
             )
         """
         cursor.execute(create_table_query)
-        print("Table 'messages' created successfully.")
+        print("Table 'my_groups' created successfully.")
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -1832,7 +1877,7 @@ def create_settings_table():
             )
         """
         cursor.execute(create_table_query)
-        print("Table 'messages' created successfully.")
+        print("Table 'settings_table' created successfully.")
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -1869,7 +1914,7 @@ def create_sign_up_table():
             )
         """
         cursor.execute(create_table_query)
-        print("Table 'messages' created successfully.")
+        print("Table 'sign_up_table' created successfully.")
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -1881,6 +1926,37 @@ def create_sign_up_table():
         if 'connection' in locals() and connection.is_connected():
             connection.close()
             print("Connection closed.")
+
+
+def create_songs_table():
+    try:
+        # Establish a connection
+        connection = connect_to_kevindb()
+
+        # Create a cursor
+        cursor = connection.cursor()
+        create_table_query = """CREATE TABLE songs (
+                        id SERIAL PRIMARY KEY,
+                        title VARCHAR(255) NOT NULL,
+                        mp3_file_path VARCHAR(255) NOT NULL,
+                        owner VARCHAR(255) NOT NULL,
+                        duration VARCHAR(255) NOT NULL,
+                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                                            );"""
+        cursor.execute(create_table_query)
+        print("Table 'songs' created successfully.")
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("Connection closed.")
+
 
 
 def create_tables_if_not_exist():
@@ -1903,6 +1979,10 @@ def create_tables_if_not_exist():
     current_table = "my_groups"
     if not is_table_exist(current_table):
         create_groups_table()
+        print(f"created {current_table}")
+    current_table = "songs"
+    if not is_table_exist(current_table):
+        create_songs_table()
         print(f"created {current_table}")
 
 

@@ -46,12 +46,12 @@ def is_json_serialized(file_path):
         return False
 
 
-def create_video_info_dict(audio_bytes, title, thumbnail_bytes, video_duration):
+def create_song_info_dict(audio_bytes, title, thumbnail_bytes, audio_duration):
     video_info = {
         "audio_bytes": audio_bytes,
         "title": title,
         "thumbnail_bytes": thumbnail_bytes,
-        "video_duration": video_duration
+        "audio_duration": audio_duration
     }
     return video_info
 
@@ -349,10 +349,18 @@ def thread_recv_messages(n, addr):
                 logger.info(f"searching for {search_str} for {User}")
                 try:
                     audio_bytes, video_title, thumbnail_bytes, duration_min_sec = extract_audio_bytes(search_str)
-                    info_dict = create_video_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
+                    info_dict = create_song_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
                     n.send_searched_song_info(info_dict)
                 except Exception as e:
                     logger.error(f"error with search engine: {e}")
+            elif message_type == "save_song":
+                song_dict = data.get("song_dict")
+                audio_bytes = song_dict.get("audio_bytes")
+                title = song_dict.get("title")
+                thumbnail_bytes = song_dict.get("thumbnail_bytes")
+                audio_duration = song_dict.get("audio_duration")
+                database_func.add_song(title, audio_bytes, User, audio_duration, thumbnail_bytes)
+                logger.info(f"Added song {title} to {User} playlist")
             elif message_type == "more_messages":
                 add_message_for_client(User, data)
             elif message_type == "messages_list_index":

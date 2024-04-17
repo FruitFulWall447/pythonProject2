@@ -821,7 +821,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.is_rename_group_pressed = False
         self.is_add_users_to_group_pressed = False
 
-        self.current_search_audio_bytes = None
+        self.current_search_song_dict = None
         self.phone_number = None
         self.email = None
         self.messages_font_size = 12
@@ -867,6 +867,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.list_user_profile_dicts = []
         self.circular_images_dicts_list_of_users = []
         self.circular_images_dicts_list_of_groups = []
+        self.playlist_songs = []
 
         self.volume = 50
         self.font_size = 12
@@ -1013,12 +1014,18 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def insert_search_result(self, result_dict):
         self.play_ding_sound_effect()
-        self.current_search_audio_bytes = result_dict.get("audio_bytes")
+        self.current_search_song_dict = result_dict
         self.music_box.insert_search_data(result_dict)
 
     def play_search_result(self):
-        if self.current_search_audio_bytes is not None:
-            play_mp3_from_bytes(self.current_search_audio_bytes, self.playlist_media_player)
+        if self.current_search_song_dict is not None:
+            current_search_audio_bytes = self.current_search_song_dict.get("audio_bytes")
+            play_mp3_from_bytes(current_search_audio_bytes, self.playlist_media_player)
+
+    def save_searched_song_to_playlist(self):
+        if self.current_search_song_dict is not None:
+            self.Network.save_song_in_playlist(self.current_search_song_dict)
+            print("send song to server")
 
     def pause_and_unpause_playlist(self):
         if self.playlist_media_player.state() == QMediaPlayer.PlayingState:

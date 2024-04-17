@@ -7,6 +7,13 @@ import youtube_dl
 from PIL import Image
 from io import BytesIO
 import requests
+import random
+import string
+
+
+def generate_random_filename(length=10):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
 def extract_audio_bytes(query):
@@ -21,20 +28,14 @@ def extract_audio_bytes(query):
             if video_id:
                 # Construct the video link
                 video_link = f'https://www.youtube.com/watch?v={video_id}'
-                try:
-                    with youtube_dl.YoutubeDL({}) as ydl:
-                        video_info = ydl.extract_info(f'https://www.youtube.com/watch?v={video_id}', download=False)
-                    print(video_info.get('categories'))
-                except Exception as e:
-                    print(e)
                 # Get video stream
                 yt = YouTube(video_link)
                 # Download the video
                 temp_path = tempfile.gettempdir()
-                yt.streams.filter(only_audio=True).first().download(output_path=temp_path)
+                random_filename = generate_random_filename() + ".mp4"
+                audio_path = os.path.join(temp_path, f'{random_filename}')
+                yt.streams.filter(only_audio=True).first().download(output_path=temp_path, filename=random_filename)
 
-                # Get the downloaded audio file path
-                audio_path = os.path.join(temp_path, yt.title + '.mp4')
 
                 # Convert the downloaded video to audio (MP3)
                 audio_clip = mp.AudioFileClip(audio_path)
@@ -47,8 +48,8 @@ def extract_audio_bytes(query):
                 # Get video title and thumbnail bytes
                 video_title = yt.title
                 thumbnail_bytes = get_thumbnail_bytes(yt.thumbnail_url)
-                video_duration = yt.length
-                duration_min_sec = f"{video_duration // 60}:{video_duration % 60:02}"
+                audio_duration = yt.length
+                duration_min_sec = f"{audio_duration // 60}:{audio_duration % 60:02}"
 
                 # Clean up temporary files
                 os.remove(audio_path)
@@ -62,6 +63,7 @@ def extract_audio_bytes(query):
             print("No videos found for the given query.")
     except Exception as e:
         print(f"An error occurred: {e}")
+        return None, None, None, None
 
 
 def get_thumbnail_bytes(thumbnail_url):
