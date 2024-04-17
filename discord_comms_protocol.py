@@ -985,6 +985,13 @@ class server_net:
                    }
         self.send_message_dict_tcp(message)
 
+    def playlist_songs_list(self, songs_dicts_list):
+        pickled_songs_list = pickle.dumps(songs_dicts_list)
+        message = {"message_type": "playlist_songs",
+                   "playlist_songs_list": pickled_songs_list
+                   }
+        self.send_message_dict_tcp(message)
+
     def send_blocked_list(self, blocked_list):
         json_blocked_list = json.dumps(blocked_list)
         message = {"message_type": "blocked_list",

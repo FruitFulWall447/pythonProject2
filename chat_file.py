@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObjec
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5 import QtCore
 from PIL import Image
 from io import BytesIO
 import base64
@@ -850,6 +851,7 @@ class PlaylistWidget(QWidget):
     def init_ui(self):
 
         # Create a table widget
+        self.last_selected_row = None
         self.search_table = QTableWidget(self)
         self.search_table.setStyleSheet(f"""
             QTableWidget {{
@@ -880,7 +882,10 @@ class PlaylistWidget(QWidget):
         search_table_horizontal_header = self.search_table.horizontalHeader()
         search_table_horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
 
+        row_height = 50
         self.table = QTableWidget(self)
+        self.table.verticalHeader().setDefaultSectionSize(row_height)
+
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
 
@@ -899,22 +904,18 @@ class PlaylistWidget(QWidget):
         self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
         self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
 
-        search_result_label = QLabel(self)
-        search_result_label.setStyleSheet(
-            f"color: {text_entry_color}; font-size: 20px;")
-        search_result_label.setText("Search Result:")
-        search_result_label_x, search_result_label_y = 0, int(self.parent.screen_height * 0.03)
-        search_result_label.move(search_result_label_x, search_result_label_y)
-
-        add_to_playlist_button = QPushButton("Add searched song", self)
+        add_to_playlist_button = QPushButton("Add song to Playlist", self)
         make_q_object_clear(add_to_playlist_button)
-        add_to_playlist_button.setFixedSize(120, 30)  # Set button size to 50x50
-        add_to_playlist_button_x, add_to_playlist_button_y = int(self.parent.screen_height * 0.15), search_result_label_y
+        add_to_playlist_button.setFixedSize(140, 30)  # Set button size to 50x50
+        add_to_playlist_button_x, add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
         add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
         add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
 
+
+
         # Apply stylesheet to change background color
-        add_to_playlist_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}")
+        add_to_playlist_button.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; border-radius: 15px;")
 
         playlist_label = QLabel(self)
         playlist_label.setStyleSheet(
@@ -958,8 +959,10 @@ class PlaylistWidget(QWidget):
         next_song_button.raise_()
         pause_and_play_button.raise_()
         pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
+        last_song_button.clicked.connect(self.parent.go_to_last_song)
+        next_song_button.clicked.connect(self.parent.go_to_next_song)
         self.table.cellPressed.connect(self.cell_pressed)
-
+        self.table.itemSelectionChanged.connect(self.onSelectionChanged)
 
         # Adjust column widths to fit contents
         self.table.resizeColumnsToContents()
@@ -995,7 +998,7 @@ class PlaylistWidget(QWidget):
             row_position = 0
             # Extract data from the dictionary
             title = video_info_dict.get('title')
-            thumbnail_bytes = video_info_dict.get('thumbnail')
+            thumbnail_bytes = video_info_dict.get('thumbnail_bytes')
             audio_bytes = video_info_dict.get('audio_bytes')
             audio_duration = video_info_dict.get('audio_duration')
 
@@ -1023,7 +1026,7 @@ class PlaylistWidget(QWidget):
                 self.table.insertRow(row_position)
                 # Extract data from the dictionary
                 title = video_info_dict.get('title')
-                thumbnail_bytes = video_info_dict.get('thumbnail')
+                thumbnail_bytes = video_info_dict.get('thumbnail_bytes')
                 audio_bytes = video_info_dict.get('audio_bytes')
                 audio_duration = video_info_dict.get('audio_duration')
                 date_added = video_info_dict.get('timestamp')
@@ -1034,8 +1037,8 @@ class PlaylistWidget(QWidget):
                         item = QTableWidgetItem()
                         pixmap = QPixmap()
                         pixmap.loadFromData(thumbnail_bytes)
-                        pixmap = pixmap.scaled(100, 100)
-                        item.setIcon(QIcon(pixmap))
+                        scaled_pixmap = pixmap.scaled(50, 50)
+                        item.setIcon(QIcon(scaled_pixmap))
                     else:
                         item = QTableWidgetItem(str(value))
                     self.table.setItem(row_position, col, item)
@@ -1043,11 +1046,58 @@ class PlaylistWidget(QWidget):
         except Exception as e:
             print(e)
 
+    def insert_new_song_to_playlist(self, song_dict):
+        row_position = self.table.rowCount()
+        self.table.insertRow(row_position)
+        title = song_dict.get('title')
+        thumbnail_bytes = song_dict.get('thumbnail_bytes')
+        audio_bytes = song_dict.get('audio_bytes')
+        audio_duration = song_dict.get('audio_duration')
+        date_added = datetime.now().strftime('%Y-%m-%d')
+
+        # Insert data into the table
+        for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
+            if col == 3:  # If it's the column for the photo
+                item = QTableWidgetItem()
+                pixmap = QPixmap()
+                pixmap.loadFromData(thumbnail_bytes)
+                pixmap = pixmap.scaled(100, 100)
+                item.setIcon(QIcon(pixmap))
+            else:
+                item = QTableWidgetItem(str(value))
+            self.table.setItem(row_position, col, item)
+
     def cell_pressed(self, row, col):
         # Get the item text when a cell is pressed
+        self.parent.set_new_playlist_index_and_listen(row)
+        self.select_row(row)
         item = self.table.item(row, col)
         if item:
             print("Cell Pressed:", item.text())
+
+    def select_row(self, row):
+        # Clear any existing selections
+        self.last_selected_row = row
+        self.table.clearSelection()
+        # Create a selection range for the entire row
+        selection_range = QTableWidgetSelectionRange(row, 0, row, self.table.columnCount() - 1)
+
+        # Select the range
+        self.table.setRangeSelected(selection_range, True)
+
+    def clear_selection(self):
+        self.table.clearSelection()
+
+    def onSelectionChanged(self):
+        try:
+            if self.last_selected_row is not None:
+                selected_rows = self.table.selectionModel().selectedRows()
+                if len(selected_rows) == 0:
+                    # No rows are selected, so reselect the previously selected row
+                    self.select_row(self.last_selected_row)
+        except Exception as e:
+            print(e)
+
 
 
 

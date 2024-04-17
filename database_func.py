@@ -46,14 +46,11 @@ def file_to_bytes(file_path):
         return None
 
 
-def generate_random_filename(length=24, extension=''):
+def generate_random_filename(length=24):
     """Generate a random filename."""
     characters = string.ascii_letters + string.digits
     random_string = ''.join(random.choice(characters) for _ in range(length))
-    if extension:
-        return random_string + '.' + extension
-    else:
-        return random_string
+    return random_string
 
 
 def save_file(file_bytes, file_path):
@@ -110,10 +107,10 @@ def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
 
                 # Generate unique filenames
                 folder_path = r'C:\discord_app_files'
-                mp3_file_name = generate_random_filename(24, folder_path)
+                mp3_file_name = generate_random_filename(24)
                 mp3_file_path = os.path.join(folder_path, mp3_file_name)
 
-                thumbnail_photo_name = generate_random_filename(24, folder_path)
+                thumbnail_photo_name = generate_random_filename(24)
                 thumbnail_photo_path = os.path.join(folder_path, thumbnail_photo_name)
 
                 # Save files
@@ -133,6 +130,54 @@ def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
 
     except Exception as error:
         print("Error while adding song to the table:", error)
+
+
+def get_songs_by_owner(owner):
+    try:
+        # Connect to your MySQL database
+        with connect_to_kevindb() as connection:
+            # Create a cursor object
+            with connection.cursor() as cursor:
+                # Construct the SQL query to select songs by owner
+                select_query = """
+                    SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
+                    FROM songs
+                    WHERE owner = %s
+                """
+
+                # Execute the SQL query with the owner parameter
+                cursor.execute(select_query, (owner,))
+
+                # Fetch all rows
+                songs_data = cursor.fetchall()
+
+                # Prepare a list to store song information dictionaries
+                songs = []
+
+                # Iterate over the fetched rows
+                for song_data in songs_data:
+                    # Extract song data from the row
+                    title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+
+                    # Create a dictionary to store song information
+                    mp3_bytes = file_to_bytes(mp3_file_path)
+                    thumbnail_bytes = file_to_bytes(thumbnail_path)
+                    song_info = {
+                        "title": title,
+                        "audio_bytes": mp3_bytes,
+                        "audio_duration": duration,
+                        "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
+                        "thumbnail_bytes": thumbnail_bytes
+                    }
+
+                    # Append the song information dictionary to the list
+                    songs.append(song_info)
+
+                return songs
+
+    except Exception as error:
+        print("Error while retrieving songs by owner:", error)
+        return []
 
 
 def get_user_settings(user_id):

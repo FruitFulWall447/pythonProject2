@@ -169,12 +169,19 @@ def thread_recv_messages():
             info_dict = data.get("searched_song_dict")
             main_page.insert_search_result_signal.emit(info_dict)
             print("got song search info")
+        elif message_type == "playlist_songs":
+            playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
+            main_page.playlist_songs = playlist_songs_list
+            for song in playlist_songs_list:
+                if song.get("audio_bytes") is None:
+                    print(f"{song.get('title')} has no bytes")
+                else:
+                    print(f"{song.get('title')} has bytes of len {len(song.get('audio_bytes'))}")
+            QMetaObject.invokeMethod(main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
+            print("got playlists songs")
         elif message_type == "message_list_addition":
             message_list_addition = json.loads(data.get("message_list_addition"))
             main_page.list_messages = main_page.list_messages + message_list_addition
-            #main_page.is_messages_need_update = True
-            #QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            #main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
             main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
             main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
         elif message_type == "new_message":
@@ -756,6 +763,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     update_message_box_signal = pyqtSignal()
     close_call_threads_signal = pyqtSignal()
     start_call_threads_signal = pyqtSignal()
+    insert_playlist_to_table_signal = pyqtSignal()
 
     def __init__(self, Netwrok):
         super().__init__()
@@ -867,7 +875,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.list_user_profile_dicts = []
         self.circular_images_dicts_list_of_users = []
         self.circular_images_dicts_list_of_groups = []
+
         self.playlist_songs = []
+        self.playlist_index = 0
 
         self.volume = 50
         self.font_size = 12
@@ -941,6 +951,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.insert_search_result_signal.connect(self.insert_search_result)
         self.close_call_threads_signal.connect(self.close_call_threads)
         self.start_call_threads_signal.connect(self.start_call_threads)
+        self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -953,6 +964,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.playlist_media_player = QMediaPlayer()
         self.playlist_media_player.setVolume(50)
+        self.playlist_media_player.mediaStatusChanged.connect(self.handle_playlist_song_state_change)
 
         self.ringtone_media_player = QMediaPlayer()
         self.ringtone_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
@@ -1025,13 +1037,70 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def save_searched_song_to_playlist(self):
         if self.current_search_song_dict is not None:
             self.Network.save_song_in_playlist(self.current_search_song_dict)
+            self.playlist_songs.append(self.current_search_song_dict)
+            self.music_box.insert_new_song_to_playlist(self.current_search_song_dict)
             print("send song to server")
+
+    def insert_playlist_to_table(self):
+        self.music_box.insert_playlist_songs(self.playlist_songs)
 
     def pause_and_unpause_playlist(self):
         if self.playlist_media_player.state() == QMediaPlayer.PlayingState:
             self.playlist_media_player.pause()
         elif self.playlist_media_player.state() == QMediaPlayer.PausedState:
             self.playlist_media_player.play()
+        elif self.playlist_media_player.state() == QMediaPlayer.StoppedState:
+            # Handle the case where there is no media loaded
+            print("No media loaded in the playlist media player.")
+            if len(self.playlist_songs) > 0:
+                self.play_playlist_by_index()
+
+    def go_to_last_song(self):
+        if self.playlist_index - 1 < 0:
+            pass
+        else:
+            self.playlist_index -= 1
+            self.play_playlist_by_index()
+
+    def go_to_next_song(self):
+        len_songs_list = len(self.playlist_songs)
+        if self.playlist_index + 1 < len_songs_list:
+            self.playlist_index += 1
+            self.play_playlist_by_index()
+        else:
+            self.playlist_index = 0
+            self.play_playlist_by_index()
+
+    def handle_playlist_song_state_change(self, status):
+        if status == QMediaPlayer.EndOfMedia:
+            len_songs_list = len(self.playlist_songs)
+            if self.playlist_index + 1 < len_songs_list:
+                self.playlist_index += 1
+                self.play_playlist_by_index()
+            else:
+                self.playlist_index = 0
+                self.play_playlist_by_index()
+
+    def set_new_playlist_index_and_listen(self, index):
+        self.playlist_index = index
+        self.play_playlist_by_index()
+
+    def play_playlist_by_index(self):
+        len_songs_list = len(self.playlist_songs)
+        if self.playlist_index < len_songs_list:
+            print(f"trying to listen to song of index {self.playlist_index}")
+            self.music_box.select_row(self.playlist_index)
+            audio_bytes = self.get_audio_bytes_from_playlist_index()
+            play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
+        else:
+            self.playlist_index = 0
+            self.music_box.select_row(self.playlist_index)
+            audio_bytes = self.get_audio_bytes_from_playlist_index()
+            play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
+
+    def get_audio_bytes_from_playlist_index(self):
+        song = self.playlist_songs[self.playlist_index]
+        return song.get("audio_bytes")
 
     def start_listen_udp_thread(self):
         self.listen_udp_thread.start()

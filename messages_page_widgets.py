@@ -108,17 +108,20 @@ def download_file_from_bytes(file_bytes, file_extension, file_name):
 def play_mp3_from_bytes(mp3_bytes, media_player):
     try:
         # Save MP3 bytes to a temporary file
-        media_player.stop()
-        temp_file_path = save_bytes_to_temp_file(mp3_bytes, 'mp3')
+        if mp3_bytes is not None:
+            media_player.stop()
+            temp_file_path = save_bytes_to_temp_file(mp3_bytes, 'mp3')
 
-        # Create QMediaContent object with the URL pointing to the temporary file
-        media_content = QMediaContent(QUrl.fromLocalFile(temp_file_path))
+            # Create QMediaContent object with the URL pointing to the temporary file
+            media_content = QMediaContent(QUrl.fromLocalFile(temp_file_path))
 
-        # Create QMediaPlayer instance and set the media content
-        media_player.setMedia(media_content)
+            # Create QMediaPlayer instance and set the media content
+            media_player.setMedia(media_content)
 
-        # Play the media
-        media_player.play()
+            # Play the media
+            media_player.play()
+        else:
+            print("got None object instead of bytes can't play")
     except Exception as e:
         print(f"Error playing MP3: {e}")
 
