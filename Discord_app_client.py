@@ -873,6 +873,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.playlist_songs = []
         self.playlist_index = 0
+        self.shuffle = False
 
         self.volume = 50
         self.font_size = 12
@@ -1012,6 +1013,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
+    def toggle_shuffle(self):
+        if self.shuffle:
+            self.shuffle = False
+        else:
+            self.shuffle = True
+
     def remove_song_from_playlist(self):
         try:
             index = self.playlist_index
@@ -1097,12 +1104,19 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def handle_playlist_song_state_change(self, status):
         if status == QMediaPlayer.EndOfMedia:
-            len_songs_list = len(self.playlist_songs)
-            if self.playlist_index + 1 < len_songs_list:
-                self.playlist_index += 1
-                self.play_playlist_by_index()
+            if not self.shuffle:
+                len_songs_list = len(self.playlist_songs)
+                if self.playlist_index + 1 < len_songs_list:
+                    self.playlist_index += 1
+                    self.play_playlist_by_index()
+                else:
+                    self.playlist_index = 0
+                    self.play_playlist_by_index()
             else:
-                self.playlist_index = 0
+                random_index = random.randint(0, len(self.playlist_songs)-1)
+                while random_index != self.playlist_index:
+                    random_index = random.randint(0, len(self.playlist_songs) - 1)
+                self.playlist_index = random_index
                 self.play_playlist_by_index()
 
     def set_new_playlist_index_and_listen(self, index):

@@ -925,26 +925,35 @@ class PlaylistWidget(QWidget):
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
         pause_and_play_button = QPushButton(self)
+        self.shuffle_button = QPushButton(self)
         last_song_button_icon_path = "discord_app_assets/last_song_icon.png"
         next_song_button_icon_path = "discord_app_assets/next_song_icon.png"
         pause_and_play_button_icon_path = "discord_app_assets/pause_and_play_icon.png"
-        set_button_icon(last_song_button, last_song_button_icon_path, 50, 50)
-        set_button_icon(next_song_button, next_song_button_icon_path, 50, 50)
-        set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, 50, 50)
+        shuffle_button_icon_path = "discord_app_assets/suffle_icon.png"
+        buttons_width, buttons_height = int(self.parent.screen_width*0.026), int(self.parent.screen_height*0.0462)
+        set_button_icon(last_song_button, last_song_button_icon_path, buttons_width, buttons_height)
+        set_button_icon(next_song_button, next_song_button_icon_path, buttons_width, buttons_height)
+        set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, buttons_width, buttons_height)
+        set_button_icon(self.shuffle_button, shuffle_button_icon_path, buttons_width, buttons_height)
         first_button_x = int(self.parent.screen_width * 0.43)
         buttons_y = int(self.parent.screen_height * 0.842)
+
+        delta_between_button = int(self.parent.screen_width * 0.03125)
+        self.shuffle_button.move(first_button_x-delta_between_button, buttons_y)
         last_song_button.move(first_button_x, buttons_y)
-        pause_and_play_button.move(first_button_x+60, buttons_y)
-        next_song_button.move(first_button_x+120, buttons_y)
+        pause_and_play_button.move(first_button_x+delta_between_button, buttons_y)
+        next_song_button.move(first_button_x+(delta_between_button*2), buttons_y)
         make_q_object_clear(last_song_button)
         make_q_object_clear(next_song_button)
         make_q_object_clear(pause_and_play_button)
+        make_q_object_clear(self.shuffle_button)
         last_song_button.raise_()
         next_song_button.raise_()
         pause_and_play_button.raise_()
         pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
         last_song_button.clicked.connect(self.parent.go_to_last_song)
         next_song_button.clicked.connect(self.parent.go_to_next_song)
+        self.shuffle_button.clicked.connect(self.toggle_shuffle)
 
 
 
@@ -952,6 +961,14 @@ class PlaylistWidget(QWidget):
         # Ensure the data is visible
 
         self.table.show()
+
+    def toggle_shuffle(self):
+        self.parent.toggle_shuffle()
+        if self.parent.shuffle:
+            self.shuffle_button.setStyleSheet("background-color: green; border-radius: 15px;")
+        else:
+            self.shuffle_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
+
 
     def remove_song(self):
         remove_row(self.table, self.parent.playlist_index)
