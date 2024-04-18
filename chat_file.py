@@ -875,8 +875,7 @@ class PlaylistWidget(QWidget):
         table_x, table_y = 0, 70
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.06)
         self.search_table.setGeometry(table_x, table_y, table_width, table_height)
-        self.search_table.resizeColumnsToContents()
-        total_width = self.table.viewport().size().width()
+        total_width = table_width
 
         first_column_width = total_width * 0.4
         other_column_width = total_width*0.2
@@ -886,16 +885,8 @@ class PlaylistWidget(QWidget):
         self.search_table.setColumnWidth(2, other_column_width)
         self.search_table.setColumnWidth(3, other_column_width)
 
-        row_height = 50
-        self.table = QTableWidget(self)
-        self.table.verticalHeader().setDefaultSectionSize(row_height)
-
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
-        self.table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
-
-        # Set the number of rows in the table
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
+        self.table = self.create_table_widget(table_width, table_height)
 
         self.search_song_entry = QLineEdit(self)
         search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
@@ -903,18 +894,22 @@ class PlaylistWidget(QWidget):
         self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
         self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
 
-        add_to_playlist_button = QPushButton("Add song to Playlist", self)
-        make_q_object_clear(add_to_playlist_button)
-        add_to_playlist_button.setFixedSize(140, 30)  # Set button size to 50x50
-        add_to_playlist_button_x, add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
-        add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
-        add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
+        self.add_to_playlist_button = QPushButton("Add song to Playlist", self)
+        make_q_object_clear(self.add_to_playlist_button)
+        size = QSize(int(0.072 * self.parent.screen_width), int(self.parent.screen_height * 0.028))
+        self.add_to_playlist_button.setFixedSize(size)
+        self.add_to_playlist_button_x, self.add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
+        self.add_to_playlist_button.move(self.add_to_playlist_button_x, self.add_to_playlist_button_y)
+        self.add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
 
+        self.try_searched_song_button = QPushButton("🎧 Check out the song", self)
+        make_q_object_clear(self.try_searched_song_button)
+        self.try_searched_song_button.setFixedSize(size)
+        self.try_searched_song_button_x, self.try_searched_song_button_y = int(size.width() * 1.1), int(
+            self.parent.screen_height * 0.03)
+        self.try_searched_song_button.move(self.try_searched_song_button_x, self.try_searched_song_button_y)
+        self.try_searched_song_button.clicked.connect(self.parent.play_search_result)
 
-
-        # Apply stylesheet to change background color
-        add_to_playlist_button.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
 
         playlist_label = QLabel(self)
         playlist_label.setStyleSheet(
@@ -922,7 +917,6 @@ class PlaylistWidget(QWidget):
         playlist_label.setText("Your Playlist:")
         playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
         playlist_label.move(playlist_label_x, playlist_label_y)
-
 
         button_x, button_y = int(self.parent.screen_width * 0.015), int(self.parent.screen_height * 0.069)
         pause_and_play_button_search = QPushButton(self)
@@ -933,9 +927,6 @@ class PlaylistWidget(QWidget):
         pause_and_play_button_search.clicked.connect(self.parent.play_search_result)
 
 
-        table_x, table_y = 0, self.parent.screen_height // 5.4
-        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
-        self.table.setGeometry(table_x, table_y, table_width, table_height)
 
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
@@ -960,31 +951,48 @@ class PlaylistWidget(QWidget):
         pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
         last_song_button.clicked.connect(self.parent.go_to_last_song)
         next_song_button.clicked.connect(self.parent.go_to_next_song)
-        self.table.cellPressed.connect(self.cell_pressed)
-        self.table.itemSelectionChanged.connect(self.onSelectionChanged)
 
-        # Adjust column widths to fit contents
-        self.table.setShowGrid(False)
-        # Spread the titles evenly across the table
-        total_width = self.table.viewport().size().width()
 
-        first_column_width = total_width * 0.4
-        other_column_width = total_width*0.2
-        # Set the widths for each column
-        self.table.setColumnWidth(0, first_column_width)
-        self.table.setColumnWidth(1, other_column_width)
-        self.table.setColumnWidth(2, other_column_width)
-        self.table.setColumnWidth(3, other_column_width)
 
-        self.update_table_style_sheet()
+        self.update_music_page_style_sheet()
         # Ensure the data is visible
 
         self.table.show()
 
-    def update_table_style_sheet(self):
+    def create_table_widget(self, table_width, table_height):
+        row_height = int(self.parent.screen_height * 0.0462)
+        table = QTableWidget(self)
+        table.verticalHeader().setDefaultSectionSize(row_height)
+        table.setColumnCount(4)
+        table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
+        table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
+
+        # Set the number of rows in the table
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
+        table_x, table_y = 0, self.parent.screen_height // 5.4
+        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
+        table.setGeometry(table_x, table_y, table_width, table_height)
+
+        table.cellPressed.connect(self.cell_pressed)
+        table.itemSelectionChanged.connect(self.onSelectionChanged)
+
+        table.setShowGrid(False)
+        first_column_width = table_width * 0.4
+        other_column_width = table_width * 0.2
+
+        table.setColumnWidth(0, first_column_width)
+        table.setColumnWidth(1, other_column_width)
+        table.setColumnWidth(2, other_column_width)
+        table.setColumnWidth(3, other_column_width)
+
+        return table
+
+    def update_music_page_style_sheet(self):
         self.apply_table_stylesheet(self.table)
         self.apply_table_stylesheet(self.search_table)
         self.apply_style_sheet_to_text_entry()
+        self.apply_style_sheet_for_button()
 
     def apply_style_sheet_to_text_entry(self):
         if self.parent.background_color == "Black and White":
@@ -995,6 +1003,12 @@ class PlaylistWidget(QWidget):
             f"background-color: {self.parent.standard_hover_color}; "
             f"color: {text_entry_color}; padding: 10px; "
             f"border-radius: 5px; font-size: 14px;")
+
+    def apply_style_sheet_for_button(self):
+        self.add_to_playlist_button.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
+        self.try_searched_song_button.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
 
     def apply_table_stylesheet(self, table):
         if self.parent.background_color == "Black and White":
