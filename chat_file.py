@@ -966,32 +966,55 @@ class PlaylistWidget(QWidget):
 
         # Adjust column widths to fit contents
         self.table.resizeColumnsToContents()
-
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.table.setShowGrid(False)
         # Spread the titles evenly across the table
         horizontal_header = self.table.horizontalHeader()
         horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
-        self.table.setStyleSheet(f"""
+        self.apply_table_stylesheet(self.table)
+        self.apply_table_stylesheet(self.search_table)
+        # Ensure the data is visible
+
+        self.table.show()
+
+    def apply_table_stylesheet(self, table):
+        if self.parent.background_color == "Black and White":
+            text_entry_color = "black"
+        else:
+            text_entry_color = "white"
+        table.setStyleSheet(f"""
             QTableWidget {{
-                background-color: #e0e0e0;
+                background-color: {self.parent.background_color_hex};
                 border: 1px solid #d0d0d0;
-                selection-background-color: #c0c0c0;
-                        color: #000000;  /* Black text color */
+                selection-background-color: {self.parent.standard_hover_color};
+                color: {text_entry_color};  
+            }}
+            QTableWidget::item:hover {{
+                background-color: {self.parent.standard_hover_color};
+            }}
+            QTableWidget QHeaderView::section {{
+                color: {text_entry_color};
+                border: 0; /* Remove border between column headers */
             }}
             QHeaderView::section {{
-                background-color: #e0e0e0;
+                color: {text_entry_color};  
+                background-color: {self.parent.background_color_hex};
                 border: 1px solid #d0d0d0;
                 padding: 4px;
             }}
             QHeaderView::section:checked {{
-                background-color: #c0c0c0;
+                background-color: {self.parent.standard_hover_color};
             }}
             QTableWidget::item:selected {{
-                background-color: #c0c0c0;
+                background-color: {self.parent.standard_hover_color};
+            }}
+            QTableWidget QTableWidgetItem {{
+                color: {text_entry_color};
+                text-align: center; /* Align text in the middle */
+                border: 0; /* Remove border between cells */
             }}
         """)
-        # Ensure the data is visible
 
-        self.table.show()
 
     def insert_search_data(self, video_info_dict):
         try:
@@ -1043,6 +1066,7 @@ class PlaylistWidget(QWidget):
                         item = QTableWidgetItem(str(value))
                     self.table.setItem(row_position, col, item)
                 row_position += 1
+            self.table.resizeColumnsToContents()
         except Exception as e:
             print(e)
 
