@@ -1036,10 +1036,23 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def save_searched_song_to_playlist(self):
         if self.current_search_song_dict is not None:
-            self.Network.save_song_in_playlist(self.current_search_song_dict)
-            self.playlist_songs.append(self.current_search_song_dict)
-            self.music_box.insert_new_song_to_playlist(self.current_search_song_dict)
-            print("send song to server")
+            if not self.is_song_exist_in_playlist(self.current_search_song_dict):
+                self.Network.save_song_in_playlist(self.current_search_song_dict)
+                self.playlist_songs.append(self.current_search_song_dict)
+                self.music_box.insert_new_song_to_playlist(self.current_search_song_dict)
+                print("send song to server")
+            else:
+                print("song already exist in playlist")
+
+    def is_song_exist_in_playlist(self, added_dict):
+        added_dict_audio_bytes = added_dict.get("audio_bytes")
+        added_dict_title = added_dict.get("title")
+        for song in self.playlist_songs:
+            song_audio_bytes = song.get("audio_bytes")
+            song_title = song.get("title")
+            if song_title == added_dict_title or added_dict_audio_bytes == song_audio_bytes:
+                return True
+        return False
 
     def insert_playlist_to_table(self):
         self.music_box.insert_playlist_songs(self.playlist_songs)
