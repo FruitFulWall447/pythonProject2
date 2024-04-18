@@ -172,11 +172,6 @@ def thread_recv_messages():
         elif message_type == "playlist_songs":
             playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
             main_page.playlist_songs = playlist_songs_list
-            for song in playlist_songs_list:
-                if song.get("audio_bytes") is None:
-                    print(f"{song.get('title')} has no bytes")
-                else:
-                    print(f"{song.get('title')} has bytes of len {len(song.get('audio_bytes'))}")
             QMetaObject.invokeMethod(main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
             print("got playlists songs")
         elif message_type == "message_list_addition":

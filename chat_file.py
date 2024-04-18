@@ -34,6 +34,20 @@ import cv2
 from datetime import datetime
 
 
+def insert_item_to_table(table, col, value, row_position):
+    if col == 3:  # If it's the column for the photo
+        item = QTableWidgetItem()
+        pixmap = QPixmap()
+        pixmap.loadFromData(value)
+        item.setIcon(QIcon(pixmap))
+        item.setSizeHint(QSize(100, 100))
+    else:
+        item = QTableWidgetItem(str(value))
+    if col != 0:
+        item.setTextAlignment(Qt.AlignCenter)
+    table.setItem(row_position, col, item)
+
+
 def extract_number(s):
     # Use regular expression to find the number in the string
     match = re.search(r'\d+', s)
@@ -862,11 +876,15 @@ class PlaylistWidget(QWidget):
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.06)
         self.search_table.setGeometry(table_x, table_y, table_width, table_height)
         self.search_table.resizeColumnsToContents()
-        search_table_horizontal_header = self.search_table.horizontalHeader()
-        search_table_horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
-        search_table_horizontal_header.setSectionResizeMode(1, QHeaderView.Stretch)
-        search_table_horizontal_header.setSectionResizeMode(2, QHeaderView.Stretch)
-        search_table_horizontal_header.setSectionResizeMode(3, QHeaderView.Stretch)
+        total_width = self.table.viewport().size().width()
+
+        first_column_width = total_width * 0.4
+        other_column_width = total_width*0.2
+        # Set the widths for each column
+        self.search_table.setColumnWidth(0, first_column_width)
+        self.search_table.setColumnWidth(1, other_column_width)
+        self.search_table.setColumnWidth(2, other_column_width)
+        self.search_table.setColumnWidth(3, other_column_width)
 
         row_height = 50
         self.table = QTableWidget(self)
@@ -946,15 +964,17 @@ class PlaylistWidget(QWidget):
         self.table.itemSelectionChanged.connect(self.onSelectionChanged)
 
         # Adjust column widths to fit contents
-        self.table.resizeColumnsToContents()
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         self.table.setShowGrid(False)
         # Spread the titles evenly across the table
-        horizontal_header = self.table.horizontalHeader()
-        horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
-        horizontal_header.setSectionResizeMode(1, QHeaderView.Stretch)
-        horizontal_header.setSectionResizeMode(2, QHeaderView.Stretch)
-        horizontal_header.setSectionResizeMode(3, QHeaderView.Stretch)
+        total_width = self.table.viewport().size().width()
+
+        first_column_width = total_width * 0.4
+        other_column_width = total_width*0.2
+        # Set the widths for each column
+        self.table.setColumnWidth(0, first_column_width)
+        self.table.setColumnWidth(1, other_column_width)
+        self.table.setColumnWidth(2, other_column_width)
+        self.table.setColumnWidth(3, other_column_width)
 
         self.update_table_style_sheet()
         # Ensure the data is visible
@@ -1035,17 +1055,7 @@ class PlaylistWidget(QWidget):
 
             # Insert data into the table
             for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
-                if col == 3:  # If it's the column for the photo
-                    item = QTableWidgetItem()
-                    pixmap = QPixmap()
-                    pixmap.loadFromData(thumbnail_bytes)
-                    item.setIcon(QIcon(pixmap))
-                    item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
-                else:
-                    item = QTableWidgetItem(str(value))
-                if col != 0:
-                    item.setTextAlignment(Qt.AlignCenter)
-                self.search_table.setItem(row_position, col, item)
+                insert_item_to_table(self.search_table, col, value, row_position)
         except Exception as e:
             print(e)
 
@@ -1063,19 +1073,8 @@ class PlaylistWidget(QWidget):
 
                 # Insert data into the table
                 for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
-                    if col == 3:  # If it's the column for the photo
-                        item = QTableWidgetItem()
-                        pixmap = QPixmap()
-                        pixmap.loadFromData(thumbnail_bytes)
-                        item.setIcon(QIcon(pixmap))
-                        item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
-                    else:
-                        item = QTableWidgetItem(str(value))
-                    if col != 0:
-                        item.setTextAlignment(Qt.AlignCenter)
-                    self.table.setItem(row_position, col, item)
+                    insert_item_to_table(self.table, col, value, row_position)
                 row_position += 1
-            self.table.resizeColumnsToContents()
         except Exception as e:
             print(e)
 
@@ -1090,17 +1089,7 @@ class PlaylistWidget(QWidget):
 
         # Insert data into the table
         for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
-            if col == 3:  # If it's the column for the photo
-                item = QTableWidgetItem()
-                pixmap = QPixmap()
-                pixmap.loadFromData(thumbnail_bytes)
-                item.setIcon(QIcon(pixmap))
-                item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
-            else:
-                item = QTableWidgetItem(str(value))
-            if col != 0:
-                item.setTextAlignment(Qt.AlignCenter)
-            self.table.setItem(row_position, col, item)
+            insert_item_to_table(self.table, col, value, row_position)
 
     def cell_pressed(self, row, col):
         # Get the item text when a cell is pressed
