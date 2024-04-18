@@ -99,19 +99,39 @@ def remove_song(title, owner):
         with connect_to_kevindb() as connection:
             # Create a cursor object
             with connection.cursor() as cursor:
-                # Construct the SQL query to delete a song from the table
-                delete_query = """
-                    DELETE FROM songs
+                # Retrieve the song paths from the database
+                select_query = """
+                    SELECT mp3_file_path, thumbnail_path FROM songs
                     WHERE title = %s AND owner = %s
                 """
+                cursor.execute(select_query, (title, owner))
+                result = cursor.fetchone()
+                if result:
+                    mp3_file_path, thumbnail_path = result
 
-                # Execute the SQL query with the song title and owner
-                cursor.execute(delete_query, (title, owner))
+                    # Construct the SQL query to delete a song from the table
+                    delete_query = """
+                        DELETE FROM songs
+                        WHERE title = %s AND owner = %s
+                    """
 
-                # Commit the transaction
-                connection.commit()
+                    # Execute the SQL query with the song data
+                    cursor.execute(delete_query, (title, owner))
 
-                print("Song removed successfully!")
+                    # Commit the transaction
+                    connection.commit()
+
+                    print("Song removed successfully!")
+
+                    # Delete the associated song files
+                    if mp3_file_path:
+                        os.remove(mp3_file_path)
+                        print("Song file deleted successfully.")
+                    if thumbnail_path:
+                        os.remove(thumbnail_path)
+                        print("Thumbnail file deleted successfully.")
+                else:
+                    print("Song not found.")
 
     except Exception as error:
         print("Error while removing song from the table:", error)
