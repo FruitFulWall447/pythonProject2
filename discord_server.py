@@ -353,6 +353,9 @@ def thread_recv_messages(n, addr):
                     n.send_searched_song_info(info_dict)
                 except Exception as e:
                     logger.error(f"error with search engine: {e}")
+            elif message_type == "remove_song":
+                song_title = data.get("song_title")
+                database_func.remove_song(song_title, User)
             elif message_type == "save_song":
                 song_dict = data.get("song_dict")
                 audio_bytes = song_dict.get("audio_bytes")

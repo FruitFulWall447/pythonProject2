@@ -48,6 +48,14 @@ def insert_item_to_table(table, col, value, row_position):
     table.setItem(row_position, col, item)
 
 
+def remove_row(table, row_number):
+    if row_number >= 0 and row_number < table.rowCount():
+        table.removeRow(row_number)
+        print(f"Row {row_number} removed successfully.")
+    else:
+        print("Invalid row number. Row not removed.")
+
+
 def extract_number(s):
     # Use regular expression to find the number in the string
     match = re.search(r'\d+', s)
@@ -886,17 +894,25 @@ class PlaylistWidget(QWidget):
         make_q_object_clear(self.add_to_playlist_button)
         size = QSize(int(0.072 * self.parent.screen_width), int(self.parent.screen_height * 0.028))
         self.add_to_playlist_button.setFixedSize(size)
-        self.add_to_playlist_button_x, self.add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
-        self.add_to_playlist_button.move(self.add_to_playlist_button_x, self.add_to_playlist_button_y)
+        add_to_playlist_button_x, add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
+        self.add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
         self.add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
 
         self.try_searched_song_button = QPushButton("🎧 Check out the song", self)
         make_q_object_clear(self.try_searched_song_button)
         self.try_searched_song_button.setFixedSize(size)
-        self.try_searched_song_button_x, self.try_searched_song_button_y = int(size.width() * 1.1), int(
+        try_searched_song_button_x, try_searched_song_button_y = int(size.width() * 1.1), int(
             self.parent.screen_height * 0.03)
-        self.try_searched_song_button.move(self.try_searched_song_button_x, self.try_searched_song_button_y)
+        self.try_searched_song_button.move(try_searched_song_button_x, try_searched_song_button_y)
         self.try_searched_song_button.clicked.connect(self.parent.play_search_result)
+
+        self.remove_selected_song_button = QPushButton("❌ Remove selected song", self)
+        make_q_object_clear(self.remove_selected_song_button)
+        self.remove_selected_song_button.setFixedSize(size)
+        remove_selected_song_button_x, remove_selected_song_button_y = 0, int(
+            self.parent.screen_height * 0.15)
+        self.remove_selected_song_button.move(remove_selected_song_button_x, remove_selected_song_button_y)
+        self.remove_selected_song_button.clicked.connect(self.remove_song)
 
 
         # playlist_label = QLabel(self)
@@ -936,6 +952,11 @@ class PlaylistWidget(QWidget):
         # Ensure the data is visible
 
         self.table.show()
+
+    def remove_song(self):
+        remove_row(self.table, self.parent.playlist_index)
+        row_count = self.table.rowCount()
+        self.parent.remove_song_from_playlist()
 
     def create_table_widget(self, table_width, table_height, table_x, table_y):
         row_height = int(self.parent.screen_height * 0.0462)
@@ -982,10 +1003,10 @@ class PlaylistWidget(QWidget):
             f"border-radius: 5px; font-size: 14px;")
 
     def apply_style_sheet_for_button(self):
-        self.add_to_playlist_button.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
-        self.try_searched_song_button.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
+        style_sheet = f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;"
+        self.add_to_playlist_button.setStyleSheet(style_sheet)
+        self.try_searched_song_button.setStyleSheet(style_sheet)
+        self.remove_selected_song_button.setStyleSheet(style_sheet)
 
     def apply_table_stylesheet(self, table):
         if self.parent.background_color == "Black and White":

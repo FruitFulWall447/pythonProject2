@@ -327,6 +327,13 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_remove_song_from_playlist(self, song_title):
+        try:
+            message = {"message_type": "remove_song", "song_title": song_title}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def save_song_in_playlist(self, song_dict):
         try:
             message = {"message_type": "save_song", "song_dict": song_dict}

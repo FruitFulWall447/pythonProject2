@@ -1012,6 +1012,22 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
+    def remove_song_from_playlist(self):
+        try:
+            index = self.playlist_index
+            song_dict = self.playlist_songs[index]
+            del self.playlist_songs[index]
+            song_title = song_dict.get("title")
+            self.Network.send_remove_song_from_playlist(song_title)
+            if not self.playlist_media_player.state() == QMediaPlayer.PausedState:
+                self.play_playlist_by_index()
+            else:
+                self.play_playlist_by_index()
+                self.playlist_media_player.pause()
+            print(f"deleted song of index {index}")
+        except Exception as e:
+            print(f"Couldn't remove song {e}")
+
     def music_button_clicked(self):
         self.chat_clicked = False
         self.social_clicked = False
@@ -1102,6 +1118,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
         else:
             self.playlist_index = 0
+            print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
             audio_bytes = self.get_audio_bytes_from_playlist_index()
             play_mp3_from_bytes(audio_bytes, self.playlist_media_player)

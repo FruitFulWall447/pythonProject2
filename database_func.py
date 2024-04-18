@@ -93,6 +93,30 @@ def create_user_settings(user_id):
     connection.close()
 
 
+def remove_song(title, owner):
+    try:
+        # Connect to your MySQL database
+        with connect_to_kevindb() as connection:
+            # Create a cursor object
+            with connection.cursor() as cursor:
+                # Construct the SQL query to delete a song from the table
+                delete_query = """
+                    DELETE FROM songs
+                    WHERE title = %s AND owner = %s
+                """
+
+                # Execute the SQL query with the song title and owner
+                cursor.execute(delete_query, (title, owner))
+
+                # Commit the transaction
+                connection.commit()
+
+                print("Song removed successfully!")
+
+    except Exception as error:
+        print("Error while removing song from the table:", error)
+
+
 def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
     try:
         # Connect to your MySQL database
