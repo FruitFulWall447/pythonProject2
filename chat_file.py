@@ -866,27 +866,15 @@ class PlaylistWidget(QWidget):
 
         # Create a table widget
         self.last_selected_row = None
-        self.search_table = QTableWidget(self)
-        self.search_table.setColumnCount(4)
-        self.search_table.setShowGrid(False)
-        self.search_table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
-        self.search_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.search_table.insertRow(0)
         table_x, table_y = 0, 70
-        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.06)
-        self.search_table.setGeometry(table_x, table_y, table_width, table_height)
-        total_width = table_width
+        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
+        self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y)
+        self.search_table.insertRow(0)
+        self.search_table.clearSelection()
 
-        first_column_width = total_width * 0.4
-        other_column_width = total_width*0.2
-        # Set the widths for each column
-        self.search_table.setColumnWidth(0, first_column_width)
-        self.search_table.setColumnWidth(1, other_column_width)
-        self.search_table.setColumnWidth(2, other_column_width)
-        self.search_table.setColumnWidth(3, other_column_width)
-
+        table_x, table_y = 0, self.parent.screen_height // 5.4
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
-        self.table = self.create_table_widget(table_width, table_height)
+        self.table = self.create_table_widget(table_width, table_height, table_x, table_y)
 
         self.search_song_entry = QLineEdit(self)
         search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
@@ -894,7 +882,7 @@ class PlaylistWidget(QWidget):
         self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
         self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
 
-        self.add_to_playlist_button = QPushButton("Add song to Playlist", self)
+        self.add_to_playlist_button = QPushButton("➕ Add song to Playlist", self)
         make_q_object_clear(self.add_to_playlist_button)
         size = QSize(int(0.072 * self.parent.screen_width), int(self.parent.screen_height * 0.028))
         self.add_to_playlist_button.setFixedSize(size)
@@ -911,22 +899,12 @@ class PlaylistWidget(QWidget):
         self.try_searched_song_button.clicked.connect(self.parent.play_search_result)
 
 
-        playlist_label = QLabel(self)
-        playlist_label.setStyleSheet(
-            f"color: white; font-size: 20px;")
-        playlist_label.setText("Your Playlist:")
-        playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
-        playlist_label.move(playlist_label_x, playlist_label_y)
-
-        button_x, button_y = int(self.parent.screen_width * 0.015), int(self.parent.screen_height * 0.069)
-        pause_and_play_button_search = QPushButton(self)
-        pause_and_play_button_icon_path = "discord_app_assets/play_video_icon.png"
-        set_button_icon(pause_and_play_button_search, pause_and_play_button_icon_path, 30, 30)
-        make_q_object_clear(pause_and_play_button_search)
-        pause_and_play_button_search.move(button_x, button_y)
-        pause_and_play_button_search.clicked.connect(self.parent.play_search_result)
-
-
+        # playlist_label = QLabel(self)
+        # playlist_label.setStyleSheet(
+        #     f"color: white; font-size: 20px;")
+        # playlist_label.setText("Your Playlist:")
+        # playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
+        # playlist_label.move(playlist_label_x, playlist_label_y)
 
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
@@ -959,9 +937,10 @@ class PlaylistWidget(QWidget):
 
         self.table.show()
 
-    def create_table_widget(self, table_width, table_height):
+    def create_table_widget(self, table_width, table_height, table_x, table_y):
         row_height = int(self.parent.screen_height * 0.0462)
         table = QTableWidget(self)
+        table.setFocusPolicy(Qt.NoFocus)
         table.verticalHeader().setDefaultSectionSize(row_height)
         table.setColumnCount(4)
         table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
@@ -970,8 +949,6 @@ class PlaylistWidget(QWidget):
         # Set the number of rows in the table
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        table_x, table_y = 0, self.parent.screen_height // 5.4
-        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
         table.setGeometry(table_x, table_y, table_width, table_height)
 
         table.cellPressed.connect(self.cell_pressed)
@@ -979,7 +956,7 @@ class PlaylistWidget(QWidget):
 
         table.setShowGrid(False)
         first_column_width = table_width * 0.4
-        other_column_width = table_width * 0.2
+        other_column_width = table_width * 0.18
 
         table.setColumnWidth(0, first_column_width)
         table.setColumnWidth(1, other_column_width)
