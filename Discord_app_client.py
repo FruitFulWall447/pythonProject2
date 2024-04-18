@@ -873,6 +873,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.playlist_songs = []
         self.playlist_index = 0
+        self.playlist_last_index = 0
         self.shuffle = False
 
         self.volume = 50
@@ -1087,39 +1088,43 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.play_playlist_by_index()
 
     def go_to_last_song(self):
-        if self.playlist_index - 1 < 0:
-            pass
+        if not self.shuffle:
+            if self.playlist_index - 1 < 0:
+                pass
+            else:
+                self.set_new_playlist_index_and_listen(self.playlist_index-1)
         else:
-            self.playlist_index -= 1
-            self.play_playlist_by_index()
+            self.set_new_playlist_index_and_listen(self.playlist_last_index)
 
     def go_to_next_song(self):
         len_songs_list = len(self.playlist_songs)
-        if self.playlist_index + 1 < len_songs_list:
-            self.playlist_index += 1
-            self.play_playlist_by_index()
+        if not self.shuffle:
+            if self.playlist_index + 1 < len_songs_list:
+                self.set_new_playlist_index_and_listen(self.playlist_index+1)
+            else:
+                self.set_new_playlist_index_and_listen(0)
         else:
-            self.playlist_index = 0
-            self.play_playlist_by_index()
+            random_index = random.randint(0, len(self.playlist_songs) - 1)
+            while random_index == self.playlist_index:
+                random_index = random.randint(0, len(self.playlist_songs) - 1)
+            self.set_new_playlist_index_and_listen(random_index)
 
     def handle_playlist_song_state_change(self, status):
         if status == QMediaPlayer.EndOfMedia:
             if not self.shuffle:
                 len_songs_list = len(self.playlist_songs)
                 if self.playlist_index + 1 < len_songs_list:
-                    self.playlist_index += 1
-                    self.play_playlist_by_index()
+                    self.set_new_playlist_index_and_listen(self.playlist_index+1)
                 else:
-                    self.playlist_index = 0
-                    self.play_playlist_by_index()
+                    self.set_new_playlist_index_and_listen(0)
             else:
                 random_index = random.randint(0, len(self.playlist_songs)-1)
-                while random_index != self.playlist_index:
+                while random_index == self.playlist_index:
                     random_index = random.randint(0, len(self.playlist_songs) - 1)
-                self.playlist_index = random_index
-                self.play_playlist_by_index()
+                self.set_new_playlist_index_and_listen(random_index)
 
     def set_new_playlist_index_and_listen(self, index):
+        self.playlist_last_index = self.playlist_index
         self.playlist_index = index
         self.play_playlist_by_index()
 
