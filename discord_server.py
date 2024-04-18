@@ -17,7 +17,7 @@ from song_search_engine import extract_audio_bytes
 logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as needed
 
 server = "127.0.0.1"
-port = 4444
+port = 5555
 tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_server_socket.bind((server, port))

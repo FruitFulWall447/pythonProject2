@@ -853,25 +853,8 @@ class PlaylistWidget(QWidget):
         # Create a table widget
         self.last_selected_row = None
         self.search_table = QTableWidget(self)
-        self.search_table.setStyleSheet(f"""
-            QTableWidget {{
-                background-color: #e0e0e0;
-                border: 1px solid #d0d0d0;
-                selection-background-color: #c0c0c0;
-                        color: #000000;  /* Black text color */
-            }}
-            QHeaderView::section {{
-                background-color: #e0e0e0;
-                border: 1px solid #d0d0d0;
-                padding: 4px;
-            }}
-            QHeaderView::section:checked {{
-                background-color: #c0c0c0;
-            }}
-            QTableWidget::item:selected {{
-                background-color: #c0c0c0;
-            }}""")
         self.search_table.setColumnCount(4)
+        self.search_table.setShowGrid(False)
         self.search_table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
         self.search_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.search_table.insertRow(0)
@@ -881,6 +864,9 @@ class PlaylistWidget(QWidget):
         self.search_table.resizeColumnsToContents()
         search_table_horizontal_header = self.search_table.horizontalHeader()
         search_table_horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
+        search_table_horizontal_header.setSectionResizeMode(1, QHeaderView.Stretch)
+        search_table_horizontal_header.setSectionResizeMode(2, QHeaderView.Stretch)
+        search_table_horizontal_header.setSectionResizeMode(3, QHeaderView.Stretch)
 
         row_height = 50
         self.table = QTableWidget(self)
@@ -888,17 +874,12 @@ class PlaylistWidget(QWidget):
 
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["Title", "Date Added", "Duration", "Album Photo"])
+        self.table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
 
         # Set the number of rows in the table
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.search_song_entry = QLineEdit(self)
-        if self.parent.background_color == "Black and White":
-            text_entry_color = "black"
-        else:
-            text_entry_color = "white"
-        self.search_song_entry.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
         search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
         width, height = 450, 40
         self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
@@ -915,11 +896,11 @@ class PlaylistWidget(QWidget):
 
         # Apply stylesheet to change background color
         add_to_playlist_button.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; border-radius: 15px;")
+            f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;")
 
         playlist_label = QLabel(self)
         playlist_label.setStyleSheet(
-            f"color: {text_entry_color}; font-size: 20px;")
+            f"color: white; font-size: 20px;")
         playlist_label.setText("Your Playlist:")
         playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
         playlist_label.move(playlist_label_x, playlist_label_y)
@@ -971,11 +952,29 @@ class PlaylistWidget(QWidget):
         # Spread the titles evenly across the table
         horizontal_header = self.table.horizontalHeader()
         horizontal_header.setSectionResizeMode(0, QHeaderView.Stretch)
-        self.apply_table_stylesheet(self.table)
-        self.apply_table_stylesheet(self.search_table)
+        horizontal_header.setSectionResizeMode(1, QHeaderView.Stretch)
+        horizontal_header.setSectionResizeMode(2, QHeaderView.Stretch)
+        horizontal_header.setSectionResizeMode(3, QHeaderView.Stretch)
+
+        self.update_table_style_sheet()
         # Ensure the data is visible
 
         self.table.show()
+
+    def update_table_style_sheet(self):
+        self.apply_table_stylesheet(self.table)
+        self.apply_table_stylesheet(self.search_table)
+        self.apply_style_sheet_to_text_entry()
+
+    def apply_style_sheet_to_text_entry(self):
+        if self.parent.background_color == "Black and White":
+            text_entry_color = "black"
+        else:
+            text_entry_color = "white"
+        self.search_song_entry.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; "
+            f"color: {text_entry_color}; padding: 10px; "
+            f"border-radius: 5px; font-size: 14px;")
 
     def apply_table_stylesheet(self, table):
         if self.parent.background_color == "Black and White":
@@ -1015,6 +1014,12 @@ class PlaylistWidget(QWidget):
             }}
         """)
 
+    def find_row_by_text(self, text):
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)  # Assuming the first column (index 0)
+            if item and (item.text() == text or item.text().startswith(text) or text in item.text()):
+                return row
+        return -1  # Return -1 if the text is not found in any row
 
     def insert_search_data(self, video_info_dict):
         try:
@@ -1034,10 +1039,12 @@ class PlaylistWidget(QWidget):
                     item = QTableWidgetItem()
                     pixmap = QPixmap()
                     pixmap.loadFromData(thumbnail_bytes)
-                    pixmap = pixmap.scaled(100, 100)
                     item.setIcon(QIcon(pixmap))
+                    item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
                 else:
                     item = QTableWidgetItem(str(value))
+                if col != 0:
+                    item.setTextAlignment(Qt.AlignCenter)
                 self.search_table.setItem(row_position, col, item)
         except Exception as e:
             print(e)
@@ -1060,10 +1067,12 @@ class PlaylistWidget(QWidget):
                         item = QTableWidgetItem()
                         pixmap = QPixmap()
                         pixmap.loadFromData(thumbnail_bytes)
-                        scaled_pixmap = pixmap.scaled(50, 50)
-                        item.setIcon(QIcon(scaled_pixmap))
+                        item.setIcon(QIcon(pixmap))
+                        item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
                     else:
                         item = QTableWidgetItem(str(value))
+                    if col != 0:
+                        item.setTextAlignment(Qt.AlignCenter)
                     self.table.setItem(row_position, col, item)
                 row_position += 1
             self.table.resizeColumnsToContents()
@@ -1085,10 +1094,12 @@ class PlaylistWidget(QWidget):
                 item = QTableWidgetItem()
                 pixmap = QPixmap()
                 pixmap.loadFromData(thumbnail_bytes)
-                pixmap = pixmap.scaled(100, 100)
                 item.setIcon(QIcon(pixmap))
+                item.setData(Qt.TextAlignmentRole, Qt.AlignCenter)
             else:
                 item = QTableWidgetItem(str(value))
+            if col != 0:
+                item.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row_position, col, item)
 
     def cell_pressed(self, row, col):

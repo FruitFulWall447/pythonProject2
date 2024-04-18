@@ -1200,6 +1200,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 background-color: {background_color_hex};
             }}
         ''')
+        self.music_box.update_table_style_sheet()
         print("updated background color")
         try:
             self.update_every_screen()

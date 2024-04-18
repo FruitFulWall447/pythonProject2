@@ -166,7 +166,7 @@ class client_net:
         self.client_tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_ip = "127.0.0.1"
-        self.port = 4444
+        self.port = 5555
         self.addr = (self.server_ip, self.port)
         self.logger.debug(f"trying to connect to addr: {self.addr}")
         self.connect_tcp()
