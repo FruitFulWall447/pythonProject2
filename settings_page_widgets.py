@@ -400,7 +400,7 @@ class SettingsBox(QWidget):
                            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
                            border: 1px solid #777;
                            width: 20px;
-                           margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                            margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
                            border-radius: 5px;
                        }}
 

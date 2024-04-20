@@ -747,6 +747,16 @@ class VideoPlayer(QWidget):
         self.video_widget.setGeometry(0, 0, screen_width, int(screen_height*0.83))
 
         self.slider = QSlider(Qt.Horizontal, self)
+        # self.slider.
+        # self.slider.setStyleSheet(
+        #     f"""
+        #     QSlider::handle {{
+        #         width: 1px;  /* Set width of the handle */
+        #         height: 1px; /* Set height of the handle */
+        #         background-color: {self.parent.standard_hover_color}; /* Set the color of the handle */
+        #     }}
+        #     """
+        # )
         self.slider.sliderReleased.connect(self.set_position)
         slider_x, slider_y, slider_width, slider_height = int(screen_width*0.1), int(screen_height*0.85), int(screen_width*0.8), int(screen_height*0.05)
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
@@ -914,23 +924,18 @@ class PlaylistWidget(QWidget):
         self.remove_selected_song_button.move(remove_selected_song_button_x, remove_selected_song_button_y)
         self.remove_selected_song_button.clicked.connect(self.remove_song)
 
-
-        # playlist_label = QLabel(self)
-        # playlist_label.setStyleSheet(
-        #     f"color: white; font-size: 20px;")
-        # playlist_label.setText("Your Playlist:")
-        # playlist_label_x, playlist_label_y = 0, int(self.parent.screen_height * 0.14)
-        # playlist_label.move(playlist_label_x, playlist_label_y)
-
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
         pause_and_play_button = QPushButton(self)
         self.shuffle_button = QPushButton(self)
+        self.replay_song_button = QPushButton(self)
         last_song_button_icon_path = "discord_app_assets/last_song_icon.png"
         next_song_button_icon_path = "discord_app_assets/next_song_icon.png"
         pause_and_play_button_icon_path = "discord_app_assets/pause_and_play_icon.png"
         shuffle_button_icon_path = "discord_app_assets/suffle_icon.png"
+        replay_song_button_icon_path = "discord_app_assets/replaying_icon.png"
         buttons_width, buttons_height = int(self.parent.screen_width*0.026), int(self.parent.screen_height*0.0462)
+        set_button_icon(self.replay_song_button, replay_song_button_icon_path, buttons_width, buttons_height)
         set_button_icon(last_song_button, last_song_button_icon_path, buttons_width, buttons_height)
         set_button_icon(next_song_button, next_song_button_icon_path, buttons_width, buttons_height)
         set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, buttons_width, buttons_height)
@@ -939,6 +944,7 @@ class PlaylistWidget(QWidget):
         buttons_y = int(self.parent.screen_height * 0.842)
 
         delta_between_button = int(self.parent.screen_width * 0.03125)
+        self.replay_song_button.move(first_button_x+(delta_between_button*3), buttons_y)
         self.shuffle_button.move(first_button_x-delta_between_button, buttons_y)
         last_song_button.move(first_button_x, buttons_y)
         pause_and_play_button.move(first_button_x+delta_between_button, buttons_y)
@@ -947,6 +953,7 @@ class PlaylistWidget(QWidget):
         make_q_object_clear(next_song_button)
         make_q_object_clear(pause_and_play_button)
         make_q_object_clear(self.shuffle_button)
+        make_q_object_clear(self.replay_song_button)
         last_song_button.raise_()
         next_song_button.raise_()
         pause_and_play_button.raise_()
@@ -954,6 +961,7 @@ class PlaylistWidget(QWidget):
         last_song_button.clicked.connect(self.parent.go_to_last_song)
         next_song_button.clicked.connect(self.parent.go_to_next_song)
         self.shuffle_button.clicked.connect(self.toggle_shuffle)
+        self.replay_song_button.clicked.connect(self.toggle_replay_song)
 
 
 
@@ -969,6 +977,13 @@ class PlaylistWidget(QWidget):
         else:
             self.shuffle_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
 
+    def toggle_replay_song(self):
+        if self.parent.replay_song:
+            self.parent.replay_song = False
+            self.replay_song_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
+        else:
+            self.parent.replay_song = True
+            self.replay_song_button.setStyleSheet("background-color: green; border-radius: 15px;")
 
     def remove_song(self):
         remove_row(self.table, self.parent.playlist_index)

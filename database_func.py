@@ -647,10 +647,33 @@ def update_profile_pic(username, profile_pic_encoded):
 
         table_name = "Sign_Up_Table"
 
-        update_query = f"UPDATE {table_name} SET profile_pic_bytes = %s WHERE username = %s"
+        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = %s"
+
+        # Execute the SELECT statement with the parameterized value
+        cursor.execute(update_query, (username,))
+
+        # Fetch the result
+        result = cursor.fetchone()
+
+        file_path = result[0]  # Extract the file path from the tuple
+
+        if file_path is not None:
+            os.remove(file_path)
+
+        table_name = "Sign_Up_Table"
+
+        if profile_pic is not None:
+            folder_path = r'C:\discord_app_files'
+            file_name = generate_random_filename(24)
+            profile_pic_path = os.path.join(folder_path, file_name)
+            save_bytes_to_file(profile_pic, profile_pic_path)
+            update_query = f"UPDATE {table_name} SET profile_pic_path = %s WHERE username = %s"
+        else:
+            profile_pic_path = None
+            update_query = f"UPDATE {table_name} SET profile_pic_path = %s WHERE username = %s"
 
         # Execute the INSERT statement with parameterized values
-        cursor.execute(update_query, (profile_pic, username))
+        cursor.execute(update_query, (profile_pic_path, username))
 
         # Commit the changes to the database
         connection.commit()
@@ -669,10 +692,9 @@ def get_profile_pic_by_name(username):
         connection = connect_to_kevindb()
         cursor = connection.cursor()
 
-
         table_name = "Sign_Up_Table"
 
-        update_query = f"SELECT profile_pic_bytes FROM {table_name} WHERE username = %s"
+        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = %s"
 
         # Execute the SELECT statement with the parameterized value
         cursor.execute(update_query, (username,))
@@ -685,7 +707,12 @@ def get_profile_pic_by_name(username):
         connection.close()
 
         if result:
-            return result[0]
+            profile_pic_path = result[0]
+            if profile_pic_path is None:
+                return None
+            else:
+                profile_pic_bytes = file_to_bytes(profile_pic_path)
+                return profile_pic_bytes
         else:
             # If username not found, return None or any other suitable value
             return None
@@ -1152,30 +1179,47 @@ def add_chat_to_user(username, new_chat_name):
 def update_group_image(group_id, image_bytes):
     try:
         # Establish a connection to the MySQL database
-        connection = connect_to_kevindb()
+        with connect_to_kevindb() as connection:
+            with connection.cursor() as cursor:
+                table_name = "my_groups"
 
-        # Prepare the UPDATE query
-        update_query = """
-            UPDATE my_groups
-            SET group_image = %s
-            WHERE group_id = %s
-        """
+                get_path = f"SELECT group_image_path FROM {table_name} WHERE group_id = %s"
 
-        # Execute the query
-        cursor = connection.cursor()
-        cursor.execute(update_query, (image_bytes, group_id))
-        connection.commit()
+                # Execute the SELECT statement with the parameterized value
+                cursor.execute(get_path, (group_id,))
 
-        print(f"Group image updated successfully for group ID: {group_id}")
+                # Fetch the result
+                result = cursor.fetchone()
+
+                if result:
+                    image_path = result[0]  # Extract the file path from the tuple
+                    if image_path:
+                        os.remove(image_path)
+
+                if image_bytes is None:
+                    group_pic_path = None
+                else:
+                    folder_path = r'C:\discord_app_files'
+                    file_name = generate_random_filename(24)
+                    group_pic_path = os.path.join(folder_path, file_name)
+                    save_bytes_to_file(image_bytes, group_pic_path)
+                    print("saved bytes to image")
+
+                # Prepare the UPDATE query
+                update_query = """
+                    UPDATE my_groups
+                    SET group_image_path = %s
+                    WHERE group_id = %s
+                """
+
+                # Execute the query
+                cursor.execute(update_query, (group_pic_path, group_id))
+                connection.commit()
+
+                print(f"Group image updated successfully for group ID: {group_id}")
 
     except Exception as e:
         print(f"Error updating group image: {e}")
-
-    finally:
-        # Close the database connection
-        if connection and connection.is_connected():
-            cursor.close()
-            connection.close()
 
 
 def get_group_image_by_id(group_id):
@@ -1184,7 +1228,7 @@ def get_group_image_by_id(group_id):
         connection = connect_to_kevindb()
 
         select_query = """
-            SELECT group_image
+            SELECT group_image_path
             FROM my_groups
             WHERE group_id = %s
         """
@@ -1195,8 +1239,12 @@ def get_group_image_by_id(group_id):
         result = cursor.fetchone()
 
         if result:
-            return result
-
+            path = result[0]
+            if path is None:
+                return None
+            else:
+                image_bytes = file_to_bytes(path)
+                return image_bytes
     except Exception as e:
         print(f"Error getting group image: {e}")
 
@@ -1623,6 +1671,7 @@ def append_group_member(group_id, group_member):
         if connection:
             connection.close()
 
+
 def rename_group(group_id, new_group_name):
     try:
         # Connect to the MySQL database
@@ -1661,12 +1710,12 @@ def get_user_groups(username):
 
         # Retrieve the groups where the specified username is a group member
         cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date, "
-                       "group_image FROM my_groups")
+                       "group_image_path FROM my_groups")
 
         user_groups = []
         for row in cursor.fetchall():
             group_members_list = json.loads(row[2]) if row[2] else []
-
+            group_image_bytes = file_to_bytes(row[5]) if row[5] else None
             # Check if the specified username is a group member or the manager
             if username in group_members_list or username == row[3]:
                 user_groups.append({
@@ -1675,7 +1724,7 @@ def get_user_groups(username):
                     "group_members": group_members_list,
                     "group_manager": row[3],
                     "creation_date": row[4].strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
-                    "group_b64_encoded_image": base64.b64encode(row[5]).decode("utf-8") if row[5] else None
+                    "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode("utf-8") if group_image_bytes else None
                 })
 
         return user_groups
@@ -1702,12 +1751,13 @@ def get_group_by_id(group_id):
 
         # Retrieve the group with the specified group_id
         cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date, "
-                       "group_image FROM my_groups WHERE group_id = %s", (group_id,))
+                       "group_image_path FROM my_groups WHERE group_id = %s", (group_id,))
 
         group_data = cursor.fetchone()
 
         if group_data:
             group_members_list = json.loads(group_data[2]) if group_data[2] else []
+            group_image_bytes = file_to_bytes(group_data[5]) if group_data[5] else None
 
             group_info = {
                 "group_id": group_data[0],
@@ -1715,7 +1765,7 @@ def get_group_by_id(group_id):
                 "group_members": group_members_list,
                 "group_manager": group_data[3],
                 "creation_date": group_data[4].strftime("%Y-%m-%d") if group_data[4] else None,
-                "group_b64_encoded_image": base64.b64encode(group_data[5]).decode("utf-8") if group_data[5] else None
+                "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode("utf-8") if group_image_bytes else None
             }
             return group_info
         else:
@@ -1731,7 +1781,6 @@ def get_group_by_id(group_id):
             cursor.close()
         if connection:
             connection.close()
-
 
 
 def get_latest_chats(username):
@@ -1922,7 +1971,7 @@ def create_groups_table():
                 group_manager VARCHAR(255),
                 creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 group_members_list TEXT,
-                group_image LONGBLOB
+                group_image_path VARCHAR(255)
             )
         """
         cursor.execute(create_table_query)

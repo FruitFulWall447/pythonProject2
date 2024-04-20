@@ -875,6 +875,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.playlist_index = 0
         self.playlist_last_index = 0
         self.shuffle = False
+        self.replay_song = False
 
         self.volume = 50
         self.font_size = 12
@@ -1111,17 +1112,20 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def handle_playlist_song_state_change(self, status):
         if status == QMediaPlayer.EndOfMedia:
-            if not self.shuffle:
-                len_songs_list = len(self.playlist_songs)
-                if self.playlist_index + 1 < len_songs_list:
-                    self.set_new_playlist_index_and_listen(self.playlist_index+1)
+            if not self.replay_song:
+                if not self.shuffle:
+                    len_songs_list = len(self.playlist_songs)
+                    if self.playlist_index + 1 < len_songs_list:
+                        self.set_new_playlist_index_and_listen(self.playlist_index+1)
+                    else:
+                        self.set_new_playlist_index_and_listen(0)
                 else:
-                    self.set_new_playlist_index_and_listen(0)
+                    random_index = random.randint(0, len(self.playlist_songs)-1)
+                    while random_index == self.playlist_index:
+                        random_index = random.randint(0, len(self.playlist_songs) - 1)
+                    self.set_new_playlist_index_and_listen(random_index)
             else:
-                random_index = random.randint(0, len(self.playlist_songs)-1)
-                while random_index == self.playlist_index:
-                    random_index = random.randint(0, len(self.playlist_songs) - 1)
-                self.set_new_playlist_index_and_listen(random_index)
+                self.set_new_playlist_index_and_listen(self.playlist_index)
 
     def set_new_playlist_index_and_listen(self, index):
         self.playlist_last_index = self.playlist_index
@@ -1890,12 +1894,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             try:
                 text = self.chat_box.text_entry.text()
             except Exception as e:
-                print(f"error in updated chat {e}")
+                print(f"error in updated chat1 {e}")
+                self.chat_box = ChatBox("", self.list_messages, self.friends_list,
+                                        parent=self, Network=n)
             has_had_focus_of_search_bar = self.chat_box.find_contact_text_entry.hasFocus()
             self.stacked_widget.removeWidget(self.chat_box)
-            self.chat_box.deleteLater()  # Schedule deletion of the old ChatBox widget
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
+            deleted_object = self.chat_box
+            deleted_object.deleteLater()  # Schedule deletion of the old ChatBox widget
             try:
                 self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
                                         parent=self, Network=n)
