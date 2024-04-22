@@ -521,6 +521,8 @@ class Communication:
         if settings_dict is not None:
             net.send_settings_dict(settings_dict)
             self.logger.info(f"Sent settings to user {User}")
+        else:
+            self.logger.error("couldn't find user's settings")
 
         net.send_all_data_received()
         self.logger.info(f"All needed data sent to {User}")

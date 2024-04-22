@@ -154,216 +154,218 @@ def return_share_camera_bytes_parameters(share_camera_data):
 def thread_recv_messages():
     global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag, splash_page
     print("receiving thread started running")
-    temp_count = 0
     while Flag_recv_messages:
         data = n.recv_str()
-        message_type = data.get("message_type")
-        if message_type == "messages_list":
-            message_list = json.loads(data.get("messages_list"))
-            main_page.list_messages = message_list
-            main_page.is_new_chat_clicked = True
-            main_page.is_messages_need_update = True
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print("Updated the messages list")
-        elif message_type == "settings_dict":
-            settings_dict = data.get("settings_dict")
-            main_page.update_settings_from_dict_signal.emit(settings_dict)
-            print("got settings")
-        elif message_type == "searched_song_result":
-            info_dict = data.get("searched_song_dict")
-            main_page.insert_search_result_signal.emit(info_dict)
-            print("got song search info")
-        elif message_type == "playlist_songs":
-            playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
-            main_page.playlist_songs = playlist_songs_list
-            QMetaObject.invokeMethod(main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
-            print("got playlists songs")
-        elif message_type == "message_list_addition":
-            message_list_addition = json.loads(data.get("message_list_addition"))
-            main_page.list_messages = main_page.list_messages + message_list_addition
-            main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
-            main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
-        elif message_type == "new_message":
-            chat = data.get("chat")
-            if main_page.selected_chat == chat:
-                message_dict = json.loads(data.get("message_dict"))
-                main_page.list_messages.insert(0, message_dict)
-                temp_list = [message_dict]
-                main_page.insert_messages_into_message_box_signal.emit(temp_list)
-            else:
-                new_message = data.get("new_message")
-                QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
-                print("got new message")
-        elif message_type == "requests_list":
-            requests_list = json.loads(data.get("requests_list"))
-            main_page.request_list = requests_list
-            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-            print("Updated the requests list")
-        elif message_type == "vc_data":
-            compressed_vc_data = data.get("compressed_vc_data")
-            speaker = data.get("speaker")
-            vc_data = zlib.decompress(compressed_vc_data)
-            main_page.vc_data_list.append((vc_data, speaker))
-        elif message_type == "share_screen_data":
-            compressed_share_screen_data = data.get("compressed_share_screen_data")
-            speaker = data.get("speaker")
-            frame_shape = data.get("frame_shape")
-            share_screen_data = zlib.decompress(compressed_share_screen_data)
-            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-            main_page.update_stream_screen_frame(decompressed_frame)
-        elif message_type == "share_camera_data":
-            compressed_share_camera_data = data.get("compressed_share_camera_data")
-            speaker = data.get("speaker")
-            frame_shape = data.get("frame_shape")
-            share_screen_data = zlib.decompress(compressed_share_camera_data)
-            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-            main_page.update_stream_screen_frame(decompressed_frame)
-        elif message_type == "friends_list":
-            json_friends_list = data.get("friends_list")
-            friends_list = json.loads(json_friends_list)
-            main_page.friends_list = friends_list
-            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print(f"Got friends list: {main_page.friends_list}")
-            print("Updated friends_list list")
-        elif message_type == "online_users_list":
-            online_users_list = json.loads(data.get("online_users_list"))
-            main_page.online_users_list = online_users_list
-            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print(f"Got online users list: {online_users_list}")
-        elif message_type == "blocked_list":
-            blocked_list = json.loads(data.get("blocked_list"))
-            main_page.blocked_list = blocked_list
-            QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-            print("Updated the requests list")
-        elif message_type == "groups_list":
-            groups_list = json.loads(data.get("groups_list"))
-            main_page.groups_list = groups_list
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
-            print("Updated the Groups list")
-        elif message_type == "chats_list":
-            chats_list = json.loads(data.get("chats_list"))
-            main_page.chats_list = chats_list
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print("Updated the chats list")
-            print(f"chats list is: {main_page.chats_list}")
-        elif message_type == "add_chat":
-            new_chat = data.get("chat_to_add")
-            main_page.chats_list.insert(0, new_chat)
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print("Updated the chats list")
-            print(f"chats list is: {main_page.chats_list}")
-        elif message_type == "new_group_dict":
-            new_group_dict = json.loads(data.get("group_dict"))
-            main_page.groups_list.append(new_group_dict)
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            print("Added new group to group_list")
-        elif message_type == "call":
-            call_action_type = data.get("call_action_type")
-            if call_action_type == "in_call_action":
-                action = data.get("action")
-                if action == "calling":
-                    user_that_called = data.get("user_that_called")
-                    if main_page.is_in_a_call or main_page.is_calling or main_page.is_getting_called:
-                        print(f"User got a call but he is busy")
-                    else:
-                        try:
-                            getting_called_by = user_that_called
-                            print(f"User is called by {getting_called_by}")
-                            main_page.is_getting_called = True
-                            main_page.getting_called_by = getting_called_by
+        try:
+            message_type = data.get("message_type")
+            if message_type == "messages_list":
+                message_list = json.loads(data.get("messages_list"))
+                main_page.list_messages = message_list
+                main_page.is_new_chat_clicked = True
+                main_page.is_messages_need_update = True
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print("Updated the messages list")
+            elif message_type == "settings_dict":
+                settings_dict = data.get("settings_dict")
+                main_page.update_settings_from_dict_signal.emit(settings_dict)
+                print("got settings")
+            elif message_type == "searched_song_result":
+                info_dict = data.get("searched_song_dict")
+                main_page.insert_search_result_signal.emit(info_dict)
+                print("got song search info")
+            elif message_type == "playlist_songs":
+                playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
+                main_page.playlist_songs = playlist_songs_list
+                QMetaObject.invokeMethod(main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
+                print("got playlists songs")
+            elif message_type == "message_list_addition":
+                message_list_addition = json.loads(data.get("message_list_addition"))
+                main_page.list_messages = main_page.list_messages + message_list_addition
+                main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
+                main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
+            elif message_type == "new_message":
+                chat = data.get("chat")
+                if main_page.selected_chat == chat:
+                    message_dict = json.loads(data.get("message_dict"))
+                    main_page.list_messages.insert(0, message_dict)
+                    temp_list = [message_dict]
+                    main_page.insert_messages_into_message_box_signal.emit(temp_list)
+                else:
+                    new_message = data.get("new_message")
+                    QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
+                    print("got new message")
+            elif message_type == "requests_list":
+                requests_list = json.loads(data.get("requests_list"))
+                main_page.request_list = requests_list
+                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                print("Updated the requests list")
+            elif message_type == "vc_data":
+                compressed_vc_data = data.get("compressed_vc_data")
+                speaker = data.get("speaker")
+                vc_data = zlib.decompress(compressed_vc_data)
+                main_page.vc_data_list.append((vc_data, speaker))
+            elif message_type == "share_screen_data":
+                compressed_share_screen_data = data.get("compressed_share_screen_data")
+                speaker = data.get("speaker")
+                frame_shape = data.get("frame_shape")
+                share_screen_data = zlib.decompress(compressed_share_screen_data)
+                decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
+                main_page.update_stream_screen_frame(decompressed_frame)
+            elif message_type == "share_camera_data":
+                compressed_share_camera_data = data.get("compressed_share_camera_data")
+                speaker = data.get("speaker")
+                frame_shape = data.get("frame_shape")
+                share_screen_data = zlib.decompress(compressed_share_camera_data)
+                decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
+                main_page.update_stream_screen_frame(decompressed_frame)
+            elif message_type == "friends_list":
+                json_friends_list = data.get("friends_list")
+                friends_list = json.loads(json_friends_list)
+                main_page.friends_list = friends_list
+                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print(f"Got friends list: {main_page.friends_list}")
+                print("Updated friends_list list")
+            elif message_type == "online_users_list":
+                online_users_list = json.loads(data.get("online_users_list"))
+                main_page.online_users_list = online_users_list
+                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print(f"Got online users list: {online_users_list}")
+            elif message_type == "blocked_list":
+                blocked_list = json.loads(data.get("blocked_list"))
+                main_page.blocked_list = blocked_list
+                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                print("Updated the requests list")
+            elif message_type == "groups_list":
+                groups_list = json.loads(data.get("groups_list"))
+                main_page.groups_list = groups_list
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
+                print("Updated the Groups list")
+            elif message_type == "chats_list":
+                chats_list = json.loads(data.get("chats_list"))
+                main_page.chats_list = chats_list
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print("Updated the chats list")
+                print(f"chats list is: {main_page.chats_list}")
+            elif message_type == "add_chat":
+                new_chat = data.get("chat_to_add")
+                main_page.chats_list.insert(0, new_chat)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print("Updated the chats list")
+                print(f"chats list is: {main_page.chats_list}")
+            elif message_type == "new_group_dict":
+                new_group_dict = json.loads(data.get("group_dict"))
+                main_page.groups_list.append(new_group_dict)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print("Added new group to group_list")
+            elif message_type == "call":
+                call_action_type = data.get("call_action_type")
+                if call_action_type == "in_call_action":
+                    action = data.get("action")
+                    if action == "calling":
+                        user_that_called = data.get("user_that_called")
+                        if main_page.is_in_a_call or main_page.is_calling or main_page.is_getting_called:
+                            print(f"User got a call but he is busy")
+                        else:
+                            try:
+                                getting_called_by = user_that_called
+                                print(f"User is called by {getting_called_by}")
+                                main_page.is_getting_called = True
+                                main_page.getting_called_by = getting_called_by
+                                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                                QMetaObject.invokeMethod(main_page, "getting_call_signal", Qt.QueuedConnection)
+                            except Exception as e:
+                                print(f"error in action calling error:{e}")
+                    if main_page.is_getting_called or main_page.is_calling or main_page.is_joining_call:
+                        if action == "rejected":
+                            print(f"call was rejected")
+                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                        if action == "accepted":
+                            print(f"call was accepted")
+                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(main_page, "initiating_call_signal", Qt.QueuedConnection)
                             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "getting_call_signal", Qt.QueuedConnection)
-                        except Exception as e:
-                            print(f"error in action calling error:{e}")
-                if main_page.is_getting_called or main_page.is_calling or main_page.is_joining_call:
-                    if action == "rejected":
-                        print(f"call was rejected")
-                        QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(main_page, "start_call_threads_signal", Qt.QueuedConnection)
+                        if action == "timeout":
+                            print("call timeout passed")
+                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                    if action == "ended":
+                        print("call ended")
+                        vc_data_queue = Queue()
+                        QMetaObject.invokeMethod(main_page, "close_call_threads_signal", Qt.QueuedConnection)
                         QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
-                    if action == "accepted":
-                        print(f"call was accepted")
-                        QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(main_page, "initiating_call_signal", Qt.QueuedConnection)
+                if call_action_type == "call_dictionary":
+                    action = data.get("action")
+                    if action == "dict":
+                        call_dictionary = data.get("dict")
+                        print(f"got call dict {call_dictionary}")
+                        call_dict = call_dictionary
+                        if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
+                            main_page.update_call_dict_by_id(call_dict)
+                            if main_page.is_watching_screen:
+                                if main_page.username in call_dict.get("participants"):
+                                    if main_page.watching_type == "ScreenStream":
+                                        if main_page.watching_user not in call_dict.get("screen_streamers"):
+                                            QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                                                                     Qt.QueuedConnection)
+                                    else:
+                                        if main_page.watching_user not in call_dict.get("camera_streamers"):
+                                            QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                                                                     Qt.QueuedConnection)
+                        else:
+                            main_page.call_dicts.append(call_dict)
                         QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(main_page, "start_call_threads_signal", Qt.QueuedConnection)
-                    if action == "timeout":
-                        print("call timeout passed")
-                        QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
-                if action == "ended":
-                    print("call ended")
-                    vc_data_queue = Queue()
-                    QMetaObject.invokeMethod(main_page, "close_call_threads_signal", Qt.QueuedConnection)
-                    QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
-            if call_action_type == "call_dictionary":
+                    if action == "list_call_dicts":
+                        list_call_dicts = json.loads(data.get("list_call_dicts"))
+                        list_of_call_dicts = list_call_dicts
+                        main_page.call_dicts = list_of_call_dicts
+                        print(f"got list of call dicts: {list_of_call_dicts}")
+                if call_action_type == "update_calls":
+                    action = data.get("action")
+                    if action == "remove_id":
+                        id_to_remove = data.get("removed_id")
+                        main_page.remove_call_dict_by_id(id_to_remove)
+            elif message_type == "profile_dicts_list":
+                profile_dicts_list = json.loads(data.get("profile_dicts_list"))
+                main_page.list_user_profile_dicts = profile_dicts_list
+                QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
+                print("got list of profile dictionaries")
+            elif message_type == "updated_profile_dict":
+                profile_dict = json.loads(data.get("profile_dict"))
+                name_of_profile_dict = data.get("username")
+                main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
+                print(f"got updated profile dictionary of {name_of_profile_dict}")
+            elif message_type == "update_group_dict":
+                group_dict = json.loads(data.get("group_dict"))
+                main_page.update_group_lists_by_group.emit(group_dict)
+                print(f"got updated group dic {group_dict.get('group_id')}")
+            elif message_type == "data":
                 action = data.get("action")
-                if action == "dict":
-                    call_dictionary = data.get("dict")
-                    print(f"got call dict {call_dictionary}")
-                    call_dict = call_dictionary
-                    if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
-                        main_page.update_call_dict_by_id(call_dict)
-                        if main_page.is_watching_screen:
-                            if main_page.username in call_dict.get("participants"):
-                                if main_page.watching_type == "ScreenStream":
-                                    if main_page.watching_user not in call_dict.get("screen_streamers"):
-                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
-                                                                 Qt.QueuedConnection)
-                                else:
-                                    if main_page.watching_user not in call_dict.get("camera_streamers"):
-                                        QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
-                                                                 Qt.QueuedConnection)
-                    else:
-                        main_page.call_dicts.append(call_dict)
-                    QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                if action == "list_call_dicts":
-                    list_call_dicts = json.loads(data.get("list_call_dicts"))
-                    list_of_call_dicts = list_call_dicts
-                    main_page.call_dicts = list_of_call_dicts
-                    print(f"got list of call dicts: {list_of_call_dicts}")
-            if call_action_type == "update_calls":
-                action = data.get("action")
-                if action == "remove_id":
-                    id_to_remove = data.get("removed_id")
-                    main_page.remove_call_dict_by_id(id_to_remove)
-        elif message_type == "profile_dicts_list":
-            profile_dicts_list = json.loads(data.get("profile_dicts_list"))
-            main_page.list_user_profile_dicts = profile_dicts_list
-            QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
-            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-            QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
-            print("got list of profile dictionaries")
-        elif message_type == "updated_profile_dict":
-            profile_dict = json.loads(data.get("profile_dict"))
-            name_of_profile_dict = data.get("username")
-            main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
-            print(f"got updated profile dictionary of {name_of_profile_dict}")
-        elif message_type == "update_group_dict":
-            group_dict = json.loads(data.get("group_dict"))
-            main_page.update_group_lists_by_group.emit(group_dict)
-            print(f"got updated group dic {group_dict.get('group_id')}")
-        elif message_type == "data":
-            action = data.get("action")
-            if action == "receive":
-                receive_status = data.get("receive_status")
-                if receive_status == "done":
-                    QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
-        elif message_type == "security_token":
-            security_token = data.get("security_token")
-            save_token(security_token)
-        elif message_type == "friend_request":
-            status = data.get("friend_request_status")
-            if status == "not exist":
-                main_page.friends_box.friend_not_found()
-            elif status == "already friends":
-                main_page.friends_box.request_was_friend()
-            elif status == "worked":
-                main_page.friends_box.request_was_sent()
-            elif status == "active":
-                main_page.friends_box.request_is_pending()
+                if action == "receive":
+                    receive_status = data.get("receive_status")
+                    if receive_status == "done":
+                        QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
+            elif message_type == "security_token":
+                security_token = data.get("security_token")
+                save_token(security_token)
+            elif message_type == "friend_request":
+                status = data.get("friend_request_status")
+                if status == "not exist":
+                    main_page.friends_box.friend_not_found()
+                elif status == "already friends":
+                    main_page.friends_box.request_was_friend()
+                elif status == "worked":
+                    main_page.friends_box.request_was_sent()
+                elif status == "active":
+                    main_page.friends_box.request_is_pending()
+        except Exception as e:
+            print(e)
 
 
 def listen_udp(main_page_object):
