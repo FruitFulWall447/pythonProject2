@@ -1334,7 +1334,7 @@ def get_user_chats(username):
 
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
-        sorted_chats_list = sort_chat_list(current_chats_list)
+        sorted_chats_list = sort_chat_list(current_chats_list, username)
         return sorted_chats_list
 
     except mysql.connector.Error as err:
@@ -1349,7 +1349,7 @@ def get_user_chats(username):
             connection.close()
 
 
-def sort_chat_list(chats_list):
+def sort_chat_list(chats_list, username):
     # Connect to the MySQL database
     conn = connect_to_kevindb()
 
@@ -1360,12 +1360,18 @@ def sort_chat_list(chats_list):
         chat_timestamps = {}
         for index, chat in enumerate(chats_list):
             # Retrieve the timestamp of the last message in the conversation
-            cursor.execute("""
-                SELECT MAX(timestamp) AS last_message_timestamp
-                FROM messages
-                WHERE (sender_id = %s OR receiver_id = %s)
-            """, (chat, chat))
-
+            if chat.startswith("("):
+                cursor.execute("""
+                    SELECT MAX(timestamp) AS last_message_timestamp
+                    FROM messages
+                    WHERE sender_id = %s OR receiver_id = %s
+                """, (chat, chat))
+            else:
+                cursor.execute("""
+                    SELECT MAX(timestamp) AS last_message_timestamp
+                    FROM messages
+                    WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s)
+                """, (chat, username, username, chat))
             row = cursor.fetchone()
             if row and row[0]:
                 last_message_timestamp = row[0]
