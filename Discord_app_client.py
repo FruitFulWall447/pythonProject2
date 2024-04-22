@@ -180,9 +180,16 @@ def thread_recv_messages():
             main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
             main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
         elif message_type == "new_message":
-            new_message = data.get("new_message")
-            QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
-            print("got new message")
+            chat = data.get("chat")
+            if main_page.selected_chat == chat:
+                message_dict = json.loads(data.get("message_dict"))
+                main_page.list_messages.insert(0, message_dict)
+                temp_list = [message_dict]
+                main_page.insert_messages_into_message_box_signal.emit(temp_list)
+            else:
+                new_message = data.get("new_message")
+                QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
+                print("got new message")
         elif message_type == "requests_list":
             requests_list = json.loads(data.get("requests_list"))
             main_page.request_list = requests_list
@@ -808,7 +815,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.standard_hover_color = "#2980b9"
         self.background_color_hex = "#141c4b"
-        self.background_color = "Blue"
         self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
 
         self.blur_effect = QGraphicsBlurEffect()
@@ -829,9 +835,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.email = None
         self.messages_font_size = 12
 
+        self.volume = 50
+        self.output_device_name = ""
+        self.input_device_name = ""
+        self.camera_index = 0
+        self.font_size = 12
+        self.font_text = self.font_options[0]
+        self.background_color = "Blue"
         self.censor_data_from_strangers = True
-        self.censor_images = False
         self.is_private_account = True
+        self.push_to_talk_key = None
+        self.two_factor_authentication = False
 
         self.size_error_label = False
         self.is_chat_box_full = False
@@ -864,7 +878,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.selected_settings = "My Account"
         self.is_push_to_talk = False
-        self.push_to_talk_key = None
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
         self.list_user_profile_dicts = []
@@ -875,13 +888,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.playlist_index = 0
         self.playlist_last_index = 0
         self.shuffle = False
-        self.replay_song = False
-
-        self.volume = 50
-        self.font_size = 12
-        self.camera_index = 0
-        self.input_device_name = ""
-        self.output_device_name = ""
 
         self.is_watching_video = False
         # the scroll widget that contain all of the messages
@@ -1112,20 +1118,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def handle_playlist_song_state_change(self, status):
         if status == QMediaPlayer.EndOfMedia:
-            if not self.replay_song:
-                if not self.shuffle:
-                    len_songs_list = len(self.playlist_songs)
-                    if self.playlist_index + 1 < len_songs_list:
-                        self.set_new_playlist_index_and_listen(self.playlist_index+1)
-                    else:
-                        self.set_new_playlist_index_and_listen(0)
+            if not self.shuffle:
+                len_songs_list = len(self.playlist_songs)
+                if self.playlist_index + 1 < len_songs_list:
+                    self.set_new_playlist_index_and_listen(self.playlist_index+1)
                 else:
-                    random_index = random.randint(0, len(self.playlist_songs)-1)
-                    while random_index == self.playlist_index:
-                        random_index = random.randint(0, len(self.playlist_songs) - 1)
-                    self.set_new_playlist_index_and_listen(random_index)
+                    self.set_new_playlist_index_and_listen(0)
             else:
-                self.set_new_playlist_index_and_listen(self.playlist_index)
+                random_index = random.randint(0, len(self.playlist_songs)-1)
+                while random_index == self.playlist_index:
+                    random_index = random.randint(0, len(self.playlist_songs) - 1)
+                self.set_new_playlist_index_and_listen(random_index)
 
     def set_new_playlist_index_and_listen(self, index):
         self.playlist_last_index = self.playlist_index
@@ -1149,6 +1152,26 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def get_audio_bytes_from_playlist_index(self):
         song = self.playlist_songs[self.playlist_index]
         return song.get("audio_bytes")
+
+    def get_setting_dict(self):
+        settings_dict = {
+            "volume": self.volume,
+            "output_device": self.output_device_name,
+            "input_device": self.input_device_name,
+            "camera_index": self.camera_index,
+            "font_size": self.font_size,
+            "font": self.font_text,
+            "theme_color": self.background_color,
+            "censor_data": self.censor_data_from_strangers,
+            "is_private_account": self.is_private_account,
+            "push_to_talk_bind": self.push_to_talk_key,
+            "two_factor_authentication": self.two_factor_authentication
+        }
+        return settings_dict
+
+    def update_settings_dict(self):
+        settings_dict = self.get_setting_dict()
+        self.Network.send_settings_dict_to_server(settings_dict)
 
     def start_listen_udp_thread(self):
         self.listen_udp_thread.start()
@@ -1630,6 +1653,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def stop_sound(self):
         try:
             self.sound_effect_media_player.stop()
+            self.ringtone_media_player.stop()
+            self.calling_media_player.stop()
         except Exception as e:
             print(f"Error stopping sound: {e}")
 
@@ -1640,6 +1665,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.temp_search_list = []
             self.chat_clicked = True
             self.stacked_widget.setCurrentIndex(0)
+            if self.setting_clicked:
+                self.update_settings_dict()
             self.setting_clicked = False
             self.social_clicked = False
 
@@ -1895,18 +1922,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 text = self.chat_box.text_entry.text()
             except Exception as e:
                 print(f"error in updated chat1 {e}")
-                self.chat_box = ChatBox("", self.list_messages, self.friends_list,
-                                        parent=self, Network=n)
             has_had_focus_of_search_bar = self.chat_box.find_contact_text_entry.hasFocus()
             self.stacked_widget.removeWidget(self.chat_box)
+            self.chat_box.deleteLater()  # Schedule deletion of the old ChatBox widget
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
-            deleted_object = self.chat_box
-            deleted_object.deleteLater()  # Schedule deletion of the old ChatBox widget
             try:
                 self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
                                         parent=self, Network=n)
             except Exception as e:
+                self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
+                                        parent=self, Network=n)
                 print(f"error in creating chat_box on updated_chat_func : {e}")
 
             self.stacked_widget.insertWidget(0, self.chat_box)
@@ -1922,7 +1948,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if self.chat_clicked:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
-            print(f"error in updated chat {e}")
+            print(f"error in updated chat2 {e}")
 
     def update_values(self):
         self.friends_box.username = self.username

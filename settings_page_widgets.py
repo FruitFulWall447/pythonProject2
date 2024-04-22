@@ -551,6 +551,7 @@ class SettingsBox(QWidget):
                 font_slider_label = self.create_white_label(font_option_x, font_option_y-space_between_option_box_and_label,
                                                               self.default_labels_font_size, None, None, "FONT STYLE")
                 self.font_box = self.create_option_box(width, height, font_option_x, font_option_y, self.parent.font_options)
+                self.font_box.setCurrentText(self.parent.font_text)
                 self.font_box.currentIndexChanged.connect(self.font_updated)
 
             elif self.parent.selected_settings == "User Profile":
@@ -589,12 +590,12 @@ class SettingsBox(QWidget):
             elif self.parent.selected_settings == "Privacy & Safety":
                 privacy_page_starter_x, privacy_page_starter_y = (800, 150)
                 space_between_labels = 120
-                option_list = ["Private or Public account", "Censor data from strangers", "Censor images"]
+                option_list = ["Private account", "Censor data from strangers", "Two factor authentication"]
                 self.create_privacy_labels(privacy_page_starter_x, privacy_page_starter_y, option_list, space_between_labels)
                 button_starter_x, button_starter_y = privacy_page_starter_x, privacy_page_starter_y + 50
-                labels_matching_vars_list = [self.parent.is_private_account, self.parent.censor_data_from_strangers, self.parent.censor_images]
+                labels_matching_vars_list = [self.parent.is_private_account, self.parent.censor_data_from_strangers, self.parent.two_factor_authentication]
                 vars_names = ["is_private_account", "censor_data_from_strangers",
-                                             "censor_images"]
+                                             "two_factor_authentication"]
                 self.create_privacy_buttons(button_starter_x, button_starter_y, space_between_labels, labels_matching_vars_list, vars_names)
         except Exception as e:
             print(f"error setting page {e}")
@@ -662,6 +663,7 @@ class SettingsBox(QWidget):
 
     def font_updated(self):
         new_font = self.font_box.currentText()
+        self.parent.font_text = new_font
         print(f"new_font is {new_font}")
 
     def remove_profile_pic(self):
@@ -812,7 +814,6 @@ class SettingsBox(QWidget):
         """)
 
         return label
-
 
     def create_input_mode_select_button(self, starter_y, buttons_x):
         regular_blue = "#192549"

@@ -121,7 +121,6 @@ def parse_group_caller_format(input_format):
 
 def threaded_logged_in_client(n, User):
     global list_vc_data_sending
-    flag_is_call_sent = False
     client_current_chat = ""
     logger = logging.getLogger(__name__)
     numbers_of_starter_message = 20
@@ -328,7 +327,7 @@ def thread_recv_messages(n, addr):
             except Exception as e:
                 print(e)
         else:
-            #logger.debug(f"waiting for data...for {User}")
+            # logger.debug(f"waiting for data...for {User}")
             data = n.recv_str()
             if data is None:
                 logger.info(f"lost connection with {User}")
@@ -341,6 +340,10 @@ def thread_recv_messages(n, addr):
                 if Communication.server_mtu is None:
                     Communication.check_max_packet_size_udp(udp_address)
                 Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
+            elif message_type == "settings_dict":
+                settings_dict = data.get("settings_dict")
+                database_func.update_settings_by_dict(User, settings_dict)
+                logger.info(f"updated {User} settings")
             elif message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
                 add_message_for_client(User, data)
@@ -365,9 +368,6 @@ def thread_recv_messages(n, addr):
                 database_func.add_song(title, audio_bytes, User, audio_duration, thumbnail_bytes)
                 logger.info(f"Added song {title} to {User} playlist")
             elif message_type == "more_messages":
-                add_message_for_client(User, data)
-            elif message_type == "messages_list_index":
-                messages_list_index = data.get("messages_list_index")
                 add_message_for_client(User, data)
             elif message_type == "call":
                 call_action_type = data.get("call_action_type")

@@ -886,13 +886,14 @@ class PlaylistWidget(QWidget):
         self.last_selected_row = None
         table_x, table_y = 0, 70
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
-        self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y)
+        self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y, "")
         self.search_table.insertRow(0)
         self.search_table.clearSelection()
+        self.search_table.setSelectionMode(QAbstractItemView.NoSelection)
 
         table_x, table_y = 0, self.parent.screen_height // 5.4
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
-        self.table = self.create_table_widget(table_width, table_height, table_x, table_y)
+        self.table = self.create_table_widget(table_width, table_height, table_x, table_y, "playlist_table")
 
         self.search_song_entry = QLineEdit(self)
         search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
@@ -990,7 +991,7 @@ class PlaylistWidget(QWidget):
         row_count = self.table.rowCount()
         self.parent.remove_song_from_playlist()
 
-    def create_table_widget(self, table_width, table_height, table_x, table_y):
+    def create_table_widget(self, table_width, table_height, table_x, table_y, table_name):
         row_height = int(self.parent.screen_height * 0.0462)
         table = QTableWidget(self)
         table.setFocusPolicy(Qt.NoFocus)
@@ -1004,8 +1005,9 @@ class PlaylistWidget(QWidget):
 
         table.setGeometry(table_x, table_y, table_width, table_height)
 
-        table.cellPressed.connect(self.cell_pressed)
-        table.itemSelectionChanged.connect(self.onSelectionChanged)
+        if table_name == "playlist_table":
+            table.cellPressed.connect(self.cell_pressed)
+            table.itemSelectionChanged.connect(self.onSelectionChanged)
 
         table.setShowGrid(False)
         first_column_width = table_width * 0.4
@@ -1119,6 +1121,7 @@ class PlaylistWidget(QWidget):
                 for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
                     insert_item_to_table(self.table, col, value, row_position)
                 row_position += 1
+            self.select_row(0)
         except Exception as e:
             print(e)
 
@@ -1145,13 +1148,17 @@ class PlaylistWidget(QWidget):
 
     def select_row(self, row):
         # Clear any existing selections
-        self.last_selected_row = row
-        self.table.clearSelection()
-        # Create a selection range for the entire row
-        selection_range = QTableWidgetSelectionRange(row, 0, row, self.table.columnCount() - 1)
+        try:
+            self.last_selected_row = row
+            self.table.clearSelection()
+            # Create a selection range for the entire row
+            selection_range = QTableWidgetSelectionRange(row, 0, row, self.table.columnCount() - 1)
 
-        # Select the range
-        self.table.setRangeSelected(selection_range, True)
+            # Select the range
+            self.table.setRangeSelected(selection_range, True)
+            #self.table.horizontalHeader().clearSelection()
+        except Exception as e:
+            print(f"error in inserting table {e}")
 
     def clear_selection(self):
         self.table.clearSelection()

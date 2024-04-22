@@ -3,7 +3,7 @@ from PyQt5.QtGui import QColor
 from functools import partial
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
 from PyQt5.QtCore import QSize, Qt, QUrl
-from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath, QFont
 from PyQt5.QtMultimedia import QMediaContent
 from io import BytesIO
 import base64
@@ -1936,8 +1936,8 @@ class ChatBox(QWidget):
     def create_temp_message_label(self, message):
         try:
             label = QLabel(message, self)
-            label.setStyleSheet("color: white;")
-            font = label.font()
+            label.setStyleSheet(f"color: white")
+            font = QFont(self.parent.font_text)
             font.setPixelSize(self.parent.font_size)
             label.setFont(font)
             number_of_rows = math.floor(len(message) / 160) + 1

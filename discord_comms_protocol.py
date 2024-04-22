@@ -259,7 +259,7 @@ class client_net:
 
     def send_large_udp_data(self, data, data_type, shape_of_frame=None):
         if len(data) > self.mtu:
-            sliced_data = slice_up_data(data, int(self.mtu * 0.8))
+            sliced_data = slice_up_data(data, int(self.mtu * 0.2))
         else:
             sliced_data = [data]
         index = 0
@@ -584,19 +584,18 @@ class client_net:
         except Exception as e:
             print(f"error is send share camera data: {e}")
 
-    def send_friend_request(self, username, friend_username):
+    def send_settings_dict_to_server(self, settings_dict):
         try:
-            # Convert the length of the data to a string
-            message = {"message_type": "friend_request", "username_for_request": friend_username
+            message = {"message_type": "settings_dict", "settings_dict": settings_dict
                        }
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
-    def messages_list_current_index(self, index):
+    def send_friend_request(self, username, friend_username):
         try:
             # Convert the length of the data to a string
-            message = {"message_type": "messages_list_index", "messages_list_index": index
+            message = {"message_type": "friend_request", "username_for_request": friend_username
                        }
             self.send_message_dict_tcp(message)
         except socket.error as e:
@@ -898,8 +897,15 @@ class server_net:
                    }
         self.send_message_dict_tcp(message)
 
-    def send_new_message(self, message):
-        message = {"message_type": "new_message", "new_message": message
+    def send_new_message_content(self, chat, message_dict):
+        message = {"message_type": "new_message",
+                   "chat": chat,
+                   "message_dict": json.dumps(message_dict)
+                   }
+        self.send_message_dict_tcp(message)
+
+    def send_new_message(self, message, chat):
+        message = {"message_type": "new_message", "new_message": message, "chat": chat
                    }
         self.send_message_dict_tcp(message)
 

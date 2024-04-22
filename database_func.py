@@ -27,6 +27,22 @@ default_settings_dict = {
 }
 
 
+def unpack_settings(variables_dict):
+    return (
+        variables_dict["volume"],
+        variables_dict["output_device"],
+        variables_dict["input_device"],
+        variables_dict["camera_index"],
+        variables_dict["font_size"],
+        variables_dict["font"],
+        variables_dict["theme_color"],
+        variables_dict["censor_data"],
+        variables_dict["is_private_account"],
+        variables_dict["push_to_talk_bind"],
+        variables_dict["two_factor_authentication"]
+    )
+
+
 def save_bytes_to_file(data_bytes, file_path):
     with open(file_path, 'wb') as file:
         file.write(data_bytes)
@@ -288,6 +304,49 @@ def change_user_setting(user_id, setting_name, new_value):
         print(f"MySQL Error: {e}")
         print("Failed to change setting.")
 
+
+def get_id_from_username(username):
+    # Connect to the MySQL database
+    conn = connect_to_kevindb()
+    cursor = conn.cursor()
+
+    try:
+        # Execute a query to retrieve the ID based on the username
+        cursor.execute("SELECT id FROM sign_up_table WHERE username = %s", (username,))
+        row = cursor.fetchone()  # Fetch the first row
+
+        if row:
+            # If a row is found, return the ID
+            return row[0]
+        else:
+            # If no row is found, return None
+            return None
+    except mysql.connector.Error as e:
+        # Handle any errors that occur during the execution of the query
+        print("Error retrieving ID:", e)
+        return None
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+
+
+def update_settings_by_dict(username, settings_dict):
+    user_id = get_id_from_username(username)
+    volume, output_device_name, input_device_name, camera_index, font_size, font_text, background_color, censor_data, is_private_account, push_to_talk_key, two_factor_authentication = unpack_settings(
+        settings_dict)
+    change_volume(user_id, volume)
+    change_output_device(user_id, output_device_name)
+    change_input_device(user_id, input_device_name)
+    change_camera_device_index(user_id, camera_index)
+    change_font_size(user_id, font_size)
+    change_font(user_id, font_text)
+    change_theme_color(user_id, background_color)
+    change_censor_data(user_id, censor_data)
+    change_private_account(user_id, is_private_account)
+    change_push_to_talk_bind(user_id, push_to_talk_key)
+    change_2fa_enabled(user_id, two_factor_authentication)
+    print(f"updated whole settings for user_id {user_id}")
 
 def change_volume(user_id, new_volume):
     change_user_setting(user_id, "volume", new_volume)
@@ -928,7 +987,7 @@ def get_last_amount_of_messages(sender, receiver, first_message_index, last_mess
             """.format(sender.replace('\'', '\'\''), receiver.replace('\'', '\'\''))
 
         # Add conditions for message indices
-        query += f" ORDER BY timestamp DESC LIMIT {last_message_index - first_message_index + 1} OFFSET {first_message_index}"
+        query += f"ORDER BY timestamp DESC LIMIT {last_message_index - first_message_index + 1} OFFSET {first_message_index}"
 
         cursor.execute(query)
 
@@ -1286,6 +1345,45 @@ def get_user_chats(username):
             cursor.close()
         if connection:
             connection.close()
+
+
+def get_chat_list(user_id):
+    # Connect to the MySQL database
+    conn = connect_to_kevindb()
+
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        # Execute a query to retrieve the distinct sender_id and receiver_id pairs for the user
+        cursor.execute("""
+            SELECT DISTINCT
+                CASE
+                    WHEN sender_id = %s THEN receiver_id
+                    ELSE sender_id
+                END AS chat_partner,
+                MAX(timestamp) AS last_message_timestamp
+            FROM
+                messages
+            WHERE
+                sender_id = %s OR receiver_id = %s
+            GROUP BY
+                chat_partner
+            ORDER BY
+                last_message_timestamp DESC
+        """, (user_id, user_id, user_id))
+
+        # Fetch all rows
+        chat_list = cursor.fetchall()
+
+        return chat_list
+    except mysql.connector.Error as e:
+        # Handle any errors that occur during the execution of the query
+        print("Error retrieving chat list:", e)
+        return None
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
 
 
 def remove_chat_from_user(username, chat_to_remove):
@@ -2047,7 +2145,7 @@ def create_sign_up_table():
                 salt VARCHAR(255),
                 security_token VARCHAR(255),
                 chats_list TEXT,
-                profile_pic_bytes LONGBLOB,
+                profile_pic_path VARCHAR(255),
                 blocked_list TEXT
             )
         """
