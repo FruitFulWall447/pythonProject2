@@ -165,6 +165,10 @@ def thread_recv_messages():
             main_page.is_messages_need_update = True
             QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
             print("Updated the messages list")
+        elif message_type == "settings_dict":
+            settings_dict = data.get("settings_dict")
+            main_page.update_settings_from_dict_signal.emit(settings_dict)
+            print("got settings")
         elif message_type == "searched_song_result":
             info_dict = data.get("searched_song_dict")
             main_page.insert_search_result_signal.emit(info_dict)
@@ -762,6 +766,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     insert_messages_into_message_box_signal = pyqtSignal(list)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     insert_search_result_signal = pyqtSignal(dict)
+    update_settings_from_dict_signal = pyqtSignal(dict)
     update_message_box_signal = pyqtSignal()
     close_call_threads_signal = pyqtSignal()
     start_call_threads_signal = pyqtSignal()
@@ -956,6 +961,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.close_call_threads_signal.connect(self.close_call_threads)
         self.start_call_threads_signal.connect(self.start_call_threads)
         self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
+        self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -1158,16 +1164,32 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             "volume": self.volume,
             "output_device": self.output_device_name,
             "input_device": self.input_device_name,
-            "camera_index": self.camera_index,
+            "camera_device_index": self.camera_index,
             "font_size": self.font_size,
             "font": self.font_text,
             "theme_color": self.background_color,
             "censor_data": self.censor_data_from_strangers,
-            "is_private_account": self.is_private_account,
+            "private_account": self.is_private_account,
             "push_to_talk_bind": self.push_to_talk_key,
-            "two_factor_authentication": self.two_factor_authentication
+            "two_factor_auth": self.two_factor_authentication
         }
         return settings_dict
+
+    def update_settings_from_dict(self, settings_dict):
+        # Update settings from the provided dictionary
+        self.volume = settings_dict.get("volume")
+        self.output_device_name = settings_dict.get("output_device")
+        self.input_device_name = settings_dict.get("input_device")
+        self.camera_index = settings_dict.get("camera_device_index")
+        self.font_size = settings_dict.get("font_size")
+        self.font_text = settings_dict.get("font")
+        self.background_color = settings_dict.get("theme_color")
+        self.censor_data_from_strangers = settings_dict.get("censor_data")
+        self.is_private_account = settings_dict.get("private_account")
+        self.push_to_talk_key = settings_dict.get("push_to_talk_bind")
+        self.two_factor_authentication = settings_dict.get("two_factor_auth")
+        self.updated_settings_page()
+        self.updated_chat()
 
     def update_settings_dict(self):
         settings_dict = self.get_setting_dict()

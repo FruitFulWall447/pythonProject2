@@ -885,6 +885,11 @@ class server_net:
                    }
         self.send_message_dict_tcp(message)
 
+    def send_settings_dict(self, settings_dict):
+        message = {"message_type": "settings_dict", "settings_dict": settings_dict
+                   }
+        self.send_message_dict_tcp(message)
+
     def send_messages_list(self, messages_list):
         json_messages_list = json.dumps(messages_list)
         message = {"message_type": "messages_list", "messages_list": json_messages_list

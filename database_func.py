@@ -32,14 +32,14 @@ def unpack_settings(variables_dict):
         variables_dict["volume"],
         variables_dict["output_device"],
         variables_dict["input_device"],
-        variables_dict["camera_index"],
+        variables_dict["camera_device_index"],
         variables_dict["font_size"],
         variables_dict["font"],
         variables_dict["theme_color"],
         variables_dict["censor_data"],
-        variables_dict["is_private_account"],
+        variables_dict["private_account"],
         variables_dict["push_to_talk_bind"],
-        variables_dict["two_factor_authentication"]
+        variables_dict["two_factor_auth"]
     )
 
 
@@ -240,9 +240,10 @@ def get_songs_by_owner(owner):
         return []
 
 
-def get_user_settings(user_id):
+def get_user_settings(username):
     try:
         # Connect to the database
+        user_id = get_id_from_username(username)
         db_connection = connect_to_kevindb()
 
         # Create a cursor object to execute SQL queries
@@ -252,13 +253,14 @@ def get_user_settings(user_id):
         table_name = "settings_table"
 
         # Define the SQL SELECT statement to retrieve settings for the given user_id
-        select_query = f"SELECT * FROM {table_name} WHERE user_id = %s"
+        select_query = f"SELECT volume, output_device, input_device, camera_device_index, font_size" \
+                       f", font, theme_color, censor_data, private_account, push_to_talk_bind, two_factor_auth FROM {table_name} WHERE user_id = %s"
 
         # Execute the SELECT statement with parameterized values
         cursor.execute(select_query, (user_id,))
 
         # Fetch all settings rows for the given user_id
-        user_settings = cursor.fetchall()
+        user_settings = cursor.fetchall()[0]
 
         # Close the cursor and database connection
         cursor.close()
@@ -1332,8 +1334,8 @@ def get_user_chats(username):
 
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
-
-        return current_chats_list
+        sorted_chats_list = sort_chat_list(current_chats_list)
+        return sorted_chats_list
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -1347,38 +1349,39 @@ def get_user_chats(username):
             connection.close()
 
 
-def get_chat_list(user_id):
+def sort_chat_list(chats_list):
     # Connect to the MySQL database
     conn = connect_to_kevindb()
 
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     try:
-        # Execute a query to retrieve the distinct sender_id and receiver_id pairs for the user
-        cursor.execute("""
-            SELECT DISTINCT
-                CASE
-                    WHEN sender_id = %s THEN receiver_id
-                    ELSE sender_id
-                END AS chat_partner,
-                MAX(timestamp) AS last_message_timestamp
-            FROM
-                messages
-            WHERE
-                sender_id = %s OR receiver_id = %s
-            GROUP BY
-                chat_partner
-            ORDER BY
-                last_message_timestamp DESC
-        """, (user_id, user_id, user_id))
+        # Iterate over each chat in the chat list
+        chat_timestamps = {}
+        for index, chat in enumerate(chats_list):
+            # Retrieve the timestamp of the last message in the conversation
+            cursor.execute("""
+                SELECT MAX(timestamp) AS last_message_timestamp
+                FROM messages
+                WHERE (sender_id = %s OR receiver_id = %s)
+            """, (chat, chat))
 
-        # Fetch all rows
-        chat_list = cursor.fetchall()
+            row = cursor.fetchone()
+            if row and row[0]:
+                last_message_timestamp = row[0]
+            else:
+                # If no message is found, set last_message_timestamp to a default value
+                last_message_timestamp = datetime(1970, 1, 1)  # Or any other default value you prefer
 
-        return chat_list
+            chat_timestamps[chat] = last_message_timestamp
+
+        # Sort the chat list based on the timestamp of the last message in each conversation
+        sorted_chats = sorted(chat_timestamps, key=chat_timestamps.get, reverse=True)
+
+        return sorted_chats
     except mysql.connector.Error as e:
         # Handle any errors that occur during the execution of the query
-        print("Error retrieving chat list:", e)
+        print("Error sorting chat list:", e)
         return None
     finally:
         # Close the cursor and connection

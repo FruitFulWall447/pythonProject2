@@ -517,6 +517,11 @@ class Communication:
         net.playlist_songs_list(songs_list)
         self.logger.info(f"Sent list of songs dicts list to user {User}")
 
+        settings_dict = database_func.get_user_settings(User)
+        if settings_dict is not None:
+            net.send_settings_dict(settings_dict)
+            self.logger.info(f"Sent settings to user {User}")
+
         net.send_all_data_received()
         self.logger.info(f"All needed data sent to {User}")
 
