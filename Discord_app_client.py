@@ -1001,8 +1001,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             ''')
             # Create an instance of ChatBox
             if self.chat_clicked:
-                self.chat_box = ChatBox(self.selected_chat, self.list_messages, self.friends_list, parent=self,
-                                        Network=n)  # Set the parent widget
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
 
             buttons_layout = QHBoxLayout()
             self.main_layout = QVBoxLayout(self)
@@ -1950,11 +1949,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
             try:
-                self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
-                                        parent=self, Network=n)
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
             except Exception as e:
-                self.chat_box = ChatBox(name, self.list_messages, self.friends_list,
-                                        parent=self, Network=n)
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
                 print(f"error in creating chat_box on updated_chat_func : {e}")
 
             self.stacked_widget.insertWidget(0, self.chat_box)
@@ -1970,6 +1967,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if self.chat_clicked:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
+            self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
             print(f"error in updated chat2 {e}")
 
     def update_values(self):

@@ -976,7 +976,8 @@ class PlaylistWidget(QWidget):
         if self.parent.shuffle:
             self.shuffle_button.setStyleSheet("background-color: green; border-radius: 15px;")
         else:
-            self.shuffle_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
+            self.shuffle_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}"
+                                                  f"; border-radius: 15px;")
 
     def toggle_replay_song(self):
         if self.parent.replay_song:
@@ -984,7 +985,8 @@ class PlaylistWidget(QWidget):
             self.replay_song_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
         else:
             self.parent.replay_song = True
-            self.replay_song_button.setStyleSheet("background-color: green; border-radius: 15px;")
+            self.replay_song_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}"
+                                                  f"; border-radius: 15px;")
 
     def remove_song(self):
         remove_row(self.table, self.parent.playlist_index)

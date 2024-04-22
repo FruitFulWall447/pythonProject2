@@ -494,7 +494,7 @@ def gets_group_attributes_from_format(group_format):
 
 class ChatBox(QWidget):
 
-    def __init__(self, chat_name, messages_list, friends_list, Network, parent=None):
+    def __init__(self, messages_list, Network, parent=None):
         super().__init__()
         screen = QDesktopWidget().screenGeometry()
         # Extract the screen width and height
