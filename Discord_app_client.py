@@ -1183,7 +1183,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.camera_index = settings_dict.get("camera_device_index")
         self.font_size = settings_dict.get("font_size")
         self.font_text = settings_dict.get("font")
-        self.background_color = settings_dict.get("theme_color")
+        self.update_background_color(settings_dict.get("theme_color"))
         self.censor_data_from_strangers = settings_dict.get("censor_data")
         self.is_private_account = settings_dict.get("private_account")
         self.push_to_talk_key = settings_dict.get("push_to_talk_bind")

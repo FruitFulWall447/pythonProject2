@@ -268,7 +268,7 @@ def get_user_settings(username):
 
         return user_settings
 
-    except mysql.connector.Error as e:
+    except Exception as e:
         print(f"MySQL Error: {e}")
         return None
 
