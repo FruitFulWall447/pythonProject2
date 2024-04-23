@@ -38,6 +38,15 @@ email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "ma
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
 
+def duration_to_milliseconds(duration_str):
+    # Split the duration string into minutes and seconds
+    minutes, seconds = map(int, duration_str.split(':'))
+
+    # Calculate the total duration in milliseconds
+    total_duration_ms = (minutes * 60 + seconds) * 1000
+
+    return total_duration_ms
+
 def save_token(token):
     settings = QSettings("Connectify_App", "Connectify")
     settings.setValue("saved_security_token", token)
@@ -986,6 +995,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.playlist_media_player = QMediaPlayer()
         self.playlist_media_player.setVolume(50)
         self.playlist_media_player.mediaStatusChanged.connect(self.handle_playlist_song_state_change)
+        self.playlist_media_player.positionChanged.connect(self.update_slider_position)
 
         self.ringtone_media_player = QMediaPlayer()
         self.ringtone_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
@@ -1036,6 +1046,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def update_slider_position(self, new_position):
+        self.music_box.playlist_duration_slider.setValue(new_position)
+        current_time = QTime(0, 0).addMSecs(new_position)
+        current_time_str = current_time.toString("mm:ss")
+        self.music_box.update_current_duration_text(current_time_str)
 
     def toggle_shuffle(self):
         if self.shuffle:
@@ -1164,6 +1180,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
             self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
+        self.music_box.playlist_duration_slider.setMinimum(0)
+        song_dict = self.playlist_songs[self.playlist_index]
+        duration_str = song_dict.get("audio_duration")
+        self.music_box.update_duration_tex(duration_str)
+        total_duration = duration_to_milliseconds(duration_str)
+        self.music_box.playlist_duration_slider.setMaximum(total_duration)
 
     def get_setting_dict(self):
         settings_dict = {

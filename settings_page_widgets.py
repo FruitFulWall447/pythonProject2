@@ -27,7 +27,8 @@ def create_slider(parent, min_value, max_value, value, connected_function, x, y,
     volume_slider.setMinimum(min_value)
     volume_slider.setMaximum(max_value)
     volume_slider.setValue(value)  # Set initial volume
-    volume_slider.valueChanged.connect(connected_function)
+    if connected_function is not None:
+        volume_slider.valueChanged.connect(connected_function)
     volume_slider.setGeometry(x, y, width, height)
     volume_slider.setStyleSheet(style_sheet)
     return volume_slider

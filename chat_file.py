@@ -957,9 +957,16 @@ class PlaylistWidget(QWidget):
             self.parent.screen_height * 0.15)
         playlist_slider_width, playlist_slider_height = 750, 25
 
-        self.playlist_duration_slider = create_slider(self, 0, 0, 0, self.audio_postion_changed
+        self.playlist_duration_slider = create_slider(self, 0, 0, 0, None
                                                       , playlist_duration_slide_x
                                                       , playlist_duration_slide_y, playlist_slider_width, playlist_slider_height, self.sliders_style_sheet)
+        self.playlist_duration_slider.sliderMoved.connect(self.update_media_player_position)
+        self.playlist_duration_slider_duration_label.move(int((playlist_duration_slide_x + playlist_slider_width)*1.02),
+                                                          int(playlist_duration_slide_y*1.03))
+        self.playlist_duration_slider_current_time_label.move(int(playlist_duration_slide_x*0.9),
+                                                              int(playlist_duration_slide_y*1.03))
+        self.playlist_duration_slider_current_time_label.setStyleSheet("color: white")
+        self.playlist_duration_slider_duration_label.setStyleSheet("color: white")
 
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
@@ -1012,15 +1019,35 @@ class PlaylistWidget(QWidget):
         self.shuffle_button.clicked.connect(self.toggle_shuffle)
         self.replay_song_button.clicked.connect(self.toggle_replay_song)
 
-
-
         self.update_music_page_style_sheet()
         # Ensure the data is visible
 
         self.table.show()
 
-    def audio_postion_changed(self):
-        x = 5
+    def update_media_player_position(self, new_position):
+        # Convert the new position to seconds
+        try:
+            if self.parent.playlist_media_player.state() == QMediaPlayer.PlayingState:
+                is_playing = True
+            else:
+                is_playing = False
+            self.parent.playlist_media_player.pause()
+            new_position_seconds = new_position  # Convert milliseconds to seconds
+
+            # Set the new position of the media player
+            self.parent.playlist_media_player.setPosition(new_position_seconds)
+            if is_playing:
+                self.parent.playlist_media_player.play()
+        except Exception as e:
+            print(f"error with changing audio position {e}")
+
+    def update_current_duration_text(self, text):
+        self.playlist_duration_slider_current_time_label.setText(text)
+        self.playlist_duration_slider_current_time_label.adjustSize()
+
+    def update_duration_tex(self, text):
+        self.playlist_duration_slider_duration_label.setText(text)
+        self.playlist_duration_slider_duration_label.adjustSize()
 
     def set_icon_for_volume_label(self):
         muted_volume_path = "discord_app_assets/speaker_icon0.png"
