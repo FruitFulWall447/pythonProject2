@@ -32,6 +32,7 @@ import re
 import pyaudio
 import cv2
 from datetime import datetime
+from settings_page_widgets import create_slider
 
 
 def insert_item_to_table(table, col, value, row_position):
@@ -883,6 +884,30 @@ class PlaylistWidget(QWidget):
     def init_ui(self):
 
         # Create a table widget
+        self.sliders_style_sheet = f"""
+                       QSlider::groove:horizontal {{
+                           border: 1px solid #bbb;
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                           height: 10px;
+                           margin: 0px;
+                       }}
+
+                       QSlider::handle:horizontal {{
+                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                           border: 1px solid #777;
+                           width: 20px;
+                            margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                           border-radius: 5px;
+                       }}
+
+                       QSlider::add-page:horizontal {{
+                           background: #fff;
+                       }}
+
+                       QSlider::sub-page:horizontal {{
+                           background: {self.parent.standard_hover_color}; /* Change this color to the desired color for the left side */
+                       }}
+                               """
         self.last_selected_row = None
         table_x, table_y = 0, 70
         table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
@@ -924,6 +949,17 @@ class PlaylistWidget(QWidget):
             self.parent.screen_height * 0.15)
         self.remove_selected_song_button.move(remove_selected_song_button_x, remove_selected_song_button_y)
         self.remove_selected_song_button.clicked.connect(self.remove_song)
+        self.playlist_duration_slider_current_time_label = QLabel(self)
+        self.playlist_duration_slider_duration_label = QLabel(self)
+        make_q_object_clear(self.playlist_duration_slider_current_time_label)
+        make_q_object_clear(self.playlist_duration_slider_duration_label)
+        playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.15), int(
+            self.parent.screen_height * 0.15)
+        playlist_slider_width, playlist_slider_height = 500, 25
+
+        self.playlist_duration_slider = create_slider(self, 0, 0, 0, self.audio_postion_changed
+                                                      , playlist_duration_slide_x
+                                                      , playlist_duration_slide_y, playlist_slider_width, playlist_slider_height, self.sliders_style_sheet)
 
         last_song_button = QPushButton(self)
         next_song_button = QPushButton(self)
@@ -943,6 +979,18 @@ class PlaylistWidget(QWidget):
         set_button_icon(self.shuffle_button, shuffle_button_icon_path, buttons_width, buttons_height)
         first_button_x = int(self.parent.screen_width * 0.43)
         buttons_y = int(self.parent.screen_height * 0.842)
+        playlist_volume_slider_x, playlist_volume_slider_y = int(buttons_width * 1.2), int(
+            self.parent.screen_height * 0.854)
+        playlist_volume_slider_width, playlist_volume_slider_height = 500, 25
+        self.playlist_volume_slider_label = QLabel(self)
+        make_q_object_clear(self.playlist_volume_slider_label)
+        self.playlist_volume_slider = create_slider(self, 0, 100, self.parent.volume
+                                                    , self.playlist_volume_update,
+                                                    playlist_volume_slider_x, playlist_volume_slider_y, playlist_volume_slider_width, playlist_volume_slider_height, self.sliders_style_sheet
+                                                    )
+        self.playlist_volume_slider_label.move(int(playlist_volume_slider_x*0.4), int(playlist_volume_slider_y*0.995))
+        self.set_icon_for_volume_label()
+        # self.volume_slider.
 
         delta_between_button = int(self.parent.screen_width * 0.03125)
         self.replay_song_button.move(first_button_x+(delta_between_button*3), buttons_y)
@@ -970,6 +1018,29 @@ class PlaylistWidget(QWidget):
         # Ensure the data is visible
 
         self.table.show()
+
+    def audio_postion_changed(self):
+        x = 5
+
+    def set_icon_for_volume_label(self):
+        muted_volume_path = "discord_app_assets/speaker_icon0.png"
+        low_volume_path = "discord_app_assets/speaker_icon1.png"
+        mid_volume_path = "discord_app_assets/speaker_icon2.png"
+        high_volume_path = "discord_app_assets/speaker_icon3.png"
+        if self.parent.playlist_volume == 0:
+            set_icon_from_path_to_label(self.playlist_volume_slider_label, muted_volume_path)
+        elif self.parent.playlist_volume < 30:
+            set_icon_from_path_to_label(self.playlist_volume_slider_label, low_volume_path)
+        elif self.parent.playlist_volume < 60:
+            set_icon_from_path_to_label(self.playlist_volume_slider_label, mid_volume_path)
+        else:
+            set_icon_from_path_to_label(self.playlist_volume_slider_label, high_volume_path)
+
+    def playlist_volume_update(self, value):
+        self.playlist_volume_slider.setValue(value)
+        self.parent.playlist_volume = value
+        self.parent.playlist_media_player.setVolume(value)
+        self.set_icon_for_volume_label()
 
     def toggle_shuffle(self):
         self.parent.toggle_shuffle()

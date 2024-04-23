@@ -861,6 +861,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.push_to_talk_key = None
         self.two_factor_authentication = False
 
+        self.playlist_volume = self.volume
+        self.playlist_songs = []
+        self.playlist_index = 0
+        self.playlist_last_index = 0
+        self.shuffle = False
+        self.replay_song = False
+
         self.size_error_label = False
         self.is_chat_box_full = False
         self.is_friends_box_full = False
@@ -897,12 +904,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.list_user_profile_dicts = []
         self.circular_images_dicts_list_of_users = []
         self.circular_images_dicts_list_of_groups = []
-
-        self.playlist_songs = []
-        self.playlist_index = 0
-        self.playlist_last_index = 0
-        self.shuffle = False
-        self.replay_song = False
 
         self.is_watching_video = False
         # the scroll widget that contain all of the messages
@@ -1164,7 +1165,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.music_box.select_row(self.playlist_index)
             self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
 
-
     def get_setting_dict(self):
         settings_dict = {
             "volume": self.volume,
@@ -1184,6 +1184,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_settings_from_dict(self, settings_dict):
         # Update settings from the provided dictionary
         self.volume = settings_dict.get("volume")
+        self.playlist_volume = self.volume
         self.output_device_name = settings_dict.get("output_device")
         self.input_device_name = settings_dict.get("input_device")
         self.camera_index = settings_dict.get("camera_device_index")
@@ -1257,7 +1258,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_media_players_volume(self, value):
         self.mp3_message_media_player.setVolume(value)
         self.sound_effect_media_player.setVolume(value)
-        self.playlist_media_player.setVolume(value)
+        # self.playlist_media_player.setVolume(value)
         self.ringtone_media_player.setVolume(value)
         self.calling_media_player.setVolume(value)
 

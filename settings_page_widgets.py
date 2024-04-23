@@ -22,6 +22,18 @@ def is_valid_image(image_bytes):
         return False
 
 
+def create_slider(parent, min_value, max_value, value, connected_function, x, y, width, height, style_sheet):
+    volume_slider = QSlider(Qt.Horizontal, parent)
+    volume_slider.setMinimum(min_value)
+    volume_slider.setMaximum(max_value)
+    volume_slider.setValue(value)  # Set initial volume
+    volume_slider.valueChanged.connect(connected_function)
+    volume_slider.setGeometry(x, y, width, height)
+    volume_slider.setStyleSheet(style_sheet)
+    return volume_slider
+
+
+
 def file_to_bytes(file_path):
     with open(file_path, "rb") as file:
         image_bytes = file.read()
@@ -485,7 +497,7 @@ class SettingsBox(QWidget):
                 width, height = (300, 45)
                 slider_min_value = 0
                 slider_max_value = 100
-                self.volume_slider = self.create_slider(slider_min_value, slider_max_value, self.parent.volume, self.set_volume, volume_slider__x, volume_slider_y
+                self.volume_slider = create_slider(self, slider_min_value, slider_max_value, self.parent.volume, self.set_volume, volume_slider__x, volume_slider_y
                                                         , width, height, self.volume_slider_style_sheet)
 
                 volume_slider_label = self.create_white_label(volume_slider_label_x, volume_slider_label_y, self.default_labels_font_size, None, None, "OUTPUT VOLUME")
@@ -540,7 +552,7 @@ class SettingsBox(QWidget):
 
                 font_slider_label = self.create_white_label(font_size_slider_x, font_size_slider_y-15,
                                                               self.default_labels_font_size, None, None, "FONT SIZE")
-                self.font_size_slider = self.create_slider(font_size_slider_min_value, font_size_slider_max_value, self.parent.font_size,
+                self.font_size_slider = create_slider(self, font_size_slider_min_value, font_size_slider_max_value, self.parent.font_size,
                                                            self.font_size_changed, font_size_slider_x, font_size_slider_y
                 , font_size_slider_width, font_size_slider_height, font_size_slider_style_sheet)
 
@@ -768,16 +780,6 @@ class SettingsBox(QWidget):
         else:
             edit_keybind_button = self.create_colored_button(grey, hover_grey, grey, x+170, y+6, button_width, button_height, "Edit Keybind")
             edit_keybind_button.clicked.connect(self.handle_push_to_talk_selection_button_clicked)
-
-    def create_slider(self, min_value, max_value, value, connected_function, x, y, width, height, style_sheet):
-        volume_slider = QSlider(Qt.Horizontal, self)
-        volume_slider.setMinimum(min_value)
-        volume_slider.setMaximum(max_value)
-        volume_slider.setValue(value)  # Set initial volume
-        volume_slider.valueChanged.connect(connected_function)
-        volume_slider.setGeometry(x, y, width, height)
-        volume_slider.setStyleSheet(style_sheet)
-        return volume_slider
 
     def handle_push_to_talk_selection_button_clicked(self):
         if self.parent.is_editing_push_to_talk_button:
