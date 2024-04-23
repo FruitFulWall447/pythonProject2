@@ -488,6 +488,7 @@ class Communication:
 
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)
+
         friends_list = database_func.get_user_friends(User)
         net.send_friends_list(friends_list)
         self.logger.info(f"Sent friend list ({friends_list}) to user {User}")

@@ -16,6 +16,8 @@ from cryptography.fernet import Fernet
 import secrets
 import struct
 import pickle
+import binascii
+
 
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
@@ -113,12 +115,17 @@ def decrypt_with_aes(key, ciphertext):
 
         # Decrypt the ciphertext
         decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
-
         # Use PKCS#7 unpadding
         unpadder = aes_padding.PKCS7(128).unpadder()
         unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
         # return type bytes
         return unpadded_data
+    except binascii.Error:
+        # If binascii.Error occurs (invalid base64 string), return 1 without printing the error
+        return 1
+    except TypeError:
+        # If TypeError occurs, return 1 without printing the error
+        return 1
     except Exception as e:
         print(f"Error in decryption: {e}")
         return 1
@@ -736,8 +743,7 @@ class client_net:
 
     def recv_udp(self):
         fragment_data, address = self.client_udp_socket.recvfrom(100000)
-        if type(fragment_data) != int:
-            return decrypt_with_aes(self.aes_key, fragment_data), address
+        return decrypt_with_aes(self.aes_key, fragment_data), address
 
     def return_socket(self):
         return self.client_tcp_socket

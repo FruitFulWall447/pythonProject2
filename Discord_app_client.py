@@ -374,8 +374,9 @@ def listen_udp(main_page_object):
     while main_page_object.listen_udp:
         try:
             fragment_data, address = network.recv_udp()
-            data = pickle.loads(fragment_data)
-            handle_udp_data(data, main_page_object)
+            if fragment_data != 1:
+                data = pickle.loads(fragment_data)
+                handle_udp_data(data, main_page_object)
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:
