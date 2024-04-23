@@ -1090,6 +1090,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def play_search_result(self):
         if self.current_search_song_dict is not None:
             current_search_audio_bytes = self.current_search_song_dict.get("audio_bytes")
+            self.music_box.playlist_duration_slider.setMinimum(0)
+            duration_str = self.current_search_song_dict.get("audio_duration")
+            self.music_box.update_duration_tex(duration_str)
+            total_duration = duration_to_milliseconds(duration_str)
+            self.music_box.playlist_duration_slider.setMaximum(total_duration)
             play_mp3_from_bytes(current_search_audio_bytes, self.playlist_media_player)
 
     def save_searched_song_to_playlist(self):
