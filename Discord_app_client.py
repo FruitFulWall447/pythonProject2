@@ -1145,7 +1145,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         random_index = random.randint(0, len(self.playlist_songs) - 1)
                     self.set_new_playlist_index_and_listen(random_index)
             else:
-                self.set_new_playlist_index_and_listen(self.playlist_songs)
+                self.set_new_playlist_index_and_listen(self.playlist_index)
 
     def set_new_playlist_index_and_listen(self, index):
         self.playlist_last_index = self.playlist_index

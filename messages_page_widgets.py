@@ -2122,6 +2122,11 @@ class ScrollableWidget(QWidget):
                     if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                         image_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
 
+                image_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                image_label.customContextMenuRequested.connect(
+                    lambda pos, file_bytes=image_bytes, button=image_label, type=message_type,
+                           name=file_name: self.parent.show_context_menu(pos, button,
+                                                                         file_bytes, type, name))
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
                 title_label.setText(
@@ -2170,6 +2175,11 @@ class ScrollableWidget(QWidget):
 
                 # Set the layout to the audio label
                 video_label.setLayout(layout)
+                video_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                video_label.customContextMenuRequested.connect(
+                    lambda pos, file_bytes=video_bytes, button=video_label, type=message_type,
+                           name=file_name: self.parent.show_context_menu(pos, button,
+                                                                         file_bytes, type, name))
 
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
@@ -2212,6 +2222,11 @@ class ScrollableWidget(QWidget):
                 audio_label.setLayout(layout)
                 # audio_label.setGeometry(x_pos, y, 300, 40)
                 make_q_object_clear(play_button)
+                audio_label.setContextMenuPolicy(Qt.CustomContextMenu)
+                audio_label.customContextMenuRequested.connect(
+                    lambda pos, file_bytes=audio_bytes, button=audio_label, type=message_type,
+                           name=file_name: self.parent.show_context_menu(pos, button,
+                                                                         file_bytes, type, name))
 
                 message = ""
                 title_label = self.parent.create_temp_message_label(message)
