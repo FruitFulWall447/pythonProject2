@@ -1089,8 +1089,7 @@ class server_net:
         self.send_message_dict_tcp(message)
 
     def send_profile_list_of_dicts(self, profile_dicts_list):
-        json_profile_dicts_list = json.dumps(profile_dicts_list)
-        message = {"message_type": "profile_dicts_list", "profile_dicts_list": json_profile_dicts_list}
+        message = {"message_type": "profile_dicts_list", "profile_dicts_list": profile_dicts_list}
         self.send_message_dict_tcp(message)
 
     def send_profile_dict_of_user(self, profile_dict, user):

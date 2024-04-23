@@ -330,7 +330,8 @@ def thread_recv_messages():
                         id_to_remove = data.get("removed_id")
                         main_page.remove_call_dict_by_id(id_to_remove)
             elif message_type == "profile_dicts_list":
-                profile_dicts_list = json.loads(data.get("profile_dicts_list"))
+                profile_dicts_list = (data.get("profile_dicts_list"))
+                print(profile_dicts_list)
                 main_page.list_user_profile_dicts = profile_dicts_list
                 QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
                 QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
@@ -1406,13 +1407,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updated_chat()
 
     def get_profile_pic_by_username(self, username):
-        for profile_dict in self.list_user_profile_dicts:
-            if profile_dict.get("username") == username:
-                image_bytes_encoded = profile_dict.get("encoded_image_bytes")
-                if image_bytes_encoded is not None:
-                    return base64.b64decode(image_bytes_encoded)
-                else:
-                    return None
+        if self.list_user_profile_dicts is not None:
+            for profile_dict in self.list_user_profile_dicts:
+                if profile_dict.get("username") == username:
+                    image_bytes_encoded = profile_dict.get("encoded_image_bytes")
+                    if image_bytes_encoded is not None:
+                        return base64.b64decode(image_bytes_encoded)
+                    else:
+                        return None
 
     def set_page_index_by_clicked(self):
         if self.chat_clicked:
