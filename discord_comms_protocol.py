@@ -348,6 +348,13 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def ask_for_song_bytes_by_playlist_index(self, index):
+        try:
+            message = {"message_type": "playlist_song_bytes_by_index", "index": index}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
             message = {"message_type": "current_chat", "current_chat": current_chat}
@@ -886,6 +893,11 @@ class server_net:
             self.send_bytes(pickled_data)
         except Exception as e:
             print(e)
+
+    def send_played_song_bytes(self, song_bytes, title):
+        message = {"message_type": "playlist_current_song_bytes", "audio_bytes": song_bytes, "title": title
+                   }
+        self.send_message_dict_tcp(message)
 
     def send_searched_song_info(self, searched_song_dict):
         message = {"message_type": "searched_song_result", "searched_song_dict": searched_song_dict

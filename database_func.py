@@ -240,6 +240,51 @@ def get_songs_by_owner(owner):
         return []
 
 
+def get_song_by_index_and_owner(owner, index):
+    try:
+        # Connect to your MySQL database
+        with connect_to_kevindb() as connection:
+            # Create a cursor object
+            with connection.cursor() as cursor:
+                # Construct the SQL query to select a song by owner and index
+                select_query = """
+                    SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
+                    FROM songs
+                    WHERE owner = %s
+                    LIMIT %s, 1
+                """
+
+                # Execute the SQL query with the owner and index parameters
+                cursor.execute(select_query, (owner, index))
+
+                # Fetch the row
+                song_data = cursor.fetchone()
+
+                if song_data:
+                    # Extract song data from the row
+                    title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+
+                    # Create a dictionary to store song information
+                    mp3_bytes = file_to_bytes(mp3_file_path)
+                    thumbnail_bytes = file_to_bytes(thumbnail_path)
+                    song_info = {
+                        "title": title,
+                        "audio_bytes": mp3_bytes,
+                        "audio_duration": duration,
+                        "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
+                        "thumbnail_bytes": thumbnail_bytes
+                    }
+
+                    return song_info
+                else:
+                    # No song found at the specified index for the owner
+                    return None
+
+    except Exception as error:
+        print("Error while retrieving song by index and owner:", error)
+        return None
+
+
 def get_user_settings(username):
     try:
         # Connect to the database

@@ -169,6 +169,11 @@ def thread_recv_messages():
                 settings_dict = data.get("settings_dict")
                 main_page.update_settings_from_dict_signal.emit(settings_dict)
                 print("got settings")
+            elif message_type == "playlist_current_song_bytes":
+                audio_bytes = data.get("audio_bytes")
+                title = data.get("title")
+                play_mp3_from_bytes(audio_bytes, main_page.playlist_media_player)
+                print(f"got song {title} bytes from server")
             elif message_type == "searched_song_result":
                 info_dict = data.get("searched_song_dict")
                 main_page.insert_search_result_signal.emit(info_dict)
@@ -1149,14 +1154,16 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         if self.playlist_index < len_songs_list:
             print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
-            audio_bytes = self.get_audio_bytes_from_playlist_index()
-            play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
+            self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
+            # audio_bytes = self.get_audio_bytes_from_playlist_index()
+            # play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
         else:
             self.playlist_index = 0
             print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
-            audio_bytes = self.get_audio_bytes_from_playlist_index()
-            play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
+            self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
+            # audio_bytes = self.get_audio_bytes_from_playlist_index()
+            # play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
 
     def get_audio_bytes_from_playlist_index(self):
         song = self.playlist_songs[self.playlist_index]
