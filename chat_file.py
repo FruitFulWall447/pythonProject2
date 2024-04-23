@@ -974,9 +974,10 @@ class PlaylistWidget(QWidget):
     def toggle_shuffle(self):
         self.parent.toggle_shuffle()
         if self.parent.shuffle:
-            self.shuffle_button.setStyleSheet("background-color: green; border-radius: 15px;")
-        else:
             self.shuffle_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}"
+                                              f"; border-radius: 15px;")
+        else:
+            self.shuffle_button.setStyleSheet(f"background-color: transparent"
                                                   f"; border-radius: 15px;")
 
     def toggle_replay_song(self):
