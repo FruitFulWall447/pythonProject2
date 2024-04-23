@@ -1295,6 +1295,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             username = circular_image_dictionary.get("username")
             if username == name:
                 return circular_image_dictionary.get("circular_image_bytes")
+        return None
 
     def get_circular_image_bytes_by_group_id(self, group_id):
         for circular_image_dictionary in self.circular_images_dicts_list_of_groups:

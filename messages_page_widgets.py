@@ -332,30 +332,33 @@ def check_active_cameras():
 # works very well for a circular labels
 def set_icon_from_bytes_to_label(label, image_bytes):
     # Load the image from bytes
-    pixmap = QPixmap()
-    pixmap.loadFromData(image_bytes)
+    try:
+        pixmap = QPixmap()
+        pixmap.loadFromData(image_bytes)
 
-    # Get the size of the label
-    label_size = label.size()
-    label_width = label_size.width()
-    label_height = label_size.height()
+        # Get the size of the label
+        label_size = label.size()
+        label_width = label_size.width()
+        label_height = label_size.height()
 
-    # Calculate the aspect ratio of the image
-    image_width = pixmap.width()
-    image_height = pixmap.height()
-    image_aspect_ratio = image_width / image_height
+        # Calculate the aspect ratio of the image
+        image_width = pixmap.width()
+        image_height = pixmap.height()
+        image_aspect_ratio = image_width / image_height
 
-    # Determine how to scale the image based on its aspect ratio
-    if image_aspect_ratio <= 0.5:
-        scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
-    elif image_aspect_ratio >= 1.5:
-        scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
-    else:
-        scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        # Determine how to scale the image based on its aspect ratio
+        if image_aspect_ratio <= 0.5:
+            scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
+        elif image_aspect_ratio >= 1.5:
+            scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
+        else:
+            scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-    # Set the scaled pixmap to the label
-    label.setPixmap(scaled_pixmap)
-    label.setAlignment(Qt.AlignCenter)
+        # Set the scaled pixmap to the label
+        label.setPixmap(scaled_pixmap)
+        label.setAlignment(Qt.AlignCenter)
+    except Exception as e:
+        print(f"error in loading image from bytes {e}")
 
 
 def set_icon_from_path_to_label(label, image_path):
