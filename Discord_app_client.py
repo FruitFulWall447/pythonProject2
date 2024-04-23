@@ -1078,19 +1078,18 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         if self.current_search_song_dict is not None:
             if not self.is_song_exist_in_playlist(self.current_search_song_dict):
                 self.Network.save_song_in_playlist(self.current_search_song_dict)
-                self.playlist_songs.append(self.current_search_song_dict)
+                temp_dict = self.current_search_song_dict.pop("audio_bytes")
+                self.playlist_songs.append(temp_dict)
                 self.music_box.insert_new_song_to_playlist(self.current_search_song_dict)
                 print("send song to server")
             else:
                 print("song already exist in playlist")
 
     def is_song_exist_in_playlist(self, added_dict):
-        added_dict_audio_bytes = added_dict.get("audio_bytes")
         added_dict_title = added_dict.get("title")
         for song in self.playlist_songs:
-            song_audio_bytes = song.get("audio_bytes")
             song_title = song.get("title")
-            if song_title == added_dict_title or added_dict_audio_bytes == song_audio_bytes:
+            if song_title == added_dict_title:
                 return True
         return False
 
@@ -1155,19 +1154,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
             self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
-            # audio_bytes = self.get_audio_bytes_from_playlist_index()
-            # play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
         else:
             self.playlist_index = 0
             print(f"trying to listen to song of index {self.playlist_index}")
             self.music_box.select_row(self.playlist_index)
             self.Network.ask_for_song_bytes_by_playlist_index(self.playlist_index)
-            # audio_bytes = self.get_audio_bytes_from_playlist_index()
-            # play_mp3_from_bytes(audio_bytes, self.playlist_media_player)
 
-    def get_audio_bytes_from_playlist_index(self):
-        song = self.playlist_songs[self.playlist_index]
-        return song.get("audio_bytes")
 
     def get_setting_dict(self):
         settings_dict = {

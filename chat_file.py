@@ -1115,7 +1115,6 @@ class PlaylistWidget(QWidget):
                 # Extract data from the dictionary
                 title = video_info_dict.get('title')
                 thumbnail_bytes = video_info_dict.get('thumbnail_bytes')
-                audio_bytes = video_info_dict.get('audio_bytes')
                 audio_duration = video_info_dict.get('audio_duration')
                 date_added = video_info_dict.get('timestamp')
 
