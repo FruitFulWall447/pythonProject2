@@ -980,13 +980,16 @@ class PlaylistWidget(QWidget):
                                                   f"; border-radius: 15px;")
 
     def toggle_replay_song(self):
-        if self.parent.replay_song:
-            self.parent.replay_song = False
-            self.replay_song_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
-        else:
-            self.parent.replay_song = True
-            self.replay_song_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}"
-                                                  f"; border-radius: 15px;")
+        try:
+            if self.parent.replay_song:
+                self.parent.replay_song = False
+                self.replay_song_button.setStyleSheet("background-color: transparent; border-radius: 15px;")
+            else:
+                self.parent.replay_song = True
+                self.replay_song_button.setStyleSheet(f"background-color: {self.parent.standard_hover_color}"
+                                                      f"; border-radius: 15px;")
+        except Exception as e:
+            print(f"error with toggling replay song {e}")
 
     def remove_song(self):
         remove_row(self.table, self.parent.playlist_index)

@@ -902,6 +902,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.playlist_index = 0
         self.playlist_last_index = 0
         self.shuffle = False
+        self.replay_song = False
 
         self.is_watching_video = False
         # the scroll widget that contain all of the messages

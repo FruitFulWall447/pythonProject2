@@ -220,11 +220,9 @@ def get_songs_by_owner(owner):
                     title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
 
                     # Create a dictionary to store song information
-                    mp3_bytes = file_to_bytes(mp3_file_path)
                     thumbnail_bytes = file_to_bytes(thumbnail_path)
                     song_info = {
                         "title": title,
-                        "audio_bytes": mp3_bytes,
                         "audio_duration": duration,
                         "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
                         "thumbnail_bytes": thumbnail_bytes
