@@ -953,9 +953,9 @@ class PlaylistWidget(QWidget):
         self.playlist_duration_slider_duration_label = QLabel(self)
         make_q_object_clear(self.playlist_duration_slider_current_time_label)
         make_q_object_clear(self.playlist_duration_slider_duration_label)
-        playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.15), int(
+        playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.265), int(
             self.parent.screen_height * 0.15)
-        playlist_slider_width, playlist_slider_height = 500, 25
+        playlist_slider_width, playlist_slider_height = 750, 25
 
         self.playlist_duration_slider = create_slider(self, 0, 0, 0, self.audio_postion_changed
                                                       , playlist_duration_slide_x
