@@ -14,7 +14,17 @@ import base64
 from song_search_engine import extract_audio_bytes
 
 # Set up the logging configuration
-logging.basicConfig(level=logging.DEBUG)  # You can adjust the logging level as needed
+logging.basicConfig(filename='example.log',
+                    level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+console_handler.setFormatter(formatter)
+
+# Add the StreamHandler to the root logger
+logging.getLogger().addHandler(console_handler)
 
 server = "127.0.0.1"
 port = 5555
@@ -349,6 +359,9 @@ def thread_recv_messages(n, addr):
             elif message_type == "exit_group":
                 group_to_exit_id = data.get("group_to_exit_id")
                 database_func.remove_group_member(group_to_exit_id, User)
+                group_name = database_func.get_group_name_by_id(group_to_exit_id)
+                group_name_plus_id = f"({group_to_exit_id}){group_name}"
+                database_func.remove_chat_from_user(User, group_name_plus_id)
             elif message_type == "remove_chat":
                 chat_to_remove = data.get("chat_to_remove")
                 database_func.remove_chat_from_user(User, chat_to_remove)

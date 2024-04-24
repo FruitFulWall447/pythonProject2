@@ -1048,13 +1048,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Error is: {e}")
 
     def exit_group(self, group_id):
-        group_name = self.get_group_name_by_id(group_id)
-        self.chats_list.remove(group_name)
-        if self.selected_chat == group_name:
-            self.selected_chat = ""
-            self.list_messages = []
-        self.Network.send_exit_group(group_id)
-        self.updated_chat()
+        try:
+            group_name = self.get_group_name_by_id(group_id)
+            group_name_plus_id = f"({group_id}){group_name}"
+            self.chats_list.remove(group_name_plus_id)
+            if self.selected_chat == group_name_plus_id:
+                self.selected_chat = ""
+                self.list_messages = []
+            self.Network.send_exit_group(group_id)
+            self.updated_chat()
+        except Exception as e:
+            print(f"error in existing group {e}")
 
     def remove_friend(self, chat):
         self.friends_list.remove(chat)
