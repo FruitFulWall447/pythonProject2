@@ -1047,6 +1047,32 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error is: {e}")
 
+    def exit_group(self, group_id):
+        self.Network.send_exit_group(group_id)
+
+    def remove_friend(self, chat):
+        self.Network.send_remove_chat(chat)
+
+    def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
+        try:
+            print(pos)
+            print(parent)
+            menu = QMenu(parent)
+            for item1 in actions_list:
+                action = menu.addAction(item1)
+                if item1 == "remove_chat":
+                    action.triggered.connect(lambda: self.remove_friend(chat_name))
+                elif item1 == "exit_group":
+                    action.triggered.connect(lambda: self.exit_group(group_id))
+
+            # Use the position of the button as the reference for menu placement
+            global_pos = button.mapToGlobal(pos)
+
+            # Show the context menu at the adjusted position
+            menu.exec_(global_pos)
+        except Exception as e:
+            print(f"error in right click func {e}")
+
     def update_slider_position(self, new_position):
         self.music_box.playlist_duration_slider.setValue(new_position)
         current_time = QTime(0, 0).addMSecs(new_position)

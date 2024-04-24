@@ -346,6 +346,13 @@ def thread_recv_messages(n, addr):
                 audio_bytes = song_dict.get('audio_bytes')
                 title = song_dict.get('title')
                 n.send_played_song_bytes(audio_bytes, title)
+            elif message_type == "exit_group":
+                group_to_exit_id = data.get("group_to_exit_id")
+                database_func.remove_group_member(group_to_exit_id, User)
+            elif message_type == "remove_chat":
+                chat_to_remove = data.get("chat_to_remove")
+                database_func.remove_chat_from_user(User, chat_to_remove)
+                logger.info(f"remove chat {chat_to_remove} for {User}")
             elif message_type == "settings_dict":
                 settings_dict = data.get("settings_dict")
                 database_func.update_settings_by_dict(User, settings_dict)

@@ -623,6 +623,22 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_exit_group(self, group_id):
+        try:
+            message = {"message_type": "exit_group", "group_to_exit_id": group_id
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def send_remove_chat(self, chat):
+        try:
+            message = {"message_type": "remove_chat", "chat_to_remove": chat
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def block_user(self, user_to_block):
         try:
             message = {"message_type": "block", "user_to_block": user_to_block

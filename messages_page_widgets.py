@@ -1601,6 +1601,15 @@ class ChatBox(QWidget):
         button.move(position[0], position[1])
         button.setFixedHeight(self.friends_button_height)
         button.clicked.connect(partial(self.on_friend_button_clicked, label))
+        button.setContextMenuPolicy(Qt.CustomContextMenu)
+        if not id:
+            actions_list = ["remove_chat"]
+        else:
+            actions_list = ["exit_group"]
+        button.customContextMenuRequested.connect(
+            lambda pos, parent=self, button=button, actions_list=actions_list,
+                   chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
+                                                                            actions_list, chat_name))
 
         style = '''
             color: white;
@@ -1919,7 +1928,6 @@ class ChatBox(QWidget):
 
         # Show the context menu at the adjusted position
         menu.exec_(global_pos)
-
 
     def on_button_clicked(self, label):
         self.button_clicked_signal.emit(label)
