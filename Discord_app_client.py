@@ -1076,7 +1076,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         try:
             menu = QMenu(parent)
             for item1 in actions_list:
-                action = menu.addAction(item1)
+                action = menu.addAction(item1.replace("_", " "))
                 if item1 == "remove_chat":
                     action.triggered.connect(lambda: self.remove_friend(chat_name))
                 elif item1 == "exit_group":
