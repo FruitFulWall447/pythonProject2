@@ -1048,9 +1048,18 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Error is: {e}")
 
     def exit_group(self, group_id):
+        group_name = self.get_group_name_by_id(group_id)
+        self.chats_list.remove(group_name)
+        if self.selected_chat == group_name:
+            self.selected_chat = ""
+            self.list_messages = []
         self.Network.send_exit_group(group_id)
+        self.updated_chat()
 
     def remove_friend(self, chat):
+        self.friends_list.remove(chat)
+        self.updated_requests()
+        self.updated_chat()
         self.Network.send_remove_chat(chat)
 
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
@@ -1547,6 +1556,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         else:
             return None
 
+    def get_group_name_by_id(self, id):
+        for group_dict in self.groups_list:
+            if group_dict["group_id"] == id:
+                return group_dict.get("group_name")
+        else:
+            return None
+
     def is_call_dict_exist_by_group_id(self, group_id):
         for call_dict in self.call_dicts:
             if call_dict.get("is_group_call"):
@@ -1642,7 +1658,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def parse_group_caller_format(self, input_format):
         # Define a regular expression pattern to capture the information
-        print(f"input format is:{input_format}")
         pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
 
         # Use the pattern to match the input_format

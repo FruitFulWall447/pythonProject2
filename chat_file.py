@@ -1141,7 +1141,11 @@ class PlaylistWidget(QWidget):
             f"border-radius: 5px; font-size: 14px;")
 
     def apply_style_sheet_for_button(self):
-        style_sheet = f"background-color: {self.parent.standard_hover_color}; color: white; border-radius: 15px;"
+        if self.parent.background_color == "Black and White":
+            text_entry_color = "black"
+        else:
+            text_entry_color = "white"
+        style_sheet = f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; border-radius: 15px;"
         self.add_to_playlist_button.setStyleSheet(style_sheet)
         self.try_searched_song_button.setStyleSheet(style_sheet)
         self.remove_selected_song_button.setStyleSheet(style_sheet)
