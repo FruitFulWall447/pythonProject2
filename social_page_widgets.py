@@ -821,7 +821,7 @@ class FriendsBox(QWidget):
         if self.add_friend_entry.hasFocus() and len(self.add_friend_entry.text()) > 0:
             username = self.username
             friend_username = self.add_friend_entry.text()
-            self.Network.send_friend_request(username, friend_username)
+            self.Network.send_friend_request(friend_username)
             self.add_friend_entry.setText("")
 
     def friend_not_found(self):

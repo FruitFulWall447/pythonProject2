@@ -1066,6 +1066,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.updated_chat()
         self.Network.send_remove_chat(chat)
 
+    def send_friend_request_for_user(self, user):
+        self.Network.send_friend_request(user)
+
+    def remove_user_from_group(self, user, group_id):
+        self.Network.send_remove_user_from_group(user, group_id)
+
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
             menu = QMenu(parent)
@@ -1075,7 +1081,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     action.triggered.connect(lambda: self.remove_friend(chat_name))
                 elif item1 == "exit_group":
                     action.triggered.connect(lambda: self.exit_group(group_id))
-
+                elif item1 == "add_friend":
+                    action.triggered.connect(lambda: self.send_friend_request_for_user(chat_name))
+                elif item1 == "remove_user_from_group":
+                    action.triggered.connect(lambda: self.remove_user_from_group(chat_name, group_id))
+                elif item1 == "message_user":
+                    action.triggered.connect(lambda: self.chat_box.selected_chat_changed(chat_name))
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
 

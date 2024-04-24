@@ -542,6 +542,7 @@ class ChatBox(QWidget):
         """
 
         self.draw_message_start_x = int(self.screen_width * 0.323)
+        self.friends_button_height = 50
 
         self.create_group_open = QPushButton(self)
 
@@ -904,6 +905,15 @@ class ChatBox(QWidget):
                                                                                   join_button_x, join_button_y,  self.join_call)
                         set_button_icon(self.join_call_button, icon, icon_size, icon_size)
                         self.put_call_icons_on_the_screen()
+                try:
+                    starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
+                    group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
+                    for member in group_members:
+                        pos = (starter_x_of_group_members, starter_y_of_group_members)
+                        button = self.create_member_button(member, pos)
+                        starter_y_of_group_members += button.height()
+                except Exception as e:
+                    print(f"error in drawing members {e}")
 
             self.text_entry = QLineEdit(self)
             if self.parent.background_color == "Black and White":
@@ -1049,7 +1059,6 @@ class ChatBox(QWidget):
             padding: 5px;
             margin-bottom: 2px;
         ''')
-        self.friends_button_height = 50
         friend_starter_y = 170
         friend_x = 250
         self.chats_label.move(friend_x + 15, friend_starter_y - 28)
@@ -1662,6 +1671,74 @@ class ChatBox(QWidget):
         profile_image_label.raise_()
         if id:
             members_label.raise_()
+
+        return button
+
+    def create_member_button(self, label, position):
+
+        px_padding_of_button_text = 55
+        chat_name = label
+        button_text = chat_name
+
+        width, height = (35, 35)
+        profile_image_label = create_custom_circular_label(width, height, self)
+        profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
+
+
+        chat_image = self.parent.get_profile_pic_by_username(chat_name)
+        if chat_image is None:
+            icon_path = self.parent.regular_profile_image_path
+            set_icon_from_path_to_label(profile_image_label, icon_path)
+        else:
+            circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
+            set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
+        profile_image_label.move(profile_image_x, profile_image_y)
+        button = QPushButton(self)
+        button.setText(button_text)
+        button.move(position[0], position[1])
+        button.setFixedHeight(self.friends_button_height)
+        button.setContextMenuPolicy(Qt.CustomContextMenu)
+        manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
+        if chat_name != self.parent.username:
+            if chat_name not in self.parent.friends_list:
+                actions_list = ["add_friend", "message_user"]
+                if manager == self.parent.username:
+                    actions_list.append("remove_user_from_group")
+                button.customContextMenuRequested.connect(
+                    lambda pos, parent=self, button=button, actions_list=actions_list,
+                           chat_name=chat_name, group_id=self.current_group_id: self.parent.right_click_object_func(pos, parent, button,
+                                                                                    actions_list, chat_name, group_id))
+            else:
+                actions_list = ["message user"]
+                if manager == self.parent.username:
+                    actions_list.append("remove_user_from_group")
+                button.customContextMenuRequested.connect(
+                    lambda pos, parent=self, button=button, actions_list=actions_list,
+                           chat_name=chat_name, group_id=self.current_group_id: self.parent.right_click_object_func(pos, parent, button,
+                                                                                    actions_list, chat_name, group_id))
+
+        padding_top = "padding-top: -7px;" if label.startswith("(") else ""  # Adjust the padding value as needed
+        button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {self.parent.background_color_hex};
+                border: 2px solid {self.parent.standard_hover_color};
+                border-radius: 5px;
+                padding: 8px 16px;
+                padding-left: {px_padding_of_button_text}px;  /* Adjust the padding to move text to the right */
+                {padding_top}
+                color: white;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                font-weight: normal;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                text-align: left;
+            }}
+        """)
+
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        button.setFixedWidth(350)
+        button.raise_()
+        profile_image_label.raise_()
 
         return button
 

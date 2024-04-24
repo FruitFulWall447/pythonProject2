@@ -362,6 +362,13 @@ def thread_recv_messages(n, addr):
                 group_name = database_func.get_group_name_by_id(group_to_exit_id)
                 group_name_plus_id = f"({group_to_exit_id}){group_name}"
                 database_func.remove_chat_from_user(User, group_name_plus_id)
+            elif message_type == "remove_user_from_group":
+                user_to_remove = data.get("user_to_remove")
+                group_id = data.get("group_id")
+                database_func.remove_group_member(group_id, user_to_remove)
+                group_name = database_func.get_group_name_by_id(group_id)
+                group_name_plus_id = f"({group_id}){group_name}"
+                database_func.remove_chat_from_user(user_to_remove, group_name_plus_id)
             elif message_type == "remove_chat":
                 chat_to_remove = data.get("chat_to_remove")
                 database_func.remove_chat_from_user(User, chat_to_remove)

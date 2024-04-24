@@ -606,7 +606,7 @@ class client_net:
         except socket.error as e:
             print(e)
 
-    def send_friend_request(self, username, friend_username):
+    def send_friend_request(self, friend_username):
         try:
             # Convert the length of the data to a string
             message = {"message_type": "friend_request", "username_for_request": friend_username
@@ -634,6 +634,15 @@ class client_net:
     def send_remove_chat(self, chat):
         try:
             message = {"message_type": "remove_chat", "chat_to_remove": chat
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def send_remove_user_from_group(self, user, group_id):
+        try:
+            message = {"message_type": "remove_user_from_group", "user_to_remove": user
+                       , "group_id": group_id
                        }
             self.send_message_dict_tcp(message)
         except socket.error as e:
