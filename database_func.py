@@ -1726,7 +1726,8 @@ def remove_group_member(group_id, group_member):
 
         # Retrieve the current group_members_list for the specified group_id
         cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = %s", (group_id,))
-        current_members_list = json.loads(cursor.fetchone()[0]) if cursor.fetchone() else []
+        row = cursor.fetchone()[0]
+        current_members_list = json.loads(row) if row else []
 
         # Remove the group member from the list
         if group_member in current_members_list:

@@ -1055,8 +1055,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
-            print(pos)
-            print(parent)
             menu = QMenu(parent)
             for item1 in actions_list:
                 action = menu.addAction(item1)

@@ -1604,12 +1604,16 @@ class ChatBox(QWidget):
         button.setContextMenuPolicy(Qt.CustomContextMenu)
         if not id:
             actions_list = ["remove_chat"]
+            button.customContextMenuRequested.connect(
+                lambda pos, parent=self, button=button, actions_list=actions_list,
+                       chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
+                                                                                actions_list, chat_name))
         else:
             actions_list = ["exit_group"]
-        button.customContextMenuRequested.connect(
+            button.customContextMenuRequested.connect(
             lambda pos, parent=self, button=button, actions_list=actions_list,
-                   chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
-                                                                            actions_list, chat_name))
+                   group_id=id: self.parent.right_click_object_func(pos, parent, button,
+                                                                            actions_list, group_id=group_id))
 
         style = '''
             color: white;
