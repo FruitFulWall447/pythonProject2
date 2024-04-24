@@ -1709,7 +1709,7 @@ class ChatBox(QWidget):
                            chat_name=chat_name, group_id=self.current_group_id: self.parent.right_click_object_func(pos, parent, button,
                                                                                     actions_list, chat_name, group_id))
             else:
-                actions_list = ["message user"]
+                actions_list = ["message_user"]
                 if manager == self.parent.username:
                     actions_list.append("remove_user_from_group")
                 button.customContextMenuRequested.connect(
