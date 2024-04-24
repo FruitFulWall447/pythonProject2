@@ -1478,18 +1478,19 @@ def remove_chat_from_user(username, chat_to_remove):
                 # means chat is group
                 group_to_remove_id = int(chat_to_remove.split(")")[0][1:])
                 for chat in current_chats_list:
-                    group_id = int(chat.split(")")[0][1:])
-                    if group_id == group_to_remove_id:
-                        current_chats_list.remove(chat)
+                    if chat.startswith("("):
+                        group_id = int(chat.split(")")[0][1:])
+                        if group_id == group_to_remove_id:
+                            current_chats_list.remove(chat)
 
-                        updated_chats_list_json = json.dumps(current_chats_list)
-                        cursor.execute("UPDATE sign_up_table SET chats_list = %s WHERE username = %s",
-                                       (updated_chats_list_json, username))
+                            updated_chats_list_json = json.dumps(current_chats_list)
+                            cursor.execute("UPDATE sign_up_table SET chats_list = %s WHERE username = %s",
+                                           (updated_chats_list_json, username))
 
-                        # Commit the changes
-                        connection.commit()
-                        print(f"Removed '{chat}' from the chats_list for user '{username}'.")
-                        break
+                            # Commit the changes
+                            connection.commit()
+                            print(f"Removed '{chat}' from the chats_list for user '{username}'.")
+                            break
         else:
             print(f"No user found with username '{username}'.")
 
