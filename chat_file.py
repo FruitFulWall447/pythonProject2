@@ -961,10 +961,10 @@ class PlaylistWidget(QWidget):
                                                       , playlist_duration_slide_x
                                                       , playlist_duration_slide_y, playlist_slider_width, playlist_slider_height, self.sliders_style_sheet)
         self.playlist_duration_slider.sliderMoved.connect(self.update_media_player_position)
-        self.playlist_duration_slider_duration_label.move(int((playlist_duration_slide_x + playlist_slider_width)*1.02),
-                                                          int(playlist_duration_slide_y*1.03))
-        self.playlist_duration_slider_current_time_label.move(int(playlist_duration_slide_x*0.9),
-                                                              int(playlist_duration_slide_y*1.03))
+        self.playlist_duration_slider_duration_label.move(int((playlist_duration_slide_x + playlist_slider_width)*1.01),
+                                                          int(playlist_duration_slide_y*1.035))
+        self.playlist_duration_slider_current_time_label.move(int(playlist_duration_slide_x*0.92),
+                                                              int(playlist_duration_slide_y*1.035))
         self.playlist_duration_slider_current_time_label.setStyleSheet("color: white")
         self.playlist_duration_slider_duration_label.setStyleSheet("color: white")
 
