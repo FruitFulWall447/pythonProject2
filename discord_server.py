@@ -173,8 +173,7 @@ def threaded_logged_in_client(n, User):
                 n.send_friends_list(friends_list)
                 logger.info(f"Sent friend list ({friends_list}) to user {User}")
             if isinstance(message, str) and message.startswith("update_chat_list"):
-                list_dict_of_messages = database_func.get_messages(User, client_current_chat)
-                n.send_messages_list(list_dict_of_messages)
+                x = 5
 
 
 
