@@ -352,7 +352,7 @@ def thread_recv_messages(n, addr):
                 Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
             elif message_type == "playlist_song_bytes_by_index":
                 index = data.get("index")
-                song_dict = database_func.get_song_by_index_and_owner(User, index)
+                song_dict = database_func.get_song_by_index_and_owner_id(User, index)
                 audio_bytes = song_dict.get('audio_bytes')
                 title = song_dict.get('title')
                 n.send_played_song_bytes(audio_bytes, title)

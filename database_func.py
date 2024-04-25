@@ -109,18 +109,19 @@ def create_user_settings(user_id):
     connection.close()
 
 
-def remove_song(title, owner):
+def remove_song(title, owner_username):
     try:
         # Connect to your MySQL database
+        owner_id = get_id_from_username(owner_username)
         with connect_to_kevindb() as connection:
             # Create a cursor object
             with connection.cursor() as cursor:
                 # Retrieve the song paths from the database
                 select_query = """
                     SELECT mp3_file_path, thumbnail_path FROM songs
-                    WHERE title = %s AND owner = %s
+                    WHERE title = %s AND owner_id = %s
                 """
-                cursor.execute(select_query, (title, owner))
+                cursor.execute(select_query, (title, owner_id))
                 result = cursor.fetchone()
                 if result:
                     mp3_file_path, thumbnail_path = result
@@ -128,11 +129,11 @@ def remove_song(title, owner):
                     # Construct the SQL query to delete a song from the table
                     delete_query = """
                         DELETE FROM songs
-                        WHERE title = %s AND owner = %s
+                        WHERE title = %s AND owner_id = %s
                     """
 
                     # Execute the SQL query with the song data
-                    cursor.execute(delete_query, (title, owner))
+                    cursor.execute(delete_query, (title, owner_id))
 
                     # Commit the transaction
                     connection.commit()
@@ -153,15 +154,16 @@ def remove_song(title, owner):
         print("Error while removing song from the table:", error)
 
 
-def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
+def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_bytes):
     try:
         # Connect to your MySQL database
+        owner_id = get_id_from_username(owner_username)
         with connect_to_kevindb() as connection:
             # Create a cursor object
             with connection.cursor() as cursor:
                 # Construct the SQL query to insert a song into the table
                 insert_query = """
-                    INSERT INTO songs (title, mp3_file_path, owner, duration, timestamp, thumbnail_path)
+                    INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
                     VALUES (%s, %s, %s, %s, NOW(), %s)
                 """
 
@@ -181,7 +183,7 @@ def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
                     thumbnail_photo_path = None
 
                 # Execute the SQL query with the song data
-                cursor.execute(insert_query, (title, mp3_file_path, owner, duration, thumbnail_photo_path))
+                cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration, thumbnail_photo_path))
 
                 # Commit the transaction
                 connection.commit()
@@ -195,18 +197,19 @@ def add_song(title, mp3_file_bytes, owner, duration, thumbnail_photo_bytes):
 def get_songs_by_owner(owner):
     try:
         # Connect to your MySQL database
+        owner_id = get_id_from_username(owner)
         with connect_to_kevindb() as connection:
             # Create a cursor object
             with connection.cursor() as cursor:
-                # Construct the SQL query to select songs by owner
+                # Construct the SQL query to select songs by owner_id
                 select_query = """
                     SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
                     FROM songs
-                    WHERE owner = %s
+                    WHERE owner_id = %s
                 """
 
-                # Execute the SQL query with the owner parameter
-                cursor.execute(select_query, (owner,))
+                # Execute the SQL query with the owner_id parameter
+                cursor.execute(select_query, (owner_id,))
 
                 # Fetch all rows
                 songs_data = cursor.fetchall()
@@ -234,26 +237,27 @@ def get_songs_by_owner(owner):
                 return songs
 
     except Exception as error:
-        print("Error while retrieving songs by owner:", error)
+        print("Error while retrieving songs by owner_id:", error)
         return []
 
 
 def get_song_by_index_and_owner(owner, index):
     try:
         # Connect to your MySQL database
+        owner_id = get_id_from_username(owner)
         with connect_to_kevindb() as connection:
             # Create a cursor object
             with connection.cursor() as cursor:
-                # Construct the SQL query to select a song by owner and index
+                # Construct the SQL query to select a song by owner_id and index
                 select_query = """
                     SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
                     FROM songs
-                    WHERE owner = %s
+                    WHERE owner_id = %s
                     LIMIT %s, 1
                 """
 
-                # Execute the SQL query with the owner and index parameters
-                cursor.execute(select_query, (owner, index))
+                # Execute the SQL query with the owner_id and index parameters
+                cursor.execute(select_query, (owner_id, index))
 
                 # Fetch the row
                 song_data = cursor.fetchone()
@@ -275,11 +279,11 @@ def get_song_by_index_and_owner(owner, index):
 
                     return song_info
                 else:
-                    # No song found at the specified index for the owner
+                    # No song found at the specified index for the owner_id
                     return None
 
     except Exception as error:
-        print("Error while retrieving song by index and owner:", error)
+        print("Error while retrieving song by index and owner_id:", error)
         return None
 
 
@@ -2246,7 +2250,8 @@ def create_songs_table():
                         id SERIAL PRIMARY KEY,
                         title VARCHAR(255) NOT NULL,
                         mp3_file_path VARCHAR(255) NOT NULL,
-                        owner VARCHAR(255) NOT NULL,
+                            owner_id INT,
+                        FOREIGN KEY (owner_id) REFERENCES sign_up_table(id),
                         duration VARCHAR(255) NOT NULL,
                         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                                             );"""

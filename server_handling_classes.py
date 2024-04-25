@@ -514,7 +514,7 @@ class Communication:
         self.send_profile_list_of_dicts_to_user(User)
         self.logger.info(f"Sent list of profile dicts list to user {User}")
 
-        songs_list = database_func.get_songs_by_owner(User)
+        songs_list = database_func.get_songs_by_owner_id(User)
         net.playlist_songs_list(songs_list)
         self.logger.info(f"Sent list of songs dicts list to user {User}")
 
