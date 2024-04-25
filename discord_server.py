@@ -145,16 +145,10 @@ def threaded_logged_in_client(n, User):
                 if message_type == "current_chat":
                     client_current_chat = message.get("current_chat")
                     logger.info(f"{User} current chat is {client_current_chat}")
-                    database_func.mark_messages_as_read(User, client_current_chat)
                     if client_current_chat not in database_func.get_user_chats(User):
                         database_func.add_chat_to_user(User, client_current_chat)
                         n.add_new_chat(client_current_chat)
                         logger.info(f"added new chat to {User}")
-                    all_chat_messages = database_func.get_messages(User, client_current_chat)
-                    if len(all_chat_messages) < numbers_of_starter_message:
-                        messages_list_max_index = len(all_chat_messages)
-                    else:
-                         messages_list_max_index = numbers_of_starter_message
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
                                                                                       , messages_list_max_index)
                     n.send_messages_list(list_dict_of_messages)

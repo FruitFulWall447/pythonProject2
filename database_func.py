@@ -380,6 +380,32 @@ def get_id_from_username(username):
         conn.close()
 
 
+def get_username_from_id(user_id):
+    try:
+        # Connect to the MySQL database
+        conn = connect_to_kevindb()
+        cursor = conn.cursor()
+
+        # Execute a query to retrieve the username based on the user ID
+        cursor.execute("SELECT username FROM sign_up_table WHERE id = %s", (user_id,))
+        row = cursor.fetchone()  # Fetch the first row
+
+        if row:
+            # If a row is found, return the username
+            return row[0]
+        else:
+            # If no row is found, return None
+            return None
+    except mysql.connector.Error as e:
+        # Handle any errors that occur during the execution of the query
+        print("Error retrieving username:", e)
+        return None
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+
+
 def update_settings_by_dict(username, settings_dict):
     user_id = get_id_from_username(username)
     volume, output_device_name, input_device_name, camera_index, font_size, font_text, background_color, censor_data, is_private_account, push_to_talk_key, two_factor_authentication = unpack_settings(
@@ -874,6 +900,12 @@ def is_table_exist(table_name):
 def add_message(sender_name, receiver_name, message_content, message_type, file_original_name):
     try:
         # Establish a connection to the MySQL server
+        sender_id = get_id_from_username(sender_name)
+        if receiver_name.startswith("("):
+            group_name, receiver_id = gets_group_attributes_from_format(receiver_name)
+            receiver_id = receiver_id * -1
+        else:
+            receiver_id = get_id_from_username(receiver_name)
         connection = connect_to_kevindb()
         if connection.is_connected():
             cursor = connection.cursor()
@@ -893,10 +925,10 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
                         file_path = os.path.join(folder_path, file_name)
                 save_file(message_content, file_path)
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (%s, %s, %s, %s, %s)"
-                data = (sender_name, receiver_name, file_path, message_type, file_original_name)
+                data = (sender_id, receiver_id, file_path, message_type, file_original_name)
             else:
                 sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
-                data = (sender_name, receiver_name, message_content, message_type)
+                data = (sender_id, receiver_id, message_content, message_type)
 
             # Execute the query
             cursor.execute(sql_query, data)
@@ -910,28 +942,6 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
 
     finally:
         # Close the database connection
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-
-
-def mark_messages_as_read(receiver, sender):
-    try:
-        connection = connect_to_kevindb()
-
-        cursor = connection.cursor()
-
-        # Update has_read to 1 for messages with the specified receiver and sender
-        update_query = "UPDATE messages SET has_read = 1 WHERE receiver_id = %s AND sender_id = %s"
-        cursor.execute(update_query, (receiver, sender))
-
-        connection.commit()
-
-
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-
-    finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
@@ -2071,12 +2081,11 @@ def create_messages_table():
         create_table_query = """
             CREATE TABLE messages (
                 message_id INT AUTO_INCREMENT PRIMARY KEY,
-                sender_id VARCHAR(255),
-                receiver_id VARCHAR(255),
+                sender_id int,
+                receiver_id int,
                 message_content TEXT,
                 message_content_path VARCHAR(255),
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                has_read TINYINT(1) DEFAULT 0,
                 type VARCHAR(255),
                 file_name VARCHAR(255)
             )
