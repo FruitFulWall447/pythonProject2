@@ -154,7 +154,7 @@ def threaded_logged_in_client(n, User):
                     n.send_messages_list(list_dict_of_messages)
                 if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
-                            messages_list_max_index+1, messages_list_max_index+6)
+                            messages_list_max_index + 1, messages_list_max_index + 6)
                     messages_list_max_index += 6
                     if len(list_dict_of_messages) > 0:
                         n.send_addition_messages_list(list_dict_of_messages)
@@ -172,15 +172,6 @@ def threaded_logged_in_client(n, User):
                 friends_list = database_func.get_user_friends(User)
                 n.send_friends_list(friends_list)
                 logger.info(f"Sent friend list ({friends_list}) to user {User}")
-            if isinstance(message, str) and message.startswith("got_new_message:"):
-                parts = message.split(":")
-                sender = parts[1]
-                if sender == client_current_chat:
-                    list_messages = database_func.get_messages(User, client_current_chat)
-                    n.send_messages_list(list_messages)
-                else:
-                    n.send_str("new_message")
-                    logger.info(f"{User} got a new message")
             if isinstance(message, str) and message.startswith("update_chat_list"):
                 list_dict_of_messages = database_func.get_messages(User, client_current_chat)
                 n.send_messages_list(list_dict_of_messages)
@@ -463,6 +454,7 @@ def thread_recv_messages(n, addr):
                 type_of_message = data.get("type")
                 file_name = data.get("file_name")
                 database_func.add_message(sender, receiver, content, type_of_message, file_name)
+                # fix it...
                 if not receiver.startswith("("):
                     add_message_for_client(receiver, f"got_new_message:{sender}")
                 else:
