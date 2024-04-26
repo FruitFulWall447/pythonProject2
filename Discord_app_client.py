@@ -1150,7 +1150,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if self.current_search_song_dict is not None:
                 if not self.is_song_exist_in_playlist(self.current_search_song_dict):
                     self.Network.save_song_in_playlist(self.current_search_song_dict)
-                    temp_dict = self.current_search_song_dict.pop("audio_bytes")
+                    temp_dict = self.current_search_song_dict.copy()
+                    if "audio_bytes" in temp_dict:
+                        del temp_dict["audio_bytes"]
                     self.playlist_songs.append(temp_dict)
                     self.music_box.insert_new_song_to_playlist(self.current_search_song_dict)
                     print("send song to server")
@@ -1160,12 +1162,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"error in adding song to playlist {e}")
 
     def is_song_exist_in_playlist(self, added_dict):
-        added_dict_title = added_dict.get("title")
-        for song in self.playlist_songs:
-            song_title = song.get("title")
-            if song_title == added_dict_title:
-                return True
-        return False
+        try:
+            added_dict_title = added_dict.get("title")
+            for song in self.playlist_songs:
+                song_title = song.get("title")
+                if song_title == added_dict_title:
+                    return True
+            return False
+        except Exception as e:
+            print(f"error in finding duplicates {e}")
 
     def insert_playlist_to_table(self):
         self.music_box.insert_playlist_songs(self.playlist_songs)

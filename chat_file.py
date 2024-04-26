@@ -1233,17 +1233,19 @@ class PlaylistWidget(QWidget):
             print(e)
 
     def insert_new_song_to_playlist(self, song_dict):
-        row_position = self.table.rowCount()
-        self.table.insertRow(row_position)
-        title = song_dict.get('title')
-        thumbnail_bytes = song_dict.get('thumbnail_bytes')
-        audio_bytes = song_dict.get('audio_bytes')
-        audio_duration = song_dict.get('audio_duration')
-        date_added = datetime.now().strftime('%Y-%m-%d')
+        try:
+            row_position = self.table.rowCount()
+            self.table.insertRow(row_position)
+            title = song_dict.get('title')
+            thumbnail_bytes = song_dict.get('thumbnail_bytes')
+            audio_duration = song_dict.get('audio_duration')
+            date_added = datetime.now().strftime('%Y-%m-%d')
 
-        # Insert data into the table
-        for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
-            insert_item_to_table(self.table, col, value, row_position)
+            # Insert data into the table
+            for col, value in enumerate([title, date_added, audio_duration, thumbnail_bytes]):
+                insert_item_to_table(self.table, col, value, row_position)
+        except Exception as e:
+            print(f"error in insert_new_song_to_playlist {e}")
 
     def cell_pressed(self, row, col):
         # Get the item text when a cell is pressed
