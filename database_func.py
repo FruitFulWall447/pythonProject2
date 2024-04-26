@@ -903,7 +903,7 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
         sender_id = get_id_from_username(sender_name)
         if receiver_name.startswith("("):
             group_name, receiver_id = gets_group_attributes_from_format(receiver_name)
-            receiver_id = receiver_id * -1
+            receiver_id = int(receiver_id) * -1
         else:
             receiver_id = get_id_from_username(receiver_name)
         connection = connect_to_kevindb()
@@ -963,7 +963,7 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
 
         if is_group_chat:
             _, group_id = gets_group_attributes_from_format(receiver_name)
-            receiver_id = group_id * -1
+            receiver_id = int(group_id) * -1
         else:
             sender_id = get_id_from_username(sender_name)
             receiver_id = get_id_from_username(receiver_name)
@@ -1386,17 +1386,21 @@ def sort_chat_list(chats_list, username):
         for index, chat in enumerate(chats_list):
             # Retrieve the timestamp of the last message in the conversation
             if chat.startswith("("):
+                _, group_id = gets_group_attributes_from_format(chat)
+                receiver_id = int(group_id) * -1
                 cursor.execute("""
                     SELECT MAX(timestamp) AS last_message_timestamp
                     FROM messages
                     WHERE sender_id = %s OR receiver_id = %s
-                """, (chat, chat))
+                """, (receiver_id, receiver_id))
             else:
+                username_id = get_id_from_username(username)
+                chat_id = get_id_from_username(chat)
                 cursor.execute("""
                     SELECT MAX(timestamp) AS last_message_timestamp
                     FROM messages
                     WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s)
-                """, (chat, username, username, chat))
+                """, (chat_id, username_id, username_id, chat_id))
             row = cursor.fetchone()
             if row and row[0]:
                 last_message_timestamp = row[0]
@@ -1925,79 +1929,6 @@ def get_group_by_id(group_id):
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         return None
-
-    finally:
-        # Close the cursor and connection
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
-
-
-def get_latest_chats(username):
-    try:
-        chats_list = get_user_chats(username)
-        user_groups = get_user_groups(username)
-
-        # Initialize a list to store the latest chats
-        latest_chats = []
-
-        connection = connect_to_kevindb()
-
-        # Create a cursor object to interact with the database
-        cursor = connection.cursor()
-
-        # Iterate through the user's groups
-        for group in user_groups:
-            group_name = f"({group['group_id']}){group['group_name']}"
-
-            # Query the latest timestamp for the group
-            cursor.execute(
-                f"SELECT MAX(timestamp) as latest_timestamp FROM messages WHERE sender_id = %s AND receiver_id = %s",
-                (group_name, group_name))
-
-            result = cursor.fetchone()
-            latest_timestamp = result[0] if result and result[0] else datetime.min
-
-            # Append the group to the list with its latest timestamp
-            latest_chats.append({
-                'chat_name': group_name,
-                'latest_timestamp': latest_timestamp
-            })
-
-        # Iterate through the user's individual chats
-        for chat_name in chats_list:
-            # Query the latest timestamp for the individual chat
-            cursor.execute(
-                f"SELECT MAX(timestamp) as latest_timestamp FROM messages WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s)",
-                (username, chat_name, chat_name, username))
-
-            result = cursor.fetchone()
-            latest_timestamp = result[0] if result and result[0] else datetime.min
-
-
-            # Append the individual chat to the list with its latest timestamp
-            latest_chats.append({
-                'chat_name': chat_name,
-                'latest_timestamp': latest_timestamp
-            })
-
-        # Sort the latest_chats list by 'latest_timestamp' in descending order
-        latest_chats = sorted(latest_chats, key=lambda x: x['latest_timestamp'], reverse=True)
-        unique_chat_names = set()
-        filtered_latest_chats = []
-
-        for chat in latest_chats:
-            chat_name = chat['chat_name']
-            if chat_name not in unique_chat_names:
-                filtered_latest_chats.append(chat)
-                unique_chat_names.add(chat_name)
-
-        return filtered_latest_chats
-
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return []
 
     finally:
         # Close the cursor and connection
