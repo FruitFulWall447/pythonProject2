@@ -1,11 +1,32 @@
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
+from PyQt5.QtCore import pyqtSignal
+from functools import partial
+from discord_comms_protocol import client_net
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5 import QtCore
+from PIL import Image
 from io import BytesIO
+import base64
+import binascii
+import zlib
+import pygetwindow
+import numpy as np
 from PIL import Image, ImageDraw
+import webbrowser
+import io
+import tempfile
+import os
+import math
+import subprocess
+import platform
+import random
+import string
+import concurrent.futures
 import warnings
 import re
 import pyaudio
@@ -36,16 +57,6 @@ def remove_row(table, row_number):
     else:
         print("Invalid row number. Row not removed.")
 
-
-def extract_number(s):
-    # Use regular expression to find the number in the string
-    match = re.search(r'\d+', s)
-    if match:
-        # Convert the matched number to an integer and return it
-        return int(match.group())
-    else:
-        # If no number is found, return None or raise an exception, depending on your use case
-        return None  # or raise ValueError("No number found in the string")
 
 
 def check_camera(i):
@@ -122,7 +133,7 @@ def try_to_open_output_stream(index):
         output_stream = p.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk,
                                output_device_index=index)
         return True
-    except Exception as e:
+    except:
         return False
 
 
@@ -140,7 +151,7 @@ def try_to_open_input_stream(index):
                               frames_per_buffer=chunk,
                               input_device_index=index)
         return True
-    except Exception as e:
+    except:
         return False
 
 
