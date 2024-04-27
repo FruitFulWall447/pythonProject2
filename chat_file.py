@@ -33,7 +33,7 @@ import pyaudio
 import cv2
 from datetime import datetime
 from settings_page_widgets import create_slider
-from messages_page_widgets import make_q_object_clear, set_button_icon, set_icon_from_path_to_label
+from messages_page_widgets import make_q_object_clear, set_button_icon, set_icon_from_path_to_label, open_image_bytes
 
 
 def insert_item_to_table(table, col, value, row_position):
@@ -783,11 +783,17 @@ class PlaylistWidget(QWidget):
 
     def cell_pressed(self, row, col):
         # Get the item text when a cell is pressed
-        self.parent.set_new_playlist_index_and_listen(row)
-        self.select_row(row)
-        item = self.table.item(row, col)
-        if item:
-            print("Cell Pressed:", item.text())
+        if col < 3:
+            self.parent.set_new_playlist_index_and_listen(row)
+            self.select_row(row)
+            item = self.table.item(row, col)
+            if item:
+                print("Cell Pressed:", item.text())
+        if col == 3:
+            # means album image pressed
+            song_dict = self.parent.playlist_songs[row]
+            thumbnail_bytes = song_dict.get("thumbnail_bytes")
+            open_image_bytes(thumbnail_bytes)
 
     def select_row(self, row):
         # Clear any existing selections
