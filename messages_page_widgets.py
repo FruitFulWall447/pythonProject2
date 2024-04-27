@@ -57,22 +57,6 @@ def try_to_open_input_stream(index):
         return False
 
 
-def replace_non_space_with_star(string1):
-    result = ''
-    for char in string1:
-        if char != ' ' and not char.isspace():
-            result += '*'
-        else:
-            result += char
-    return result
-
-
-def generate_random_filename(extension):
-    # Generate a random string of characters
-    random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    return f"file_{random_string}.{extension}"
-
-
 def download_file_from_bytes(file_bytes, file_extension, file_name):
     try:
         # Get the path to the user's downloads directory
@@ -126,67 +110,11 @@ def play_mp3_from_bytes(mp3_bytes, media_player):
         print(f"Error playing MP3: {e}")
 
 
-def open_pptx_from_bytes(pptx_bytes):
-    temp_file_path = save_bytes_to_temp_file(pptx_bytes, 'pptx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_docx_from_bytes(docx_bytes):
-    temp_file_path = save_bytes_to_temp_file(docx_bytes, 'docx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_xlsx_from_bytes(xlsx_bytes):
-    temp_file_path = save_bytes_to_temp_file(xlsx_bytes, 'xlsx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_py_from_bytes(py_bytes):
-    temp_file_path = save_bytes_to_temp_file(py_bytes, 'py')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_pdf_from_bytes(pdf_bytes):
-    temp_file_path = save_bytes_to_temp_file(pdf_bytes, 'pdf')
-    open_file_with_default_app(temp_file_path)
-
-
 def save_bytes_to_temp_file(file_bytes, extension):
     temp_file = tempfile.NamedTemporaryFile(suffix='.' + extension, delete=False)
     temp_file.write(file_bytes)
     temp_file.close()
     return temp_file.name
-
-
-def open_file_with_default_app(file_path):
-    try:
-        if os.name == 'nt':
-            os.startfile(file_path)
-        elif os.name == 'posix':
-            subprocess.run(['xdg-open', file_path])
-        else:
-            print("Unsupported operating system.")
-    except Exception as e:
-        print(f"Error opening file: {e}")
-
-
-def open_text_file_from_bytes(file_bytes):
-    try:
-        # Create a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
-            # Write the bytes to the temporary file
-            temp_file.write(file_bytes)
-            temp_file.flush()
-
-            # Get the path to the temporary file
-            file_path = temp_file.name
-
-            # Open the temporary file using Notepad asynchronously
-            subprocess.Popen(['notepad', file_path])
-
-            # On macOS, you might use: subprocess.Popen(['open', file_path])
-    except Exception as e:
-        print(f"Error opening text file: {e}")
 
 
 def format_label_text_by_row(label, text, num_rows):
@@ -255,27 +183,9 @@ def extract_first_frame(video_bytes):
 
 
 def open_image_bytes(image_bytes):
-    """Opens an image from bytes using the default image viewer application.
-
-    Args:
-        image_bytes (bytes): The image data as bytes.
-
-    Returns:
-        bool: True if the image was opened successfully, False otherwise.
-    """
     try:
-        # Create a temporary file to save the image bytes
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-            temp_file.write(image_bytes)
-
-            # Get the path of the temporary file
-            temp_file_path = temp_file.name
-
-        # Open the temporary file using the default image viewer application
-        webbrowser.open(temp_file_path)
-
-        return True
-
+        temp_file_path = save_bytes_to_temp_file(image_bytes, 'png')
+        open_file_with_default_app(temp_file_path)
     except Exception as e:
         print(f"Error opening image: {e}")
         return False

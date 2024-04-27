@@ -1,38 +1,18 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
-from PyQt5.QtCore import pyqtSignal
-from functools import partial
-from discord_comms_protocol import client_net
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
 from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5 import QtCore
-from PIL import Image
 from io import BytesIO
-import base64
-import binascii
-import zlib
-import pygetwindow
-import numpy as np
 from PIL import Image, ImageDraw
-import webbrowser
-import io
-import tempfile
-import os
-import math
-import subprocess
-import platform
-import random
-import string
-import concurrent.futures
 import warnings
 import re
 import pyaudio
 import cv2
 from datetime import datetime
 from settings_page_widgets import create_slider
+from messages_page_widgets import make_q_object_clear, set_button_icon, set_icon_from_path_to_label
 
 
 def insert_item_to_table(table, col, value, row_position):
@@ -142,7 +122,7 @@ def try_to_open_output_stream(index):
         output_stream = p.open(format=audio_format, channels=channels, rate=rate, output=True, frames_per_buffer=chunk,
                                output_device_index=index)
         return True
-    except:
+    except Exception as e:
         return False
 
 
@@ -160,7 +140,7 @@ def try_to_open_input_stream(index):
                               frames_per_buffer=chunk,
                               input_device_index=index)
         return True
-    except:
+    except Exception as e:
         return False
 
 
@@ -194,144 +174,6 @@ def get_input_devices():
     return output_devices
 
 
-def replace_non_space_with_star(string1):
-    result = ''
-    for char in string1:
-        if char != ' ' and not char.isspace():
-            result += '*'
-        else:
-            result += char
-    return result
-
-
-def generate_random_filename(extension):
-    # Generate a random string of characters
-    random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-    return f"file_{random_string}.{extension}"
-
-
-def download_file_from_bytes(file_bytes, file_extension, file_name):
-    try:
-        # Get the path to the user's downloads directory
-        if platform.system() == 'Windows':
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-        elif platform.system() == 'Darwin':
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-        else:
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-
-
-        # Generate a random file name with the same extension
-        if not file_name:
-            file_name = generate_random_filename(file_extension)
-
-
-        # Prompt the user to choose a file name and location
-        #file_path, _ = QFileDialog.getSaveFileName(None, "Save File", os.path.join(downloads_dir, file_name))
-        path = os.path.join(downloads_dir, file_name)
-
-        if path:
-            # Write the file bytes to disk
-            with open(path, 'wb') as file:
-                file.write(file_bytes)
-
-            print(f"File downloaded successfully to '{path}'.")
-        else:
-            print("Download canceled by user.")
-    except Exception as e:
-        print(f"Error downloading file: {e}")
-
-
-def play_mp3_from_bytes(mp3_bytes, media_player):
-    try:
-        # Save MP3 bytes to a temporary file
-        media_player.stop()
-        temp_file_path = save_bytes_to_temp_file(mp3_bytes, 'mp3')
-
-        # Create QMediaContent object with the URL pointing to the temporary file
-        media_content = QMediaContent(QUrl.fromLocalFile(temp_file_path))
-
-        # Create QMediaPlayer instance and set the media content
-        media_player.setMedia(media_content)
-
-        # Play the media
-        media_player.play()
-    except Exception as e:
-        print(f"Error playing MP3: {e}")
-
-
-def open_pptx_from_bytes(pptx_bytes):
-    temp_file_path = save_bytes_to_temp_file(pptx_bytes, 'pptx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_docx_from_bytes(docx_bytes):
-    temp_file_path = save_bytes_to_temp_file(docx_bytes, 'docx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_xlsx_from_bytes(xlsx_bytes):
-    temp_file_path = save_bytes_to_temp_file(xlsx_bytes, 'xlsx')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_py_from_bytes(py_bytes):
-    temp_file_path = save_bytes_to_temp_file(py_bytes, 'py')
-    open_file_with_default_app(temp_file_path)
-
-
-def open_pdf_from_bytes(pdf_bytes):
-    temp_file_path = save_bytes_to_temp_file(pdf_bytes, 'pdf')
-    open_file_with_default_app(temp_file_path)
-
-
-def save_bytes_to_temp_file(file_bytes, extension):
-    temp_file = tempfile.NamedTemporaryFile(suffix='.' + extension, delete=False)
-    temp_file.write(file_bytes)
-    temp_file.close()
-    return temp_file.name
-
-
-def open_file_with_default_app(file_path):
-    try:
-        if os.name == 'nt':
-            os.startfile(file_path)
-        elif os.name == 'posix':
-            subprocess.run(['xdg-open', file_path])
-        else:
-            print("Unsupported operating system.")
-    except Exception as e:
-        print(f"Error opening file: {e}")
-
-
-def open_text_file_from_bytes(file_bytes):
-    try:
-        # Create a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
-            # Write the bytes to the temporary file
-            temp_file.write(file_bytes)
-            temp_file.flush()
-
-            # Get the path to the temporary file
-            file_path = temp_file.name
-
-            # Open the temporary file using Notepad asynchronously
-            subprocess.Popen(['notepad', file_path])
-
-            # On macOS, you might use: subprocess.Popen(['open', file_path])
-    except Exception as e:
-        print(f"Error opening text file: {e}")
-
-
-def create_link_label(text, click_function, parent=None):
-    label = QLabel(text, parent)
-    label.setTextInteractionFlags(Qt.TextBrowserInteraction)
-    label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
-    label.setStyleSheet("color: blue; font-size: 12px;")
-    label.linkActivated.connect(click_function)
-    return label
-
-
 def format_label_text_by_row(label, text, num_rows):
     try:
         # Calculate the total number of characters per row, including the possibility of a shorter last row
@@ -361,107 +203,6 @@ def format_label_text_by_row(label, text, num_rows):
         label.setText(formatted_text)
     except Exception as e:
         print(f" error in creating formated label by rows: {e}")
-
-
-def make_q_object_clear(object):
-    object.setStyleSheet("background-color: transparent; border: none;")
-
-
-def extract_first_frame(video_bytes):
-    try:
-        # Write video bytes to a temporary file
-        temp_video_path = tempfile.NamedTemporaryFile(delete=False)
-        temp_video_path.write(video_bytes)
-        temp_video_path.close()
-
-        # Open the temporary video file
-        cap = cv2.VideoCapture(temp_video_path.name)
-
-        # Read the first frame
-        ret, frame = cap.read()
-
-        # Release the video capture object and delete the temporary file
-        cap.release()
-        cv2.destroyAllWindows()
-        temp_video_path.close()
-
-        # Convert the first frame to bytes
-        retval, buffer = cv2.imencode('.png', frame)
-        if retval:
-            return buffer.tobytes()
-        else:
-            return None
-
-    except Exception as e:
-        print(f"Error extracting first frame: {e}")
-        return None
-
-
-def open_image_bytes(image_bytes):
-    """Opens an image from bytes using the default image viewer application.
-
-    Args:
-        image_bytes (bytes): The image data as bytes.
-
-    Returns:
-        bool: True if the image was opened successfully, False otherwise.
-    """
-    try:
-        # Create a temporary file to save the image bytes
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-            temp_file.write(image_bytes)
-
-            # Get the path of the temporary file
-            temp_file_path = temp_file.name
-
-        # Open the temporary file using the default image viewer application
-        webbrowser.open(temp_file_path)
-
-        return True
-
-    except Exception as e:
-        print(f"Error opening image: {e}")
-        return False
-
-
-def calculate_image_size_in_kb(image_bytes):
-    try:
-        # Create a BytesIO object from the image bytes
-        image_stream = io.BytesIO(image_bytes)
-
-        # Open the image using PIL
-        with Image.open(image_stream) as img:
-            # Get the size of the image in bytes
-            image_size_bytes = img.tell()
-
-            # Convert bytes to kilobytes
-            image_size_kb = image_size_bytes / 1024
-
-            return image_size_kb
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-
-
-def calculate_image_size_in_mb(image_bytes):
-    try:
-        # Create a BytesIO object from the image bytes
-        image_stream = io.BytesIO(image_bytes)
-
-        # Open the image using PIL
-        with Image.open(image_stream) as img:
-            # Get the size of the image in bytes
-            image_size_bytes = img.tell()
-
-            # Convert bytes to kilobytes
-            image_size_kb = image_size_bytes / (1024 * 1000)
-
-            return image_size_kb
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
 
 
 def make_circular_image(image_bytes):
@@ -512,224 +253,6 @@ def make_circular_image(image_bytes):
     except Exception as e:
         print(f"Error converting image: {e}")
         return None
-
-
-def create_custom_circular_label(width, height, parent):
-    label = QLabel(parent)
-
-    label_size = QSize(width, height)
-    label.setFixedSize(label_size)
-
-    label.setStyleSheet("""
-        QLabel {
-            border-radius: """ + str(height // 2) + """px; /* Set to half of the label height */
-            background-color: transparent; /* Make the background color transparent */
-
-        }
-    """)
-
-    return label
-
-
-def is_valid_image(image_bytes):
-    try:
-        # Use Pillow to try opening the image from bytes
-        image = Image.open(BytesIO(image_bytes))
-        # If successful, it's a valid image
-        return True
-    except Exception as e:
-        # If there is an exception, it's not a valid image
-        print(f"Error: {e}")
-        return False
-
-
-def file_to_bytes(file_path):
-    with open(file_path, "rb") as file:
-        image_bytes = file.read()
-        return image_bytes
-
-
-def check_active_cameras():
-    try:
-        cap = cv2.VideoCapture(0)
-        if cap.isOpened():
-            cap.release()
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(f"could not find active camera, error: {e}")
-        return False
-
-
-# works very well for a circular labels
-def set_icon_from_bytes_to_label(label, image_bytes):
-    # Load the image from bytes
-    pixmap = QPixmap()
-    pixmap.loadFromData(image_bytes)
-
-    # Get the size of the label
-    label_size = label.size()
-    label_width = label_size.width()
-    label_height = label_size.height()
-
-    # Calculate the aspect ratio of the image
-    image_width = pixmap.width()
-    image_height = pixmap.height()
-    image_aspect_ratio = image_width / image_height
-
-    # Determine how to scale the image based on its aspect ratio
-    if image_aspect_ratio <= 0.5:
-        scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
-    elif image_aspect_ratio >= 1.5:
-        scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
-    else:
-        scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-    # Set the scaled pixmap to the label
-    label.setPixmap(scaled_pixmap)
-    label.setAlignment(Qt.AlignCenter)
-
-
-def set_icon_from_path_to_label(label, image_path):
-    # Load the image from file path
-    pixmap = QPixmap(image_path)
-
-    # Get the size of the label
-    label_size = label.size()
-    label_width = label_size.width()
-    label_height = label_size.height()
-
-    # Calculate the aspect ratio of the image
-    image_width = pixmap.width()
-    image_height = pixmap.height()
-    image_aspect_ratio = image_width / image_height
-
-    # Determine how to scale the image based on its aspect ratio
-    if image_aspect_ratio <= 0.5:
-        scaled_pixmap = pixmap.scaledToWidth(label_width, Qt.SmoothTransformation)
-    elif image_aspect_ratio >= 1.5:
-        scaled_pixmap = pixmap.scaledToHeight(label_height, Qt.SmoothTransformation)
-    else:
-        scaled_pixmap = pixmap.scaled(label_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-
-    # Set the scaled pixmap to the label
-    label.setPixmap(scaled_pixmap)
-    label.setAlignment(Qt.AlignCenter)
-
-
-def set_icon_to_circular_label(label, icon_path, width=None, height=None):
-    # Create QIcon object from the provided icon path
-    icon = QIcon(icon_path)
-
-    # Get the size of the icon
-    icon_size = icon.availableSizes()[0]
-    icon_width = width if width is not None else icon_size.width()
-    icon_height = height if height is not None else icon_size.height()
-
-    # Load the icon pixmap
-    pixmap = icon.pixmap(icon_width, icon_height)
-
-    # Create a transparent QImage with the same size as the icon
-    image = QImage(pixmap.size(), QImage.Format_ARGB32)
-    image.fill(Qt.transparent)
-
-    # Create a QPainter to draw on the image
-    painter = QPainter(image)
-    painter.setRenderHint(QPainter.Antialiasing)
-
-    # Create a circular path
-    path = QPainterPath()
-    path.addEllipse(image.rect())
-
-    # Set the painter to use the circular path as a clipping path
-    painter.setClipPath(path)
-
-    # Draw the icon onto the circular area
-    painter.drawPixmap(0, 0, pixmap)
-
-    # End painting
-    painter.end()
-
-    # Set the circular icon to the label
-    label.setPixmap(QPixmap.fromImage(image))
-
-
-def set_icon_to_circular_label_from_bytes(label, image_bytes, width=None, height=None):
-    # Create QIcon object from the provided icon path
-    pixmap = QPixmap()
-    pixmap.loadFromData(image_bytes)
-    set_icon_to_circular_label(label, pixmap, width, height)
-
-
-def set_button_icon(button, icon_path, width, height):
-    try:
-        icon = QIcon(icon_path)
-        button.setIcon(icon)
-        icon_size = QSize(width, height)
-
-        # Use the provided width and height to scale the icon
-        scaled_size = icon.pixmap(icon_size).size()
-        button.setIconSize(scaled_size)
-    except Exception as e:
-        print(f"Error in setting button icon: {e}")
-
-
-def calculate_font_size(text):
-    # You can adjust the coefficients for the linear relationship
-    base_size = 28
-    reduction_factor = 1
-
-    return max(base_size - reduction_factor * len(text), 10)  # Ensure the minimum font size is 10
-
-
-def filter_and_sort_chats(search_str, chat_list):
-    # Check if chat_list is a list of tuples or a list of strings
-    if len(chat_list) == 0:
-        return []
-    if isinstance(chat_list[0], tuple):
-        # Filter out tuples where chat_name does not contain the search_str
-        if not search_str:
-            return chat_list
-        filtered_chats = [(chat_name, unread_messages) for chat_name, unread_messages in chat_list if
-                          search_str.lower() in chat_name.lower()]
-
-        # Sort the filtered_chats based on relevance to the search_str
-        sorted_chats = sorted(filtered_chats,
-                              key=lambda x: (not x[0].lower().startswith(search_str.lower()), x[0].lower()))
-        return sorted_chats
-    elif isinstance(chat_list[0], str):
-        # Filter out strings that do not contain the search_str
-        if not search_str:
-            return chat_list
-        filtered_chats = [chat_name for chat_name in chat_list if search_str.lower() in chat_name.lower()]
-
-        # Sort the filtered_chats based on relevance to the search_str
-        sorted_chats = sorted(filtered_chats,
-                              key=lambda x: (not x.lower().startswith(search_str.lower()), x.lower()))
-        return sorted_chats
-    else:
-        # Handle other cases or raise an exception based on your requirements
-        raise ValueError("Invalid format for chat_list")
-
-
-def calculate_division_value(friends_list_length):
-    if friends_list_length == 0:
-        return 0
-    elif 1 <= friends_list_length <= 5:
-        return 1
-    else:
-        return friends_list_length // 5
-
-
-def gets_group_attributes_from_format(group_format):
-    if "(" not in group_format:
-        return group_format, None
-    else:
-        parts = group_format.split(")")
-        id = parts[0][1]
-        name = parts[1]
-        return name, int(id)
 
 
 class VideoPlayer(QWidget):
