@@ -510,13 +510,15 @@ class SettingsBox(QWidget):
                 self.output_combobox.addItem("Default")
                 self.output_combobox.currentIndexChanged.connect(self.output_device_changed)
                 output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
-                self.output_combobox.setCurrentText(get_default_output_device_name())
+                if self.parent.output_device_name not in output_devices:
+                    self.output_combobox.setCurrentText("Default")
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
                 self.input_combobox.addItem("Default")
                 self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
-                self.input_combobox.setCurrentText(get_default_input_device_name())
+                if self.parent.input_device_name not in input_devices:
+                    self.input_combobox.setCurrentText("Default")
 
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")
@@ -525,7 +527,10 @@ class SettingsBox(QWidget):
                 self.camara_devices_combobox.currentIndexChanged.connect(self.camera_device_changed)
                 camera_label = self.create_white_label(camera_x, camera_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "CAMERA")
-
+                if self.parent.camera_index is None:
+                    self.camara_devices_combobox.setCurrentText("None")
+                else:
+                    self.camara_devices_combobox.setCurrentText(self.parent.camera_index )
                 input_mode_x, input_mode_y = (800, 370)
                 self.create_input_mode_select_button(input_mode_y, input_mode_x)
                 input_mode_label = self.create_white_label(input_mode_x, input_mode_y - space_between_option_box_and_label, self.default_labels_font_size, None,
