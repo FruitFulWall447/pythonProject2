@@ -1133,7 +1133,7 @@ def handle_friend_request(username, friend_username, accept):
     cursor = connection.cursor()
 
     # Check if the friend request exists
-    query = f"SELECT id FROM friends WHERE user_id = '{friend_username_id}' AND friend_username_id = '{username_id}' AND friendship_status = 'pending'"
+    query = f"SELECT id FROM friends WHERE user_id = '{friend_username_id}' AND friend_user_id = '{username_id}' AND friendship_status = 'pending'"
     cursor.execute(query)
     request_id = cursor.fetchone()
 
@@ -1160,7 +1160,7 @@ def remove_friend(username, friend_username):
     cursor = connection.cursor()
 
     # Check if the friendship exists
-    query = f"SELECT id FROM friends WHERE (user_id = '{username_id}' AND friend_username_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_username_id = '{username_id}') AND friendship_status = 'accepted'"
+    query = f"SELECT id FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_username_id = '{username_id}') AND friendship_status = 'accepted'"
     cursor.execute(query)
     friendship_id = cursor.fetchone()
 
