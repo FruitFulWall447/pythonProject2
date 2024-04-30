@@ -1194,8 +1194,10 @@ def get_friend_requests(username):
     connection.close()
 
     # Extract the usernames from the result
-    friend_requests_list = [request[0] for request in friend_requests]
-
+    friend_requests_list_id = [request[0] for request in friend_requests]
+    friend_requests_list = []
+    for friend_id in friend_requests_list_id:
+        friend_requests_list.append(get_username_from_id(friend_id))
     return friend_requests_list
 
 
@@ -1229,7 +1231,10 @@ def get_user_friends(username):
     connection.close()
 
     # Extract the friend usernames from the result
-    friends_list = [friend[0] for friend in friends]
+    friends_list_of_id = [friend[0] for friend in friends]
+    friends_list = []
+    for friend_id in friends_list_of_id:
+        friends_list.append(get_username_from_id(friend_id))
 
     return friends_list
 
