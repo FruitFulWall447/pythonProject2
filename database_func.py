@@ -1057,12 +1057,14 @@ def format_messages(messages):
 def are_friends(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Check if the users are already friends
-    query = f"SELECT friendship_status FROM friends WHERE (username = '{username}' AND friend_user_name = '{friend_username}') OR (username = '{friend_username}' AND friend_user_name = '{username}')"
+    query = f"SELECT friendship_status FROM friends WHERE (username_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (username_id = '{friend_username_id}' AND friend_user_id = '{username_id}')"
     cursor.execute(query)
     result = cursor.fetchone()
 
@@ -1076,12 +1078,14 @@ def are_friends(username, friend_username):
 def is_active_request(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Check if the users are already friends
-    query = f"SELECT friendship_status FROM friends WHERE (username = '{username}' AND friend_user_name = '{friend_username}') OR (username = '{friend_username}' AND friend_user_name = '{username}')"
+    query = f"SELECT friendship_status FROM friends WHERE (username_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (username_id = '{friend_username_id}' AND friend_user_id = '{username_id}')"
     cursor.execute(query)
     result = cursor.fetchone()
 
@@ -1095,12 +1099,14 @@ def is_active_request(username, friend_username):
 def send_friend_request(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Check if a friend request already exists
-    query = f"SELECT id FROM friends WHERE username = '{username}' AND friend_user_name = '{friend_username}' AND friendship_status = 'pending'"
+    query = f"SELECT id FROM friends WHERE username_id = '{username_id}' AND friend_user_id = '{friend_username_id}' AND friendship_status = 'pending'"
     cursor.execute(query)
     existing_request = cursor.fetchone()
 
@@ -1108,7 +1114,7 @@ def send_friend_request(username, friend_username):
         print("Friend request already sent.")
     else:
         # Send a new friend request
-        insert_query = f"INSERT INTO friends (username, friend_user_name, friendship_status) VALUES ('{username}', '{friend_username}', 'pending')"
+        insert_query = f"INSERT INTO friends (username_id, friend_user_id, friendship_status) VALUES ('{username_id}', '{friend_username_id}', 'pending')"
         cursor.execute(insert_query)
         connection.commit()
         print("Friend request sent successfully.")
