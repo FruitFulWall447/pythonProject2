@@ -14,8 +14,8 @@ pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
 default_settings_dict = {
     "volume": 50,  # Default volume level
-    "output_device": "default",  # Default output device
-    "input_device": "default",  # Default input device
+    "output_device": "Default",  # Default output device
+    "input_device": "Default",  # Default input device
     "camera_device_index": 0,  # Default camera device
     "font_size": 12,  # Default font size
     "font": "Arial",  # Default font

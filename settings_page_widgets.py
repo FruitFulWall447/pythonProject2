@@ -482,7 +482,6 @@ class SettingsBox(QWidget):
                                                                       delete_account_button_y, button_width,
                                                                       button_height, "Delete Account")
 
-
             elif self.parent.selected_settings == "Voice & Video":
                 # Check if the device has input capability
                 input_devices = get_input_devices()
@@ -528,9 +527,9 @@ class SettingsBox(QWidget):
                 camera_label = self.create_white_label(camera_x, camera_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "CAMERA")
                 if self.parent.camera_index is None:
-                    self.camara_devices_combobox.setCurrentText("None")
+                    self.camara_devices_combobox.setCurrentText("No Devices Found")
                 else:
-                    self.camara_devices_combobox.setCurrentText(self.parent.camera_index )
+                    self.camara_devices_combobox.setCurrentText(str(self.parent.camera_index))
                 input_mode_x, input_mode_y = (800, 370)
                 self.create_input_mode_select_button(input_mode_y, input_mode_x)
                 input_mode_label = self.create_white_label(input_mode_x, input_mode_y - space_between_option_box_and_label, self.default_labels_font_size, None,
@@ -627,7 +626,7 @@ class SettingsBox(QWidget):
 
     def output_device_changed(self):
         self.parent.output_device_name = self.output_combobox.currentText()
-        print(f"changed output device to {self.parent.input_device_name}")
+        print(f"changed output device to {self.parent.output_device_name}")
         if self.parent.play_vc_data_thread.is_alive():
             self.parent.close_listen_thread()
             self.parent.start_listen_thread()
