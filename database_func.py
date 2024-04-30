@@ -1153,12 +1153,14 @@ def handle_friend_request(username, friend_username, accept):
 def remove_friend(username, friend_username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Check if the friendship exists
-    query = f"SELECT id FROM friends WHERE (username = '{username}' AND friend_user_name = '{friend_username}') OR (username = '{friend_username}' AND friend_user_name = '{username}') AND friendship_status = 'accepted'"
+    query = f"SELECT id FROM friends WHERE (username_id = '{username_id}' AND friend_username_id = '{friend_username_id}') OR (username_id = '{friend_username_id}' AND friend_username_id = '{username_id}') AND friendship_status = 'accepted'"
     cursor.execute(query)
     friendship_id = cursor.fetchone()
 
