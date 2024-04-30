@@ -745,12 +745,15 @@ class SplashScreen(QWidget):
                                 if action_state == "valid":
                                     self.loading_timer.stop()
                                     print("logged in successfully")
-                                    self.hide()
-                                    self.page_controller_object.main_page.username = username
-                                    self.page_controller_object.change_to_main_page()
-                                    is_logged_in = True
-                                    threading.Thread(target=thread_recv_messages, args=(self.page_controller_object,)).start()
-                                    self.close()
+                                    try:
+                                        self.hide()
+                                        self.page_controller_object.main_page.username = username
+                                        self.page_controller_object.change_to_main_page()
+                                        is_logged_in = True
+                                        threading.Thread(target=thread_recv_messages, args=(self.page_controller_object,)).start()
+                                        self.close()
+                                    except Exception as e:
+                                        print(e)
                                 elif action_state == "invalid":
                                     print("username already logged in")
                         elif server_answer == "invalid":
@@ -2419,18 +2422,16 @@ class Login_page(QWidget):
                 print("logged in successfully")
                 n.connect_between_udp_port_address_to_username()
                 self.hide()
-
                 if self.remember_me_status:
                     n.ask_for_security_token()
                     print("You will be remembered")
 
-                main_page.username = username
-                main_page.update_values()
+                self.page_controller_object.main_page.username = username
+                self.page_controller_object.main_page.update_values()
                 is_logged_in = True
                 threading.Thread(target=thread_recv_messages, args=(self.page_controller_object, )).start()
-                main_page.start_listen_udp_thread()
-                splash_page = SplashScreen(self.page_controller_object)
-                splash_page.showMaximized()
+                self.page_controller_object.main_page.start_listen_udp_thread()
+                self.page_controller_object.change_to_splash_page()
             elif login_status == "already_logged_in":
                 print("User logged in from another device")
                 self.user_is_logged_in.show()
@@ -3012,6 +3013,9 @@ class PageController:
     def change_to_forget_password_page(self):
         self.change_page("forget_password_page")
 
+    def change_to_splash_page(self):
+        self.change_page("splash_page")
+
     def change_page(self, page_name):
         if page_name == "main_page":
             self.current_page.hide()
@@ -3037,6 +3041,10 @@ class PageController:
             self.current_page.hide()
             self.forget_password_page.showMaximized()
             self.current_page = self.forget_password_page
+        elif page_name == "splash_page":
+            self.current_page.hide()
+            self.splash_page.showMaximized()
+            self.current_page = self.splash_page
 
 
 Last_page = None
