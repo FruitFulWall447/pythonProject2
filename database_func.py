@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector import pooling
 import binascii
 import os
 import hashlib
@@ -9,6 +10,17 @@ import base64
 import string
 import random
 import tempfile
+
+
+connection_pool = pooling.MySQLConnectionPool(
+    pool_name="kevindb_pool",
+    pool_size=5,
+    host="localhost",
+    user="root",
+    password="LingshUpper1208",
+    database="kevindb"
+)
+
 
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
@@ -2230,6 +2242,8 @@ def create_tables_if_not_exist():
 
 
 def connect_to_kevindb():
-    return mysql.connector.connect(host="localhost", user="root", password="LingshUpper1208", database="kevindb")
+    # Acquire a connection from the pool
+    connection = connection_pool.get_connection()
+    return connection
 
 
