@@ -2440,10 +2440,10 @@ class Login_page(QWidget):
                 self.incorrect_label.show()
 
     def forgot_password_clicked(self):
-        self.page_controller_object.move_to_forget_password_page()
+        self.page_controller_object.change_to_forget_password_page()
 
     def move_to_sign_up_page(self):
-        self.page_controller_object.move_to_sign_up_page()
+        self.page_controller_object.change_to_sign_up_page()
 
     def show_password_button_pressed(self):
         if self.current_icon == "discord_app_assets/show_password_icon.png":
@@ -2506,6 +2506,7 @@ class Forget_password_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
+        self.page_controller_object = page_controller_object
         self.username = QLineEdit(self)
         self.username.move(1690 // 2, 280)
         self.username.setPlaceholderText("Username")
@@ -2604,10 +2605,7 @@ class Forget_password_page(QWidget):
         """)
 
     def return_button_pressed(self):
-        global Last_page
-        Last_page.showMaximized()
-        Last_page = splash_page
-        self.hide()
+        self.page_controller_object.change_to_login_page()
 
     def submit_form(self):
         global n, verification_code_page
@@ -2945,11 +2943,8 @@ class Change_password_page(QWidget):
         """)
 
     def return_button_pressed(self):
-        global Last_page
         if self.status:
-            Last_page.showMaximized()
-            Last_page = splash_page
-            self.hide()
+            self.page_controller_object.change_to_login_page()
 
     def submit_form(self):
         global n, verification_code_page
@@ -3043,6 +3038,7 @@ class PageController:
             self.current_page = self.forget_password_page
         elif page_name == "splash_page":
             self.current_page.hide()
+            self.splash_page = SplashScreen(self)
             self.splash_page.showMaximized()
             self.current_page = self.splash_page
 
