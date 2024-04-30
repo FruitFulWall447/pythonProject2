@@ -160,8 +160,8 @@ def return_share_camera_bytes_parameters(share_camera_data):
         print(share_camera_data)
 
 
-def thread_recv_messages():
-    global n, main_page, vc_thread_flag, vc_data_queue, vc_play_flag, splash_page
+def thread_recv_messages(page_controller_object):
+    global n
     print("receiving thread started running")
     while Flag_recv_messages:
         data = n.recv_str()
@@ -169,110 +169,110 @@ def thread_recv_messages():
             message_type = data.get("message_type")
             if message_type == "messages_list":
                 message_list = json.loads(data.get("messages_list"))
-                main_page.list_messages = message_list
-                main_page.is_new_chat_clicked = True
-                main_page.is_messages_need_update = True
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.list_messages = message_list
+                page_controller_object.main_page.is_new_chat_clicked = True
+                page_controller_object.main_page.is_messages_need_update = True
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print("Updated the messages list")
             elif message_type == "settings_dict":
                 settings_dict = data.get("settings_dict")
-                main_page.update_settings_from_dict_signal.emit(settings_dict)
+                page_controller_object.main_page.update_settings_from_dict_signal.emit(settings_dict)
                 print("got settings")
             elif message_type == "playlist_current_song_bytes":
                 audio_bytes = data.get("audio_bytes")
                 title = data.get("title")
-                play_mp3_from_bytes(audio_bytes, main_page.playlist_media_player)
+                play_mp3_from_bytes(audio_bytes, page_controller_object.main_page.playlist_media_player)
                 print(f"got song {title} bytes from server")
             elif message_type == "searched_song_result":
                 info_dict = data.get("searched_song_dict")
-                main_page.insert_search_result_signal.emit(info_dict)
+                page_controller_object.main_page.insert_search_result_signal.emit(info_dict)
                 print("got song search info")
             elif message_type == "playlist_songs":
                 playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
-                main_page.playlist_songs = playlist_songs_list
-                QMetaObject.invokeMethod(main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.playlist_songs = playlist_songs_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "insert_playlist_to_table_signal", Qt.QueuedConnection)
                 print("got playlists songs")
             elif message_type == "message_list_addition":
                 message_list_addition = json.loads(data.get("message_list_addition"))
-                main_page.list_messages = main_page.list_messages + message_list_addition
-                main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
-                main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
+                page_controller_object.main_page.list_messages = page_controller_object.main_page.list_messages + message_list_addition
+                page_controller_object.main_page.insert_messages_into_message_box_signal.emit(message_list_addition)
+                page_controller_object.main_page.scroll_back_to_index_before_update_signal.emit(len(message_list_addition))
             elif message_type == "new_message":
                 chat = data.get("chat")
-                if main_page.selected_chat == chat:
+                if page_controller_object.main_page.selected_chat == chat:
                     message_dict = json.loads(data.get("message_dict"))
-                    main_page.list_messages.insert(0, message_dict)
+                    page_controller_object.main_page.list_messages.insert(0, message_dict)
                     temp_list = [message_dict]
-                    main_page.insert_messages_into_message_box_signal.emit(temp_list)
+                    page_controller_object.main_page.insert_messages_into_message_box_signal.emit(temp_list)
                 else:
                     new_message = data.get("new_message")
-                    QMetaObject.invokeMethod(main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
+                    QMetaObject.invokeMethod(page_controller_object.main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
                     print("got new message")
             elif message_type == "requests_list":
                 requests_list = json.loads(data.get("requests_list"))
-                main_page.request_list = requests_list
-                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.request_list = requests_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_requests_signal", Qt.QueuedConnection)
                 print("Updated the requests list")
             elif message_type == "vc_data":
                 compressed_vc_data = data.get("compressed_vc_data")
                 speaker = data.get("speaker")
                 vc_data = zlib.decompress(compressed_vc_data)
-                main_page.vc_data_list.append((vc_data, speaker))
+                page_controller_object.main_page.vc_data_list.append((vc_data, speaker))
             elif message_type == "share_screen_data":
                 compressed_share_screen_data = data.get("compressed_share_screen_data")
                 speaker = data.get("speaker")
                 frame_shape = data.get("frame_shape")
                 share_screen_data = zlib.decompress(compressed_share_screen_data)
                 decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-                main_page.update_stream_screen_frame(decompressed_frame)
+                page_controller_object.main_page.update_stream_screen_frame(decompressed_frame)
             elif message_type == "share_camera_data":
                 compressed_share_camera_data = data.get("compressed_share_camera_data")
                 speaker = data.get("speaker")
                 frame_shape = data.get("frame_shape")
                 share_screen_data = zlib.decompress(compressed_share_camera_data)
                 decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-                main_page.update_stream_screen_frame(decompressed_frame)
+                page_controller_object.main_page.update_stream_screen_frame(decompressed_frame)
             elif message_type == "friends_list":
                 json_friends_list = data.get("friends_list")
                 friends_list = json.loads(json_friends_list)
-                main_page.friends_list = friends_list
-                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                print(f"Got friends list: {main_page.friends_list}")
+                page_controller_object.main_page.friends_list = friends_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_requests_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
+                print(f"Got friends list: {page_controller_object.main_page.friends_list}")
                 print("Updated friends_list list")
             elif message_type == "online_users_list":
                 online_users_list = json.loads(data.get("online_users_list"))
-                main_page.online_users_list = online_users_list
-                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.online_users_list = online_users_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_requests_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print(f"Got online users list: {online_users_list}")
             elif message_type == "blocked_list":
                 blocked_list = json.loads(data.get("blocked_list"))
-                main_page.blocked_list = blocked_list
-                QMetaObject.invokeMethod(main_page, "updated_requests_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.blocked_list = blocked_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_requests_signal", Qt.QueuedConnection)
                 print("Updated the requests list")
             elif message_type == "groups_list":
                 groups_list = json.loads(data.get("groups_list"))
-                main_page.groups_list = groups_list
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.groups_list = groups_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
                 print("Updated the Groups list")
             elif message_type == "chats_list":
                 chats_list = json.loads(data.get("chats_list"))
-                main_page.chats_list = chats_list
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.chats_list = chats_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print("Updated the chats list")
-                print(f"chats list is: {main_page.chats_list}")
+                print(f"chats list is: {page_controller_object.main_page.chats_list}")
             elif message_type == "add_chat":
                 new_chat = data.get("chat_to_add")
-                main_page.chats_list.insert(0, new_chat)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.chats_list.insert(0, new_chat)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print("Updated the chats list")
-                print(f"chats list is: {main_page.chats_list}")
+                print(f"chats list is: {page_controller_object.main_page.chats_list}")
             elif message_type == "new_group_dict":
                 new_group_dict = json.loads(data.get("group_dict"))
-                main_page.groups_list.append(new_group_dict)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.groups_list.append(new_group_dict)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                 print("Added new group to group_list")
             elif message_type == "call":
                 call_action_type = data.get("call_action_type")
@@ -280,105 +280,105 @@ def thread_recv_messages():
                     action = data.get("action")
                     if action == "calling":
                         user_that_called = data.get("user_that_called")
-                        if main_page.is_in_a_call or main_page.is_calling or main_page.is_getting_called:
+                        if page_controller_object.main_page.is_in_a_call or page_controller_object.main_page.is_calling or page_controller_object.main_page.is_getting_called:
                             print(f"User got a call but he is busy")
                         else:
                             try:
                                 getting_called_by = user_that_called
                                 print(f"User is called by {getting_called_by}")
-                                main_page.is_getting_called = True
-                                main_page.getting_called_by = getting_called_by
-                                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                                QMetaObject.invokeMethod(main_page, "getting_call_signal", Qt.QueuedConnection)
+                                page_controller_object.main_page.is_getting_called = True
+                                page_controller_object.main_page.getting_called_by = getting_called_by
+                                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
+                                QMetaObject.invokeMethod(page_controller_object.main_page, "getting_call_signal", Qt.QueuedConnection)
                             except Exception as e:
                                 print(f"error in action calling error:{e}")
-                    if main_page.is_getting_called or main_page.is_calling or main_page.is_joining_call:
+                    if page_controller_object.main_page.is_getting_called or page_controller_object.main_page.is_calling or page_controller_object.main_page.is_joining_call:
                         if action == "rejected":
                             print(f"call was rejected")
-                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "reset_call_var_signal", Qt.QueuedConnection)
                         if action == "accepted":
                             print(f"call was accepted")
-                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "initiating_call_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "start_call_threads_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "initiating_call_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "start_call_threads_signal", Qt.QueuedConnection)
                         if action == "timeout":
                             print("call timeout passed")
-                            QMetaObject.invokeMethod(main_page, "stop_sound_signal", Qt.QueuedConnection)
-                            QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "stop_sound_signal", Qt.QueuedConnection)
+                            QMetaObject.invokeMethod(page_controller_object.main_page, "reset_call_var_signal", Qt.QueuedConnection)
                     if action == "ended":
                         print("call ended")
                         vc_data_queue = Queue()
-                        QMetaObject.invokeMethod(main_page, "close_call_threads_signal", Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(main_page, "reset_call_var_signal", Qt.QueuedConnection)
+                        QMetaObject.invokeMethod(page_controller_object.main_page, "close_call_threads_signal", Qt.QueuedConnection)
+                        QMetaObject.invokeMethod(page_controller_object.main_page, "reset_call_var_signal", Qt.QueuedConnection)
                 if call_action_type == "call_dictionary":
                     action = data.get("action")
                     if action == "dict":
                         call_dictionary = data.get("dict")
                         print(f"got call dict {call_dictionary}")
                         call_dict = call_dictionary
-                        if main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
-                            main_page.update_call_dict_by_id(call_dict)
-                            if main_page.is_watching_screen:
-                                if main_page.username in call_dict.get("participants"):
-                                    if main_page.watching_type == "ScreenStream":
-                                        if main_page.watching_user not in call_dict.get("screen_streamers"):
-                                            QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                        if page_controller_object.main_page.is_call_dict_exists_by_id(call_dict.get("call_id")):
+                            page_controller_object.main_page.update_call_dict_by_id(call_dict)
+                            if page_controller_object.main_page.is_watching_screen:
+                                if page_controller_object.main_page.username in call_dict.get("participants"):
+                                    if page_controller_object.main_page.watching_type == "ScreenStream":
+                                        if page_controller_object.main_page.watching_user not in call_dict.get("screen_streamers"):
+                                            QMetaObject.invokeMethod(page_controller_object.main_page, "stop_watching_stream_signal",
                                                                      Qt.QueuedConnection)
                                     else:
-                                        if main_page.watching_user not in call_dict.get("camera_streamers"):
-                                            QMetaObject.invokeMethod(main_page, "stop_watching_stream_signal",
+                                        if page_controller_object.main_page.watching_user not in call_dict.get("camera_streamers"):
+                                            QMetaObject.invokeMethod(page_controller_object.main_page, "stop_watching_stream_signal",
                                                                      Qt.QueuedConnection)
                         else:
-                            main_page.call_dicts.append(call_dict)
-                        QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
+                            page_controller_object.main_page.call_dicts.append(call_dict)
+                        QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
                     if action == "list_call_dicts":
                         list_call_dicts = json.loads(data.get("list_call_dicts"))
                         list_of_call_dicts = list_call_dicts
-                        main_page.call_dicts = list_of_call_dicts
+                        page_controller_object.main_page.call_dicts = list_of_call_dicts
                         print(f"got list of call dicts: {list_of_call_dicts}")
                 if call_action_type == "update_calls":
                     action = data.get("action")
                     if action == "remove_id":
                         id_to_remove = data.get("removed_id")
-                        main_page.remove_call_dict_by_id(id_to_remove)
+                        page_controller_object.main_page.remove_call_dict_by_id(id_to_remove)
             elif message_type == "profile_dicts_list":
                 profile_dicts_list = (data.get("profile_dicts_list"))
                 print(profile_dicts_list)
-                main_page.list_user_profile_dicts = profile_dicts_list
-                QMetaObject.invokeMethod(main_page, "updated_settings_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "updated_chat_signal", Qt.QueuedConnection)
-                QMetaObject.invokeMethod(main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
+                page_controller_object.main_page.list_user_profile_dicts = profile_dicts_list
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_settings_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "updated_chat_signal", Qt.QueuedConnection)
+                QMetaObject.invokeMethod(page_controller_object.main_page, "caching_circular_images_of_users_signal", Qt.QueuedConnection)
                 print("got list of profile dictionaries")
             elif message_type == "updated_profile_dict":
                 profile_dict = json.loads(data.get("profile_dict"))
                 name_of_profile_dict = data.get("username")
-                main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
+                page_controller_object.main_page.updating_profile_dict_signal.emit(name_of_profile_dict, profile_dict)
                 print(f"got updated profile dictionary of {name_of_profile_dict}")
             elif message_type == "update_group_dict":
                 group_dict = json.loads(data.get("group_dict"))
-                main_page.update_group_lists_by_group.emit(group_dict)
+                page_controller_object.main_page.update_group_lists_by_group.emit(group_dict)
                 print(f"got updated group dic {group_dict.get('group_id')}")
             elif message_type == "data":
                 action = data.get("action")
                 if action == "receive":
                     receive_status = data.get("receive_status")
                     if receive_status == "done":
-                        QMetaObject.invokeMethod(splash_page, "stop_loading_signal", Qt.QueuedConnection)
+                        QMetaObject.invokeMethod(page_controller_object.splash_page, "stop_loading_signal", Qt.QueuedConnection)
             elif message_type == "security_token":
                 security_token = data.get("security_token")
                 save_token(security_token)
             elif message_type == "friend_request":
                 status = data.get("friend_request_status")
                 if status == "not exist":
-                    main_page.friends_box.friend_not_found()
+                    page_controller_object.main_page.friends_box.friend_not_found()
                 elif status == "already friends":
-                    main_page.friends_box.request_was_friend()
+                    page_controller_object.main_page.friends_box.request_was_friend()
                 elif status == "worked":
-                    main_page.friends_box.request_was_sent()
+                    page_controller_object.main_page.friends_box.request_was_sent()
                 elif status == "active":
-                    main_page.friends_box.request_is_pending()
+                    page_controller_object.main_page.friends_box.request_is_pending()
         except Exception as e:
             print(e)
 
@@ -654,8 +654,9 @@ def thread_send_share_camera_data():
 class SplashScreen(QWidget):
     stop_loading_signal = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
+        self.page_controller_object = page_controller_object
         self.init_ui()
 
     def init_ui(self):
@@ -703,13 +704,15 @@ class SplashScreen(QWidget):
 
     def close_page_open_main_page(self):
         global is_logged_in
-        main_page.update_values()
-        main_page.showMaximized()
-        is_logged_in = True
-        self.close()
+        try:
+            self.page_controller_object.change_to_main_page()
+            is_logged_in = True
+            self.close()
+        except Exception as e:
+            print(e)
 
     def update_loading_dots(self):
-        global is_logged_in, main_page, n
+        global is_logged_in, n
         wait_time_sec = 5
         self.dot_count = (self.dot_count + 1) % 5
         loading_label = self.findChild(QLabel, 'loading_label')
@@ -721,10 +724,10 @@ class SplashScreen(QWidget):
 
         if self.elapsed_time >= wait_time_sec * 1000:  # 5 seconds
             # Transition to the login page after 5 seconds
-            if main_page.username == "":
+            if self.page_controller_object.main_page.username == "":
                 if not are_token_saved():
                     self.loading_timer.stop()
-                    login_page.showMaximized()
+                    self.page_controller_object.change_to_login_page()
                     self.close()
                 else:
                     security_token = get_saved_token()
@@ -743,18 +746,17 @@ class SplashScreen(QWidget):
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     self.hide()
-                                    main_page.username = username
-                                    main_page.update_values()
-                                    main_page.showMaximized()
+                                    self.page_controller_object.main_page.username = username
+                                    self.page_controller_object.change_to_main_page()
                                     is_logged_in = True
-                                    threading.Thread(target=thread_recv_messages, args=()).start()
+                                    threading.Thread(target=thread_recv_messages, args=(self.page_controller_object,)).start()
                                     self.close()
                                 elif action_state == "invalid":
                                     print("username already logged in")
                         elif server_answer == "invalid":
                             print("security token isn't valid")
                             self.loading_timer.stop()
-                            login_page.showMaximized()
+                            self.page_controller_object.change_to_login_page()
                             self.close()
 
 
@@ -790,7 +792,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     start_call_threads_signal = pyqtSignal()
     insert_playlist_to_table_signal = pyqtSignal()
 
-    def __init__(self, Netwrok):
+    def __init__(self, Netwrok, page_controller_object):
         super().__init__()
         self.vc_data_list = []
         self.vc_thread_flag = False
@@ -2086,7 +2088,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
 
 class Sign_up_page(QWidget):
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
         self.password_not_match_label = QLabel('Password does not match', self)
@@ -2256,9 +2258,10 @@ class Sign_up_page(QWidget):
 
 
 class Login_page(QWidget):
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
+        self.page_controller_object = page_controller_object
         self.visibility_password_button = QPushButton(self)
         # Load an image and set it as the button's icon
         self.show_password_icon = QIcon("discord_app_assets/show_password_icon.png")
@@ -2424,9 +2427,9 @@ class Login_page(QWidget):
                 main_page.username = username
                 main_page.update_values()
                 is_logged_in = True
-                threading.Thread(target=thread_recv_messages, args=()).start()
+                threading.Thread(target=thread_recv_messages, args=(self.page_controller_object, )).start()
                 main_page.start_listen_udp_thread()
-                splash_page = SplashScreen()
+                splash_page = SplashScreen(self.page_controller_object)
                 splash_page.showMaximized()
             elif login_status == "already_logged_in":
                 print("User logged in from another device")
@@ -2436,17 +2439,10 @@ class Login_page(QWidget):
                 self.incorrect_label.show()
 
     def forgot_password_clicked(self):
-        global Last_page
-
-        Last_page = login_page
-        forget_password_page.showMaximized()
-        self.hide()
+        self.page_controller_object.move_to_forget_password_page()
 
     def move_to_sign_up_page(self):
-        global Last_page
-        Last_page = login_page
-        sign_up_page.showMaximized()
-        self.hide()
+        self.page_controller_object.move_to_sign_up_page()
 
     def show_password_button_pressed(self):
         if self.current_icon == "discord_app_assets/show_password_icon.png":
@@ -2506,7 +2502,7 @@ class VideoClient(QMainWindow):
 
 
 class Forget_password_page(QWidget):
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
         self.username = QLineEdit(self)
@@ -2637,7 +2633,7 @@ class Forget_password_page(QWidget):
 
 
 class Verification_code_page(QWidget):
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
         self.info_label = QLabel(self)
@@ -2814,9 +2810,10 @@ class Verification_code_page(QWidget):
 
 
 class Change_password_page(QWidget):
-    def __init__(self):
+    def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
+        self.page_controller_object = page_controller_object
         self.change_password_label = QLabel("Change password:", self)
         self.change_password_label.move(1690 // 2, 200)
         self.new_password = QLineEdit(self)
@@ -2863,9 +2860,7 @@ class Change_password_page(QWidget):
             """)
 
     def return_button_pressed(self):
-        global login_page
-        self.hide()
-        login_page.showMaximized()
+        self.page_controller_object.change_to_login_page()
 
     def create_label(self, text, position):
         label = QLabel(text, self)
@@ -2975,34 +2970,79 @@ class Change_password_page(QWidget):
         print(4)
 
 
-def load_all_pages(n):
-    global sign_up_page, forget_password_page, login_page, verification_code_page, main_page, change_password_page
-    sign_up_page = Sign_up_page()
-    forget_password_page = Forget_password_page()
-    login_page = Login_page()
-    main_page = MainPage(n)
-    change_password_page = Change_password_page()
-    verification_code_page = Verification_code_page()
-    main_page.showMaximized()
-    main_page.hide()
-    sign_up_page.showMaximized()
-    forget_password_page.showMaximized()
-    login_page.showMaximized()
-    login_page.hide()
-    verification_code_page.showMaximized()
-    sign_up_page.hide()
-    forget_password_page.hide()
-    verification_code_page.hide()
-    change_password_page.showMaximized()
-    change_password_page.hide()
+class PageController:
+    def __init__(self):
+        self.splash_page = SplashScreen(self)
+        self.splash_page.showMaximized()
+        self.sign_up_page = Sign_up_page(self)
+        self.forget_password_page = Forget_password_page(self)
+        self.login_page = Login_page(self)
+        self.main_page = MainPage(n, self)
+        self.change_password_page = Change_password_page(self)
+        self.verification_code_page = Verification_code_page(self)
+        self.main_page.showMaximized()
+        self.main_page.hide()
+        self.sign_up_page.showMaximized()
+        self.forget_password_page.showMaximized()
+        self.login_page.showMaximized()
+        self.login_page.hide()
+        self.verification_code_page.showMaximized()
+        self.sign_up_page.hide()
+        self.forget_password_page.hide()
+        self.verification_code_page.hide()
+        self.change_password_page.showMaximized()
+        self.change_password_page.hide()
+        self.current_page = self.login_page
+
+    def change_to_login_page(self):
+        self.change_page("login_page")
+
+    def change_to_sign_up_page(self):
+        self.change_page("sign_up_page")
+
+    def change_to_change_password_page(self):
+        self.change_page("change_password_page")
+
+    def change_to_verification_code_page(self):
+        self.change_page("verification_code_page")
+
+    def change_to_main_page(self):
+        self.change_page("main_page")
+
+    def change_to_forget_password_page(self):
+        self.change_page("forget_password_page")
+
+    def change_page(self, page_name):
+        if page_name == "main_page":
+            self.current_page.hide()
+            self.main_page.showMaximized()
+            self.current_page = self.main_page
+        elif page_name == "sign_up_page":
+            self.current_page.hide()
+            self.sign_up_page.showMaximized()
+            self.current_page = self.sign_up_page
+        elif page_name == "change_password_page":
+            self.current_page.hide()
+            self.change_password_page.showMaximized()
+            self.current_page = self.change_password_page
+        elif page_name == "verification_code_page":
+            self.current_page.hide()
+            self.verification_code_page.showMaximized()
+            self.current_page = self.verification_code_page
+        elif page_name == "login_page":
+            self.current_page.hide()
+            self.login_page.showMaximized()
+            self.current_page = self.login_page
+        elif page_name == "forget_password_page":
+            self.current_page.hide()
+            self.forget_password_page.showMaximized()
+            self.current_page = self.forget_password_page
 
 
 Last_page = None
 if __name__ == '__main__':
     n = client_net()
     app = QApplication(sys.argv)
-    splash_page = SplashScreen()
-    splash_page.showMaximized()
-    load_all_pages(n)
+    page_controller_object = PageController()
     app.exec_()
 
