@@ -563,7 +563,7 @@ class SettingsBox(QWidget):
 
                 self.font_size_label = self.create_white_label(font_size_slider_x + font_size_slider_width + 10, font_size_slider_y + 7,
                                                             self.default_labels_font_size, 100, 30,
-                                                            str(self.parent.messages_font_size))
+                                                            str(self.parent.font_size))
                 font_option_x, font_option_y = 800, starter_y+200
                 font_slider_label = self.create_white_label(font_option_x, font_option_y-space_between_option_box_and_label,
                                                               self.default_labels_font_size, None, None, "FONT STYLE")
