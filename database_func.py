@@ -1180,12 +1180,13 @@ def remove_friend(username, friend_username):
 def get_friend_requests(username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Retrieve friend requests for the given username
-    query = f"SELECT username FROM friends WHERE friend_user_name = '{username}' AND friendship_status = 'pending'"
+    query = f"SELECT username FROM friends WHERE friend_user_id = '{username_id}' AND friendship_status = 'pending'"
     cursor.execute(query)
     friend_requests = cursor.fetchall()
 
@@ -1201,6 +1202,7 @@ def get_friend_requests(username):
 def get_user_friends(username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
@@ -1208,11 +1210,11 @@ def get_user_friends(username):
     # Retrieve friends for the given username
     query = f"""
         SELECT CASE
-            WHEN username = '{username}' THEN friend_user_name
-            WHEN friend_user_name = '{username}' THEN username
+            WHEN username_id = '{username_id}' THEN friend_user_name
+            WHEN friend_user_id = '{username_id}' THEN username
         END AS friend_name
         FROM friends
-        WHERE (username = '{username}' OR friend_user_name = '{username}') AND friendship_status = 'accepted';
+        WHERE (username_id = '{username_id}' OR friend_user_name = '{username_id}') AND friendship_status = 'accepted';
     """
     cursor.execute(query)
     friends = cursor.fetchall()
