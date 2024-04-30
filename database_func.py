@@ -1210,11 +1210,11 @@ def get_user_friends(username):
     # Retrieve friends for the given username
     query = f"""
         SELECT CASE
-            WHEN username_id = '{username_id}' THEN friend_user_name
-            WHEN friend_user_id = '{username_id}' THEN username
-        END AS friend_name
+            WHEN user_id = '{username_id}' THEN friend_user_id
+            WHEN friend_user_id = '{username_id}' THEN user_id
+        END AS friend_id
         FROM friends
-        WHERE (username_id = '{username_id}' OR friend_user_name = '{username_id}') AND friendship_status = 'accepted';
+        WHERE (user_id = '{username_id}' OR friend_user_name = '{username_id}') AND friendship_status = 'accepted';
     """
     cursor.execute(query)
     friends = cursor.fetchall()
