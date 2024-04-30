@@ -1273,16 +1273,17 @@ class ChatBox(QWidget):
             starts_x = 900+((numbers_of_users_in_call-2) * -70)
             y_of_profiles = 95
 
-            names = current_call_dict.get("participants")
-            for name in names:
-                self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
-                if name in current_call_dict.get("screen_streamers") and name != self.parent.username:
-                    stream_type = "ScreenStream"
-                    self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
-                if name in current_call_dict.get("camera_streamers") and name != self.parent.username:
-                    stream_type = "CameraStream"
-                    self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
-                starts_x += 105
+            if current_call_dict is not None:
+                names = current_call_dict.get("participants")
+                for name in names:
+                    self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
+                    if name in current_call_dict.get("screen_streamers") and name != self.parent.username:
+                        stream_type = "ScreenStream"
+                        self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
+                    if name in current_call_dict.get("camera_streamers") and name != self.parent.username:
+                        stream_type = "CameraStream"
+                        self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
+                    starts_x += 105
         except Exception as e:
             print(f"error is {e} in icon management")
 

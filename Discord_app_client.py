@@ -491,11 +491,10 @@ accumulated_data = []
 vc_data_queue = Queue()
 
 
-def thread_play_vc_data():
-    global main_page
+def thread_play_vc_data(page_controller_object):
     try:
         print("started play voice data thread....")
-        output_device_name = main_page.output_device_name  # Get the output device name from main_page
+        output_device_name = page_controller_object.main_page.output_device_name  # Get the output device name from main_page
 
         if output_device_name == "Default":
             def_device_name = get_default_output_device_name()
@@ -510,15 +509,15 @@ def thread_play_vc_data():
 
         output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
                                output_device_index=output_device_index)
-        while main_page.vc_play_flag:
+        while page_controller_object.main_page.vc_play_flag:
             try:
-                vc_data_tuple = main_page.vc_data_list[0]
+                vc_data_tuple = page_controller_object.main_page.vc_data_list[0]
                 vc_data = vc_data_tuple[0]
-                modified_data_list = audio_data_list_set_volume([vc_data], volume=main_page.volume)  # Adjust volume to 10%
+                modified_data_list = audio_data_list_set_volume([vc_data], volume=page_controller_object.main_page.volume)  # Adjust volume to 10%
                 modified_data = b''.join(modified_data_list)
                 # Play the modified audio data
                 output_stream.write(modified_data)
-                del main_page.vc_data_list[0]
+                del page_controller_object.main_page.vc_data_list[0]
             except Exception as e:
                 pass  # Handle the case where the queue is empty
         output_stream.stop_stream()
@@ -541,14 +540,14 @@ def audio_data_list_set_volume(datalist, volume):
     return modified_datalist
 
 
-def thread_send_voice_chat_data():
-    global n, main_page
+def thread_send_voice_chat_data(page_controller_object):
+    global n
     try:
         accumulated_data = []
         print("started voice chat thread....")
-        input_device_name = main_page.input_device_name  # Get the output device name from main_page
+        input_device_name = page_controller_object.main_page.input_device_name  # Get the output device name from main_page
 
-        if input_device_name == "Default":
+        if input_device_name == "Default" or input_device_name == "default":
             def_device_name = get_default_input_device_name()
             input_device_index = find_input_device_index(def_device_name)
         else:
@@ -567,8 +566,8 @@ def thread_send_voice_chat_data():
         count = 0
         const = 20
         # Open output stream (speakers)
-        while main_page.vc_thread_flag:
-            if not main_page.mute and not main_page.deafen:
+        while page_controller_object.main_page.vc_thread_flag:
+            if not page_controller_object.main_page.mute and not page_controller_object.main_page.deafen:
                 input_data = input_stream.read(CHUNK)
                 accumulated_data.append(input_data)
 
@@ -590,8 +589,7 @@ def thread_send_voice_chat_data():
 SCREEN_FPS = 30
 
 
-def thread_send_share_screen_data():
-    global main_page
+def thread_send_share_screen_data(main_page):
     time_between_frame = 1 / SCREEN_FPS
     try:
         while main_page.is_screen_shared:
@@ -619,8 +617,7 @@ def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
 
 
-def thread_send_share_camera_data():
-    global main_page
+def thread_send_share_camera_data(main_page):
     time_between_frame = 1 / CAMERA_FPS
     try:
         # Initialize the camera
@@ -797,11 +794,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def __init__(self, Netwrok, page_controller_object):
         super().__init__()
+        self.page_controller_object = page_controller_object
         self.vc_data_list = []
         self.vc_thread_flag = False
         self.vc_play_flag = False
-        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
-        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=())
+        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=(self.page_controller_object,))
+        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=(self.page_controller_object,))
         self.listen_udp_thread = threading.Thread(target=listen_udp, args=(self,))
 
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
@@ -1010,8 +1008,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.sound_effect_media_player.setMedia(self.ringtone)
-        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
+        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
         self.init_ui()
 
     def init_ui(self):
@@ -1549,7 +1547,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         print("Started Share camera thread")
 
     def update_share_screen_thread(self):
-        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=())
+        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
 
     def update_share_camera_thread(self):
         self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
@@ -1646,11 +1644,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     different_users = self.find_difference(updated_participants, participants_before)
                     if len(different_users) == 1 and self.username not in different_users:
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
-                        self.play_sound_effect_effect(join_sound)
+                        self.play_sound_effect(join_sound)
                 elif len(updated_participants) < len(participants_before) and self.username in updated_participants:
                     user_left_sound = QMediaContent(
                         QUrl.fromLocalFile('discord_app_assets/leave_call_sound_effect.mp3'))
-                    self.play_sound_effect_effect(user_left_sound)
+                    self.play_sound_effect(user_left_sound)
         self.call_dicts.append(updated_call_dict)
 
     def reset_call_var(self):
@@ -1743,7 +1741,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def play_ding_sound_effect(self):
         try:
-            self.play_sound_effect_effect(self.ding_sound_effect)
+            self.play_sound_effect(self.ding_sound_effect)
         except Exception as e:
             print(f"::{e}")
 
@@ -1761,7 +1759,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"::{e}")
 
-    def play_sound_effect_effect(self, sound):
+    def play_sound_effect(self, sound):
         try:
             self.sound_effect_media_player.setMedia(sound)
             self.sound_effect_media_player.play()
@@ -2428,7 +2426,7 @@ class Login_page(QWidget):
 
                 self.page_controller_object.main_page.username = username
                 self.page_controller_object.main_page.update_values()
-                is_logged_in = True
+                self.page_controller_object.is_logged_in = True
                 threading.Thread(target=thread_recv_messages, args=(self.page_controller_object, )).start()
                 self.page_controller_object.main_page.start_listen_udp_thread()
                 self.page_controller_object.change_to_splash_page()
@@ -2968,6 +2966,7 @@ class Change_password_page(QWidget):
 
 class PageController:
     def __init__(self):
+        self.is_logged_in = False
         self.splash_page = SplashScreen(self)
         self.splash_page.showMaximized()
         self.sign_up_page = Sign_up_page(self)
