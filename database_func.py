@@ -1126,12 +1126,14 @@ def send_friend_request(username, friend_username):
 def handle_friend_request(username, friend_username, accept):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
 
     cursor = connection.cursor()
 
     # Check if the friend request exists
-    query = f"SELECT id FROM friends WHERE username = '{friend_username}' AND friend_user_name = '{username}' AND friendship_status = 'pending'"
+    query = f"SELECT id FROM friends WHERE username_id = '{friend_username_id}' AND friend_username_id = '{username_id}' AND friendship_status = 'pending'"
     cursor.execute(query)
     request_id = cursor.fetchone()
 
