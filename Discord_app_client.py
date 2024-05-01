@@ -3038,6 +3038,7 @@ class PageController:
             self.close_all_pages()
             self.clear_all_pages()
             self.hide_all_pages()
+            self.current_page = None
             self.change_to_login_page()
         except Exception as e:
             print(f"error in log out {e}")
