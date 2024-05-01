@@ -3044,31 +3044,40 @@ class PageController:
             print(f"error in log out {e}")
 
     def clear_all_pages(self):
-        self.splash_page = SplashScreen(self)
-        self.sign_up_page = Sign_up_page(self)
-        self.forget_password_page = Forget_password_page(self)
-        self.login_page = Login_page(self)
-        self.main_page = MainPage(self.n, self)
-        self.change_password_page = Change_password_page(self)
-        self.verification_code_page = Verification_code_page(self)
+        try:
+            self.splash_page = SplashScreen(self)
+            self.sign_up_page = Sign_up_page(self)
+            self.forget_password_page = Forget_password_page(self)
+            self.login_page = Login_page(self)
+            self.main_page = MainPage(self.n, self)
+            self.change_password_page = Change_password_page(self)
+            self.verification_code_page = Verification_code_page(self)
+        except Exception as e:
+            print(f"error in clearing pages {e}")
 
     def close_all_pages(self):
-        self.main_page.close()
-        self.change_password_page.close()
-        self.verification_code_page.close()
-        self.login_page.close()
-        self.forget_password_page.close()
-        self.sign_up_page.close()
-        self.splash_page.close()
+        try:
+            self.main_page.close()
+            self.change_password_page.close()
+            self.verification_code_page.close()
+            self.login_page.close()
+            self.forget_password_page.close()
+            self.sign_up_page.close()
+            self.splash_page.close()
+        except Exception as e:
+            print(f"error in closing pages {e}")
 
     def hide_all_pages(self):
-        self.splash_page.hide()
-        self.sign_up_page.hide()
-        self.forget_password_page.hide()
-        self.login_page.hide()
-        self.main_page.hide()
-        self.change_password_page.hide()
-        self.verification_code_page.hide()
+        try:
+            self.splash_page.hide()
+            self.sign_up_page.hide()
+            self.forget_password_page.hide()
+            self.login_page.hide()
+            self.main_page.hide()
+            self.change_password_page.hide()
+            self.verification_code_page.hide()
+        except Exception as e:
+            print(f"error in hiding pages {e}")
 
     def change_to_login_page(self):
         self.change_page("login_page")
