@@ -3040,7 +3040,7 @@ class PageController:
             self.is_logged_in = False
             # self.receive_thread_after_login.join()
             #
-            # self.main_page.close_all_threads()
+            self.main_page.close_all_threads()
             self.close_all_pages()
             self.clear_all_pages()
             self.hide_all_pages()
