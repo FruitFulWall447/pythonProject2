@@ -367,6 +367,7 @@ def thread_recv_messages(n, addr):
                 Communication.user_offline(User)
                 is_logged_in = False
                 User = ""
+                n.timeout_receive()
             elif message_type == "playlist_song_bytes_by_index":
                 index = data.get("index")
                 song_dict = database_func.get_song_by_index_and_owner(User, index)

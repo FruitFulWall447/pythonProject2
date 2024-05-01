@@ -209,7 +209,6 @@ class client_net:
             # Convert the length of the data to a string
             self.sending_tcp_data_lock.acquire()
             encoded_data = data.encode('utf-8')
-            encoded_data = data.encode('utf-8')
             encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
 
             # Use the size of encoded_encrypted_data
@@ -1304,6 +1303,13 @@ class server_net:
     def send_forget_password_code_invalid(self):
         try:
             message = {"message_type": "forget_password", "action": "code", "code_status": "invalid"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def timeout_receive(self):
+        try:
+            message = {"message_type": "timeout_receive"}
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
