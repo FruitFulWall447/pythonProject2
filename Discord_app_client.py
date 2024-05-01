@@ -3023,14 +3023,13 @@ class PageController:
         self.receive_thread_after_login.start()
 
     def quit_application(self):
-        if self.is_logged_in:
-            print("closing app...")
-            self.is_logged_in = False
-            self.n.close()
-            self.main_page.close_all_threads()
-            self.close_all_pages()
-            del self.app
-            sys.exit()
+        print("closing app...")
+        self.is_logged_in = False
+        self.n.close()
+        self.main_page.close_all_threads()
+        self.close_all_pages()
+        del self.app
+        sys.exit()
 
     def log_out(self):
         try:
