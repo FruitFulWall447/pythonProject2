@@ -3028,14 +3028,17 @@ class PageController:
         sys.exit()
 
     def log_out(self):
-        print("logging out")
-        self.is_logged_in = False
-        self.main_page.close_all_threads()
-        self.close_all_pages()
-        self.clear_all_pages()
-        self.hide_all_pages()
-        self.change_to_login_page()
-        self.n.send_logout_message()
+        try:
+            print("logging out")
+            self.is_logged_in = False
+            self.main_page.close_all_threads()
+            self.close_all_pages()
+            self.clear_all_pages()
+            self.hide_all_pages()
+            self.change_to_login_page()
+            self.n.send_logout_message()
+        except Exception as e:
+            print(f"error in log out {e}")
 
     def clear_all_pages(self):
         self.splash_page = SplashScreen(self)
