@@ -748,7 +748,7 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.main_page.username = username
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
-                                        threading.Thread(target=thread_recv_messages, args=(self.page_controller_object,)).start()
+                                        self.page_controller_object.start_receive_thread_after_login()
                                         self.close()
                                     except Exception as e:
                                         print(e)
@@ -2426,7 +2426,7 @@ class Login_page(QWidget):
                 self.page_controller_object.main_page.username = username
                 self.page_controller_object.main_page.update_values()
                 self.page_controller_object.is_logged_in = True
-                threading.Thread(target=thread_recv_messages, args=(self.page_controller_object, )).start()
+                self.page_controller_object.start_receive_thread_after_login()
                 self.page_controller_object.main_page.start_listen_udp_thread()
                 self.page_controller_object.change_to_splash_page()
             elif login_status == "already_logged_in":
@@ -2981,6 +2981,7 @@ class Change_password_page(QWidget):
 
 class PageController:
     def __init__(self):
+        self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
         self.is_logged_in = False
         self.is_waiting_for_2fa_code = False
         self.splash_page = SplashScreen(self)
@@ -3004,6 +3005,9 @@ class PageController:
         self.change_password_page.showMaximized()
         self.change_password_page.hide()
         self.current_page = self.login_page
+
+    def start_receive_thread_after_login(self):
+        self.receive_thread_after_login.start()
 
     def change_to_login_page(self):
         self.change_page("login_page")
