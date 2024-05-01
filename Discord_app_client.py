@@ -2815,7 +2815,7 @@ class Verification_code_page(QWidget):
                                     n.ask_for_security_token()
                                     print("You will be remembered")
                                 try:
-                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username
+                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_enrty.text()
                                     self.page_controller_object.main_page.update_values()
                                     self.page_controller_object.is_logged_in = True
                                     self.page_controller_object.start_receive_thread_after_login()
