@@ -2434,6 +2434,7 @@ class Login_page(QWidget):
                 self.user_is_logged_in.show()
             elif login_status == "2fa":
                 print("You have 2fa On")
+                self.page_controller_object.is_waiting_for_2fa_code = True
                 self.page_controller_object.change_to_verification_code_page()
             else:
                 print("login info isn't correct")
@@ -2771,11 +2772,15 @@ class Verification_code_page(QWidget):
         """)
 
     def submit_form(self):
-        global n, change_password_page
+        global n
         code = self.code.text()
         try:
             if len(code) == 6:
-                n.send_sign_up_verification_code(code)
+                if not self.page_controller_object.is_waiting_for_2fa_code:
+                    n.send_sign_up_verification_code(code)
+                else:
+                    n.send_login_2fa_code(code)
+                    self.page_controller_object.is_waiting_for_2fa_code = False
                 print("Sent verification code to server")
                 data = n.recv_str()
                 message_type = data.get("message_type")
@@ -2977,6 +2982,7 @@ class Change_password_page(QWidget):
 class PageController:
     def __init__(self):
         self.is_logged_in = False
+        self.is_waiting_for_2fa_code = False
         self.splash_page = SplashScreen(self)
         self.splash_page.showMaximized()
         self.sign_up_page = Sign_up_page(self)
