@@ -3032,12 +3032,12 @@ class PageController:
         try:
             self.n.send_logout_message()
             print("logging out")
-            self.is_logged_in = False
-            self.receive_thread_after_login.join()
-            self.main_page.close_all_threads()
-            self.close_all_pages()
-            self.clear_all_pages()
-            self.hide_all_pages()
+            # self.is_logged_in = False
+            # self.receive_thread_after_login.join()
+            # self.main_page.close_all_threads()
+            # self.close_all_pages()
+            # self.clear_all_pages()
+            # self.hide_all_pages()
             self.current_page = None
             self.change_to_login_page()
         except Exception as e:
@@ -3092,6 +3092,8 @@ class PageController:
         self.change_page("splash_page")
 
     def change_page(self, page_name):
+        if self.current_page is not None:
+            self.current_page.hide()
         if page_name == "main_page":
             self.main_page.showMaximized()
             self.current_page = self.main_page
@@ -3114,8 +3116,7 @@ class PageController:
             self.splash_page = SplashScreen(self)
             self.splash_page.showMaximized()
             self.current_page = self.splash_page
-        if self.current_page is not None:
-            self.current_page.hide()
+
 
 
 if __name__ == '__main__':
