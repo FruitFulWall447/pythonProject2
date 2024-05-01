@@ -164,7 +164,10 @@ def thread_recv_messages(page_controller_object):
     n = page_controller_object.n
     print("receiving thread started running")
     while page_controller_object.is_logged_in:
-        data = n.recv_str()
+        if n is not None:
+            data = n.recv_str()
+        else:
+            break
         try:
             message_type = data.get("message_type")
             if message_type == "messages_list":
