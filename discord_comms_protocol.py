@@ -696,6 +696,14 @@ class client_net:
         except socket.error as e:
             print(e)
 
+    def send_login_2fa_code(self, code):
+        try:
+            message = {"message_type": "login", "action": "2fa", "code": code
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()
 
@@ -1171,6 +1179,13 @@ class server_net:
         except socket.error as e:
             print(e)
 
+    def send_2fa_on(self):
+        try:
+            message = {"message_type": "login", "login_status": "2fa"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def send_sign_up_confirm(self):
         try:
             message = {"message_type": "sign_up", "sign_up_status": "confirm"}
@@ -1261,6 +1276,21 @@ class server_net:
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
+
+    def send_2fa_code_valid(self):
+        try:
+            message = {"message_type": "2fa", "action": "code", "code_status": "valid"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def send_2fa_code_invalid(self):
+        try:
+            message = {"message_type": "2fa", "action": "code", "code_status": "invalid"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
 
     def send_forget_password_code_invalid(self):
         try:

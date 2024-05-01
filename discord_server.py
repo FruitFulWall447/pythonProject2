@@ -198,14 +198,39 @@ def thread_recv_messages(n, addr):
                     password = data.get("password")
                     is_valid = database_func.login(username, password)
                     if is_valid:
+                        is_2fa_for_user = database_func.get_user_settings(username).get("two_factor_auth")
                         if not username in Communication.online_users:
-                            n.send_confirm_login()
-                            logger.info(f"Server sent Confirmed to client {username}")
-                            logger.info(f"Client {username} logged in")
-                            User = username
-                            Communication.user_online(User, n)
-                            is_logged_in = True
-                            threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
+                            if not is_2fa_for_user:
+                                n.send_confirm_login()
+                                logger.info(f"Server sent Confirmed to client {username}")
+                                logger.info(f"Client {username} logged in")
+                                User = username
+                                Communication.user_online(User, n)
+                                is_logged_in = True
+                                threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
+                            else:
+                                code = random.randint(100000, 999999)
+                                n.send_2fa_on()
+                                attempts_remaining = 3  # Set the maximum number of attempts
+                                while attempts_remaining > 0:
+                                    data = n.recv_str()
+                                    message_type = data.get("message_type")
+                                    if message_type == "login":
+                                        action = data.get("action")
+                                        if action == "2fa":
+                                            code_gotten = data.get("code")
+                                            if int(code_gotten) == code:
+                                                n.send_confirm_login()
+                                                logger.info(f"Server sent Confirmed to client {username}")
+                                                logger.info(f"Client {username} logged in")
+                                                User = username
+                                                Communication.user_online(User, n)
+                                                is_logged_in = True
+                                                threading.Thread(target=threaded_logged_in_client,
+                                                                 args=(n, User)).start()
+                                                break
+                                            else:
+                                                attempts_remaining -= 1
                         else:
                             n.send_already_logged_in()
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")

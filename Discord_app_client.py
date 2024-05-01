@@ -2432,6 +2432,9 @@ class Login_page(QWidget):
             elif login_status == "already_logged_in":
                 print("User logged in from another device")
                 self.user_is_logged_in.show()
+            elif login_status == "2fa":
+                print("You have 2fa On")
+                self.page_controller_object.change_to_verification_code_page()
             else:
                 print("login info isn't correct")
                 self.incorrect_label.show()
@@ -2792,6 +2795,14 @@ class Verification_code_page(QWidget):
                     if kind == "code":
                         if result == "valid":
                             self.page_controller_object.change_to_change_password_page()
+                        elif result == "invalid":
+                            pass
+                elif message_type == "2fa":
+                    kind = data.get("action")
+                    result = data.get("code_status")
+                    if kind == "code":
+                        if result == "valid":
+                            self.page_controller_object.change_to_main_page()
                         elif result == "invalid":
                             pass
         except Exception as e:
