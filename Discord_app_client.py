@@ -2403,39 +2403,42 @@ class Login_page(QWidget):
             self.remember_me_status = False
 
     def submit_form(self):
-        n = self.page_controller_object.n
-        self.incorrect_label.hide()
-        self.user_is_logged_in.hide()
-        self.username = self.username.text()
-        password = self.password.text()
-        n.send_login_info(self.username, password)
-        data = n.recv_str()
-        message_type = data.get("message_type")
-        if message_type == "login":
-            login_status = data.get("login_status")
-            if login_status == "confirm":
-                print("logged in successfully")
-                n.connect_between_udp_port_address_to_username()
-                self.hide()
-                if self.remember_me_status:
-                    n.ask_for_security_token()
-                    print("You will be remembered")
-                self.page_controller_object.main_page.username = self.username
-                self.page_controller_object.main_page.update_values()
-                self.page_controller_object.is_logged_in = True
-                self.page_controller_object.start_receive_thread_after_login()
-                self.page_controller_object.main_page.start_listen_udp_thread()
-                self.page_controller_object.change_to_splash_page()
-            elif login_status == "already_logged_in":
-                print("User logged in from another device")
-                self.user_is_logged_in.show()
-            elif login_status == "2fa":
-                print("You have 2fa On")
-                self.page_controller_object.is_waiting_for_2fa_code = True
-                self.page_controller_object.change_to_verification_code_page()
-            else:
-                print("login info isn't correct")
-                self.incorrect_label.show()
+        try:
+            n = self.page_controller_object.n
+            self.incorrect_label.hide()
+            self.user_is_logged_in.hide()
+            self.username = self.username.text()
+            password = self.password.text()
+            n.send_login_info(self.username, password)
+            data = n.recv_str()
+            message_type = data.get("message_type")
+            if message_type == "login":
+                login_status = data.get("login_status")
+                if login_status == "confirm":
+                    print("logged in successfully")
+                    n.connect_between_udp_port_address_to_username()
+                    self.hide()
+                    if self.remember_me_status:
+                        n.ask_for_security_token()
+                        print("You will be remembered")
+                    self.page_controller_object.main_page.username = self.username
+                    self.page_controller_object.main_page.update_values()
+                    self.page_controller_object.is_logged_in = True
+                    self.page_controller_object.start_receive_thread_after_login()
+                    self.page_controller_object.main_page.start_listen_udp_thread()
+                    self.page_controller_object.change_to_splash_page()
+                elif login_status == "already_logged_in":
+                    print("User logged in from another device")
+                    self.user_is_logged_in.show()
+                elif login_status == "2fa":
+                    print("You have 2fa On")
+                    self.page_controller_object.is_waiting_for_2fa_code = True
+                    self.page_controller_object.change_to_verification_code_page()
+                else:
+                    print("login info isn't correct")
+                    self.incorrect_label.show()
+        except Exception as e:
+            print(f"error in trying to login {e}")
 
     def forgot_password_clicked(self):
         self.page_controller_object.change_to_forget_password_page()
