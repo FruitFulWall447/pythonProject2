@@ -383,7 +383,7 @@ def thread_recv_messages(page_controller_object):
                 elif status == "active":
                     page_controller_object.main_page.friends_box.request_is_pending()
         except Exception as e:
-            print(e)
+            print(f"error in receiving thread {e}")
 
 
 def listen_udp(main_page_object):
