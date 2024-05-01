@@ -2408,7 +2408,7 @@ class Login_page(QWidget):
         self.user_is_logged_in.hide()
         self.username = self.username.text()
         password = self.password.text()
-        n.send_login_info(self.username , password)
+        n.send_login_info(self.username, password)
         data = n.recv_str()
         message_type = data.get("message_type")
         if message_type == "login":
