@@ -2798,13 +2798,16 @@ class Verification_code_page(QWidget):
                         elif result == "invalid":
                             pass
                 elif message_type == "2fa":
-                    kind = data.get("action")
-                    result = data.get("code_status")
-                    if kind == "code":
-                        if result == "valid":
-                            self.page_controller_object.change_to_main_page()
-                        elif result == "invalid":
-                            pass
+                    try:
+                        kind = data.get("action")
+                        result = data.get("code_status")
+                        if kind == "code":
+                            if result == "valid":
+                                self.page_controller_object.change_to_main_page()
+                            elif result == "invalid":
+                                pass
+                    except Exception as e:
+                        print(e)
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
