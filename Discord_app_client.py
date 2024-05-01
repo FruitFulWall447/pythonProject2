@@ -3033,9 +3033,11 @@ class PageController:
         sys.exit()
 
     def log_out(self):
+        print("logging out")
         self.clear_all_pages()
         self.hide_all_pages()
         self.change_to_login_page()
+        self.n.send_logout_message()
 
     def clear_all_pages(self):
         self.splash_page = SplashScreen(self)
