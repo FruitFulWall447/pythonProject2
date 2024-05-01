@@ -209,6 +209,7 @@ def thread_recv_messages(n, addr):
                                 is_logged_in = True
                                 threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                             else:
+                                logger.info(f"{username} has 2fa On")
                                 code = random.randint(100000, 999999)
                                 n.send_2fa_on()
                                 attempts_remaining = 3  # Set the maximum number of attempts
