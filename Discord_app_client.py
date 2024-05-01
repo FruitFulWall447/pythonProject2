@@ -485,7 +485,6 @@ CHUNK = 1024
 p = pyaudio.PyAudio()
 vc_thread_flag = False
 vc_play_flag = False
-accumulated_data = []
 vc_data_queue = Queue()
 
 
@@ -789,11 +788,26 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         super().__init__()
         self.page_controller_object = page_controller_object
         self.vc_data_list = []
+
         self.vc_thread_flag = False
-        self.vc_play_flag = False
         self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=(self.page_controller_object,))
+
+        self.vc_play_flag = False
         self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=(self.page_controller_object,))
+
+
+        self.listen_udp = True
         self.listen_udp_thread = threading.Thread(target=listen_udp, args=(self,))
+
+        self.is_watching_screen = False
+        self.watching_user = ""
+        self.watching_type = None
+
+        self.is_screen_shared = False
+        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
+
+        self.is_camera_shared = False
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
 
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
 
@@ -939,13 +953,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.blocked_list = []
         self.groups_list = []
 
-        self.listen_udp = True
-        self.is_screen_shared = False
-        self.is_watching_screen = False
-        self.watching_user = ""
-        self.watching_type = None
-        self.is_camera_shared = False
-
         self.chat_clicked = True
         self.social_clicked = False
         self.setting_clicked = False
@@ -1001,8 +1008,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.sound_effect_media_player.setMedia(self.ringtone)
-        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
+
         self.init_ui()
 
     def init_ui(self):
@@ -1041,6 +1047,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setLayout(self.main_layout)
         except Exception as e:
             print(f"Error is: {e}")
+
+    def close_all_threads(self):
+        # turns every thread flag to False
+        self.vc_thread_flag = False
+        self.vc_play_flag = False
+        self.listen_udp = False
+        self.is_screen_shared = False
+        self.is_camera_shared = False
 
     def exit_group(self, group_id):
         try:
@@ -3009,6 +3023,7 @@ class PageController:
         self.receive_thread_after_login.start()
 
     def quit_application(self):
+        self.main_page.close_all_threads()
         self.main_page.close()
         self.change_password_page.close()
         self.verification_code_page.close()
