@@ -700,6 +700,7 @@ class SplashScreen(QWidget):
         try:
             self.page_controller_object.change_to_main_page()
             self.page_controller_object.is_logged_in = True
+            self.hide()
         except Exception as e:
             print(e)
 
@@ -720,6 +721,7 @@ class SplashScreen(QWidget):
                 if not are_token_saved():
                     self.loading_timer.stop()
                     self.page_controller_object.change_to_login_page()
+                    self.hide()
                 else:
                     security_token = get_saved_token()
                     n.send_security_token(security_token)
@@ -742,6 +744,7 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
                                         self.page_controller_object.start_receive_thread_after_login()
+                                        self.hide()
                                     except Exception as e:
                                         print(e)
                                 elif action_state == "invalid":
@@ -750,14 +753,7 @@ class SplashScreen(QWidget):
                             print("security token isn't valid")
                             self.loading_timer.stop()
                             self.page_controller_object.change_to_login_page()
-
-
-
-friends_list = []
-list_last_messages = []
-chat_messages_max = 33
-request_list = []
-is_logged_in = False
+                            self.hide()
 
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
