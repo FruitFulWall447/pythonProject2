@@ -2408,7 +2408,7 @@ class Login_page(QWidget):
         global n, is_logged_in, splash_page
         self.incorrect_label.hide()
         self.user_is_logged_in.hide()
-        username = self.username.text()
+        self.username = self.username.text()
         password = self.password.text()
         n.send_login_info(username, password)
         data = n.recv_str()
@@ -2422,7 +2422,7 @@ class Login_page(QWidget):
                 if self.remember_me_status:
                     n.ask_for_security_token()
                     print("You will be remembered")
-                self.page_controller_object.main_page.username = username
+                self.page_controller_object.main_page.username = self.username
                 self.page_controller_object.main_page.update_values()
                 self.page_controller_object.is_logged_in = True
                 self.page_controller_object.start_receive_thread_after_login()
