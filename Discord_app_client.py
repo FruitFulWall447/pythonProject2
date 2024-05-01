@@ -2813,12 +2813,15 @@ class Verification_code_page(QWidget):
                                 if self.page_controller_object.login_page.remember_me_status:
                                     n.ask_for_security_token()
                                     print("You will be remembered")
-                                self.page_controller_object.main_page.username = self.page_controller_object.login_page.username
-                                self.page_controller_object.main_page.update_values()
-                                self.page_controller_object.is_logged_in = True
-                                self.page_controller_object.start_receive_thread_after_login()
-                                self.page_controller_object.main_page.start_listen_udp_thread()
-                                self.page_controller_object.change_to_splash_page()
+                                try:
+                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username
+                                    self.page_controller_object.main_page.update_values()
+                                    self.page_controller_object.is_logged_in = True
+                                    self.page_controller_object.start_receive_thread_after_login()
+                                    self.page_controller_object.main_page.start_listen_udp_thread()
+                                    self.page_controller_object.change_to_splash_page()
+                                except Exception as e:
+                                    print(e)
                             elif result == "invalid":
                                 pass
                     except Exception as e:
