@@ -380,6 +380,41 @@ def get_id_from_username(username):
         conn.close()
 
 
+def get_email_by_username(username):
+    try:
+        # Establish a connection to the database
+        connection = connect_to_kevindb()
+
+        # Create a cursor object to execute SQL queries
+        cursor = connection.cursor()
+
+        # Define the SQL query to retrieve the email by username
+        query = "SELECT email FROM sign_up_table WHERE username = %s"
+
+        # Execute the query with the provided username as a parameter
+        cursor.execute(query, (username,))
+
+        # Fetch the result (email) from the query
+        result = cursor.fetchone()
+
+        if result:
+            email = result[0]  # Extract the email from the result tuple
+            return email
+        else:
+            return None  # Username not found or email is NULL
+
+    except mysql.connector.Error as error:
+        print(f"Error retrieving email for username '{username}': {error}")
+        return None
+
+    finally:
+        # Close the cursor and connection
+        if 'cursor' in locals() and cursor is not None:
+            cursor.close()
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+
+
 def get_username_from_id(user_id):
     try:
         # Connect to the MySQL database
