@@ -771,7 +771,8 @@ class client_net:
                 return data
 
         except (socket.error, ValueError) as e:
-            print(f"error is in recv_str:{e}")
+            print(f"error in recv_str:{e}")
+            return None
 
     def recv_bytes(self):
         try:
