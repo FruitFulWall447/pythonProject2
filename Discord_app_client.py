@@ -2092,6 +2092,7 @@ class Sign_up_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
+        self.page_controller_object = page_controller_object
         self.password_not_match_label = QLabel('Password does not match', self)
         self.password_not_match_label.setStyleSheet("color: red; font-size: 12px;")
         self.password_not_match_label.move(1690 // 2 + 2, 413)
@@ -2245,17 +2246,14 @@ class Sign_up_page(QWidget):
             if message_type == "code":
                 action, destination = data.get("action"), data.get("sent_to")
                 if action == "sent" and destination == "email":
-                    verification_code_page.showMaximized()
-                    self.hide()
+                    self.page_controller_object.change_to_verification_code_page()
             elif message_type == "sign_up":
                 result = data.get("sign_up_status")
                 if result == "invalid":
                     self.username_already_used.show()
 
     def return_button_pressed(self):
-        global Last_page
-        Last_page.showMaximized()
-        self.hide()
+        self.page_controller_object.change_to_login_page()
 
 
 class Login_page(QWidget):
