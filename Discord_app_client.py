@@ -3045,6 +3045,8 @@ class PageController:
             self.hide_all_pages()
             self.n.send_logout_message()
             self.receive_thread_after_login.join()
+            self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
+
         except Exception as e:
             print(f"error in log out {e}")
 
