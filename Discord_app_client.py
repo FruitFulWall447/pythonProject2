@@ -2422,7 +2422,6 @@ class Login_page(QWidget):
                 if self.remember_me_status:
                     n.ask_for_security_token()
                     print("You will be remembered")
-
                 self.page_controller_object.main_page.username = username
                 self.page_controller_object.main_page.update_values()
                 self.page_controller_object.is_logged_in = True
@@ -2808,7 +2807,18 @@ class Verification_code_page(QWidget):
                         result = data.get("code_status")
                         if kind == "code":
                             if result == "valid":
-                                self.page_controller_object.change_to_main_page()
+                                print("logged in successfully")
+                                n.connect_between_udp_port_address_to_username()
+                                self.hide()
+                                if self.page_controller_object.login_page.remember_me_status:
+                                    n.ask_for_security_token()
+                                    print("You will be remembered")
+                                self.page_controller_object.main_page.username = self.page_controller_object.login_page.username
+                                self.page_controller_object.main_page.update_values()
+                                self.page_controller_object.is_logged_in = True
+                                self.page_controller_object.start_receive_thread_after_login()
+                                self.page_controller_object.main_page.start_listen_udp_thread()
+                                self.page_controller_object.change_to_splash_page()
                             elif result == "invalid":
                                 pass
                     except Exception as e:
