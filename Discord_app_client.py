@@ -2997,13 +2997,13 @@ class PageController:
         self.is_logged_in = False
         self.is_waiting_for_2fa_code = False
         self.splash_page = SplashScreen(self)
-        self.splash_page.showMaximized()
         self.sign_up_page = Sign_up_page(self)
         self.forget_password_page = Forget_password_page(self)
         self.login_page = Login_page(self)
         self.main_page = MainPage(self.n, self)
         self.change_password_page = Change_password_page(self)
         self.verification_code_page = Verification_code_page(self)
+        self.splash_page.showMaximized()
         self.main_page.showMaximized()
         self.main_page.hide()
         self.sign_up_page.showMaximized()
@@ -3023,6 +3023,8 @@ class PageController:
         self.receive_thread_after_login.start()
 
     def quit_application(self):
+        print("closing app...")
+        self.n.close()
         self.main_page.close_all_threads()
         self.main_page.close()
         self.change_password_page.close()
@@ -3031,6 +3033,17 @@ class PageController:
         self.forget_password_page.close()
         self.sign_up_page.close()
         self.splash_page.close()
+        del self.app
+        sys.exit()
+
+    def clear_all_pages(self):
+        self.splash_page = SplashScreen(self)
+        self.sign_up_page = Sign_up_page(self)
+        self.forget_password_page = Forget_password_page(self)
+        self.login_page = Login_page(self)
+        self.main_page = MainPage(self.n, self)
+        self.change_password_page = Change_password_page(self)
+        self.verification_code_page = Verification_code_page(self)
 
     def change_to_login_page(self):
         self.change_page("login_page")

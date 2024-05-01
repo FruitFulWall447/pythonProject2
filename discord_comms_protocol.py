@@ -791,6 +791,7 @@ class client_net:
     def close(self):
         try:
             self.client_tcp_socket.close()
+            self.client_udp_socket.close()
         except socket.error as e:
             print(e)
 
@@ -1290,7 +1291,6 @@ class server_net:
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
-
 
     def send_forget_password_code_invalid(self):
         try:
