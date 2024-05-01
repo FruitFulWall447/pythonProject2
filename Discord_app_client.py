@@ -1047,11 +1047,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def close_all_threads(self):
         # turns every thread flag to False
-        self.vc_thread_flag = False
-        self.vc_play_flag = False
-        self.listen_udp = False
-        self.is_screen_shared = False
-        self.is_camera_shared = False
+        try:
+            self.vc_thread_flag = False
+            self.vc_play_flag = False
+            self.listen_udp = False
+            self.is_screen_shared = False
+            self.is_camera_shared = False
+        except Exception as e:
+            print(f"error in closing threads {e}")
 
     def exit_group(self, group_id):
         try:
@@ -3032,12 +3035,15 @@ class PageController:
         try:
             self.n.send_logout_message()
             print("logging out")
-            # self.is_logged_in = False
-            # self.receive_thread_after_login.join()
-            # self.main_page.close_all_threads()
-            # self.close_all_pages()
-            # self.clear_all_pages()
-            # self.hide_all_pages()
+
+            self.is_logged_in = False
+            self.receive_thread_after_login.join()
+
+            self.main_page.close_all_threads()
+            self.close_all_pages()
+            self.clear_all_pages()
+            self.hide_all_pages()
+
             self.current_page = None
             self.change_to_login_page()
         except Exception as e:
