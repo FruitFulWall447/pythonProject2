@@ -3036,6 +3036,7 @@ class PageController:
     def log_out(self):
         try:
             print("logging out")
+            self.n.send_logout_message()
             self.main_page.close_all_threads()
             self.current_page = None
             self.change_to_login_page()
@@ -3043,7 +3044,6 @@ class PageController:
             self.close_all_pages()
             self.clear_all_pages()
             self.hide_all_pages()
-            self.n.send_logout_message()
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
 
