@@ -2286,11 +2286,11 @@ class Login_page(QWidget):
         self.password.setStyleSheet("color: white;")
         self.password.move(1690 // 2, 360)
 
-        self.username = QLineEdit(self)
+        self.username_enrty = QLineEdit(self)
         self.remember_me_status = False
-        self.username.setPlaceholderText("Username")
-        self.username.setStyleSheet("color: white;")
-        self.username.move(1690 // 2, 280)
+        self.username_enrty.setPlaceholderText("Username")
+        self.username_enrty.setStyleSheet("color: white;")
+        self.username_enrty.move(1690 // 2, 280)
         self.incorrect_label = QLabel('Username or Password incorrect', self)
         self.incorrect_label.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
@@ -2407,7 +2407,7 @@ class Login_page(QWidget):
             n = self.page_controller_object.n
             self.incorrect_label.hide()
             self.user_is_logged_in.hide()
-            self.username = self.username.text()
+            self.username = self.username_enrty.text()
             password = self.password.text()
             n.send_login_info(self.username, password)
             data = n.recv_str()
