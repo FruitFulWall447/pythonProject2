@@ -183,7 +183,6 @@ share_camera_sequence = br'\share_camera_data'
 
 
 def thread_recv_messages(n, addr):
-    global ringing_list, online_users, current_calls_list
     User = ""
     is_logged_in = False
     logger = logging.getLogger(__name__)
