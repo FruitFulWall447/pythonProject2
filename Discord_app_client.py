@@ -3047,7 +3047,9 @@ class PageController:
             self.current_page = None
             self.change_to_login_page()
         except Exception as e:
-            print(f"error in log out {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"Error in log out: {e}")
 
     def clear_all_pages(self):
         try:
