@@ -363,6 +363,10 @@ class SettingsBox(QWidget):
         self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.privacy_safety, (
         starter_x_of_main_buttons, starter_y_of_main_buttons))
 
+        self.privacy_safety_button = self.create_settings_main_buttons("Log Out",
+                                                                       self.parent.page_controller_object.log_out, (
+        starter_x_of_main_buttons, starter_y_of_main_buttons))
+
         background_color = self.parent.background_color_hex
         hover_color = self.parent.standard_hover_color
 

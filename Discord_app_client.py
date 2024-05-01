@@ -3036,6 +3036,11 @@ class PageController:
         del self.app
         sys.exit()
 
+    def log_out(self):
+        self.clear_all_pages()
+        self.hide_all_pages()
+        self.change_to_login_page()
+
     def clear_all_pages(self):
         self.splash_page = SplashScreen(self)
         self.sign_up_page = Sign_up_page(self)
@@ -3044,6 +3049,15 @@ class PageController:
         self.main_page = MainPage(self.n, self)
         self.change_password_page = Change_password_page(self)
         self.verification_code_page = Verification_code_page(self)
+
+    def hide_all_pages(self):
+        self.splash_page.hide()
+        self.sign_up_page.hide()
+        self.forget_password_page.hide()
+        self.login_page.hide()
+        self.main_page.hide()
+        self.change_password_page.hide()
+        self.verification_code_page.hide()
 
     def change_to_login_page(self):
         self.change_page("login_page")

@@ -363,6 +363,11 @@ def thread_recv_messages(n, addr):
                 if Communication.server_mtu is None:
                     Communication.check_max_packet_size_udp(udp_address)
                 Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
+            elif message_type == "logout":
+                logger.info(f"logged out {User}")
+                Communication.user_offline(User)
+                is_logged_in = False
+                User = ""
             elif message_type == "playlist_song_bytes_by_index":
                 index = data.get("index")
                 song_dict = database_func.get_song_by_index_and_owner(User, index)
@@ -582,14 +587,14 @@ def thread_recv_messages(n, addr):
                     Communication.send_new_group_to_members(new_group_id)
                     n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
-                if action == "update_image":
+                elif action == "update_image":
                     group_id = data.get("group_id")
                     encoded_b64_image = data.get("encoded_b64_image")
                     image_bytes = base64.b64decode(encoded_b64_image)
                     database_func.update_group_image(int(group_id), image_bytes)
                     Communication.update_group_dict_for_members(group_id)
                     logger.info(f"Update group image of id: {group_id} was updated by {User}")
-                if action == "add_user":
+                elif action == "add_user":
                     group_id = data.get("group_id")
                     users_to_add = json.loads(data.get("users_to_add"))
                     group_dict = database_func.get_group_by_id(group_id)
