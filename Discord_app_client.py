@@ -405,6 +405,7 @@ share_camera_data = []
 
 def handle_udp_data(data, main_page_object):
     global vc_data, share_screen_data, share_camera_data
+    main_page = main_page_object
     message_type = data.get("message_type")
     if message_type == "vc_data":
         is_last = data.get("is_last")
@@ -1571,7 +1572,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.showMaximized()
 
     def start_watching_video_stream(self):
-        self.stream_screen = VideoClient()
+        self.stream_screen = VideoClient(self)
         self.hide()
         self.stream_screen.showMaximized()
 
@@ -2453,8 +2454,9 @@ class Login_page(QWidget):
 
 
 class VideoClient(QMainWindow):
-    def __init__(self):
+    def __init__(self, main_page):
         super().__init__()
+        self.main_page = main_page
         self.init_ui()
 
     def init_ui(self):
@@ -2487,14 +2489,13 @@ class VideoClient(QMainWindow):
         self.image_label.setPixmap(pixmap)
 
     def keyPressEvent(self, event):
-        global main_page
         if event.key() == Qt.Key_Escape:
-            main_page.showMaximized()
-            main_page.Network.stop_watching_current_stream()
-            print(f"stopped watching {main_page.watching_user} share screen")
-            main_page.is_watching_screen = False
-            main_page.watching_user = ""
-            main_page.watching_type = None
+            self.main_page.showMaximized()
+            self.main_page.Network.stop_watching_current_stream()
+            print(f"stopped watching {self.main_page.watching_user} share screen")
+            self.main_page.is_watching_screen = False
+            self.main_page.watching_user = ""
+            self.main_page.watching_type = None
             self.close()
 
 
@@ -2617,8 +2618,7 @@ class Forget_password_page(QWidget):
                     result = data.get("forget_password_status")
                     if result == "valid":
                         print("Server send code to email")
-                        self.hide()
-                        verification_code_page.showMaximized()
+                        self.page_controller_object.change_to_verification_code_page()
                         break
                     elif result == "invalid":
                         break
@@ -2631,6 +2631,7 @@ class Verification_code_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.init_ui()
+        self.page_controller_object = page_controller_object
         self.info_label = QLabel(self)
         pixmap = QPixmap('discord_app_assets/info_icon.png')  # Replace with the path to your 'i' icon
         scaled_pixmap = pixmap.scaled(40, 40, Qt.KeepAspectRatio)
@@ -2692,9 +2693,7 @@ class Verification_code_page(QWidget):
         """)
 
     def return_button_pressed(self):
-        global login_page
-        self.hide()
-        login_page.showMaximized()
+        self.page_controller_object.change_to_login_page()
 
     def eventFilter(self, obj, event):
         if obj == self.info_label and event.type() == event.Enter:
@@ -2792,8 +2791,7 @@ class Verification_code_page(QWidget):
                     result = data.get("code_status")
                     if kind == "code":
                         if result == "valid":
-                            self.hide()
-                            change_password_page.showMaximized()
+                            self.page_controller_object.change_to_change_password_page()
                         elif result == "invalid":
                             pass
         except Exception as e:
