@@ -60,7 +60,8 @@ def send_login_code_to_client_email(code, receiver_mail, account_name):
 
         <strong>{code}</strong><br><br>
 
-        If you did not initiate this login attempt, please ignore this email.<br><br>
+        If you did not initiate this login attempt - It means someone else have access to your Connectify password. 
+        We recommend for you to change your password As soon as possible, please ignore this email.<br><br>
 
         Sincerely yours,<br><br>
 

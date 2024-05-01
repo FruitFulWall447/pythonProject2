@@ -161,7 +161,7 @@ def return_share_camera_bytes_parameters(share_camera_data):
 
 
 def thread_recv_messages(page_controller_object):
-    global n
+    n = page_controller_object.n
     print("receiving thread started running")
     while Flag_recv_messages:
         data = n.recv_str()
@@ -398,13 +398,10 @@ def listen_udp(main_page_object):
             print(f"Exception: {e}")
 
 
-vc_data = []
-share_screen_data = []
-share_camera_data = []
-
-
 def handle_udp_data(data, main_page_object):
-    global vc_data, share_screen_data, share_camera_data
+    vc_data = []
+    share_screen_data = []
+    share_camera_data = []
     main_page = main_page_object
     message_type = data.get("message_type")
     if message_type == "vc_data":
@@ -542,7 +539,7 @@ def audio_data_list_set_volume(datalist, volume):
 
 
 def thread_send_voice_chat_data(page_controller_object):
-    global n
+    n = page_controller_object.n
     try:
         accumulated_data = []
         print("started voice chat thread....")
@@ -601,7 +598,7 @@ def thread_send_share_screen_data(main_page):
             frame = np.array(screen)
             frame_bytes = frame.tobytes()
             # Send the frame to the server
-            n.send_share_screen_data(frame_bytes, frame.shape)
+            main_page.Network.send_share_screen_data(frame_bytes, frame.shape)
 
             time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
         print("send share screen data thread closed")
@@ -638,7 +635,7 @@ def thread_send_share_camera_data(main_page):
             frame_bytes = frame_np.tobytes()
 
             # Send the frame to the server
-            n.send_share_camera_data(frame_bytes, frame_np.shape)
+            main_page.Network.send_share_camera_data(frame_bytes, frame_np.shape)
 
             time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
 
@@ -701,16 +698,14 @@ class SplashScreen(QWidget):
         self.loading_timer.start(400)  # Update every 500 milliseconds
 
     def close_page_open_main_page(self):
-        global is_logged_in
         try:
             self.page_controller_object.change_to_main_page()
             self.page_controller_object.is_logged_in = True
-            self.close()
         except Exception as e:
             print(e)
 
     def update_loading_dots(self):
-        global is_logged_in, n
+        n = self.page_controller_object.n
         wait_time_sec = 5
         self.dot_count = (self.dot_count + 1) % 5
         loading_label = self.findChild(QLabel, 'loading_label')
@@ -726,7 +721,6 @@ class SplashScreen(QWidget):
                 if not are_token_saved():
                     self.loading_timer.stop()
                     self.page_controller_object.change_to_login_page()
-                    self.close()
                 else:
                     security_token = get_saved_token()
                     n.send_security_token(security_token)
@@ -749,7 +743,6 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
                                         self.page_controller_object.start_receive_thread_after_login()
-                                        self.close()
                                     except Exception as e:
                                         print(e)
                                 elif action_state == "invalid":
@@ -758,7 +751,6 @@ class SplashScreen(QWidget):
                             print("security token isn't valid")
                             self.loading_timer.stop()
                             self.page_controller_object.change_to_login_page()
-                            self.close()
 
 
 
@@ -793,7 +785,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     start_call_threads_signal = pyqtSignal()
     insert_playlist_to_table_signal = pyqtSignal()
 
-    def __init__(self, Netwrok, page_controller_object):
+    def __init__(self, Network, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
         self.vc_data_list = []
@@ -931,7 +923,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.file_to_send = None
         self.file_name = ""
         self.chat_start_index = None
-        self.Network = Netwrok
+        self.Network = Network
         self.chat_box_chats_index = 0
         self.chat_box_index_y_start = 100
 
@@ -975,7 +967,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
         self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
         self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
-        self.disconnect_signal.connect(self.quit_application)
+        self.disconnect_signal.connect(self.page_controller_object.quit_application)
         self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
         self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
         self.update_message_box_signal.connect(self.update_message_box)
@@ -1014,7 +1006,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.init_ui()
 
     def init_ui(self):
-        global n
         # Set up the main window
         try:
             self.setGeometry(100, 100, 600, 400)
@@ -1026,14 +1017,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             ''')
             # Create an instance of ChatBox
             if self.chat_clicked:
-                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
 
             buttons_layout = QHBoxLayout()
             self.main_layout = QVBoxLayout(self)
             self.main_layout.addSpacing(30)
             self.main_layout.addLayout(buttons_layout)
             self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                          requests_list=self.request_list, Network=n, username=self.username,
+                                          requests_list=self.request_list, Network=self.Network, username=self.username,
                                           parent=self)
             self.friends_box.hide()
             self.settings_box = SettingsBox(parent=self)
@@ -1818,7 +1809,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if self.friends_box_page == "add friend":
                 self.stacked_widget.removeWidget(self.friends_box)
                 self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                              requests_list=self.request_list, Network=n, username=self.username,
+                                              requests_list=self.request_list, Network=self.Network, username=self.username,
                                               parent=self)
                 self.stacked_widget.insertWidget(2, self.friends_box)
                 if self.social_clicked:
@@ -1828,7 +1819,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 has_had_focus_of_search_bar = self.friends_box.search.hasFocus()
                 self.stacked_widget.removeWidget(self.friends_box)
                 self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                              requests_list=self.request_list, Network=n, username=self.username,
+                                              requests_list=self.request_list, Network=self.Network, username=self.username,
                                               parent=self)
                 self.stacked_widget.insertWidget(2, self.friends_box)
 
@@ -1857,7 +1848,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"error in updated_settings_page error:{e}")
 
     def keyPressEvent(self, event):
-        global n
+        n = self.Network
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
                 if self.chat_clicked and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
@@ -2052,9 +2043,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
             try:
-                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
             except Exception as e:
-                self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
+                self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
                 print(f"error in creating chat_box on updated_chat_func : {e}")
 
             self.stacked_widget.insertWidget(0, self.chat_box)
@@ -2070,7 +2061,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if self.chat_clicked:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
-            self.chat_box = ChatBox(self.list_messages, parent=self, Network=n)
+            self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
             print(f"error in updated chat2 {e}")
 
     def update_values(self):
@@ -2078,15 +2069,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def closeEvent(self, event):
         # This function is called when the window is closed
-        self.quit_application()
-
-    def quit_application(self):
-        global app, flag_updates, Flag_recv_messages
-        # Ensure your application quits
-        Flag_recv_messages = False
-        flag_updates = False
-        print("closing app...")
-        app.quit()
+        self.page_controller_object.quit_application()
 
 
 class Sign_up_page(QWidget):
@@ -2217,7 +2200,7 @@ class Sign_up_page(QWidget):
         """)
 
     def submit_form(self, username, password, password_confirm, email):
-        global n
+        n = self.page_controller_object.n
         self.hide_every_error_label()
         is_info_valid = True
         if username == "" or password == "" or password_confirm == "" or email == "":
@@ -2405,7 +2388,7 @@ class Login_page(QWidget):
             self.remember_me_status = False
 
     def submit_form(self):
-        global n, is_logged_in, splash_page
+        n = self.page_controller_object.n
         self.incorrect_label.hide()
         self.user_is_logged_in.hide()
         self.username = self.username.text()
@@ -2608,7 +2591,7 @@ class Forget_password_page(QWidget):
         self.page_controller_object.change_to_login_page()
 
     def submit_form(self):
-        global n, verification_code_page
+        n = self.page_controller_object.n
         username = self.username.text()
         email = self.email.text()
         flag_change_password = True
@@ -2771,7 +2754,7 @@ class Verification_code_page(QWidget):
         """)
 
     def submit_form(self):
-        global n
+        n = self.page_controller_object.n
         code = self.code.text()
         try:
             if len(code) == 6:
@@ -2973,7 +2956,7 @@ class Change_password_page(QWidget):
             self.page_controller_object.change_to_login_page()
 
     def submit_form(self):
-        global n, verification_code_page
+        n = self.page_controller_object.n
         flag_change_password = True
         self.too_short.hide()
         self.changed_password_label.hide()
@@ -2994,6 +2977,8 @@ class Change_password_page(QWidget):
 
 class PageController:
     def __init__(self):
+        self.n = client_net()
+        self.app = QApplication(sys.argv)
         self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
         self.is_logged_in = False
         self.is_waiting_for_2fa_code = False
@@ -3002,7 +2987,7 @@ class PageController:
         self.sign_up_page = Sign_up_page(self)
         self.forget_password_page = Forget_password_page(self)
         self.login_page = Login_page(self)
-        self.main_page = MainPage(n, self)
+        self.main_page = MainPage(self.n, self)
         self.change_password_page = Change_password_page(self)
         self.verification_code_page = Verification_code_page(self)
         self.main_page.showMaximized()
@@ -3018,9 +3003,19 @@ class PageController:
         self.change_password_page.showMaximized()
         self.change_password_page.hide()
         self.current_page = self.login_page
+        self.app.exec_()
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
+
+    def quit_application(self):
+        self.main_page.close()
+        self.change_password_page.close()
+        self.verification_code_page.close()
+        self.login_page.close()
+        self.forget_password_page.close()
+        self.sign_up_page.close()
+        self.splash_page.close()
 
     def change_to_login_page(self):
         self.change_page("login_page")
@@ -3075,10 +3070,6 @@ class PageController:
             self.current_page = self.splash_page
 
 
-Last_page = None
 if __name__ == '__main__':
-    n = client_net()
-    app = QApplication(sys.argv)
     page_controller_object = PageController()
-    app.exec_()
 
