@@ -223,8 +223,8 @@ def thread_recv_messages(n, addr):
                                         if action == "2fa":
                                             code_gotten = data.get("code")
                                             if int(code_gotten) == code:
+                                                n.send_2fa_code_valid()
                                                 logger.info(f"got right 2fa code from {username}")
-                                                n.send_confirm_login()
                                                 logger.info(f"Server sent Confirmed to client {username}")
                                                 logger.info(f"Client {username} logged in")
                                                 User = username
