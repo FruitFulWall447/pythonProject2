@@ -3036,16 +3036,15 @@ class PageController:
     def log_out(self):
         try:
             print("logging out")
+            self.main_page.close_all_threads()
             self.current_page = None
             self.change_to_login_page()
             self.is_logged_in = False
-            self.n.send_logout_message()
-            self.receive_thread_after_login.join()
-            self.main_page.close_all_threads()
             self.close_all_pages()
             self.clear_all_pages()
             self.hide_all_pages()
-
+            self.n.send_logout_message()
+            self.receive_thread_after_login.join()
         except Exception as e:
             print(f"error in log out {e}")
 
