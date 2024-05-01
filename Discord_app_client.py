@@ -703,7 +703,7 @@ class SplashScreen(QWidget):
         global is_logged_in
         try:
             self.page_controller_object.change_to_main_page()
-            is_logged_in = True
+            self.page_controller_object.is_logged_in = True
             self.close()
         except Exception as e:
             print(e)
@@ -746,7 +746,7 @@ class SplashScreen(QWidget):
                                         self.hide()
                                         self.page_controller_object.main_page.username = username
                                         self.page_controller_object.change_to_main_page()
-                                        is_logged_in = True
+                                        self.page_controller_object.is_logged_in = True
                                         threading.Thread(target=thread_recv_messages, args=(self.page_controller_object,)).start()
                                         self.close()
                                     except Exception as e:
