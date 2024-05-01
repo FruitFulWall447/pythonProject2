@@ -163,7 +163,7 @@ def return_share_camera_bytes_parameters(share_camera_data):
 def thread_recv_messages(page_controller_object):
     n = page_controller_object.n
     print("receiving thread started running")
-    while Flag_recv_messages:
+    while page_controller_object.is_logged_in:
         data = n.recv_str()
         try:
             message_type = data.get("message_type")
@@ -3020,20 +3020,18 @@ class PageController:
 
     def quit_application(self):
         print("closing app...")
+        self.is_logged_in = False
         self.n.close()
         self.main_page.close_all_threads()
-        self.main_page.close()
-        self.change_password_page.close()
-        self.verification_code_page.close()
-        self.login_page.close()
-        self.forget_password_page.close()
-        self.sign_up_page.close()
-        self.splash_page.close()
+        self.close_all_pages()
         del self.app
         sys.exit()
 
     def log_out(self):
         print("logging out")
+        self.is_logged_in = False
+        self.main_page.close_all_threads()
+        self.close_all_pages()
         self.clear_all_pages()
         self.hide_all_pages()
         self.change_to_login_page()
@@ -3047,6 +3045,15 @@ class PageController:
         self.main_page = MainPage(self.n, self)
         self.change_password_page = Change_password_page(self)
         self.verification_code_page = Verification_code_page(self)
+
+    def close_all_pages(self):
+        self.main_page.close()
+        self.change_password_page.close()
+        self.verification_code_page.close()
+        self.login_page.close()
+        self.forget_password_page.close()
+        self.sign_up_page.close()
+        self.splash_page.close()
 
     def hide_all_pages(self):
         self.splash_page.hide()
