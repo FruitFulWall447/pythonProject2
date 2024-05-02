@@ -8,8 +8,10 @@ from datetime import datetime
 import base64
 import string
 import random
-import tempfile
 
+project_dir = os.getcwd()
+folder_name = "discord_app_files"
+files_folder_path = os.path.join(project_dir, folder_name)
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
 default_settings_dict = {
@@ -168,7 +170,7 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
                 """
 
                 # Generate unique filenames
-                folder_path = r'C:\discord_app_files'
+                folder_path = files_folder_path
                 mp3_file_name = generate_random_filename(24)
                 mp3_file_path = os.path.join(folder_path, mp3_file_name)
 
@@ -832,7 +834,7 @@ def update_profile_pic(username, profile_pic_encoded):
         table_name = "Sign_Up_Table"
 
         if profile_pic is not None:
-            folder_path = r'C:\discord_app_files'
+            folder_path = files_folder_path
             file_name = generate_random_filename(24)
             profile_pic_path = os.path.join(folder_path, file_name)
             save_bytes_to_file(profile_pic, profile_pic_path)
@@ -949,7 +951,7 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
             if message_type in basic_files_types:
                 encoded_base64_bytes = message_content
                 message_content = base64.b64decode(encoded_base64_bytes)
-                folder_path = r'C:\discord_app_files'
+                folder_path = files_folder_path
                 if not os.path.exists(folder_path):
                     os.makedirs(folder_path)
                 file_name = generate_random_filename(24)
@@ -1343,7 +1345,7 @@ def update_group_image(group_id, image_bytes):
                 if image_bytes is None:
                     group_pic_path = None
                 else:
-                    folder_path = r'C:\discord_app_files'
+                    folder_path = files_folder_path
                     file_name = generate_random_filename(24)
                     group_pic_path = os.path.join(folder_path, file_name)
                     save_bytes_to_file(image_bytes, group_pic_path)
