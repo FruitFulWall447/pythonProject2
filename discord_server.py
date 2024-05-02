@@ -307,7 +307,7 @@ def thread_recv_messages(n, addr):
                                         logger.info(f"code gotten from {username} is correct")
                                         n.send_forget_password_code_valid()
                                         data = n.recv_str()
-                                        message_type = code_gotten_data.get("message_type")
+                                        message_type = data.get("message_type")
                                         if message_type == "password":
                                             action = data.get("action")
                                             if action == "new_password":
