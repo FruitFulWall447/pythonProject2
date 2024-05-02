@@ -7,7 +7,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
 from social_page_widgets import FriendsBox
 from settings_page_widgets import SettingsBox
-from messages_page_widgets import ChatBox, play_mp3_from_bytes
+from messages_page_widgets import ChatBox, play_mp3_from_bytes, make_q_object_clear
 from chat_file import VideoPlayer, PlaylistWidget, get_camera_names, \
     make_circular_image, find_output_device_index, find_input_device_index, \
     get_default_output_device_name, get_default_input_device_name
@@ -2320,25 +2320,24 @@ class Login_page(QWidget):
         image_button.move(1690 // 2 + 60, 235)
 
         # Create "Forgot your password?" label
-        forgot_password_label = QLabel('<a href="forgot">Forgot your password</a>', self)
-        forgot_password_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        forgot_password_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
+        forgot_password_label = QPushButton('Forgot your password?', self)
         forgot_password_label.setStyleSheet(
-            "color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
+            "color: white; font-size: 12px;")  # Set the text color to blue and font size to 12px
 
-        sign_up_label = QLabel('<a href="sign_up">Dont have a user yet? sign_up here</a>', self)
-        sign_up_label.setTextInteractionFlags(Qt.TextBrowserInteraction)
-        sign_up_label.setOpenExternalLinks(False)  # Disable external links to capture linkActivated signal
-        sign_up_label.setStyleSheet("color: blue; font-size: 12px;")  # Set the text color to blue and font size to 12px
-        sign_up_label.linkActivated.connect(self.move_to_sign_up_page)
+        sign_up_label = QPushButton("Don't have a user yet? sign up here", self)
+        sign_up_label.setStyleSheet("color: white; font-size: 12px;")  # Set the text color to blue and font size to 12px
+        sign_up_label.clicked.connect(self.move_to_sign_up_page)
         sign_up_label.move(1690 // 2 - 30, 535)
+        make_q_object_clear(sign_up_label)
+        make_q_object_clear(forgot_password_label)
 
         checkbox = QCheckBox('Keep me signed in', self)
+
         checkbox.setStyleSheet("QCheckBox { color: white; font-size: 12px}")
         checkbox.stateChanged.connect(self.on_checkbox_change)
         checkbox.move(1690 // 2 + 10, 415)
         # Connect the linkActivated signal to a custom slot
-        forgot_password_label.linkActivated.connect(self.forgot_password_clicked)
+        forgot_password_label.clicked.connect(self.forgot_password_clicked)
         forgot_password_label.move(1690 // 2 + 10, 445)
         label.move(1690 // 2 + 10, 192)
 
