@@ -2996,7 +2996,7 @@ class ServerIsDownPage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
-        self.change_password_label = QLabel("Server is down...", self)
+        self.change_password_label = QLabel("Server is Offline...", self)
         self.change_password_label.move(1690 // 2, 200)
         self.change_password_label.setStyleSheet("color: white; font-size:20px")
         self.setStyleSheet("""
