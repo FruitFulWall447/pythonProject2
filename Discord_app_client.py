@@ -2082,8 +2082,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_values(self):
         self.friends_box.username = self.username
 
+    def stop_all_media_player(self):
+        self.mp3_message_media_player.stop()
+        self.ringtone_media_player.stop()
+        self.calling_media_player.stop()
+        self.sound_effect_media_player.stop()
+        self.playlist_media_player.stop()
+
     def closeEvent(self, event):
         # This function is called when the window is closed
+        self.stop_all_media_player()
+        self.close_all_threads()
         self.page_controller_object.quit_application()
 
 
