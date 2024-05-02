@@ -2899,6 +2899,7 @@ class Change_password_page(QWidget):
         image_button.move(1690 // 2 + 60, 235)
         image_button.clicked.connect(self.return_button_pressed)
 
+        self.was_password_changed = False
         self.too_short.move(1690 // 2 + 10, 340)
         self.too_short.hide()
         self.too_short.setStyleSheet(
@@ -2965,19 +2966,16 @@ class Change_password_page(QWidget):
 
     def submit_form(self):
         n = self.page_controller_object.n
-        flag_change_password = True
         self.too_short.hide()
         self.changed_password_label.hide()
-        while flag_change_password:
-            if len(self.new_password.text()) >= 8:
-                n.send_new_password(self.new_password.text())
-                print("Password changed")
-                self.changed_password_label.show()
-                self.status = True
-                break
-            else:
-                self.too_short.show()
-                break
+        if len(self.new_password.text()) >= 8 and not self.was_password_changed:
+            n.send_new_password(self.new_password.text())
+            print("Password changed")
+            self.changed_password_label.show()
+            self.status = True
+            self.was_password_changed = True
+        else:
+            self.too_short.show()
 
     def resend_code_clicked(self):
         print(4)
