@@ -176,15 +176,19 @@ class client_net:
         self.port = 5555
         self.addr = (self.server_ip, self.port)
         self.logger.debug(f"trying to connect to addr: {self.addr}")
-        self.connect_tcp()
-        self.connect_udp()
         self.size = 0000000
         self.original_len = 10
-        self.aes_key = None
-        self.sending_tcp_data_lock = threading.Lock()
-        self.initiate_rsa_protocol()
         self.mtu = None
-        self.check_max_packet_size_udp()
+        self.aes_key = None
+        self.connected = False
+        self.connect_tcp()
+        if self.connected:
+            self.connect_udp()
+            self.sending_tcp_data_lock = threading.Lock()
+            self.initiate_rsa_protocol()
+            self.check_max_packet_size_udp()
+        else:
+            x = 5
 
     def connect_tcp(self):
         try:
