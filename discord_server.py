@@ -2,7 +2,7 @@ import socket
 import threading
 from discord_comms_protocol import server_net
 from email_send_code import *
-from server_handling_classes import Communication, Call
+from server_handling_classes import ServerHandler, Call
 import database_func
 import re
 import random
@@ -92,7 +92,7 @@ def is_client_waits_for_message(client):
 
 def add_message_for_client(client, message):
     global messages_to_clients_dict
-    if client in Communication.online_users:
+    if client in ServerHandler.online_users:
         messages_to_clients_dict[client] = message
 
 
@@ -198,13 +198,13 @@ def thread_recv_messages(n, addr):
                     is_valid = database_func.login(username, password)
                     if is_valid:
                         is_2fa_for_user = database_func.get_user_settings(username).get("two_factor_auth")
-                        if not username in Communication.online_users:
+                        if not username in ServerHandler.online_users:
                             if not is_2fa_for_user:
                                 n.send_confirm_login()
                                 logger.info(f"Server sent Confirmed to client {username}")
                                 logger.info(f"Client {username} logged in")
                                 User = username
-                                Communication.user_online(User, n)
+                                ServerHandler.user_online(User, n)
                                 is_logged_in = True
                                 threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                             else:
@@ -227,7 +227,7 @@ def thread_recv_messages(n, addr):
                                                 logger.info(f"Server sent Confirmed to client {username}")
                                                 logger.info(f"Client {username} logged in")
                                                 User = username
-                                                Communication.user_online(User, n)
+                                                ServerHandler.user_online(User, n)
                                                 is_logged_in = True
                                                 threading.Thread(target=threaded_logged_in_client,
                                                                  args=(n, User)).start()
@@ -338,7 +338,7 @@ def thread_recv_messages(n, addr):
                             User = username
                             n.send_username_to_client(username)
                             logger.info(f"{User} logged in")
-                            Communication.user_online(User, n)
+                            ServerHandler.user_online(User, n)
                             is_logged_in = True
                             threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                         else:
@@ -353,18 +353,18 @@ def thread_recv_messages(n, addr):
             data = n.recv_str()
             if data is None:
                 logger.info(f"lost connection with {User}")
-                Communication.user_offline(User)
+                ServerHandler.user_offline(User)
                 break
             message_type = data.get("message_type")
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
                 tcp_address = data.get("tcp_address")
-                if Communication.server_mtu is None:
-                    Communication.check_max_packet_size_udp(udp_address)
-                Communication.create_and_add_udp_handler_object(User, udp_address, tcp_address)
+                if ServerHandler.server_mtu is None:
+                    ServerHandler.check_max_packet_size_udp(udp_address)
+                ServerHandler.create_and_add_udp_handler_object(User, udp_address, tcp_address)
             elif message_type == "logout":
                 logger.info(f"logged out {User}")
-                Communication.user_offline(User)
+                ServerHandler.user_offline(User)
                 is_logged_in = False
                 User = ""
                 n.timeout_receive()
@@ -426,60 +426,60 @@ def thread_recv_messages(n, addr):
                     stream_type = data.get("stream_type")
                     stream_action = data.get("action")
                     if stream_action == "start":
-                        Communication.create_video_stream_for_user_call(User, stream_type)
+                        ServerHandler.create_video_stream_for_user_call(User, stream_type)
                     if stream_action == "close":
-                        Communication.close_video_stream_for_user_call(User, stream_type)
+                        ServerHandler.close_video_stream_for_user_call(User, stream_type)
                     if stream_action == "watch":
                         streamer = data.get("user_to_watch")
-                        Communication.add_spectator_to_call_stream(User, streamer, stream_type)
+                        ServerHandler.add_spectator_to_call_stream(User, streamer, stream_type)
                     if stream_action == "stop_watch":
-                        Communication.remove_spectator_from_call_stream(User)
+                        ServerHandler.remove_spectator_from_call_stream(User)
                 if call_action_type == "in_call_action":
                     action = data.get("action")
                     if action == "join":
                         group_id = data.get("group_id")
-                        if Communication.is_user_in_a_call(User):
-                            Communication.remove_user_from_call(User)
-                            Communication.add_user_to_group_call_by_id(User, group_id)
+                        if ServerHandler.is_user_in_a_call(User):
+                            ServerHandler.remove_user_from_call(User)
+                            ServerHandler.add_user_to_group_call_by_id(User, group_id)
                         else:
-                            Communication.add_user_to_group_call_by_id(User, group_id)
+                            ServerHandler.add_user_to_group_call_by_id(User, group_id)
                     if action == "mute_myself":
-                        Communication.mute_or_unmute_self_user(User)
+                        ServerHandler.mute_or_unmute_self_user(User)
                     if action == "deafen_myself":
-                        Communication.deafen_or_undeafen_self_user(User)
+                        ServerHandler.deafen_or_undeafen_self_user(User)
                     if action == "calling":
                         user_that_is_getting_called = data.get("calling_to")
                         logger.info(f"{User} calling {user_that_is_getting_called}")
-                        Communication.create_ring(User, user_that_is_getting_called)
+                        ServerHandler.create_ring(User, user_that_is_getting_called)
                     if action == "accepted_call":
                         ringer = data.get("accepted_caller")
                         logger.info(f"{User} accepted {ringer} call")
                         # if a call already created no need to create just need to append the user to the call
                         if ringer.startswith("("):
                             group_id, group_name, caller = parse_group_caller_format(ringer)
-                            if Communication.is_group_call_exist_by_id(group_id):
-                                Communication.add_user_to_group_call_by_id(User, group_id)
+                            if ServerHandler.is_group_call_exist_by_id(group_id):
+                                ServerHandler.add_user_to_group_call_by_id(User, group_id)
                             else:
-                                Communication.create_call_and_add(group_id, [User, caller])
+                                ServerHandler.create_call_and_add(group_id, [User, caller])
                         else:
-                            Communication.create_call_and_add(None, [User, ringer])
-                            Communication.accept_ring_by_ringer(ringer, User)
+                            ServerHandler.create_call_and_add(None, [User, ringer])
+                            ServerHandler.accept_ring_by_ringer(ringer, User)
                     if action == "rejected_call":
                         rejected_caller = data.get("rejected_caller")
                         if rejected_caller.startswith("("):
                             group_id, group_name, caller = parse_group_caller_format(rejected_caller)
                             logger.info(f"{User} rejected {caller} Group call, Group: {group_name}")
-                            Communication.reject_ring_by_ringer(caller, User)
+                            ServerHandler.reject_ring_by_ringer(caller, User)
                         else:
                             rejected_caller = rejected_caller
                             logger.info(f"{User} rejected {rejected_caller} call")
-                            Communication.reject_ring_by_ringer(rejected_caller, User)
+                            ServerHandler.reject_ring_by_ringer(rejected_caller, User)
                     if action == "ended":
-                        Communication.remove_user_from_call(User)
+                        ServerHandler.remove_user_from_call(User)
                 if call_action_type == "change_calling_status":
                     action = data.get("action")
                     if action == "stop!":
-                        Communication.cancel_ring_by_the_ringer(User)
+                        ServerHandler.cancel_ring_by_the_ringer(User)
             elif message_type == "add_message":
                 sender = data.get("sender")
                 receiver = data.get("receiver")
@@ -505,7 +505,7 @@ def thread_recv_messages(n, addr):
                     logger.info(f"{User} reset his profile picture")
                 database_func.update_profile_pic(User, b64_encoded_profile_pic)
                 logger.info(f"updated client profile pic of {User}")
-                Communication.update_profiles_list_for_everyone_by_user(User, b64_encoded_profile_pic)
+                ServerHandler.update_profiles_list_for_everyone_by_user(User, b64_encoded_profile_pic)
             elif message_type == "security_token":
                 action = data.get("action")
                 if action == "needed":
@@ -516,19 +516,19 @@ def thread_recv_messages(n, addr):
                 compressed_vc_data = data.get("compressed_vc_data")
                 if compressed_vc_data is not None:
                     vc_data = zlib.decompress(compressed_vc_data)
-                    Communication.send_vc_data_to_call(vc_data, User)
+                    ServerHandler.send_vc_data_to_call(vc_data, User)
             elif message_type == "share_screen_data":
                 compressed_share_screen_data = data.get("compressed_share_screen_data")
                 shape_of_frame = data.get("shape_of_frame")
                 if compressed_share_screen_data is not None:
                     share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
+                    ServerHandler.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
             elif message_type == "share_camera_data":
                 compressed_share_camera_data = data.get("compressed_share_camera_data")
                 shape_of_frame = data.get("shape_of_frame")
                 if compressed_share_camera_data is not None:
                     share_screen_data = zlib.decompress(compressed_share_camera_data)
-                    Communication.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
+                    ServerHandler.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
             elif message_type == "friend_request":
                 username_for_request = data.get("username_for_request")
                 user = User
@@ -584,7 +584,7 @@ def thread_recv_messages(n, addr):
                     members_list = json.loads(data.get("group_members_list"))
                     members_list.append(User)
                     group_chat_name, new_group_id = database_func.create_group(f"{User}'s Group", User, members_list)
-                    Communication.send_new_group_to_members(new_group_id)
+                    ServerHandler.send_new_group_to_members(new_group_id)
                     n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
                 elif action == "update_image":
@@ -592,7 +592,7 @@ def thread_recv_messages(n, addr):
                     encoded_b64_image = data.get("encoded_b64_image")
                     image_bytes = base64.b64decode(encoded_b64_image)
                     database_func.update_group_image(int(group_id), image_bytes)
-                    Communication.update_group_dict_for_members(group_id)
+                    ServerHandler.update_group_dict_for_members(group_id)
                     logger.info(f"Update group image of id: {group_id} was updated by {User}")
                 elif action == "add_user":
                     group_id = data.get("group_id")
@@ -606,7 +606,7 @@ def thread_recv_messages(n, addr):
                     else:
                         logger.critical(f"{User} tried to add user to group where he has no permissions")
 
-Communication = Communication()
+ServerHandler = ServerHandler()
 
 
 def tcp_server():
@@ -631,11 +631,11 @@ def handle_udp_message(data, address):
 
 
 def listen_udp():
-    Communication.udp_socket = udp_server_socket
+    ServerHandler.udp_socket = udp_server_socket
     while True:
         try:
             fragment_data, address = udp_server_socket.recvfrom(100000)
-            Communication.handle_udp_fragment(fragment_data, address)
+            ServerHandler.handle_udp_fragment(fragment_data, address)
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:

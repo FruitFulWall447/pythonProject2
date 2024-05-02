@@ -2236,7 +2236,6 @@ def create_songs_table():
             print("Connection closed.")
 
 
-
 def create_tables_if_not_exist():
     current_table = "sign_up_table"
     if not is_table_exist(current_table):
