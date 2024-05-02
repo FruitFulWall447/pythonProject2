@@ -2983,34 +2983,53 @@ class Change_password_page(QWidget):
         print(4)
 
 
+class ServerIsDownPage(QWidget):
+    def __init__(self, page_controller_object):
+        super().__init__()
+        self.page_controller_object = page_controller_object
+        self.change_password_label = QLabel("Server is down...", self)
+        self.change_password_label.move(1690 // 2, 200)
+        self.change_password_label.setStyleSheet("color: white; font-size:20px")
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #141c4b;  /* Set your desired background color */
+            }
+        """)
+
+
 class PageController:
     def __init__(self):
         self.n = client_net()
+        is_connected = self.n.connect_tcp()
         self.app = QApplication(sys.argv)
-        self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
-        self.is_logged_in = False
-        self.is_waiting_for_2fa_code = False
-        self.splash_page = SplashScreen(self)
-        self.sign_up_page = Sign_up_page(self)
-        self.forget_password_page = Forget_password_page(self)
-        self.login_page = Login_page(self)
-        self.main_page = MainPage(self.n, self)
-        self.change_password_page = Change_password_page(self)
-        self.verification_code_page = Verification_code_page(self)
-        self.splash_page.showMaximized()
-        self.main_page.showMaximized()
-        self.main_page.hide()
-        self.sign_up_page.showMaximized()
-        self.forget_password_page.showMaximized()
-        self.login_page.showMaximized()
-        self.login_page.hide()
-        self.verification_code_page.showMaximized()
-        self.sign_up_page.hide()
-        self.forget_password_page.hide()
-        self.verification_code_page.hide()
-        self.change_password_page.showMaximized()
-        self.change_password_page.hide()
-        self.current_page = self.login_page
+        if is_connected:
+            self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
+            self.is_logged_in = False
+            self.is_waiting_for_2fa_code = False
+            self.splash_page = SplashScreen(self)
+            self.sign_up_page = Sign_up_page(self)
+            self.forget_password_page = Forget_password_page(self)
+            self.login_page = Login_page(self)
+            self.main_page = MainPage(self.n, self)
+            self.change_password_page = Change_password_page(self)
+            self.verification_code_page = Verification_code_page(self)
+            self.splash_page.showMaximized()
+            self.main_page.showMaximized()
+            self.main_page.hide()
+            self.sign_up_page.showMaximized()
+            self.forget_password_page.showMaximized()
+            self.login_page.showMaximized()
+            self.login_page.hide()
+            self.verification_code_page.showMaximized()
+            self.sign_up_page.hide()
+            self.forget_password_page.hide()
+            self.verification_code_page.hide()
+            self.change_password_page.showMaximized()
+            self.change_password_page.hide()
+            self.current_page = self.login_page
+        else:
+            self.server_is_down_page = ServerIsDownPage(self)
+            self.server_is_down_page.showMaximized()
         self.app.exec_()
 
     def start_receive_thread_after_login(self):

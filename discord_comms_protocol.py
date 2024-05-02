@@ -181,22 +181,22 @@ class client_net:
         self.mtu = None
         self.aes_key = None
         self.connected = False
-        self.connect_tcp()
-        if self.connected:
-            self.connect_udp()
-            self.sending_tcp_data_lock = threading.Lock()
-            self.initiate_rsa_protocol()
-            self.check_max_packet_size_udp()
-        else:
-            x = 5
+        self.sending_tcp_data_lock = threading.Lock()
+
+    def if_connected(self):
+        self.connect_udp()
+        self.initiate_rsa_protocol()
+        self.check_max_packet_size_udp()
 
     def connect_tcp(self):
         try:
             self.client_tcp_socket.connect(self.addr)
             self.logger.info("tcp socket connected to server")
-        except:
-            self.logger.info("couldn't connect tcp socket to server")
-            pass
+            self.if_connected()
+            return True
+        except Exception as e:
+            self.logger.info(f"couldn't connect tcp socket to server {e}")
+            return False
 
     def connect_udp(self):
         try:
