@@ -2975,6 +2975,7 @@ class Change_password_page(QWidget):
     def submit_form(self):
         n = self.page_controller_object.n
         self.too_short.hide()
+        self.password_already_changed.hide()
         self.changed_password_label.hide()
         if len(self.new_password.text()) >= 8 and not self.was_password_changed:
             n.send_new_password(self.new_password.text())
