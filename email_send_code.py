@@ -12,12 +12,11 @@ from email.mime.image import MIMEImage
 import ssl
 
 email_password = os.environ.get('email_password')
-
+from_email = "appmails742@gmail.com"
 
 def send_confirmation_to_client_email(receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
-    from_email = "appmails742@gmail.com"
     password = email_password
     to_email = receiver_mail
     subject = "Welcome to connectify!"
@@ -48,7 +47,6 @@ def send_confirmation_to_client_email(receiver_mail, account_name):
 
 def send_login_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
-    from_email = "appmails742@gmail.com"
     password = email_password  # Ensure you have email_password defined somewhere
     to_email = receiver_mail
     subject = "Login Verification Code for Connectify"
@@ -95,7 +93,6 @@ def send_login_code_to_client_email(code, receiver_mail, account_name):
 def send_sing_up_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
-    from_email = "appmails742@gmail.com"
     password = email_password
     to_email = receiver_mail
     subject = "Verification code for Connectify"
@@ -143,8 +140,7 @@ def send_sing_up_code_to_client_email(code, receiver_mail, account_name):
 def send_forget_password_code_to_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
-    from_email = email_password
-    password = "faxetenwsyseyikl"
+    password = email_password
     to_email = receiver_mail
     subject = "Verification code for Connectify"
     body = f"""
@@ -191,7 +187,6 @@ def send_forget_password_code_to_email(code, receiver_mail, account_name):
 def send_changed_password_to_email(receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
-    from_email = "appmails742@gmail.com"
     password = email_password
     to_email = receiver_mail
     subject = "Welcome to connectify!"
