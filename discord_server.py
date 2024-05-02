@@ -296,7 +296,7 @@ def thread_recv_messages(n, addr):
                             if message_type == "sign_up":
                                 action = code_gotten_data.get("action")
                                 if action == "verification_code":
-                                    code_gotten_data = code_gotten_data.get("code")
+                                    code_gotten = code_gotten_data.get("code")
                                     logger.info(f"got {code_gotten} from ({addr})")
                                     if code_gotten is None:
                                         logger.info(f"lost connection with ({addr})")
