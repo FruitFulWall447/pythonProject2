@@ -2321,15 +2321,15 @@ class Login_page(QWidget):
 
         # Create "Forgot your password?" label
         forgot_password_label = QPushButton('Forgot your password?', self)
+        make_q_object_clear(forgot_password_label)
         forgot_password_label.setStyleSheet(
             "color: white; font-size: 12px;")  # Set the text color to blue and font size to 12px
 
         sign_up_label = QPushButton("Don't have a user yet? sign up here", self)
+        make_q_object_clear(sign_up_label)
         sign_up_label.setStyleSheet("color: white; font-size: 12px;")  # Set the text color to blue and font size to 12px
         sign_up_label.clicked.connect(self.move_to_sign_up_page)
         sign_up_label.move(1690 // 2 - 30, 535)
-        make_q_object_clear(sign_up_label)
-        make_q_object_clear(forgot_password_label)
 
         checkbox = QCheckBox('Keep me signed in', self)
 
@@ -2385,12 +2385,6 @@ class Login_page(QWidget):
                 border-radius: 5px;
                 font-size: 16px;
                 margin-bottom: 10px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:pressed {
-                background-color: #1f618d;
             }
         """)
 
@@ -2611,20 +2605,17 @@ class Forget_password_page(QWidget):
         n = self.page_controller_object.n
         username = self.username.text()
         email = self.email.text()
-        flag_change_password = True
-        while flag_change_password:
-            if is_email_valid(email) and len(username) > 0:
-                n.send_username_and_email_froget_password(username, None, email)
-                data = n.recv_str()
-                message_type = data.get("message_type")
-                if message_type == "forget_password":
-                    result = data.get("forget_password_status")
-                    if result == "valid":
-                        print("Server send code to email")
-                        self.page_controller_object.change_to_verification_code_page()
-                        break
-                    elif result == "invalid":
-                        break
+        if is_email_valid(email) and len(username) > 0:
+            n.send_username_and_email_froget_password(username, None, email)
+            data = n.recv_str()
+            message_type = data.get("message_type")
+            if message_type == "forget_password":
+                result = data.get("forget_password_status")
+                if result == "valid":
+                    print("Server send code to email")
+                    self.page_controller_object.change_to_verification_code_page()
+                elif result == "invalid":
+                    pass
 
     def resend_code_clicked(self):
         print(4)
