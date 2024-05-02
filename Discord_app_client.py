@@ -2904,6 +2904,14 @@ class Change_password_page(QWidget):
         self.too_short.hide()
         self.too_short.setStyleSheet(
             "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
+
+        self.password_already_changed = QLabel("Password already changed", self)
+
+        self.password_already_changed.move(1690 // 2 + 10, 340)
+        self.password_already_changed.hide()
+        self.password_already_changed.setStyleSheet(
+            "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
+
         self.changed_password_label = QLabel("Password changed", self)
         self.changed_password_label.move(1690 // 2, 340)
         self.changed_password_label.hide()
@@ -2974,6 +2982,8 @@ class Change_password_page(QWidget):
             self.changed_password_label.show()
             self.status = True
             self.was_password_changed = True
+        elif self.was_password_changed:
+            self.password_already_changed.show()
         else:
             self.too_short.show()
 
