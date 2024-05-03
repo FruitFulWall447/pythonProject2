@@ -1253,12 +1253,17 @@ def get_user_friends(username):
 
     # Retrieve friends for the given username
     query = """
-        SELECT user_id, friend_user_id
+        SELECT 
+            CASE
+                WHEN friend_user_id = ? THEN user_id
+                ELSE friend_user_id
+            END AS user_or_friend_id
         FROM friends
-        WHERE (user_id = ? OR friend_user_id = ?)
+        WHERE 
+            (user_id = ? OR friend_user_id = ?)
             AND friendship_status = 'accepted';
     """
-    cursor.execute(query, (username_id, username_id))
+    cursor.execute(query, (username_id, username_id, username_id))
     friends = cursor.fetchall()
 
     cursor.close()
@@ -1269,7 +1274,6 @@ def get_user_friends(username):
     friends_list = []
     for friend_id in friends_list_of_id:
         friends_list.append(get_username_from_id(friend_id))
-
     return friends_list
 
 
@@ -1936,13 +1940,16 @@ def get_user_groups(username):
             group_members_list = json.loads(row[2]) if row[2] else []
             group_image_bytes = file_to_bytes(row[5]) if row[5] else None
             # Check if the specified username is a group member or the manager
+            if row[4]:
+                timestamp_datetime = datetime.fromisoformat(row[4])
+
             if username in group_members_list or username == row[3]:
                 user_groups.append({
                     "group_id": row[0],
                     "group_name": row[1],
                     "group_members": group_members_list,
                     "group_manager": row[3],
-                    "creation_date": row[4].strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
+                    "creation_date": timestamp_datetime.strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
                     "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
                         "utf-8") if group_image_bytes else None
                 })
@@ -1978,13 +1985,14 @@ def get_group_by_id(group_id):
         if group_data:
             group_members_list = json.loads(group_data[2]) if group_data[2] else []
             group_image_bytes = file_to_bytes(group_data[5]) if group_data[5] else None
+            timestamp_datetime = datetime.fromisoformat(group_data[4])
 
             group_info = {
                 "group_id": group_data[0],
                 "group_name": group_data[1],
                 "group_members": group_members_list,
                 "group_manager": group_data[3],
-                "creation_date": group_data[4].strftime("%Y-%m-%d") if group_data[4] else None,
+                "creation_date": timestamp_datetime.strftime("%Y-%m-%d") if group_data[4] else None,
                 "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
                     "utf-8") if group_image_bytes else None
             }
