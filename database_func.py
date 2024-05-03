@@ -1074,7 +1074,7 @@ def get_username_for_senders(message_list):
 
 
 def format_messages(messages):
-    sender_id_to_name = get_username_for_senders(messages)
+    # sender_id_to_name = get_username_for_senders(messages)
     formatted_messages = []
 
     for message in messages:
@@ -1083,8 +1083,7 @@ def format_messages(messages):
         if message_type != "string":
             content_bytes = file_to_bytes(content)
             content = base64.b64encode(content_bytes).decode('utf-8')
-        sender_id = message["sender_id"]
-        sender_name = sender_id_to_name.get(sender_id, "Unknown User")
+        sender_name = get_username_from_id(sender_id)
         formatted_message = {
             "content": content,
             "sender_id": sender_name,
@@ -1462,7 +1461,8 @@ def sort_chat_list(chats_list, username):
                 """, (chat_id, username_id, username_id, chat_id))
             row = cursor.fetchone()
             if row and row[0]:
-                last_message_timestamp = row[0]
+                last_message_timestamp = datetime.fromisoformat(row[0])  # Convert SQLite timestamp to datetime
+
             else:
                 # If no message is found, set last_message_timestamp to a default value
                 last_message_timestamp = datetime(1970, 1, 1)  # Or any other default value you prefer
@@ -1681,8 +1681,10 @@ def unblock_user(username, user_to_unblock):
 
 def create_group(group_name, group_manager, group_members_list=None):
     new_chat_name = ""
+    group_id = None
+
     try:
-        # Connect to the MySQL database
+        # Connect to the SQLite database
         connection = connect_to_kevindb()
 
         # Create a cursor object to interact with the database
@@ -1695,15 +1697,19 @@ def create_group(group_name, group_manager, group_members_list=None):
         cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list) VALUES (?, ?, ?)",
                        (group_name, group_manager, group_members_json))
 
-        # Get the last inserted group_id
-        cursor.execute("SELECT LAST_INSERT_ID()")
-        group_id = cursor.fetchone()[0]
+        # Get the last inserted row id (equivalent to LAST_INSERT_ID() in MySQL)
+        group_id = cursor.lastrowid
         new_chat_name = f"({group_id}){group_name}"
 
         # Commit the changes
         connection.commit()
 
         print(f"Group '{group_name}' created successfully!")
+
+        # Add the new chat to each member's chat list
+        if group_members_list:
+            for member in group_members_list:
+                add_chat_to_user(member, new_chat_name)
 
     except sqlite3.Error as err:
         print(f"Error: {err}")
@@ -1714,8 +1720,8 @@ def create_group(group_name, group_manager, group_members_list=None):
             cursor.close()
         if connection:
             connection.close()
-        for member in group_members_list:
-            add_chat_to_user(member, new_chat_name)
+
+        # Return the new chat name and group ID
         return new_chat_name, group_id
 
 
