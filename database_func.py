@@ -951,34 +951,33 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
         else:
             receiver_id = get_id_from_username(receiver_name)
         connection = connect_to_kevindb()
-        if connection.is_connected():
-            cursor = connection.cursor()
+        cursor = connection.cursor()
 
-            # SQL query to insert a message into the 'messages' table
-            if message_type in basic_files_types:
-                encoded_base64_bytes = message_content
-                message_content = base64.b64decode(encoded_base64_bytes)
-                folder_path = files_folder_path
-                if not os.path.exists(folder_path):
-                    os.makedirs(folder_path)
-                file_name = generate_random_filename(24)
-                file_path = os.path.join(folder_path, file_name)
-                if os.path.exists(file_path):
-                    while os.path.exists(file_path):
-                        file_name = generate_random_filename(24)
-                        file_path = os.path.join(folder_path, file_name)
-                save_file(message_content, file_path)
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (?, ?, ?, ?, ?)"
-                data = (sender_id, receiver_id, file_path, message_type, file_original_name)
-            else:
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (?, ?, ?, ?)"
-                data = (sender_id, receiver_id, message_content, message_type)
+        # SQL query to insert a message into the 'messages' table
+        if message_type in basic_files_types:
+            encoded_base64_bytes = message_content
+            message_content = base64.b64decode(encoded_base64_bytes)
+            folder_path = files_folder_path
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+            file_name = generate_random_filename(24)
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.exists(file_path):
+                while os.path.exists(file_path):
+                    file_name = generate_random_filename(24)
+                    file_path = os.path.join(folder_path, file_name)
+            save_file(message_content, file_path)
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (?, ?, ?, ?, ?)"
+            data = (sender_id, receiver_id, file_path, message_type, file_original_name)
+        else:
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (?, ?, ?, ?)"
+            data = (sender_id, receiver_id, message_content, message_type)
 
-            # Execute the query
-            cursor.execute(sql_query, data)
+        # Execute the query
+        cursor.execute(sql_query, data)
 
-            # Commit changes to the database
-            connection.commit()
+        # Commit changes to the database
+        connection.commit()
 
 
     except Exception as e:
@@ -986,9 +985,8 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
 
     finally:
         # Close the database connection
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        cursor.close()
+        connection.close()
 
 
 def gets_group_attributes_from_format(group_format):
@@ -1395,9 +1393,9 @@ def get_group_image_by_id(group_id):
 
     finally:
         # Close the database connection
-        if connection and connection.is_connected():
-            cursor.close()
-            connection.close()
+
+        cursor.close()
+        connection.close()
 
 
 def get_user_chats(username):
