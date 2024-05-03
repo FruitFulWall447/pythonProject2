@@ -1,4 +1,4 @@
-import mysql.connector
+import sqlite3
 import binascii
 import os
 import hashlib
@@ -94,7 +94,7 @@ def create_user_settings(user_id):
     font_size, font, theme_color, censor_data, private_account, 
     push_to_talk_bind, two_factor_auth) 
     VALUES 
-    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
 
     # Extract default settings values from the default_settings_dict
@@ -115,42 +115,41 @@ def remove_song(title, owner_username):
     try:
         # Connect to your MySQL database
         owner_id = get_id_from_username(owner_username)
-        with connect_to_kevindb() as connection:
-            # Create a cursor object
-            with connection.cursor() as cursor:
-                # Retrieve the song paths from the database
-                select_query = """
-                    SELECT mp3_file_path, thumbnail_path FROM songs
-                    WHERE title = %s AND owner_id = %s
-                """
-                cursor.execute(select_query, (title, owner_id))
-                result = cursor.fetchone()
-                if result:
-                    mp3_file_path, thumbnail_path = result
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
 
-                    # Construct the SQL query to delete a song from the table
-                    delete_query = """
-                        DELETE FROM songs
-                        WHERE title = %s AND owner_id = %s
-                    """
+        select_query = """
+            SELECT mp3_file_path, thumbnail_path FROM songs
+            WHERE title = ? AND owner_id = ?
+        """
+        cursor.execute(select_query, (title, owner_id))
+        result = cursor.fetchone()
+        if result:
+            mp3_file_path, thumbnail_path = result
 
-                    # Execute the SQL query with the song data
-                    cursor.execute(delete_query, (title, owner_id))
+            # Construct the SQL query to delete a song from the table
+            delete_query = """
+                DELETE FROM songs
+                WHERE title = ? AND owner_id = ?
+            """
 
-                    # Commit the transaction
-                    connection.commit()
+            # Execute the SQL query with the song data
+            cursor.execute(delete_query, (title, owner_id))
 
-                    print("Song removed successfully!")
+            # Commit the transaction
+            connection.commit()
 
-                    # Delete the associated song files
-                    if mp3_file_path:
-                        os.remove(mp3_file_path)
-                        print("Song file deleted successfully.")
-                    if thumbnail_path:
-                        os.remove(thumbnail_path)
-                        print("Thumbnail file deleted successfully.")
-                else:
-                    print("Song not found.")
+            print("Song removed successfully!")
+
+            # Delete the associated song files
+            if mp3_file_path:
+                os.remove(mp3_file_path)
+                print("Song file deleted successfully.")
+            if thumbnail_path:
+                os.remove(thumbnail_path)
+                print("Thumbnail file deleted successfully.")
+        else:
+            print("Song not found.")
 
     except Exception as error:
         print("Error while removing song from the table:", error)
@@ -160,37 +159,37 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
     try:
         # Connect to your MySQL database
         owner_id = get_id_from_username(owner_username)
-        with connect_to_kevindb() as connection:
-            # Create a cursor object
-            with connection.cursor() as cursor:
-                # Construct the SQL query to insert a song into the table
-                insert_query = """
-                    INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
-                    VALUES (%s, %s, %s, %s, NOW(), %s)
-                """
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
 
-                # Generate unique filenames
-                folder_path = files_folder_path
-                mp3_file_name = generate_random_filename(24)
-                mp3_file_path = os.path.join(folder_path, mp3_file_name)
+        insert_query = """
+            INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """
+        current_timestamp = datetime.now()
 
-                thumbnail_photo_name = generate_random_filename(24)
-                thumbnail_photo_path = os.path.join(folder_path, thumbnail_photo_name)
+        # Generate unique filenames
+        folder_path = files_folder_path
+        mp3_file_name = generate_random_filename(24)
+        mp3_file_path = os.path.join(folder_path, mp3_file_name)
 
-                # Save files
-                save_bytes_to_file(mp3_file_bytes, mp3_file_path)
-                if thumbnail_photo_bytes is not None:
-                    save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
-                else:
-                    thumbnail_photo_path = None
+        thumbnail_photo_name = generate_random_filename(24)
+        thumbnail_photo_path = os.path.join(folder_path, thumbnail_photo_name)
 
-                # Execute the SQL query with the song data
-                cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration, thumbnail_photo_path))
+        # Save files
+        save_bytes_to_file(mp3_file_bytes, mp3_file_path)
+        if thumbnail_photo_bytes is not None:
+            save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
+        else:
+            thumbnail_photo_path = None
 
-                # Commit the transaction
-                connection.commit()
+        # Execute the SQL query with the song data
+        cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration,current_timestamp, thumbnail_photo_path))
 
-                print("Song added successfully!")
+        # Commit the transaction
+        connection.commit()
+
+        print("Song added successfully!")
 
     except Exception as error:
         print("Error while adding song to the table:", error)
@@ -200,43 +199,44 @@ def get_songs_by_owner(owner):
     try:
         # Connect to your MySQL database
         owner_id = get_id_from_username(owner)
-        with connect_to_kevindb() as connection:
-            # Create a cursor object
-            with connection.cursor() as cursor:
-                # Construct the SQL query to select songs by owner_id
-                select_query = """
-                    SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
-                    FROM songs
-                    WHERE owner_id = %s
-                """
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
 
-                # Execute the SQL query with the owner_id parameter
-                cursor.execute(select_query, (owner_id,))
+        # Construct the SQL query to select songs by owner_id
+        select_query = """
+            SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
+            FROM songs
+            WHERE owner_id = ?
+        """
 
-                # Fetch all rows
-                songs_data = cursor.fetchall()
+        # Execute the SQL query with the owner_id parameter
+        cursor.execute(select_query, (owner_id,))
 
-                # Prepare a list to store song information dictionaries
-                songs = []
+        # Fetch all rows
+        songs_data = cursor.fetchall()
 
-                # Iterate over the fetched rows
-                for song_data in songs_data:
-                    # Extract song data from the row
-                    title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+        # Prepare a list to store song information dictionaries
+        songs = []
 
-                    # Create a dictionary to store song information
-                    thumbnail_bytes = file_to_bytes(thumbnail_path)
-                    song_info = {
-                        "title": title,
-                        "audio_duration": duration,
-                        "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
-                        "thumbnail_bytes": thumbnail_bytes
-                    }
+        # Iterate over the fetched rows
+        for song_data in songs_data:
+            # Extract song data from the row
+            title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+            timestamp_datetime = datetime.fromisoformat(timestamp)
 
-                    # Append the song information dictionary to the list
-                    songs.append(song_info)
+            # Create a dictionary to store song information
+            thumbnail_bytes = file_to_bytes(thumbnail_path)
+            song_info = {
+                "title": title,
+                "audio_duration": duration,
+                "timestamp": timestamp_datetime.strftime("%Y-%m-%d"),  # Convert timestamp to string
+                "thumbnail_bytes": thumbnail_bytes
+            }
 
-                return songs
+            # Append the song information dictionary to the list
+            songs.append(song_info)
+
+        return songs
 
     except Exception as error:
         print("Error while retrieving songs by owner_id:", error)
@@ -247,42 +247,41 @@ def get_song_by_index_and_owner(owner, index):
     try:
         # Connect to your MySQL database
         owner_id = get_id_from_username(owner)
-        with connect_to_kevindb() as connection:
-            # Create a cursor object
-            with connection.cursor() as cursor:
-                # Construct the SQL query to select a song by owner_id and index
-                select_query = """
-                    SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
-                    FROM songs
-                    WHERE owner_id = %s
-                    LIMIT %s, 1
-                """
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
 
-                # Execute the SQL query with the owner_id and index parameters
-                cursor.execute(select_query, (owner_id, index))
+        select_query = """
+            SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
+            FROM songs
+            WHERE owner_id = ?
+            LIMIT 1 OFFSET ?
+        """
 
-                # Fetch the row
-                song_data = cursor.fetchone()
+        # Execute the SQL query with the owner_id and index parameters
+        cursor.execute(select_query, (owner_id, index))
 
-                if song_data:
-                    # Extract song data from the row
-                    title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+        # Fetch the row
+        song_data = cursor.fetchone()
 
-                    # Create a dictionary to store song information
-                    mp3_bytes = file_to_bytes(mp3_file_path)
-                    thumbnail_bytes = file_to_bytes(thumbnail_path)
-                    song_info = {
-                        "title": title,
-                        "audio_bytes": mp3_bytes,
-                        "audio_duration": duration,
-                        "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
-                        "thumbnail_bytes": thumbnail_bytes
-                    }
+        if song_data:
+            # Extract song data from the row
+            title, mp3_file_path, duration, timestamp, thumbnail_path = song_data
+            timestamp = datetime.fromisoformat(timestamp)
+            # Create a dictionary to store song information
+            mp3_bytes = file_to_bytes(mp3_file_path)
+            thumbnail_bytes = file_to_bytes(thumbnail_path)
+            song_info = {
+                "title": title,
+                "audio_bytes": mp3_bytes,
+                "audio_duration": duration,
+                "timestamp": timestamp.strftime("%Y-%m-%d"),  # Convert timestamp to string
+                "thumbnail_bytes": thumbnail_bytes
+            }
 
-                    return song_info
-                else:
-                    # No song found at the specified index for the owner_id
-                    return None
+            return song_info
+        else:
+            # No song found at the specified index for the owner_id
+            return None
 
     except Exception as error:
         print("Error while retrieving song by index and owner_id:", error)
@@ -296,14 +295,14 @@ def get_user_settings(username):
         db_connection = connect_to_kevindb()
 
         # Create a cursor object to execute SQL queries
-        cursor = db_connection.cursor(dictionary=True)
-
+        cursor = db_connection.cursor()
+        # cursor.row_factory = sqlite3.Row
         # Define the table name
         table_name = "settings_table"
 
         # Define the SQL SELECT statement to retrieve settings for the given user_id
         select_query = f"SELECT volume, output_device, input_device, camera_device_index, font_size" \
-                       f", font, theme_color, censor_data, private_account, push_to_talk_bind, two_factor_auth FROM {table_name} WHERE user_id = %s"
+                       f", font, theme_color, censor_data, private_account, push_to_talk_bind, two_factor_auth FROM {table_name} WHERE user_id = ?"
 
         # Execute the SELECT statement with parameterized values
         cursor.execute(select_query, (user_id,))
@@ -311,14 +310,27 @@ def get_user_settings(username):
         # Fetch all settings rows for the given user_id
         user_settings = cursor.fetchall()[0]
 
+
+
         # Close the cursor and database connection
         cursor.close()
         db_connection.close()
 
-        return user_settings
+        if user_settings:
+            # Extract column names from the cursor description
+            column_names = [description[0] for description in cursor.description]
+
+            # Create a dictionary mapping column names to row values
+            user_settings_dict = {column_names[i]: user_settings[i] for i in range(len(column_names))}
+
+            return user_settings_dict
+        else:
+            return None
+
+
 
     except Exception as e:
-        print(f"MySQL Error: {e}")
+        print(f"Error: {e}")
         return None
 
 
@@ -337,7 +349,7 @@ def change_user_setting(user_id, setting_name, new_value):
         table_name = "settings_table"
 
         # Define the SQL UPDATE statement to change the setting for the given user_id
-        update_query = f"UPDATE {table_name} SET {setting_name} = %s WHERE user_id = %s"
+        update_query = f"UPDATE {table_name} SET {setting_name} = ? WHERE user_id = ?"
 
         # Execute the UPDATE statement with parameterized values
         cursor.execute(update_query, (new_value, user_id))
@@ -351,8 +363,8 @@ def change_user_setting(user_id, setting_name, new_value):
 
         print(f"Setting '{setting_name}' changed successfully.")
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         print("Failed to change setting.")
 
 
@@ -363,7 +375,7 @@ def get_id_from_username(username):
 
     try:
         # Execute a query to retrieve the ID based on the username
-        cursor.execute("SELECT id FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT id FROM sign_up_table WHERE username = ?", (username,))
         row = cursor.fetchone()  # Fetch the first row
 
         if row:
@@ -372,7 +384,7 @@ def get_id_from_username(username):
         else:
             # If no row is found, return None
             return None
-    except mysql.connector.Error as e:
+    except sqlite3.Error as e:
         # Handle any errors that occur during the execution of the query
         print("Error retrieving ID:", e)
         return None
@@ -391,7 +403,7 @@ def get_email_by_username(username):
         cursor = connection.cursor()
 
         # Define the SQL query to retrieve the email by username
-        query = "SELECT email FROM sign_up_table WHERE username = %s"
+        query = "SELECT email FROM sign_up_table WHERE username = ?"
 
         # Execute the query with the provided username as a parameter
         cursor.execute(query, (username,))
@@ -405,7 +417,7 @@ def get_email_by_username(username):
         else:
             return None  # Username not found or email is NULL
 
-    except mysql.connector.Error as error:
+    except sqlite3.Error as error:
         print(f"Error retrieving email for username '{username}': {error}")
         return None
 
@@ -424,7 +436,7 @@ def get_username_from_id(user_id):
         cursor = conn.cursor()
 
         # Execute a query to retrieve the username based on the user ID
-        cursor.execute("SELECT username FROM sign_up_table WHERE id = %s", (user_id,))
+        cursor.execute("SELECT username FROM sign_up_table WHERE id = ?", (user_id,))
         row = cursor.fetchone()  # Fetch the first row
 
         if row:
@@ -433,7 +445,7 @@ def get_username_from_id(user_id):
         else:
             # If no row is found, return None
             return None
-    except mysql.connector.Error as e:
+    except sqlite3.Error as e:
         # Handle any errors that occur during the execution of the query
         print("Error retrieving username:", e)
         return None
@@ -459,6 +471,7 @@ def update_settings_by_dict(username, settings_dict):
     change_push_to_talk_bind(user_id, push_to_talk_key)
     change_2fa_enabled(user_id, two_factor_authentication)
     print(f"updated whole settings for user_id {user_id}")
+
 
 def change_volume(user_id, new_volume):
     change_user_setting(user_id, "volume", new_volume)
@@ -510,7 +523,6 @@ def decode_base64(message):
 
 
 def generate_random_salt(length=8):
-
     salt = binascii.hexlify(os.urandom(length)).decode('utf-8')
     return salt
 
@@ -563,8 +575,8 @@ def retrieve_salt_by_username(username):
         # Return the salt (or None if user not found)
         return result[0] if result else None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return None
 
 
@@ -590,8 +602,8 @@ def retrieve_user_id_by_username(username):
         # Return the salt (or None if user not found)
         return result[0] if result else None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return None
 
 
@@ -602,8 +614,8 @@ def login(username, password):
         salt_by_user = retrieve_salt_by_username(username)
         if salt_by_user is None:
             return False
-        hashed_password_salt = hash_sha2(password+salt_by_user)
-        hashed_password_salt_pepper = hashed_password_salt+pepper
+        hashed_password_salt = hash_sha2(password + salt_by_user)
+        hashed_password_salt_pepper = hashed_password_salt + pepper
         # Create a cursor
         cursor = connection.cursor()
 
@@ -613,7 +625,7 @@ def login(username, password):
         # Define the SQL SELECT statement to check login credentials with case sensitivity
         select_query = f"""
             SELECT * FROM {table_name}
-            WHERE BINARY username = %s AND BINARY password = %s
+            WHERE  username = ? AND  password = ?
         """
 
         # Execute the SELECT statement with the provided username and password
@@ -629,8 +641,8 @@ def login(username, password):
         # Return True if the login credentials are valid, False if they are not
         return result is not None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return False
 
 
@@ -639,15 +651,14 @@ def username_exists(username):
         # Create a connection
         connection = connect_to_kevindb()
 
-
         # Create a cursor
         cursor = connection.cursor()
 
         # Define the table name
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         # Define the SQL SELECT statement to check if the username exists
-        select_query = f"SELECT * FROM {table_name} WHERE BINARY username = %s"
+        select_query = f"SELECT * FROM {table_name} WHERE  username = ?"
 
         # Execute the SELECT statement with the username value
         cursor.execute(select_query, (username,))
@@ -662,8 +673,8 @@ def username_exists(username):
         # Return True if the username exists, False if it doesn't
         return result is not None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return False
 
 
@@ -676,10 +687,10 @@ def user_exists_with_email(username, email):
         cursor = connection.cursor()
 
         # Define the table name
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         # Define the SQL SELECT statement to check if the username and email exist
-        select_query = f"SELECT * FROM {table_name} WHERE BINARY username = %s AND email = %s"
+        select_query = f"SELECT * FROM {table_name} WHERE  username = ? AND email = ?"
 
         # Execute the SELECT statement with the username and email values
         cursor.execute(select_query, (username, email))
@@ -706,10 +717,10 @@ def check_security_token(token):
         cursor = connection.cursor()
 
         # Define the table name
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         # Define the SQL SELECT statement to check if the token exists
-        select_query = f"SELECT username FROM {table_name} WHERE security_token = %s"
+        select_query = f"SELECT username FROM {table_name} WHERE security_token = ?"
 
         # Execute the SELECT statement with the parameterized value
         cursor.execute(select_query, (token,))
@@ -728,8 +739,8 @@ def check_security_token(token):
             # Token doesn't exist, return False
             return False
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return False
 
 
@@ -740,10 +751,10 @@ def get_security_token(username):
         cursor = connection.cursor()
 
         # Define the table name
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         # Define the SQL SELECT statement to get the security token by username
-        select_query = f"SELECT security_token FROM {table_name} WHERE username = %s"
+        select_query = f"SELECT security_token FROM {table_name} WHERE username = ?"
 
         # Execute the SELECT statement with the parameterized value
         cursor.execute(select_query, (username,))
@@ -762,8 +773,8 @@ def get_security_token(username):
             # If username not found, return None or any other suitable value
             return None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         return None
 
 
@@ -781,13 +792,13 @@ def insert_user(username, password, email):
         security_token = generate_token()
 
         # Define the table name
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         # Define the SQL INSERT statement with parameterized queries
-        insert_query = f"INSERT INTO {table_name} (username, password, email, salt, security_token) VALUES (%s, %s, %s, %s, %s)"
+        insert_query = f"INSERT INTO {table_name} (username, password, email, salt, security_token) VALUES (?, ?, ?, ?, ?)"
 
         # Execute the INSERT statement with parameterized values
-        cursor.execute(insert_query, (username, hashed_password_with_salt+pepper, email, salt, security_token))
+        cursor.execute(insert_query, (username, hashed_password_with_salt + pepper, email, salt, security_token))
 
         # Commit the changes to the database
         user_id = cursor.lastrowid
@@ -801,8 +812,8 @@ def insert_user(username, password, email):
 
         create_user_settings(user_id)
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         print("Failed to insert user.")
 
 
@@ -816,9 +827,9 @@ def update_profile_pic(username, profile_pic_encoded):
         else:
             profile_pic = None
 
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
-        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = %s"
+        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = ?"
 
         # Execute the SELECT statement with the parameterized value
         cursor.execute(update_query, (username,))
@@ -831,17 +842,17 @@ def update_profile_pic(username, profile_pic_encoded):
         if file_path is not None:
             os.remove(file_path)
 
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
         if profile_pic is not None:
             folder_path = files_folder_path
             file_name = generate_random_filename(24)
             profile_pic_path = os.path.join(folder_path, file_name)
             save_bytes_to_file(profile_pic, profile_pic_path)
-            update_query = f"UPDATE {table_name} SET profile_pic_path = %s WHERE username = %s"
+            update_query = f"UPDATE {table_name} SET profile_pic_path = ? WHERE username = ?"
         else:
             profile_pic_path = None
-            update_query = f"UPDATE {table_name} SET profile_pic_path = %s WHERE username = %s"
+            update_query = f"UPDATE {table_name} SET profile_pic_path = ? WHERE username = ?"
 
         # Execute the INSERT statement with parameterized values
         cursor.execute(update_query, (profile_pic_path, username))
@@ -853,8 +864,8 @@ def update_profile_pic(username, profile_pic_encoded):
         cursor.close()
         connection.close()
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         print("Failed to insert user.")
 
 
@@ -863,9 +874,9 @@ def get_profile_pic_by_name(username):
         connection = connect_to_kevindb()
         cursor = connection.cursor()
 
-        table_name = "Sign_Up_Table"
+        table_name = "sign_up_table"
 
-        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = %s"
+        update_query = f"SELECT profile_pic_path FROM {table_name} WHERE username = ?"
 
         # Execute the SELECT statement with the parameterized value
         cursor.execute(update_query, (username,))
@@ -888,8 +899,8 @@ def get_profile_pic_by_name(username):
             # If username not found, return None or any other suitable value
             return None
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
 
 
 def change_password(username, new_password):
@@ -904,25 +915,23 @@ def change_password(username, new_password):
         hashed_new_password = hash_sha2(new_password + new_salt)
 
         # Update the user's password and salt in the database
-        update_password_query = "UPDATE Sign_Up_Table SET password = %s, salt = %s WHERE username = %s"
+        update_password_query = "UPDATE sign_up_table SET password = ?, salt = ? WHERE username = ?"
         cursor.execute(update_password_query, (hashed_new_password + pepper, new_salt, username))
 
         # Commit the changes to the database
         connection.commit()
 
-
         # Close the cursor and connection when done
         cursor.close()
         connection.close()
 
-    except mysql.connector.Error as e:
-        print(f"MySQL Error: {e}")
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
         print("Failed to change password.")
 
 
 def is_table_exist(table_name):
     connection = connect_to_kevindb()
-
 
     cursor = connection.cursor()
     cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
@@ -961,10 +970,10 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
                         file_name = generate_random_filename(24)
                         file_path = os.path.join(folder_path, file_name)
                 save_file(message_content, file_path)
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (%s, %s, %s, %s, %s)"
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (?, ?, ?, ?, ?)"
                 data = (sender_id, receiver_id, file_path, message_type, file_original_name)
             else:
-                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (%s, %s, %s, %s)"
+                sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (?, ?, ?, ?)"
                 data = (sender_id, receiver_id, message_content, message_type)
 
             # Execute the query
@@ -1006,33 +1015,32 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
             receiver_id = get_id_from_username(receiver_name)
 
         # Connect to the database using a context manager
-        with connect_to_kevindb() as connection:
-            cursor = connection.cursor(dictionary=True)
+        connection = connect_to_kevindb()
 
-            if is_group_chat:
-                query = """
-                    SELECT IFNULL(message_content, message_content_path) AS content,
-                           sender_id, timestamp, type, file_name 
-                    FROM messages 
-                    WHERE receiver_id = %s
-                """
-                cursor.execute(query, (receiver_id,))
-            else:
-                query = """
-                    SELECT IFNULL(message_content, message_content_path) AS content,
-                           sender_id, timestamp, type, file_name 
-                    FROM messages 
-                    WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s)
-                """
-                cursor.execute(query, (sender_id, receiver_id, receiver_id, sender_id))
+        cursor = connection.cursor()
+        if is_group_chat:
+            query = """
+                SELECT IFNULL(message_content, message_content_path) AS content,
+                       sender_id, timestamp, type, file_name 
+                FROM messages 
+                WHERE receiver_id = ?
+            """
+            cursor.execute(query, (receiver_id,))
+        else:
+            query = """
+                SELECT IFNULL(message_content, message_content_path) AS content,
+                       sender_id, timestamp, type, file_name 
+                FROM messages 
+                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+            """
+            cursor.execute(query, (sender_id, receiver_id, receiver_id, sender_id))
 
-            # Fetch all messages within the specified range
-            messages = cursor.fetchall()[first_message_index:last_message_index + 1]
+        # Fetch all messages within the specified range
+        messages = cursor.fetchall()[first_message_index:last_message_index + 1]
+        formatted_messages = format_messages(messages)
+        return formatted_messages
 
-            formatted_messages = format_messages(messages)
-            return formatted_messages
-
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error retrieving messages: {err}")
         return []
 
@@ -1049,14 +1057,14 @@ def get_username_for_senders(message_list):
             cursor = conn.cursor()
 
             # Construct the query to fetch usernames for sender_ids
-            query = "SELECT id, username FROM sign_up_table WHERE id IN (%s)" % ','.join(['%s'] * len(sender_id_list))
+            query = "SELECT id, username FROM sign_up_table WHERE id IN (?)" % ','.join(['?'] * len(sender_id_list))
             cursor.execute(query, sender_id_list)
             result = cursor.fetchall()
 
             for row in result:
                 sender_id_to_name[row[0]] = row[1]
 
-        except mysql.connector.Error as err:
+        except sqlite3.Error as err:
             print(f"Error retrieving sender usernames: {err}")
 
         finally:
@@ -1247,21 +1255,13 @@ def get_user_friends(username):
     cursor = connection.cursor()
 
     # Retrieve friends for the given username
-    query = f"""
-        SELECT
-            CASE
-                WHEN user_id = {username_id} THEN friend_user_id
-                WHEN friend_user_id = {username_id} THEN user_id
-            END AS friend_id,
-            user_id,
-            friend_user_id
-        FROM
-            friends
-        WHERE
-            (user_id = {username_id} OR friend_user_id = {username_id})
+    query = """
+        SELECT user_id, friend_user_id
+        FROM friends
+        WHERE (user_id = ? OR friend_user_id = ?)
             AND friendship_status = 'accepted';
     """
-    cursor.execute(query)
+    cursor.execute(query, (username_id, username_id))
     friends = cursor.fetchall()
 
     cursor.close()
@@ -1285,7 +1285,7 @@ def add_chat_to_user(username, new_chat_name):
         cursor = connection.cursor()
 
         # Retrieve the current chats_list for the user
-        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         if result:
@@ -1301,7 +1301,7 @@ def add_chat_to_user(username, new_chat_name):
             updated_chats_list_json = json.dumps(current_chats_list)
 
             # Update the chats_list for the user
-            cursor.execute("UPDATE sign_up_table SET chats_list = %s WHERE username = %s",
+            cursor.execute("UPDATE sign_up_table SET chats_list = ? WHERE username = ?",
                            (updated_chats_list_json, username))
 
             # Commit the changes
@@ -1311,7 +1311,7 @@ def add_chat_to_user(username, new_chat_name):
         else:
             print(f"No user found with username '{username}'.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1325,44 +1325,45 @@ def add_chat_to_user(username, new_chat_name):
 def update_group_image(group_id, image_bytes):
     try:
         # Establish a connection to the MySQL database
-        with connect_to_kevindb() as connection:
-            with connection.cursor() as cursor:
-                table_name = "my_groups"
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
 
-                get_path = f"SELECT group_image_path FROM {table_name} WHERE group_id = %s"
+        table_name = "my_groups"
 
-                # Execute the SELECT statement with the parameterized value
-                cursor.execute(get_path, (group_id,))
+        get_path = f"SELECT group_image_path FROM {table_name} WHERE group_id = ?"
 
-                # Fetch the result
-                result = cursor.fetchone()
+        # Execute the SELECT statement with the parameterized value
+        cursor.execute(get_path, (group_id,))
 
-                if result:
-                    image_path = result[0]  # Extract the file path from the tuple
-                    if image_path:
-                        os.remove(image_path)
+        # Fetch the result
+        result = cursor.fetchone()
 
-                if image_bytes is None:
-                    group_pic_path = None
-                else:
-                    folder_path = files_folder_path
-                    file_name = generate_random_filename(24)
-                    group_pic_path = os.path.join(folder_path, file_name)
-                    save_bytes_to_file(image_bytes, group_pic_path)
-                    print("saved bytes to image")
+        if result:
+            image_path = result[0]  # Extract the file path from the tuple
+            if image_path:
+                os.remove(image_path)
 
-                # Prepare the UPDATE query
-                update_query = """
-                    UPDATE my_groups
-                    SET group_image_path = %s
-                    WHERE group_id = %s
-                """
+        if image_bytes is None:
+            group_pic_path = None
+        else:
+            folder_path = files_folder_path
+            file_name = generate_random_filename(24)
+            group_pic_path = os.path.join(folder_path, file_name)
+            save_bytes_to_file(image_bytes, group_pic_path)
+            print("saved bytes to image")
 
-                # Execute the query
-                cursor.execute(update_query, (group_pic_path, group_id))
-                connection.commit()
+        # Prepare the UPDATE query
+        update_query = """
+            UPDATE my_groups
+            SET group_image_path = ?
+            WHERE group_id = ?
+        """
 
-                print(f"Group image updated successfully for group ID: {group_id}")
+        # Execute the query
+        cursor.execute(update_query, (group_pic_path, group_id))
+        connection.commit()
+
+        print(f"Group image updated successfully for group ID: {group_id}")
 
     except Exception as e:
         print(f"Error updating group image: {e}")
@@ -1376,7 +1377,7 @@ def get_group_image_by_id(group_id):
         select_query = """
             SELECT group_image_path
             FROM my_groups
-            WHERE group_id = %s
+            WHERE group_id = ?
         """
 
         # Execute the query
@@ -1410,7 +1411,7 @@ def get_user_chats(username):
         cursor = connection.cursor()
 
         # Retrieve the current chats_list for the user
-        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         # If the result is None or empty, return an empty list
@@ -1422,7 +1423,7 @@ def get_user_chats(username):
         sorted_chats_list = sort_chat_list(current_chats_list, username)
         return sorted_chats_list
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return []
 
@@ -1451,7 +1452,7 @@ def sort_chat_list(chats_list, username):
                 cursor.execute("""
                     SELECT MAX(timestamp) AS last_message_timestamp
                     FROM messages
-                    WHERE sender_id = %s OR receiver_id = %s
+                    WHERE sender_id = ? OR receiver_id = ?
                 """, (receiver_id, receiver_id))
             else:
                 username_id = get_id_from_username(username)
@@ -1459,7 +1460,7 @@ def sort_chat_list(chats_list, username):
                 cursor.execute("""
                     SELECT MAX(timestamp) AS last_message_timestamp
                     FROM messages
-                    WHERE (sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s)
+                    WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
                 """, (chat_id, username_id, username_id, chat_id))
             row = cursor.fetchone()
             if row and row[0]:
@@ -1474,7 +1475,7 @@ def sort_chat_list(chats_list, username):
         sorted_chats = sorted(chat_timestamps, key=chat_timestamps.get, reverse=True)
 
         return sorted_chats
-    except mysql.connector.Error as e:
+    except sqlite3.Error as e:
         # Handle any errors that occur during the execution of the query
         print("Error sorting chat list:", e)
         return None
@@ -1493,7 +1494,7 @@ def remove_chat_from_user(username, chat_to_remove):
         cursor = connection.cursor()
 
         # Retrieve the current chats_list for the user
-        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT chats_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         if result:
@@ -1511,7 +1512,7 @@ def remove_chat_from_user(username, chat_to_remove):
                     updated_chats_list_json = json.dumps(current_chats_list)
 
                     # Update the chats_list for the user
-                    cursor.execute("UPDATE sign_up_table SET chats_list = %s WHERE username = %s",
+                    cursor.execute("UPDATE sign_up_table SET chats_list = ? WHERE username = ?",
                                    (updated_chats_list_json, username))
 
                     # Commit the changes
@@ -1530,7 +1531,7 @@ def remove_chat_from_user(username, chat_to_remove):
                             current_chats_list.remove(chat)
 
                             updated_chats_list_json = json.dumps(current_chats_list)
-                            cursor.execute("UPDATE sign_up_table SET chats_list = %s WHERE username = %s",
+                            cursor.execute("UPDATE sign_up_table SET chats_list = ? WHERE username = ?",
                                            (updated_chats_list_json, username))
 
                             # Commit the changes
@@ -1540,7 +1541,7 @@ def remove_chat_from_user(username, chat_to_remove):
         else:
             print(f"No user found with username '{username}'.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1560,7 +1561,7 @@ def get_blocked_users(username):
         cursor = connection.cursor()
 
         # Retrieve the blocked_list for the user
-        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         # If no result or blocked_list is empty, return an empty list
@@ -1572,7 +1573,7 @@ def get_blocked_users(username):
 
         return blocked_users
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return []
 
@@ -1593,7 +1594,7 @@ def block_user(username, user_to_block):
         cursor = connection.cursor()
 
         # Retrieve the current blocked_list for the user
-        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         if result:
@@ -1609,7 +1610,7 @@ def block_user(username, user_to_block):
             updated_blocked_list_json = json.dumps(blocked_list)
 
             # Update the blocked_list for the user
-            cursor.execute("UPDATE sign_up_table SET blocked_list = %s WHERE username = %s",
+            cursor.execute("UPDATE sign_up_table SET blocked_list = ? WHERE username = ?",
                            (updated_blocked_list_json, username))
 
             # Commit the changes
@@ -1619,7 +1620,7 @@ def block_user(username, user_to_block):
         else:
             print(f"No user found with username '{username}'.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1639,7 +1640,7 @@ def unblock_user(username, user_to_unblock):
         cursor = connection.cursor()
 
         # Retrieve the current blocked_list for the user
-        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = %s", (username,))
+        cursor.execute("SELECT blocked_list FROM sign_up_table WHERE username = ?", (username,))
         result = cursor.fetchone()
 
         if result:
@@ -1656,7 +1657,7 @@ def unblock_user(username, user_to_unblock):
                 updated_blocked_list_json = json.dumps(blocked_list)
 
                 # Update the blocked_list for the user
-                cursor.execute("UPDATE sign_up_table SET blocked_list = %s WHERE username = %s",
+                cursor.execute("UPDATE sign_up_table SET blocked_list = ? WHERE username = ?",
                                (updated_blocked_list_json, username))
 
                 # Commit the changes
@@ -1669,7 +1670,7 @@ def unblock_user(username, user_to_unblock):
         else:
             print(f"No user found with username '{username}'.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1693,7 +1694,7 @@ def create_group(group_name, group_manager, group_members_list=None):
         group_members_json = json.dumps(group_members_list) if group_members_list else None
 
         # Insert the group into the 'my_groups' table
-        cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list) VALUES (%s, %s, %s)",
+        cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list) VALUES (?, ?, ?)",
                        (group_name, group_manager, group_members_json))
 
         # Get the last inserted group_id
@@ -1701,13 +1702,12 @@ def create_group(group_name, group_manager, group_members_list=None):
         group_id = cursor.fetchone()[0]
         new_chat_name = f"({group_id}){group_name}"
 
-
         # Commit the changes
         connection.commit()
 
         print(f"Group '{group_name}' created successfully!")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1730,14 +1730,14 @@ def change_group_manager(group_id, new_manager):
         cursor = connection.cursor()
 
         # Update the manager for the specified group
-        cursor.execute("UPDATE my_groups SET group_manager = %s WHERE group_id = %s", (new_manager, group_id))
+        cursor.execute("UPDATE my_groups SET group_manager = ? WHERE group_id = ?", (new_manager, group_id))
 
         # Commit the changes
         connection.commit()
 
         print(f"Manager for group (ID: {group_id}) changed to '{new_manager}' successfully!")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1757,7 +1757,7 @@ def get_group_name_by_id(group_id):
         cursor = connection.cursor()
 
         # Retrieve the group_name for the specified group_id
-        cursor.execute("SELECT group_name FROM my_groups WHERE group_id = %s", (group_id,))
+        cursor.execute("SELECT group_name FROM my_groups WHERE group_id = ?", (group_id,))
         group_name_result = cursor.fetchone()
 
         # Check if the group exists
@@ -1768,7 +1768,7 @@ def get_group_name_by_id(group_id):
             print(f"Group with ID {group_id} not found.")
             return None
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return None
 
@@ -1789,7 +1789,7 @@ def remove_group_member(group_id, group_member):
         cursor = connection.cursor()
 
         # Retrieve the current group_members_list for the specified group_id
-        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = %s", (group_id,))
+        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = ?", (group_id,))
         row = cursor.fetchone()[0]
         current_members_list = json.loads(row) if row else []
 
@@ -1798,7 +1798,7 @@ def remove_group_member(group_id, group_member):
             current_members_list.remove(group_member)
 
             # Update the group_members_list for the specified group_id
-            cursor.execute("UPDATE my_groups SET group_members_list = %s WHERE group_id = %s",
+            cursor.execute("UPDATE my_groups SET group_members_list = ? WHERE group_id = ?",
                            (json.dumps(current_members_list), group_id))
 
             # Commit the changes
@@ -1808,7 +1808,7 @@ def remove_group_member(group_id, group_member):
         else:
             print(f"Group member '{group_member}' not found in group (ID: {group_id}). No changes made.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1828,7 +1828,7 @@ def get_group_members(group_id):
         cursor = connection.cursor()
 
         # Retrieve the group_members_list for the specified group_id
-        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = %s", (group_id,))
+        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = ?", (group_id,))
         members_list_json = cursor.fetchone()
 
         # Check if the group exists and has members
@@ -1839,7 +1839,7 @@ def get_group_members(group_id):
             print(f"Group with ID {group_id} not found or has no members.")
             return []
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return []
 
@@ -1860,7 +1860,7 @@ def append_group_member(group_id, group_member):
         cursor = connection.cursor()
 
         # Retrieve the current group_members_list for the specified group_id
-        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = %s", (group_id,))
+        cursor.execute("SELECT group_members_list FROM my_groups WHERE group_id = ?", (group_id,))
         row = cursor.fetchone()
         current_members_list = json.loads(row[0]) if row else []
 
@@ -1868,7 +1868,7 @@ def append_group_member(group_id, group_member):
         current_members_list.append(group_member)
 
         # Update the group_members_list for the specified group_id
-        cursor.execute("UPDATE my_groups SET group_members_list = %s WHERE group_id = %s",
+        cursor.execute("UPDATE my_groups SET group_members_list = ? WHERE group_id = ?",
                        (json.dumps(current_members_list), group_id))
 
         # Commit the changes
@@ -1876,7 +1876,7 @@ def append_group_member(group_id, group_member):
 
         print(f"Group member '{group_member}' appended to group (ID: {group_id}) successfully!")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1896,7 +1896,7 @@ def rename_group(group_id, new_group_name):
         cursor = connection.cursor()
         new_group_name_format = f"({str(group_id)}){new_group_name}"
         # Update the group_name for the specified group_id
-        cursor.execute("UPDATE my_groups SET group_name = %s WHERE group_id = %s",
+        cursor.execute("UPDATE my_groups SET group_name = ? WHERE group_id = ?",
                        (new_group_name_format, group_id))
 
         # Commit the changes
@@ -1904,7 +1904,7 @@ def rename_group(group_id, new_group_name):
 
         print(f"Group (ID: {group_id}) renamed to '{new_group_name}' successfully!")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
@@ -1939,12 +1939,13 @@ def get_user_groups(username):
                     "group_members": group_members_list,
                     "group_manager": row[3],
                     "creation_date": row[4].strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
-                    "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode("utf-8") if group_image_bytes else None
+                    "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
+                        "utf-8") if group_image_bytes else None
                 })
 
         return user_groups
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return []
 
@@ -1966,7 +1967,7 @@ def get_group_by_id(group_id):
 
         # Retrieve the group with the specified group_id
         cursor.execute("SELECT group_id, group_name, group_members_list, group_manager, creation_date, "
-                       "group_image_path FROM my_groups WHERE group_id = %s", (group_id,))
+                       "group_image_path FROM my_groups WHERE group_id = ?", (group_id,))
 
         group_data = cursor.fetchone()
 
@@ -1980,13 +1981,14 @@ def get_group_by_id(group_id):
                 "group_members": group_members_list,
                 "group_manager": group_data[3],
                 "creation_date": group_data[4].strftime("%Y-%m-%d") if group_data[4] else None,
-                "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode("utf-8") if group_image_bytes else None
+                "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
+                    "utf-8") if group_image_bytes else None
             }
             return group_info
         else:
             return None
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
         return None
 
@@ -1998,34 +2000,15 @@ def get_group_by_id(group_id):
             connection.close()
 
 
-def clear_tables():
+def create_database():
     try:
-        # Connect to the MySQL database
-        connection = connect_to_kevindb()
-        # Create a cursor object to interact with the database
-        cursor = connection.cursor()
-
-        # List of tables to clear
-        tables_to_clear = ['sign_up_table', 'friends', 'messages', 'my_groups']
-
-        # Clear (truncate) each table
-        for table in tables_to_clear:
-            cursor.execute(f"TRUNCATE TABLE {table}")
-
-        # Commit the changes
+        # Connect to the SQLite database (or create it if it doesn't exist)
+        connection = sqlite3.connect('connectify_db.sqlite')
         connection.commit()
-
-        print("Tables cleared successfully!")
-
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-
-    finally:
-        # Close the cursor and connection
-        if cursor:
-            cursor.close()
-        if connection:
-            connection.close()
+        connection.close()
+        print("Database 'connectify_db' created successfully!")
+    except sqlite3.Error as error:
+        print(f"Error creating database: {error}")
 
 
 def create_messages_table():
@@ -2036,30 +2019,30 @@ def create_messages_table():
         # Create a cursor
         cursor = connection.cursor()
 
-        # Execute the SQL code to create the table
+        # Execute the SQL code to create the table (SQLite syntax)
         create_table_query = """
-            CREATE TABLE messages (
-                message_id INT AUTO_INCREMENT PRIMARY KEY,
-                sender_id int,
-                receiver_id int,
+            CREATE TABLE IF NOT EXISTS messages (
+                message_id INTEGER PRIMARY KEY AUTOINCREMENT ,
+                sender_id INTEGER,
+                receiver_id INTEGER,
                 message_content TEXT,
-                message_content_path VARCHAR(255),
+                message_content_path TEXT,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                type VARCHAR(255),
-                file_name VARCHAR(255)
+                type TEXT,
+                file_name TEXT
             )
         """
         cursor.execute(create_table_query)
         print("Table 'messages' created successfully.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
@@ -2074,24 +2057,24 @@ def create_friends_table():
 
         # Execute the SQL code to create the table
         create_table_query = """
-            CREATE TABLE friends (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255),
-                friend_user_name VARCHAR(255),
-                friendship_status ENUM('pending','accepted','rejected')
-            )
+                    CREATE TABLE friends (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id VARCHAR(255),
+                        friend_user_id VARCHAR(255),
+                        friendship_status TEXT CHECK(friendship_status IN ('pending', 'accepted', 'rejected'))
+                    );
         """
         cursor.execute(create_table_query)
         print("Table 'friends' created successfully.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
@@ -2106,8 +2089,8 @@ def create_groups_table():
 
         # Execute the SQL code to create the table
         create_table_query = """
-            CREATE TABLE my_groups (
-                group_id INT AUTO_INCREMENT PRIMARY KEY,
+            CREATE TABLE IF NOT EXISTS my_groups (
+                group_id INTEGER PRIMARY KEY AUTOINCREMENT ,
                 group_name VARCHAR(255),
                 group_manager VARCHAR(255),
                 creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -2118,14 +2101,14 @@ def create_groups_table():
         cursor.execute(create_table_query)
         print("Table 'my_groups' created successfully.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
@@ -2140,32 +2123,32 @@ def create_settings_table():
 
         # Execute the SQL code to create the table
         create_table_query = """
-            CREATE TABLE settings_table (
-                user_id INT,
-                volume INT,
+            CREATE TABLE IF NOT EXISTS settings_table (
+                user_id INTEGER,
+                volume INTEGER,
                 output_device VARCHAR(255),
                 input_device VARCHAR(255),
-                camera_device_index INT,
-                font_size INT,
+                camera_device_index INTEGER,
+                font_size INTEGER,
                 font VARCHAR(255),
                 theme_color VARCHAR(255),
-                censor_data TINYINT(1),
-                private_account TINYINT(1),
+                censor_data INTEGER CHECK(two_factor_auth IN (0, 1)),
+                private_account INTEGER CHECK(two_factor_auth IN (0, 1)),
                 push_to_talk_bind VARCHAR(255),
-                two_factor_auth TINYINT(1)
+                two_factor_auth INTEGER CHECK(two_factor_auth IN (0, 1))
             )
         """
         cursor.execute(create_table_query)
         print("Table 'settings_table' created successfully.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
@@ -2180,8 +2163,8 @@ def create_sign_up_table():
 
         # Execute the SQL code to create the table
         create_table_query = """
-            CREATE TABLE sign_up_table (
-                id INT,
+            CREATE TABLE IF NOT EXISTS sign_up_table (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username VARCHAR(255),
                 password VARCHAR(255),
                 email VARCHAR(255),
@@ -2195,14 +2178,14 @@ def create_sign_up_table():
         cursor.execute(create_table_query)
         print("Table 'sign_up_table' created successfully.")
 
-    except mysql.connector.Error as err:
+    except sqlite3.Error as err:
         print(f"Error: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
@@ -2214,58 +2197,51 @@ def create_songs_table():
 
         # Create a cursor
         cursor = connection.cursor()
-        create_table_query = """CREATE TABLE songs (
-                        id SERIAL PRIMARY KEY,
+        create_table_query = """CREATE TABLE IF NOT EXISTS songs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
                         title VARCHAR(255) NOT NULL,
                         mp3_file_path VARCHAR(255) NOT NULL,
-                            owner_id INT,
-                        FOREIGN KEY (owner_id) REFERENCES sign_up_table(id),
+                        thumbnail_path VARCHAR(255),
+                        owner_id INTEGER,
                         duration VARCHAR(255) NOT NULL,
                         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                                            );"""
+                                            )"""
         cursor.execute(create_table_query)
         print("Table 'songs' created successfully.")
 
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
+    except sqlite3.Error as err:
+        print(f"Error in creating songs table: {err}")
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
+        if cursor is not None:
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
+        if connection is not None:
             connection.close()
             print("Connection closed.")
 
 
-def create_tables_if_not_exist():
-    current_table = "sign_up_table"
-    if not is_table_exist(current_table):
-        create_sign_up_table()
-        print(f"created {current_table}")
-    current_table = "settings_table"
-    if not is_table_exist(current_table):
-        create_settings_table()
-        print(f"created {current_table}")
-    current_table = "friends"
-    if not is_table_exist(current_table):
-        create_friends_table()
-        print(f"created {current_table}")
-    current_table = "messages"
-    if not is_table_exist(current_table):
-        create_messages_table()
-        print(f"created {current_table}")
-    current_table = "my_groups"
-    if not is_table_exist(current_table):
-        create_groups_table()
-        print(f"created {current_table}")
-    current_table = "songs"
-    if not is_table_exist(current_table):
-        create_songs_table()
-        print(f"created {current_table}")
+def create_tables():
+    create_sign_up_table()
+    create_groups_table()
+    create_friends_table()
+    create_messages_table()
+    create_settings_table()
+    create_songs_table()
 
 
 def connect_to_kevindb():
-    return mysql.connector.connect(host="localhost", user="root", password="LingshUpper1208", database="kevindb")
+    try:
+        # Connect to the existing SQLite database
+        connection = sqlite3.connect('connectify_db.sqlite')
+        return connection
+    except sqlite3.Error as error:
+        print(f"Error connecting to database: {error}")
+        return None
+
+create_database()
+create_tables()
+
+
 
 

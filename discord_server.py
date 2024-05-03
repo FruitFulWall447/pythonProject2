@@ -197,7 +197,11 @@ def thread_recv_messages(n, addr):
                     password = data.get("password")
                     is_valid = database_func.login(username, password)
                     if is_valid:
-                        is_2fa_for_user = database_func.get_user_settings(username).get("two_factor_auth")
+                        user_settings = database_func.get_user_settings(username)
+                        if user_settings:
+                            is_2fa_for_user = user_settings.get("two_factor_auth")
+                        else:
+                            is_2fa_for_user = False
                         if not username in ServerHandler.online_users:
                             if not is_2fa_for_user:
                                 n.send_confirm_login()
@@ -643,7 +647,7 @@ def listen_udp():
 
 
 def main():
-    database_func.create_tables_if_not_exist()
+    # database_func.create_tables_if_not_exist()
     tcp_thread = threading.Thread(target=tcp_server)
     tcp_thread.start()
     udp_thread = threading.Thread(target=listen_udp)
