@@ -152,6 +152,7 @@ def threaded_logged_in_client(n, User):
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
                                                                                       , messages_list_max_index)
                     n.send_messages_list(list_dict_of_messages)
+                    print(len(list_dict_of_messages))
                 if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
                             messages_list_max_index + 1, messages_list_max_index + 6)

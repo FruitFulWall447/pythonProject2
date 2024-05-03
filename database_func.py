@@ -1039,9 +1039,11 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
             cursor.execute(query, (sender_id, receiver_id, receiver_id, sender_id))
 
         # Fetch all messages within the specified range
-        messages = cursor.fetchall()[first_message_index:last_message_index + 1]
+        messages_old_to_new = cursor.fetchall()
+        messages_new_to_old = messages_old_to_new[::-1]
+
+        messages = messages_new_to_old[first_message_index:last_message_index + 1]
         formatted_messages = format_messages(messages)
-        formatted_messages.reverse()
         return formatted_messages
 
     except sqlite3.Error as err:
