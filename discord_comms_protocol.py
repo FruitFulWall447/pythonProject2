@@ -1373,8 +1373,6 @@ class server_net:
             self.logger.error(f"Error: {e}")
             self.logger.info("Clearing socket buffer...")
             # Clear the socket buffer by receiving and discarding remaining data
-            data = "error:disconnect"
-            self.send_str(data)
             return None
 
     def recv_bytes(self):
