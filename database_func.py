@@ -1053,7 +1053,8 @@ def get_username_for_senders(message_list):
             cursor = conn.cursor()
 
             # Construct the query to fetch usernames for sender_ids
-            query = "SELECT id, username FROM sign_up_table WHERE id IN (?)" % ','.join(['?'] * len(sender_id_list))
+            placeholders = ','.join('?' for _ in sender_id_list)
+            query = f"SELECT id, username FROM sign_up_table WHERE id IN ({placeholders})"
             cursor.execute(query, sender_id_list)
             result = cursor.fetchall()
 
@@ -1077,8 +1078,9 @@ def format_messages(messages):
     formatted_messages = []
 
     for message in messages:
-        content = message['content']
-        if message['type'] != "string":
+        content, sender_id, timestamp, message_type, file_name = message
+
+        if message_type != "string":
             content_bytes = file_to_bytes(content)
             content = base64.b64encode(content_bytes).decode('utf-8')
         sender_id = message["sender_id"]
@@ -1086,9 +1088,9 @@ def format_messages(messages):
         formatted_message = {
             "content": content,
             "sender_id": sender_name,
-            "timestamp": str(message["timestamp"]),
-            "message_type": message["type"],
-            "file_name": message["file_name"]
+            "timestamp": timestamp,
+            "message_type": message_type,
+            "file_name": file_name
         }
         formatted_messages.append(formatted_message)
 
