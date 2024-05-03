@@ -29,6 +29,11 @@ default_settings_dict = {
 }
 
 
+def current_timestamp():
+    time_now = datetime.now()
+    return time_now.strftime('%Y-%m-%d %H:%M:%S')
+
+
 def unpack_settings(variables_dict):
     return (
         variables_dict["volume"],
@@ -2039,7 +2044,7 @@ def create_messages_table():
                 receiver_id INTEGER,
                 message_content TEXT,
                 message_content_path TEXT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                timestamp TIMESTAMP DEFAULT (current_timestamp()),
                 type TEXT,
                 file_name TEXT
             )
@@ -2105,7 +2110,7 @@ def create_groups_table():
                 group_id INTEGER PRIMARY KEY AUTOINCREMENT ,
                 group_name VARCHAR(255),
                 group_manager VARCHAR(255),
-                creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                creation_date TIMESTAMP DEFAULT (current_timestamp()),
                 group_members_list TEXT,
                 group_image_path VARCHAR(255)
             )
@@ -2216,8 +2221,8 @@ def create_songs_table():
                         thumbnail_path VARCHAR(255),
                         owner_id INTEGER,
                         duration VARCHAR(255) NOT NULL,
-                        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                                            )"""
+                        timestamp TIMESTAMP DEFAULT (current_timestamp())
+                        )"""
         cursor.execute(create_table_query)
         print("Table 'songs' created successfully.")
 
@@ -2253,7 +2258,6 @@ def connect_to_kevindb():
 
 create_database()
 create_tables()
-
 
 
 
