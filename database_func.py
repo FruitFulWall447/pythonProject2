@@ -169,9 +169,8 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
 
         insert_query = """
             INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """
-        current_timestamp = datetime.now()
 
         # Generate unique filenames
         folder_path = files_folder_path
@@ -189,7 +188,8 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
             thumbnail_photo_path = None
 
         # Execute the SQL query with the song data
-        cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration,current_timestamp, thumbnail_photo_path))
+        timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
+        cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_photo_path))
 
         # Commit the transaction
         connection.commit()
@@ -972,11 +972,13 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
                     file_name = generate_random_filename(24)
                     file_path = os.path.join(folder_path, file_name)
             save_file(message_content, file_path)
-            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name) VALUES (?, ?, ?, ?, ?)"
-            data = (sender_id, receiver_id, file_path, message_type, file_original_name)
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name, timestamp) VALUES (?, ?, ?, ?, ?, ?)"
+            timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
+            data = (sender_id, receiver_id, file_path, message_type, file_original_name, timestamp)
         else:
-            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type) VALUES (?, ?, ?, ?)"
-            data = (sender_id, receiver_id, message_content, message_type)
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type, timestamp) VALUES (?, ?, ?, ?, ?)"
+            timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
+            data = (sender_id, receiver_id, message_content, message_type, timestamp)
 
         # Execute the query
         cursor.execute(sql_query, data)
@@ -1039,6 +1041,7 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
         # Fetch all messages within the specified range
         messages = cursor.fetchall()[first_message_index:last_message_index + 1]
         formatted_messages = format_messages(messages)
+        formatted_messages.reverse()
         return formatted_messages
 
     except sqlite3.Error as err:
@@ -1703,8 +1706,9 @@ def create_group(group_name, group_manager, group_members_list=None):
         group_members_json = json.dumps(group_members_list) if group_members_list else None
 
         # Insert the group into the 'my_groups' table
-        cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list) VALUES (?, ?, ?)",
-                       (group_name, group_manager, group_members_json))
+        timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
+        cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list, creation_date) VALUES (?, ?, ?, ?)",
+                       (group_name, group_manager, group_members_json, timestamp))
 
         # Get the last inserted row id (equivalent to LAST_INSERT_ID() in MySQL)
         group_id = cursor.lastrowid
@@ -2044,7 +2048,7 @@ def create_messages_table():
                 receiver_id INTEGER,
                 message_content TEXT,
                 message_content_path TEXT,
-                timestamp TIMESTAMP DEFAULT (current_timestamp()),
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 type TEXT,
                 file_name TEXT
             )
@@ -2110,7 +2114,7 @@ def create_groups_table():
                 group_id INTEGER PRIMARY KEY AUTOINCREMENT ,
                 group_name VARCHAR(255),
                 group_manager VARCHAR(255),
-                creation_date TIMESTAMP DEFAULT (current_timestamp()),
+                creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 group_members_list TEXT,
                 group_image_path VARCHAR(255)
             )
@@ -2214,15 +2218,17 @@ def create_songs_table():
 
         # Create a cursor
         cursor = connection.cursor()
-        create_table_query = """CREATE TABLE IF NOT EXISTS songs (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        title VARCHAR(255) NOT NULL,
-                        mp3_file_path VARCHAR(255) NOT NULL,
-                        thumbnail_path VARCHAR(255),
-                        owner_id INTEGER,
-                        duration VARCHAR(255) NOT NULL,
-                        timestamp TIMESTAMP DEFAULT (current_timestamp())
-                        )"""
+        create_table_query = """
+            CREATE TABLE IF NOT EXISTS songs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title VARCHAR(255) NOT NULL,
+                mp3_file_path VARCHAR(255) NOT NULL,
+                thumbnail_path VARCHAR(255),
+                owner_id INTEGER,
+                duration VARCHAR(255) NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """
         cursor.execute(create_table_query)
         print("Table 'songs' created successfully.")
 

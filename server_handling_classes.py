@@ -413,6 +413,9 @@ class ServerHandler:
         self.UDPClientHandler_list = []
         self.server_mtu = None
 
+    def is_user_online(self, user):
+        return user in self.online_users
+
     def add_udp_address(self, address, user):
         self.udp_addresses_dict[user] = address
 

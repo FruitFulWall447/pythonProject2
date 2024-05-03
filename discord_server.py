@@ -135,7 +135,7 @@ def threaded_logged_in_client(n, User):
     logger = logging.getLogger(__name__)
     numbers_of_starter_message = 20
     messages_list_max_index = numbers_of_starter_message
-    while True:
+    while ServerHandler.is_user_online(User):
         time.sleep(0.05)
 
         if is_client_waits_for_message(User):

@@ -1206,17 +1206,20 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.set_new_playlist_index_and_listen(self.playlist_last_index)
 
     def go_to_next_song(self):
-        len_songs_list = len(self.playlist_songs)
-        if not self.shuffle:
-            if self.playlist_index + 1 < len_songs_list:
-                self.set_new_playlist_index_and_listen(self.playlist_index+1)
+        try:
+            len_songs_list = len(self.playlist_songs)
+            if not self.shuffle:
+                if self.playlist_index + 1 < len_songs_list:
+                    self.set_new_playlist_index_and_listen(self.playlist_index+1)
+                else:
+                    self.set_new_playlist_index_and_listen(0)
             else:
-                self.set_new_playlist_index_and_listen(0)
-        else:
-            random_index = random.randint(0, len(self.playlist_songs) - 1)
-            while random_index == self.playlist_index:
                 random_index = random.randint(0, len(self.playlist_songs) - 1)
-            self.set_new_playlist_index_and_listen(random_index)
+                while random_index == self.playlist_index:
+                    random_index = random.randint(0, len(self.playlist_songs) - 1)
+                self.set_new_playlist_index_and_listen(random_index)
+        except Exception as e:
+            print(f"error in going to next song {e}")
 
     def handle_playlist_song_state_change(self, status):
         if status == QMediaPlayer.EndOfMedia:
@@ -1870,7 +1873,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     if self.chat_box.check_editing_status():
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
-                            formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+                            formatted_time = current_time.strftime('%Y-%m-%d %H:%M')
                             message_dict = create_message_dict(self.chat_box.text_entry.text(), self.username,
                                                                str(formatted_time), "string", None)
                             self.list_messages.insert(0, message_dict)
@@ -3076,7 +3079,6 @@ class PageController:
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
             self.change_to_login_page()
-
         except Exception as e:
             print(f"error in log out {e}")
 
