@@ -423,10 +423,8 @@ def get_email_by_username(username):
 
     finally:
         # Close the cursor and connection
-        if 'cursor' in locals() and cursor is not None:
-            cursor.close()
-        if 'connection' in locals() and connection.is_connected():
-            connection.close()
+        cursor.close()
+        connection.close()
 
 
 def get_username_from_id(user_id):
