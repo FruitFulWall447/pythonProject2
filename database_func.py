@@ -1025,38 +1025,17 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
 
         cursor = connection.cursor()
 
-        if is_group_chat:
-            count_query = """
-                SELECT COUNT(*) 
-                FROM messages 
-                WHERE receiver_id = ?
-            """
-            cursor.execute(count_query, (receiver_id,))
-        else:
-            count_query = """
-                SELECT COUNT(*) 
-                FROM messages 
-                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
-            """
-            cursor.execute(count_query, (sender_id, receiver_id, receiver_id, sender_id))
 
-        total_messages = cursor.fetchone()[0]
-        if first_message_index >= total_messages:
-            print("wrong parameters")
-            return []
         limit = last_message_index - first_message_index + 1
-        offset = total_messages - last_message_index - 1
-        if offset < 0:
-            offset = 0
-            limit = total_messages - first_message_index
-        print(f"count = {total_messages}, limit = {limit}, offset = {offset}")
+        offset = first_message_index
+        print(f"limit = {limit}, offset = {offset}")
 
         if is_group_chat:
             query = """
                 SELECT IFNULL(message_content, message_content_path) AS content,
                        sender_id, timestamp, type, file_name 
                 FROM messages 
-                WHERE receiver_id = ? LIMIT ? OFFSET ?
+                WHERE receiver_id = ? ORDER BY message_id DESC LIMIT ? OFFSET ? 
             """
             cursor.execute(query, (receiver_id, limit, offset))
         else:
@@ -1064,13 +1043,12 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
                 SELECT IFNULL(message_content, message_content_path) AS content,
                        sender_id, timestamp, type, file_name 
                 FROM messages 
-                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) LIMIT ? OFFSET ?
+                WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?) ORDER BY message_id DESC LIMIT ? OFFSET ?
             """
             cursor.execute(query, (sender_id, receiver_id, receiver_id, sender_id, limit, offset))
 
         # Fetch all messages within the specified range
-        messages_old_to_new = cursor.fetchall()
-        messages_new_to_old = messages_old_to_new[::-1]
+        messages_new_to_old = cursor.fetchall()
 
         # messages = messages_new_to_old[first_message_index:last_message_index + 1]
         formatted_messages = format_messages(messages_new_to_old)
