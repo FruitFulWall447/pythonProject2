@@ -404,6 +404,8 @@ def listen_udp(main_page_object):
 vc_data_fragments_list = []
 share_screen_data_fragments_list = []
 share_camera_data_fragments_list = []
+
+
 def handle_udp_data(data, main_page_object):
     global vc_data_fragments_list, share_screen_data_fragments_list, share_camera_data_fragments_list
     main_page = main_page_object

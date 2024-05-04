@@ -14,7 +14,7 @@ import base64
 from song_search_engine import extract_audio_bytes
 
 # Set up the logging configuration
-logging.basicConfig(filename='example.log',
+logging.basicConfig(
                     level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
