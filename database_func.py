@@ -1010,7 +1010,7 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
     try:
         if first_message_index > last_message_index:
             print("wrong parameters")
-            return None
+            return []
         is_group_chat = receiver_name.startswith('(')
 
         if is_group_chat:
@@ -1043,7 +1043,7 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
         total_messages = cursor.fetchone()[0]
         if first_message_index >= total_messages:
             print("wrong parameters")
-            return None
+            return []
         limit = last_message_index - first_message_index + 1
         offset = total_messages - last_message_index - 1
         if offset < 0:
