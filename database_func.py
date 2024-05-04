@@ -1025,10 +1025,8 @@ def get_last_amount_of_messages(sender_name, receiver_name, first_message_index,
 
         cursor = connection.cursor()
 
-
         limit = last_message_index - first_message_index + 1
         offset = first_message_index
-        print(f"limit = {limit}, offset = {offset}")
 
         if is_group_chat:
             query = """
