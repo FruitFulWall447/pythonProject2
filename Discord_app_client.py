@@ -397,7 +397,7 @@ def listen_udp(main_page_object):
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:
-            print(f"Exception: {e}")
+            print(f"Exception: {e} , fragment len {len(fragment_data)}")
 
 
 def handle_udp_data(data, main_page_object):
