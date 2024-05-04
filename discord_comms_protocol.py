@@ -580,10 +580,6 @@ class client_net:
             full_message = share_screen_data
             compressed_message = zlib.compress(full_message)
             message_format = "share_screen_data"
-            # message = {"message_type": message_format, "compressed_share_screen_data": compressed_message,
-            #            "shape_of_frame": shape_of_frame
-            #            }
-            # self.send_message_dict_udp(message)
             self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:
             print(f"error is in send share screen data: {e}")
@@ -593,10 +589,6 @@ class client_net:
             full_message = share_camera_data
             compressed_message = zlib.compress(full_message)
             message_format = "share_camera_data"
-            # message = {"message_type": message_format, "compressed_share_camera_data": compressed_message,
-            #            "shape_of_frame": shape_of_frame
-            #            }
-            # self.send_message_dict_udp(message)
             self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:
             print(f"error is send share camera data: {e}")
@@ -850,7 +842,6 @@ class server_net:
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         stream_handler = logging.StreamHandler()
         stream_handler.setFormatter(formatter)
-
         self.server = s
         self.size = 0000000
         self.original_len = 10

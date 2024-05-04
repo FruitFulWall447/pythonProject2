@@ -231,7 +231,6 @@ class Call:
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
             if name != user and net is not None and name not in self.deafened and name in self.participants:
-                #net.send_vc_data(vc_data, user)
                 compressed_vc_data = zlib.compress(vc_data)
                 self.parent.send_large_udp_data(user, name, compressed_vc_data, "vc_data", None)
                 # self.logger.debug(f"Sent voice chat data to {name}")
@@ -442,8 +441,8 @@ class ServerHandler:
 
     def send_large_udp_data(self, sender, sending_to, data, data_type, shape_of_frame=None):
         address_to_send = self.udp_addresses_dict.get(sending_to)
-        if len(data) > self.server_mtu:
-            sliced_data = slice_up_data(data, int(self.server_mtu * 0.7))
+        if len(data) > self.server_mtu*0.8:
+            sliced_data = slice_up_data(data, int(self.server_mtu * 0.2))
         else:
             sliced_data = [data]
         index = 0

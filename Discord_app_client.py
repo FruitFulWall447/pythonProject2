@@ -391,7 +391,7 @@ def listen_udp(main_page_object):
     while main_page_object.listen_udp:
         try:
             fragment_data, address = network.recv_udp()
-            if fragment_data != 1:
+            if fragment_data:
                 data = pickle.loads(fragment_data)
                 handle_udp_data(data, main_page_object)
         except OSError as os_err:
@@ -2782,7 +2782,6 @@ class Verification_code_page(QWidget):
                     n.send_sign_up_verification_code(code)
                 else:
                     n.send_login_2fa_code(code)
-                    self.page_controller_object.is_waiting_for_2fa_code = False
                 print("Sent verification code to server")
                 data = n.recv_str()
                 message_type = data.get("message_type")
