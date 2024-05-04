@@ -480,7 +480,7 @@ def handle_udp_data(data, main_page_object):
             else:
                 share_camera_data.append(data.get("sliced_data"))
     except Exception as e:
-        print(f"error in rebuilding udp packets")
+        print(f"error in rebuilding udp packets {e}")
 
 
 flag_updates = True
