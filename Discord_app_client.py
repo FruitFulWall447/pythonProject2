@@ -125,41 +125,6 @@ share_camera_sequence = br'\share_camera_data'
 CAMERA_FPS = 60
 
 
-def return_vc_bytes_parameters(vc_bytes):
-    try:
-        sequence_and_name = vc_bytes.split(b":")[0]
-        encoded_name = sequence_and_name[len(vc_data_sequence):]
-        compressed_vc_data = vc_bytes[len(sequence_and_name) + 1:]
-        name_of_talker = encoded_name.decode("utf-8")
-        return name_of_talker, compressed_vc_data
-    except Exception as e:
-        print(vc_bytes)
-
-
-def return_share_screen_bytes_parameters(share_screen_data):
-    try:
-        sequence_and_name = share_screen_data.split(b":")[0]
-        frame_shape_bytes = share_screen_data.split(b":")[-1]
-        encoded_name = sequence_and_name[len(share_screen_sequence):]
-        compressed_share_screen_data = share_screen_data[len(sequence_and_name) + 1:]
-        name_of_talker = encoded_name.decode("utf-8")
-        return name_of_talker, compressed_share_screen_data, frame_shape_bytes
-    except Exception as e:
-        print(share_screen_data)
-
-
-def return_share_camera_bytes_parameters(share_camera_data):
-    try:
-        sequence_and_name = share_camera_data.split(b":")[0]
-        frame_shape_bytes = share_camera_data.split(b":")[-1]
-        encoded_name = sequence_and_name[len(share_camera_sequence):]
-        compressed_share_screen_data = share_camera_data[len(sequence_and_name) + 1:]
-        name_of_talker = encoded_name.decode("utf-8")
-        return name_of_talker, compressed_share_screen_data, frame_shape_bytes
-    except Exception as e:
-        print(share_camera_data)
-
-
 def thread_recv_messages(page_controller_object):
     n = page_controller_object.n
     print("receiving thread started running")
