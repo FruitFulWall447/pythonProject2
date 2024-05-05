@@ -3175,16 +3175,11 @@ class ServerIsDownPage(QWidget):
 
 class PageController:
     def __init__(self):
-        print(1)
         self.n = client_net()
         is_connected = self.n.connect_tcp()
-        try:
-            self.screen_width = 0
-            self.screen_height = 0
-            print(self.screen_width)
-            print(self.screen_height)
-        except Exception as e:
-            print(e)
+        self.screen_width = 0
+        self.screen_height = 0
+
         self.app = QApplication(sys.argv)
 
         if is_connected:
