@@ -17,8 +17,7 @@ import secrets
 import struct
 import pickle
 import binascii
-
-
+import datetime
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
@@ -26,11 +25,9 @@ share_camera_sequence = br'\share_camera_data'
 
 def slice_up_data(data, mtu):
     sliced_data = []
-    start_index = 0
-    while start_index < len(data):
-        end_index = min(start_index + mtu, len(data))
+    for start_index in range(0, len(data), mtu):
+        end_index = start_index + mtu
         sliced_data.append(data[start_index:end_index])
-        start_index = end_index
     return sliced_data
 
 
@@ -269,24 +266,19 @@ class client_net:
 
     def send_large_udp_data(self, data, data_type, shape_of_frame=None):
         if len(data) > self.mtu:
-            sliced_data = slice_up_data(data, int(self.mtu * 0.2))
+            sliced_data = slice_up_data(data, int(self.mtu * 0.8))
         else:
             sliced_data = [data]
-        index = 0
-        for data_slice in sliced_data:
-            if index == 0:
-                is_first = True
-            else:
-                is_first = False
-            if index == len(sliced_data)-1:
-                is_last = True
-            else:
-                is_last = False
-            message = {"message_type": data_type,
-                       "is_first": is_first, "is_last": is_last,
-                       "sliced_data": data_slice, "shape_of_frame": shape_of_frame}
+
+        for i, data_slice in enumerate(sliced_data):
+            message = {
+                "message_type": data_type,
+                "is_first": i == 0,
+                "is_last": i == len(sliced_data) - 1,
+                "sliced_data": data_slice,
+                "shape_of_frame": shape_of_frame
+            }
             self.send_message_dict_udp(message)
-            index += 1
 
     def send_bytes_udp(self, data):
         try:

@@ -22,11 +22,13 @@ import datetime
 import pickle
 import cv2
 import numpy as np
+import multiprocessing
 import pyautogui
 import struct
 from functools import partial
 import re
 from queue import Queue, Empty
+from PIL import ImageGrab
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from server_handling_classes import create_profile_pic_dict
 
@@ -362,8 +364,7 @@ def listen_udp(main_page_object):
         except OSError as os_err:
             print(f"OS error: {os_err}")
         except Exception as e:
-            print(fragment_data)
-            print(f"Exception: {e} , fragment len {len(fragment_data)}")
+            print(f"Exception: {e}")
 
 
 vc_data_fragments_list = []
@@ -462,6 +463,45 @@ vc_play_flag = False
 vc_data_queue = Queue()
 
 
+def play_audio(queue):
+    """Function to handle audio playback process."""
+    p = pyaudio.PyAudio()
+    output_stream = None
+    current_output_device_index = None  # Track the current output device index
+
+    try:
+        while True:
+            try:
+                data = queue.get(timeout=1)  # Timeout to avoid blocking indefinitely
+                if data is None:
+                    break  # Exit loop if None is received (end of playback)
+
+                # Extract audio data and output device index from the received data
+                audio_data, output_device_index = data['audio_data'], data['output_device_index']
+
+                # Open the output stream if not already opened or if the device index has changed
+                if output_device_index != current_output_device_index:
+                    if output_stream is not None:
+                        output_stream.stop_stream()
+                        output_stream.close()
+                    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True,
+                                           frames_per_buffer=CHUNK, output_device_index=output_device_index)
+                    current_output_device_index = output_device_index
+
+                # Write the audio data to the output stream
+                output_stream.write(audio_data)
+
+            except Empty:
+                pass  # Handle queue being empty
+
+    finally:
+        # Close the output stream when playback ends
+        if output_stream is not None:
+            output_stream.stop_stream()
+            output_stream.close()
+        p.terminate()  # Clean up PyAudio resources
+
+
 def thread_play_vc_data(page_controller_object):
     try:
         print("started play voice data thread....")
@@ -478,8 +518,11 @@ def thread_play_vc_data(page_controller_object):
         else:
             print(f"Output index is {output_device_name}")
 
-        output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
-                               output_device_index=output_device_index)
+        queue = multiprocessing.Queue()
+
+        # Start the playback process
+        playback_process = multiprocessing.Process(target=play_audio, args=(queue,))
+        playback_process.start()
         while page_controller_object.main_page.vc_play_flag:
             try:
                 vc_data_tuple = page_controller_object.main_page.vc_data_list[0]
@@ -487,12 +530,22 @@ def thread_play_vc_data(page_controller_object):
                 modified_data_list = audio_data_list_set_volume([vc_data], volume=page_controller_object.main_page.volume)  # Adjust volume to 10%
                 modified_data = b''.join(modified_data_list)
                 # Play the modified audio data
-                output_stream.write(modified_data)
+                # output_stream.write(modified_data)
+
+                try:
+                    data_packet = {
+                        'audio_data': modified_data,
+                        'output_device_index': output_device_index
+                    }
+
+                    queue.put(data_packet)
+                except Exception as e:
+                    print(f"error with multiprocessing: {e} ")
                 del page_controller_object.main_page.vc_data_list[0]
             except Exception as e:
                 pass  # Handle the case where the queue is empty
-        output_stream.stop_stream()
-        output_stream.close()
+        queue.put(None)
+        playback_process.join()
     except Exception as e:
         print(f"error in thread_play_vc_data {e}")
 
@@ -565,11 +618,12 @@ def thread_send_share_screen_data(main_page):
     try:
         while main_page.is_screen_shared:
             # Capture the screen using PyAutoGUI
-            screen = pyautogui.screenshot()
-
+            screen = ImageGrab.grab()
             # Convert the screenshot to a NumPy array
             frame = np.array(screen)
-            frame_bytes = frame.tobytes()
+            frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+            frame_bytes = frame_bgr.tobytes()
             # Send the frame to the server
             main_page.Network.send_share_screen_data(frame_bytes, frame.shape)
 
@@ -580,8 +634,8 @@ def thread_send_share_screen_data(main_page):
 
 
 def set_camera_properties(cap):
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)  # Set frame width to 1280 pixels
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)  # Set frame height to 720 pixels
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Set frame width to 1280 pixels
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set frame height to 720 pixels
     cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # Disable autofocus
     cap.set(cv2.CAP_PROP_FOCUS, 0)  # Set focus to minimum (if supported)
     cap.set(cv2.CAP_PROP_ZOOM, 1)  # Set zoom to minimum (if supported)
@@ -590,6 +644,7 @@ def set_camera_properties(cap):
 
 def thread_send_share_camera_data(main_page):
     time_between_frame = 1 / CAMERA_FPS
+    network = main_page.Network
     try:
         # Initialize the camera
         cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
@@ -608,10 +663,9 @@ def thread_send_share_camera_data(main_page):
             frame_bytes = frame_np.tobytes()
 
             # Send the frame to the server
-            main_page.Network.send_share_camera_data(frame_bytes, frame_np.shape)
+            network.send_share_camera_data(frame_bytes, frame_np.shape)
 
             time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
-
         # Release the camera and close thread
         cap.release()
         print("send share camera data thread closed")
@@ -1286,12 +1340,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def close_listen_thread(self):
         self.vc_play_flag = False
         self.play_vc_data_thread.join()
-        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=())
+        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=(self.page_controller_object,))
 
     def close_send_vc_thread(self):
         self.vc_thread_flag = False
         self.send_vc_data_thread.join()
-        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=())
+        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=(self.page_controller_object,))
 
     def start_listen_thread(self):
         self.vc_play_flag = True
@@ -1532,12 +1586,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
 
     def update_share_camera_thread(self):
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
 
     def end_share_camera_thread(self):
         self.is_camera_shared = False
         self.send_camera_data_thread.join()
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=())
+        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
 
     def update_stream_screen_frame(self, frame):
         try:
