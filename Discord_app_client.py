@@ -2132,16 +2132,28 @@ class Sign_up_page(QWidget):
         self.page_controller_object = page_controller_object
         self.password_not_match_label = QLabel('Password does not match', self)
         self.password_not_match_label.setStyleSheet("color: red; font-size: 12px;")
-        self.password_not_match_label.move(1690 // 2 + 2, 413)
+
+        password_not_match_label_x, password_not_match_label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.382))
+        self.password_not_match_label.move(password_not_match_label_x, password_not_match_label_y)
         self.password_not_match_label.hide()
 
-        self.email_Required_field = self.create_label("Required field", (1690 // 2 + 25, 572))
-        self.username_Required_field = self.create_label("Required field", (1690 // 2 + 25, 332))
-        self.password_Required_field = self.create_label("Required field", (1690 // 2 + 25, 412))
-        self.confirm_password_Required_field = self.create_label("Required field", (1690 // 2 + 25, 492))
-        self.invalid_email = self.create_label("Invalid Email", (1690 // 2 + 25, 572))
-        self.password_too_short = self.create_label("Password too short", (1690 // 2 + 25, 413))
-        self.username_already_used = self.create_label("Username is taken", (1690 // 2 + 25, 332))
+
+        x = int(self.page_controller_object.screen_width * 0.453)
+        email_Required_field_y = int(self.page_controller_object.screen_height * 0.529)
+        username_Required_field_y = int(self.page_controller_object.screen_height * 0.307)
+        password_Required_field_y = int(self.page_controller_object.screen_height * 0.381)
+        confirm_password_Required_field_y = int(self.page_controller_object.screen_height * 0.4555)
+        invalid_email_y = int(self.page_controller_object.screen_height * 0.529)
+        password_too_short_y = int(self.page_controller_object.screen_height * 0.382)
+        username_already_used_y = int(self.page_controller_object.screen_height * 0.307)
+
+        self.email_Required_field = self.create_label("Required field", (x, email_Required_field_y))
+        self.username_Required_field = self.create_label("Required field", (x, username_Required_field_y))
+        self.password_Required_field = self.create_label("Required field", (x, password_Required_field_y))
+        self.confirm_password_Required_field = self.create_label("Required field", (x, confirm_password_Required_field_y))
+        self.invalid_email = self.create_label("Invalid Email", (x, invalid_email_y))
+        self.password_too_short = self.create_label("Password too short", (x, password_too_short_y))
+        self.username_already_used = self.create_label("Username is taken", (x, username_already_used_y))
         self.hide_every_error_label()
 
     def hide_every_error_label(self):
@@ -2175,12 +2187,17 @@ class Sign_up_page(QWidget):
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
 
-        icon_size = QSize(20, 20)  # Set your desired size
+        size = (int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.036))
+
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
         image_button.setIconSize(scaled_size)
-        image_button.move(1690 // 2 + 60, 235)
+
+        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
+
+        image_button.move(image_button_x, image_button_y)
 
         image_button.clicked.connect(self.return_button_pressed)
 
@@ -2197,17 +2214,29 @@ class Sign_up_page(QWidget):
         email.setPlaceholderText("Email")
         email.setStyleSheet("color: white;")
 
-        label.move(1690 // 2, 192)
-        username.move(1690 // 2, 280)
-        password.move(1690 // 2, 360)
-        password_confirm.move(1690 // 2, 440)
-        email.move(1690 // 2, 520)
+        label_x, label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.177))
+        username_x = label_x
+        username_y = int(self.page_controller_object.screen_height * 0.259)
+        password_x = label_x
+        password_y = int(self.page_controller_object.screen_height * 0.333)
+        password_confirm_x = label_x
+        password_confirm_y = int(self.page_controller_object.screen_height * 0.407)
+        email_y = int(self.page_controller_object.screen_height * 0.481)
+        email_x = label_x
+        label.move(label_x, label_y)
+        username.move(username_x, username_y)
+        password.move(password_x, password_y)
+        password_confirm.move(password_confirm_x, password_confirm_y)
+        email.move(email_x, email_y)
 
         # Create button
         submit_button = QPushButton('Submit', self)
         submit_button.clicked.connect(
             lambda: self.submit_form(username.text(), password.text(), password_confirm.text(), email.text()))
-        submit_button.move(1690 // 2 - 25, 600)
+
+        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.427), int(self.page_controller_object.screen_height * 0.555))
+
+        submit_button.move(submit_button_x, submit_button_y)
 
         submit_button.setStyleSheet('''
             QPushButton {
@@ -2304,11 +2333,17 @@ class Login_page(QWidget):
         self.hide_password_icon = QIcon("discord_app_assets/hide_password_icon1.png")
         self.visibility_password_button.setIcon(self.show_password_icon)
         self.current_icon = "discord_app_assets/show_password_icon.png"
-        icon_size = QSize(40, 40)  # Set your desired size
+
+        size = (int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.036))
+
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = self.show_password_icon.actualSize(self.show_password_icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         self.visibility_password_button.setIconSize(scaled_size)
-        self.visibility_password_button.move(1690 // 2 + 170, 360)
+
+        visibility_password_button_x, visibility_password_button_y = (int(self.page_controller_object.screen_width * 0.528), int(self.page_controller_object.screen_height * 0.333))
+
+        self.visibility_password_button.move(visibility_password_button_x, visibility_password_button_y)
         self.visibility_password_button.clicked.connect(self.show_password_button_pressed)
 
         self.visibility_password_button.setStyleSheet("""
@@ -2322,23 +2357,35 @@ class Login_page(QWidget):
         self.password.setEchoMode(QLineEdit.Password)
         self.password.setPlaceholderText("Password")
         self.password.setStyleSheet("color: white;")
-        self.password.move(1690 // 2, 360)
+
+        password_x, password_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.333))
+
+        self.password.move(password_x, password_y)
 
         self.username_enrty = QLineEdit(self)
         self.remember_me_status = False
         self.username_enrty.setPlaceholderText("Username")
         self.username_enrty.setStyleSheet("color: white;")
-        self.username_enrty.move(1690 // 2, 280)
+
+        username_enrty_x, username_enrty_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.259))
+
+        self.username_enrty.move(username_enrty_x, username_enrty_y)
         self.incorrect_label = QLabel('Username or Password incorrect', self)
         self.incorrect_label.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
-        self.incorrect_label.move(1690 // 2 + 10, 333)
+
+        incorrect_label_x, incorrect_label_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.308))
+
+        self.incorrect_label.move(incorrect_label_x, incorrect_label_y)
         self.incorrect_label.hide()
 
         self.user_is_logged_in = QLabel('Username already logged in', self)
         self.user_is_logged_in.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
-        self.user_is_logged_in.move(1690 // 2 + 10, 333)
+
+        user_is_logged_in_x, user_is_logged_in_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.308))
+
+        self.user_is_logged_in.move(user_is_logged_in_x, user_is_logged_in_y)
         self.user_is_logged_in.hide()
 
     def init_ui(self):
@@ -2349,13 +2396,17 @@ class Login_page(QWidget):
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
+        size = (int(self.page_controller_object.screen_width * 0.01), int(self.page_controller_object.screen_height * 0.018))
 
-        icon_size = QSize(20, 20)  # Set your desired size
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
         image_button.setIconSize(scaled_size)
-        image_button.move(1690 // 2 + 60, 235)
+
+        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
+
+        image_button.move(image_button_x, image_button_y)
 
         # Create "Forgot your password?" label
         forgot_password_label = QPushButton('Forgot your password?', self)
@@ -2367,22 +2418,37 @@ class Login_page(QWidget):
         make_q_object_clear(sign_up_label)
         sign_up_label.setStyleSheet("color: white; font-size: 12px;")  # Set the text color to blue and font size to 12px
         sign_up_label.clicked.connect(self.move_to_sign_up_page)
-        sign_up_label.move(1690 // 2 - 30, 535)
+
+        sign_up_label_x, sign_up_label_y = (int(self.page_controller_object.screen_width * 0.4244), int(self.page_controller_object.screen_height * 0.495))
+
+        sign_up_label.move(sign_up_label_x, sign_up_label_y)
 
         checkbox = QCheckBox('Keep me signed in', self)
 
         checkbox.setStyleSheet("QCheckBox { color: white; font-size: 12px}")
         checkbox.stateChanged.connect(self.on_checkbox_change)
-        checkbox.move(1690 // 2 + 10, 415)
+
+        checkbox_x, checkbox_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.3842))
+
+        checkbox.move(checkbox_x, checkbox_y)
         # Connect the linkActivated signal to a custom slot
         forgot_password_label.clicked.connect(self.forgot_password_clicked)
-        forgot_password_label.move(1690 // 2 + 10, 445)
-        label.move(1690 // 2 + 10, 192)
+
+        forgot_password_label_x, forgot_password_label_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.412))
+
+        forgot_password_label.move(forgot_password_label_x, forgot_password_label_y)
+
+        label_x, label_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.177))
+
+        label.move(label_x, label_y)
 
         # Create button
         submit_button = QPushButton('Login', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690 // 2 - 30, 465)
+
+        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.424), int(self.page_controller_object.screen_height * 0.43))
+
+        submit_button.move(submit_button_x, submit_button_y)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -2504,7 +2570,9 @@ class VideoClient(QMainWindow):
         layout = QVBoxLayout(self.central_widget)
         layout.addWidget(self.image_label)
 
-        self.setGeometry(100, 100, 800, 600)
+        x, y = (int(self.page_controller_object.screen_width * 0.052), int(self.page_controller_object.screen_height * 0.092))
+        width, height = (int(self.page_controller_object.screen_width * 0.416), int(self.page_controller_object.screen_height * 0.555))
+        self.setGeometry(x, y, width, height)
         self.setWindowTitle('Video Client')
 
     def display_frame(self, frame):
@@ -2540,13 +2608,17 @@ class Forget_password_page(QWidget):
         self.init_ui()
         self.page_controller_object = page_controller_object
         self.username = QLineEdit(self)
-        self.username.move(1690 // 2, 280)
+        username_x, username_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.26))
+
+        self.username.move(username_x, username_y)
         self.username.setPlaceholderText("Username")
         self.username.setStyleSheet("color: white;")
         self.email = QLineEdit(self)
         self.email.setPlaceholderText("Email")
         self.email.setStyleSheet("color: white;")
-        self.email.move(1690 // 2, 360)
+        email_x, email_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.33))
+
+        self.email.move(email_x, email_y)
 
     def create_label(self, text, position):
         label = QLabel(text, self)
@@ -2562,11 +2634,15 @@ class Forget_password_page(QWidget):
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
-        icon_size = QSize(20, 20)  # Set your desired size
+        size = (int(self.page_controller_object.screen_width * 0.01), int(self.page_controller_object.screen_height * 0.018))
+
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         image_button.setIconSize(scaled_size)
-        image_button.move(1690 // 2 + 60, 235)
+        code_label_x, code_label_y = (int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.2175))
+
+        image_button.move(code_label_x, code_label_y)
         image_button.clicked.connect(self.return_button_pressed)
 
         # Set placeholder text and color
@@ -2579,14 +2655,19 @@ class Forget_password_page(QWidget):
 
         # Connect the linkActivated signal to a custom slot
         code_label.linkActivated.connect(self.resend_code_clicked)
-        code_label.move(1690 // 2 + 20, 420)
+        code_label_x, code_label_y = (int(self.page_controller_object.screen_width * 0.45), int(self.page_controller_object.screen_height * 0.388))
 
-        label.move(1690 // 2, 192)
+        code_label.move(code_label_x, code_label_y)
+        label_x, label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.177))
+
+        label.move(label_x, label_y)
 
         # Create button
         submit_button = QPushButton('Submit info', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690 // 2 - 30, 450)
+        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.424), int(self.page_controller_object.screen_height * 0.416))
+
+        submit_button.move(submit_button_x, submit_button_y)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -2666,12 +2747,15 @@ class Verification_code_page(QWidget):
         self.page_controller_object = page_controller_object
         self.info_label = QLabel(self)
         pixmap = QPixmap('discord_app_assets/info_icon.png')  # Replace with the path to your 'i' icon
-        scaled_pixmap = pixmap.scaled(40, 40, Qt.KeepAspectRatio)
+        width, height = (int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.037))
+        scaled_pixmap = pixmap.scaled(width, height, Qt.KeepAspectRatio)
         self.info_label.setPixmap(scaled_pixmap)
         self.info_label.setAlignment(Qt.AlignCenter)
         self.info_label.setStyleSheet("background-color: #141c4b; border-radius: 25px;")
         self.info_label.setToolTip('A mail will be sent to your chosen email address')
-        self.info_label.move(900, 250)
+        info_label_x, info_label_y = (int(self.page_controller_object.screen_width * 0.468), int(self.page_controller_object.screen_height * 0.231))
+
+        self.info_label.move(info_label_x, info_label_y)
         self.info_label.setMouseTracking(True)
         self.info_label.installEventFilter(self)
         self.code = QLineEdit(self)
@@ -2682,20 +2766,27 @@ class Verification_code_page(QWidget):
 
         self.code.setPlaceholderText("code")
         self.code.setStyleSheet("color: white;")
-        self.code.move(1690 // 2, 320)
+        code_x, code_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.296))
 
-        self.successfully_signed_up = self.create_label("successfully signed up", (1690 // 2 + 5, 540))
+        self.code.move(code_x, code_y)
+
+        successfully_signed_up_x, successfully_signed_up_y = (int(self.page_controller_object.screen_width * 0.4427), int(self.page_controller_object.screen_height * 0.5))
+
+        self.successfully_signed_up = self.create_label("successfully signed up", (successfully_signed_up_x, successfully_signed_up_y))
         self.successfully_signed_up.hide()
 
         self.image_button = QPushButton(self)
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         self.image_button.setIcon(icon)
-        icon_size = QSize(20, 20)  # Set your desired size
+        size = (int(self.page_controller_object.screen_width * 0.01), int(self.page_controller_object.screen_height * 0.018))
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         self.image_button.setIconSize(scaled_size)
-        self.image_button.move(1690 // 2 + 60, 205)
+
+        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.19))
+        self.image_button.move(image_button_x, image_button_y)
         self.image_button.hide()
         self.image_button.clicked.connect(self.return_button_pressed)
         self.setStyleSheet("""
@@ -2730,7 +2821,8 @@ class Verification_code_page(QWidget):
     def eventFilter(self, obj, event):
         if obj == self.info_label and event.type() == event.Enter:
             # Set a fixed position for the tooltip
-            fixed_position = self.mapToGlobal(QPoint(800, 300))
+            pos = (int(self.page_controller_object.screen_width * 0.416), int(self.page_controller_object.screen_height * 0.277))
+            fixed_position = self.mapToGlobal(QPoint(pos))
             QToolTip.showText(fixed_position, self.info_label.toolTip())
             return True  # Consume the event to prevent further processing
         return super().eventFilter(obj, event)
@@ -2751,14 +2843,20 @@ class Verification_code_page(QWidget):
 
         # Connect the linkActivated signal to a custom slot
         code_label.linkActivated.connect(self.Resend_code_clicked)
-        code_label.move(1690 // 2 + 10, 410)
+        code_label_x, code_label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.3796))
 
-        label.move(1690 // 2, 180)
+        code_label.move(code_label_x, code_label_y)
+
+        label_x, label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.166))
+
+        label.move(label_x, label_y)
 
         # Create button
         submit_button = QPushButton('Submit code', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690 // 2 + 10, 450)
+        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.416))
+
+        submit_button.move(submit_button_x, submit_button_y)
         # Set styles
         self.setStyleSheet("""
             QWidget {
@@ -2868,9 +2966,12 @@ class Change_password_page(QWidget):
         self.init_ui()
         self.page_controller_object = page_controller_object
         self.change_password_label = QLabel("Change password:", self)
-        self.change_password_label.move(1690 // 2, 200)
+        change_password_label_x, change_password_label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
+        self.change_password_label.move(change_password_label_x, change_password_label_y)
         self.new_password = QLineEdit(self)
-        self.new_password.move(1690 // 2, 280)
+        new_password_x, new_password_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.26))
+
+        self.new_password.move(new_password_x, new_password_y)
         self.new_password.setPlaceholderText("New password")
         self.new_password.setStyleSheet("color: white;")
         self.status = False
@@ -2878,11 +2979,15 @@ class Change_password_page(QWidget):
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         self.image_button.setIcon(icon)
-        icon_size = QSize(20, 20)  # Set your desired size
+        size = (int(self.page_controller_object.screen_width * 0.01), int(self.page_controller_object.screen_height * 0.018))
+
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         self.image_button.setIconSize(scaled_size)
-        self.image_button.move(1690 // 2 + 60, 205)
+        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.47), int(self.page_controller_object.screen_height * 0.19))
+
+        self.image_button.move(image_button_x, image_button_y)
 
         self.image_button.clicked.connect(self.return_button_pressed)
         self.image_button.hide()
@@ -2929,22 +3034,26 @@ class Change_password_page(QWidget):
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
         image_button.setIcon(icon)
-        icon_size = QSize(20, 20)  # Set your desired size
+        size = (int(self.page_controller_object.screen_width * 0.01), int(self.page_controller_object.screen_height * 0.018))
+        icon_size = QSize(size)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         image_button.setIconSize(scaled_size)
-        image_button.move(1690 // 2 + 60, 235)
+        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.217))
+        image_button.move(image_button_x, image_button_y)
         image_button.clicked.connect(self.return_button_pressed)
 
         self.was_password_changed = False
-        self.too_short.move(1690 // 2 + 10, 340)
+        too_short_x, too_short_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.315))
+        self.too_short.move(too_short_x, too_short_y)
         self.too_short.hide()
         self.too_short.setStyleSheet(
             "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
 
         self.password_already_changed = QLabel("Password already changed", self)
+        password_already_changed_x, password_already_changed_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.314))
 
-        self.password_already_changed.move(1690 // 2 + 10, 340)
+        self.password_already_changed.move(password_already_changed_x, password_already_changed_y)
         self.password_already_changed.hide()
         self.password_already_changed.setStyleSheet(
             "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
