@@ -30,7 +30,6 @@ import re
 from queue import Queue, Empty
 from PIL import ImageGrab
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from server_handling_classes import create_profile_pic_dict
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex",
                    "mail.ru",
@@ -679,6 +678,10 @@ class SplashScreen(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
+        if self.page_controller_object.screen_width == 0 and self.page_controller_object.screen_height == 0:
+            screen = QDesktopWidget().screenGeometry()
+            self.page_controller_object.screen_height = screen.height()
+            self.page_controller_object.screen_width = screen.width()
         self.init_ui()
 
     def init_ui(self):
@@ -2177,112 +2180,115 @@ class Sign_up_page(QWidget):
         return label
 
     def init_ui(self):
-        label = QLabel("Create Account", self)
-        username = QLineEdit(self)
-        password = QLineEdit(self)
-        password_confirm = QLineEdit(self)
-        email = QLineEdit(self)
-        password.setEchoMode(QLineEdit.Password)
-        password_confirm.setEchoMode(QLineEdit.Password)
-        image_button = QPushButton(self)
+        try:
+            label = QLabel("Create Account", self)
+            username = QLineEdit(self)
+            password = QLineEdit(self)
+            password_confirm = QLineEdit(self)
+            email = QLineEdit(self)
+            password.setEchoMode(QLineEdit.Password)
+            password_confirm.setEchoMode(QLineEdit.Password)
+            image_button = QPushButton(self)
 
-        # Load an image and set it as the button's icon
-        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
-        image_button.setIcon(icon)
+            # Load an image and set it as the button's icon
+            icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
+            image_button.setIcon(icon)
 
-        width, height = int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.036)
+            width, height = int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.036)
 
-        icon_size = QSize(width, height)  # Set your desired size
-        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+            icon_size = QSize(width, height)  # Set your desired size
+            icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+            scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
-        image_button.setIconSize(scaled_size)
+            image_button.setIconSize(scaled_size)
 
-        image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
+            image_button_x, image_button_y = (int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
 
-        image_button.move(image_button_x, image_button_y)
+            image_button.move(image_button_x, image_button_y)
 
-        image_button.clicked.connect(self.return_button_pressed)
+            image_button.clicked.connect(self.return_button_pressed)
 
-        # Set placeholder text and color
-        username.setPlaceholderText("Username")
-        username.setStyleSheet("color: white;")
+            # Set placeholder text and color
+            username.setPlaceholderText("Username")
+            username.setStyleSheet("color: white;")
 
-        password.setPlaceholderText("Password")
-        password.setStyleSheet("color: white;")
+            password.setPlaceholderText("Password")
+            password.setStyleSheet("color: white;")
 
-        password_confirm.setPlaceholderText("Confirm Password")
-        password_confirm.setStyleSheet("color: white;")
+            password_confirm.setPlaceholderText("Confirm Password")
+            password_confirm.setStyleSheet("color: white;")
 
-        email.setPlaceholderText("Email")
-        email.setStyleSheet("color: white;")
+            email.setPlaceholderText("Email")
+            email.setStyleSheet("color: white;")
 
-        label_x, label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.177))
-        username_x = label_x
-        username_y = int(self.page_controller_object.screen_height * 0.259)
-        password_x = label_x
-        password_y = int(self.page_controller_object.screen_height * 0.333)
-        password_confirm_x = label_x
-        password_confirm_y = int(self.page_controller_object.screen_height * 0.407)
-        email_y = int(self.page_controller_object.screen_height * 0.481)
-        email_x = label_x
-        label.move(label_x, label_y)
-        username.move(username_x, username_y)
-        password.move(password_x, password_y)
-        password_confirm.move(password_confirm_x, password_confirm_y)
-        email.move(email_x, email_y)
+            label_x, label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.177))
+            username_x = label_x
+            username_y = int(self.page_controller_object.screen_height * 0.259)
+            password_x = label_x
+            password_y = int(self.page_controller_object.screen_height * 0.333)
+            password_confirm_x = label_x
+            password_confirm_y = int(self.page_controller_object.screen_height * 0.407)
+            email_y = int(self.page_controller_object.screen_height * 0.481)
+            email_x = label_x
+            label.move(label_x, label_y)
+            username.move(username_x, username_y)
+            password.move(password_x, password_y)
+            password_confirm.move(password_confirm_x, password_confirm_y)
+            email.move(email_x, email_y)
 
-        # Create button
-        submit_button = QPushButton('Submit', self)
-        submit_button.clicked.connect(
-            lambda: self.submit_form(username.text(), password.text(), password_confirm.text(), email.text()))
+            # Create button
+            submit_button = QPushButton('Submit', self)
+            submit_button.clicked.connect(
+                lambda: self.submit_form(username.text(), password.text(), password_confirm.text(), email.text()))
 
-        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.427), int(self.page_controller_object.screen_height * 0.555))
+            submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.427), int(self.page_controller_object.screen_height * 0.555))
 
-        submit_button.move(submit_button_x, submit_button_y)
+            submit_button.move(submit_button_x, submit_button_y)
 
-        submit_button.setStyleSheet('''
-            QPushButton {
-                background-color: #6fa8b6;
-                color: #f0f1f1;
-                padding: 10px;  /* Adjust the padding to make the button smaller */
-                border: 1px solid #2980b9;
-                border-radius: 5px;
-                min-width: 200px;  /* Adjust the min-width to set the minimum width of the button */
-                max-width: 300px;  /* Adjust the max-width to set the maximum width of the button */
-                min-height: 30px;  /* Adjust the min-height to set the minimum height of the button */
-                max-height: 60px;  /* Adjust the max-height to set the maximum height of the button */
-                font-size: 16px;  /* Set your desired font size */
-                margin-top: 10px;  /* Adjust the margin-top to set the top margin of the button */
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:pressed {
-                background-color: #1f618d;
-            }
-        ''')
-        # Set styles
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #141c4b;  /* Set your desired background color */
-            }
-            QLabel {
-                color: #f0f1f1;
-                font-size: 20px;
-                margin-bottom: 20px;
-            }
-            QLineEdit {
-                background-color: #6fa8b6;
-                color: #f0f1f1;
-                padding: 10px;
-                border: 1px solid #2980b9;
-                border-radius: 5px;
-                font-size: 16px;
-                margin-bottom: 10px;
-            }
-
-        """)
+            submit_button.setStyleSheet('''
+                QPushButton {
+                    background-color: #6fa8b6;
+                    color: #f0f1f1;
+                    padding: 10px;  /* Adjust the padding to make the button smaller */
+                    border: 1px solid #2980b9;
+                    border-radius: 5px;
+                    min-width: 200px;  /* Adjust the min-width to set the minimum width of the button */
+                    max-width: 300px;  /* Adjust the max-width to set the maximum width of the button */
+                    min-height: 30px;  /* Adjust the min-height to set the minimum height of the button */
+                    max-height: 60px;  /* Adjust the max-height to set the maximum height of the button */
+                    font-size: 16px;  /* Set your desired font size */
+                    margin-top: 10px;  /* Adjust the margin-top to set the top margin of the button */
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+                QPushButton:pressed {
+                    background-color: #1f618d;
+                }
+            ''')
+            # Set styles
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #141c4b;  /* Set your desired background color */
+                }
+                QLabel {
+                    color: #f0f1f1;
+                    font-size: 20px;
+                    margin-bottom: 20px;
+                }
+                QLineEdit {
+                    background-color: #6fa8b6;
+                    color: #f0f1f1;
+                    padding: 10px;
+                    border: 1px solid #2980b9;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    margin-bottom: 10px;
+                }
+    
+            """)
+        except Exception as e:
+            print(f"error in Sign_up_page {e}")
 
     def submit_form(self, username, password, password_confirm, email):
         n = self.page_controller_object.n
@@ -3145,54 +3151,70 @@ class Change_password_page(QWidget):
 
 class ServerIsDownPage(QWidget):
     def __init__(self, page_controller_object):
-        super().__init__()
-        self.page_controller_object = page_controller_object
-        server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
-        self.server_is_offline = QLabel("Server is Offline...", self)
+        try:
+            super().__init__()
+            self.page_controller_object = page_controller_object
+            if self.page_controller_object.screen_width == 0 and self.page_controller_object.screen_height == 0:
+                screen = QDesktopWidget().screenGeometry()
+                self.page_controller_object.screen_height = screen.height()
+                self.page_controller_object.screen_width = screen.width()
 
-        self.server_is_offline.move(server_is_offline_x, server_is_offline_y)
-        self.server_is_offline.setStyleSheet("color: white; font-size:20px")
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #141c4b;  /* Set your desired background color */
-            }
-        """)
+            server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
+            self.server_is_offline = QLabel("Server is Offline...", self)
+
+            self.server_is_offline.move(server_is_offline_x, server_is_offline_y)
+            self.server_is_offline.setStyleSheet("color: white; font-size:20px")
+            self.setStyleSheet("""
+                QWidget {
+                    background-color: #141c4b;  /* Set your desired background color */
+                }
+            """)
+        except Exception as e:
+            print(e)
 
 
 class PageController:
     def __init__(self):
+        print(1)
         self.n = client_net()
         is_connected = self.n.connect_tcp()
-        screen = QDesktopWidget().screenGeometry()
-        self.screen_width = screen.width()
-        self.screen_height = screen.height()
+        try:
+            self.screen_width = 0
+            self.screen_height = 0
+            print(self.screen_width)
+            print(self.screen_height)
+        except Exception as e:
+            print(e)
         self.app = QApplication(sys.argv)
 
         if is_connected:
-            self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
-            self.is_logged_in = False
-            self.is_waiting_for_2fa_code = False
-            self.splash_page = SplashScreen(self)
-            self.sign_up_page = Sign_up_page(self)
-            self.forget_password_page = Forget_password_page(self)
-            self.login_page = Login_page(self)
-            self.main_page = MainPage(self.n, self)
-            self.change_password_page = Change_password_page(self)
-            self.verification_code_page = Verification_code_page(self)
-            self.splash_page.showMaximized()
-            self.main_page.showMaximized()
-            self.main_page.hide()
-            self.sign_up_page.showMaximized()
-            self.forget_password_page.showMaximized()
-            self.login_page.showMaximized()
-            self.login_page.hide()
-            self.verification_code_page.showMaximized()
-            self.sign_up_page.hide()
-            self.forget_password_page.hide()
-            self.verification_code_page.hide()
-            self.change_password_page.showMaximized()
-            self.change_password_page.hide()
-            self.current_page = self.login_page
+            try:
+                self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
+                self.is_logged_in = False
+                self.is_waiting_for_2fa_code = False
+                self.splash_page = SplashScreen(self)
+                self.sign_up_page = Sign_up_page(self)
+                self.forget_password_page = Forget_password_page(self)
+                self.login_page = Login_page(self)
+                self.main_page = MainPage(self.n, self)
+                self.change_password_page = Change_password_page(self)
+                self.verification_code_page = Verification_code_page(self)
+                self.splash_page.showMaximized()
+                self.main_page.showMaximized()
+                self.main_page.hide()
+                self.sign_up_page.showMaximized()
+                self.forget_password_page.showMaximized()
+                self.login_page.showMaximized()
+                self.login_page.hide()
+                self.verification_code_page.showMaximized()
+                self.sign_up_page.hide()
+                self.forget_password_page.hide()
+                self.verification_code_page.hide()
+                self.change_password_page.showMaximized()
+                self.change_password_page.hide()
+                self.current_page = self.login_page
+            except Exception as e:
+                print(e)
         else:
             self.server_is_down_page = ServerIsDownPage(self)
             self.server_is_down_page.showMaximized()
