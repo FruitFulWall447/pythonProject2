@@ -546,12 +546,12 @@ class ChatBox(QWidget):
 
         # Set the desired size for the button
 
-        size = int(self.screen_width * 0.013), int(self.screen_height * 0.023)
-        button_size = QSize(size)  # Adjust this to your desired button size
+        width, height = int(self.screen_width * 0.013), int(self.screen_height * 0.023)
+        button_size = QSize(width, height)  # Adjust this to your desired button size
         self.create_group_open.setFixedSize(button_size)
 
         # Scale the icon while keeping its aspect ratio
-        icon_size = QSize(size)  # Set your desired icon size
+        icon_size = QSize(width, height)  # Set your desired icon size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
@@ -629,13 +629,13 @@ class ChatBox(QWidget):
             self.send_image_button.setIcon(icon)
 
             # Set the desired size for the button
-            size = int(self.screen_width * 0.018), int(self.screen_height * 0.032)
+            width, height = int(self.screen_width * 0.018), int(self.screen_height * 0.032)
 
-            button_size = QSize(size)  # Adjust this to your desired button size
+            button_size = QSize(width, height)  # Adjust this to your desired button size
             self.send_image_button.setFixedSize(button_size)
 
             # Scale the icon while keeping its aspect ratio
-            icon_size = QSize(size)  # Set your desired icon size
+            icon_size = QSize(width, height)  # Set your desired icon size
             icon_actual_size = icon.actualSize(icon.availableSizes()[0])
             scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
@@ -680,16 +680,16 @@ class ChatBox(QWidget):
                     self.stop_calling_button = QPushButton(self)
 
                     # Set button styles
-                    size = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
-                    button_size = QSize(size)  # Adjust this to your desired button size
+                    width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
+                    button_size = QSize(width, height)  # Adjust this to your desired button size
                     self.stop_calling_button.setFixedSize(button_size)
 
 
                     icon = QIcon("discord_app_assets/reject_button.png")
                     self.stop_calling_button.setIcon(icon)
-                    size = int(self.screen_width * 0.033), int(self.screen_width * 0.033)
+                    width, height = int(self.screen_width * 0.033), int(self.screen_width * 0.033)
 
-                    icon_size = QSize(size)  # Set your desired icon size
+                    icon_size = QSize(width, height)  # Set your desired icon size
                     icon_actual_size = icon.actualSize(icon.availableSizes()[0])
                     scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
                     self.stop_calling_button.setIconSize(scaled_size)
@@ -749,8 +749,8 @@ class ChatBox(QWidget):
                 self.reject_button = QPushButton(self)
 
                 # Set button styles
-                size = int(self.screen_width * 0.182),int(self.screen_width * 0.182)
-                button_size = QSize(size)  # Adjust this to your desired button size
+                width, height = int(self.screen_width * 0.182),int(self.screen_width * 0.182)
+                button_size = QSize(width, height)  # Adjust this to your desired button size
                 self.accept_button.setFixedSize(button_size)
                 self.reject_button.setFixedSize(button_size)
                 # Set button icons (assuming you have phone icons available)
@@ -758,9 +758,9 @@ class ChatBox(QWidget):
                 icon = QIcon("discord_app_assets/accept_button.png")
                 self.accept_button.setIcon(icon)
 
-                size = int(self.screen_width * 0.26), int(self.screen_width * 0.26)
+                width, height = int(self.screen_width * 0.26), int(self.screen_width * 0.26)
 
-                icon_size = QSize(size)  # Set your desired icon size
+                icon_size = QSize(width, height)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
                 scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
@@ -768,7 +768,7 @@ class ChatBox(QWidget):
                 self.accept_button.setStyleSheet(self.call_button_style_sheet)
                 icon = QIcon("discord_app_assets/reject_button.png")
                 self.reject_button.setIcon(icon)
-                icon_size = QSize(size)  # Set your desired icon size
+                icon_size = QSize(width, height)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
                 scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
                 self.reject_button.setIconSize(scaled_size)
