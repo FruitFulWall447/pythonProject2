@@ -1038,7 +1038,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def init_ui(self):
         # Set up the main window
         try:
-            self.setGeometry(100, 100, 600, 400)
+            x, y = (int(self.page_controller_object.screen_width * 0.052), int(self.page_controller_object.screen_height * 0.092))
+            width, height = (int(self.page_controller_object.screen_width * 0.3125), int(self.page_controller_object.screen_height * 0.37))
+
+            self.setGeometry(x, y, width, height)
             self.setWindowTitle('Main Page')
             self.setStyleSheet(f'''
                 QWidget {{
