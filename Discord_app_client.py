@@ -2950,12 +2950,14 @@ class Change_password_page(QWidget):
             "color: red; font-size: 14px;")  # Set the text color to blue and font size to 12px
 
         self.changed_password_label = QLabel("Password changed", self)
-        self.changed_password_label.move(1690 // 2, 340)
+        changed_password_label_x, changed_password_label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.315))
+        self.changed_password_label.move(changed_password_label_x, changed_password_label_y)
         self.changed_password_label.hide()
         # Create button
         submit_button = QPushButton('Submit info', self)
         submit_button.clicked.connect(self.submit_form)
-        submit_button.move(1690 // 2 - 30, 450)
+        submit_button_x, submit_button_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.415))
+        submit_button.move(submit_button_x, submit_button_y)
         submit_button.setStyleSheet('''
             QPushButton {
                 background-color: #6fa8b6;
@@ -3033,9 +3035,11 @@ class ServerIsDownPage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
-        self.change_password_label = QLabel("Server is Offline...", self)
-        self.change_password_label.move(1690 // 2, 200)
-        self.change_password_label.setStyleSheet("color: white; font-size:20px")
+        server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
+        self.server_is_offline = QLabel("Server is Offline...", self)
+
+        self.server_is_offline.move(server_is_offline_x, server_is_offline_y)
+        self.server_is_offline.setStyleSheet("color: white; font-size:20px")
         self.setStyleSheet("""
             QWidget {
                 background-color: #141c4b;  /* Set your desired background color */
@@ -3047,7 +3051,11 @@ class PageController:
     def __init__(self):
         self.n = client_net()
         is_connected = self.n.connect_tcp()
+        screen = QDesktopWidget().screenGeometry()
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
         self.app = QApplication(sys.argv)
+
         if is_connected:
             self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
             self.is_logged_in = False
