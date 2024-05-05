@@ -2133,9 +2133,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
 class Sign_up_page(QWidget):
     def __init__(self, page_controller_object):
+
         super().__init__()
-        self.init_ui()
         self.page_controller_object = page_controller_object
+        self.init_ui()
         self.password_not_match_label = QLabel('Password does not match', self)
         self.password_not_match_label.setStyleSheet("color: red; font-size: 12px;")
 
@@ -2334,8 +2335,8 @@ class Sign_up_page(QWidget):
 class Login_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
-        self.init_ui()
         self.page_controller_object = page_controller_object
+        self.init_ui()
         self.visibility_password_button = QPushButton(self)
         # Load an image and set it as the button's icon
         self.show_password_icon = QIcon("discord_app_assets/show_password_icon.png")
@@ -2614,8 +2615,8 @@ class VideoClient(QMainWindow):
 class Forget_password_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
-        self.init_ui()
         self.page_controller_object = page_controller_object
+        self.init_ui()
         self.username = QLineEdit(self)
         username_x, username_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.26))
 
@@ -2752,8 +2753,8 @@ class Forget_password_page(QWidget):
 class Verification_code_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
-        self.init_ui()
         self.page_controller_object = page_controller_object
+        self.init_ui()
         self.info_label = QLabel(self)
         pixmap = QPixmap('discord_app_assets/info_icon.png')  # Replace with the path to your 'i' icon
         width, height = (int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.037))
@@ -2972,8 +2973,8 @@ class Verification_code_page(QWidget):
 class Change_password_page(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
-        self.init_ui()
         self.page_controller_object = page_controller_object
+        self.init_ui()
         self.change_password_label = QLabel("Change password:", self)
         change_password_label_x, change_password_label_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
         self.change_password_label.move(change_password_label_x, change_password_label_y)
@@ -3154,10 +3155,6 @@ class ServerIsDownPage(QWidget):
         try:
             super().__init__()
             self.page_controller_object = page_controller_object
-            if self.page_controller_object.screen_width == 0 and self.page_controller_object.screen_height == 0:
-                screen = QDesktopWidget().screenGeometry()
-                self.page_controller_object.screen_height = screen.height()
-                self.page_controller_object.screen_width = screen.width()
 
             server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.185))
             self.server_is_offline = QLabel("Server is Offline...", self)
@@ -3177,8 +3174,7 @@ class PageController:
     def __init__(self):
         self.n = client_net()
         is_connected = self.n.connect_tcp()
-        self.screen_width = 0
-        self.screen_height = 0
+        self.screen_width, self.screen_height = pyautogui.size()
 
         self.app = QApplication(sys.argv)
 
