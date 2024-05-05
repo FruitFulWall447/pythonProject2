@@ -2195,7 +2195,8 @@ class Sign_up_page(QWidget):
             icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
             image_button.setIcon(icon)
 
-            width, height = int(self.page_controller_object.screen_width * 0.02), int(self.page_controller_object.screen_height * 0.036)
+            width, height = int(self.page_controller_object.screen_width * 0.01), int(
+                self.page_controller_object.screen_height * 0.018)
 
             icon_size = QSize(width, height)  # Set your desired size
             icon_actual_size = icon.actualSize(icon.availableSizes()[0])
