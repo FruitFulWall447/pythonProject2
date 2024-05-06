@@ -9,9 +9,8 @@ import base64
 import string
 import random
 
-project_dir = "DiscordProject"
 folder_name = "discord_app_files"
-files_folder_path = os.path.join(project_dir, folder_name)
+files_folder_path = folder_name
 pepper = "c5b97dce"
 basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf", "video", "audio", "image"]
 default_settings_dict = {
