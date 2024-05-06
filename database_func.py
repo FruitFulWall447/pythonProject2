@@ -169,7 +169,7 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
 
         insert_query = """
             INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         """
 
         # Generate unique filenames
