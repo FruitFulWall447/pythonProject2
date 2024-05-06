@@ -708,7 +708,7 @@ class ChatBox(QWidget):
 
                     # Apply the modified style sheet to the button
                     self.stop_calling_button.setStyleSheet(modified_style_sheet)
-                    stop_calling_button_x, stop_calling_button_y = rings_to_x + (text_1_width // 2) - int(self.screen_width * 0.008), y_of_label + int(self.screen_width * 0.101)
+                    stop_calling_button_x, stop_calling_button_y = rings_to_x + (text_1_width // 2) - int(self.screen_width * 0.008), y_of_label + int(self.screen_height * 0.101)
                     self.stop_calling_button.move(stop_calling_button_x, stop_calling_button_y)
                     self.stop_calling_button.clicked.connect(self.stop_calling)
                 except Exception as e:
@@ -749,7 +749,7 @@ class ChatBox(QWidget):
                 self.reject_button = QPushButton(self)
 
                 # Set button styles
-                width, height = int(self.screen_width * 0.182),int(self.screen_width * 0.182)
+                width, height = int(self.screen_width * 0.0182),int(self.screen_width * 0.0182)
                 button_size = QSize(width, height)  # Adjust this to your desired button size
                 self.accept_button.setFixedSize(button_size)
                 self.reject_button.setFixedSize(button_size)
@@ -758,7 +758,7 @@ class ChatBox(QWidget):
                 icon = QIcon("discord_app_assets/accept_button.png")
                 self.accept_button.setIcon(icon)
 
-                width, height = int(self.screen_width * 0.26), int(self.screen_width * 0.26)
+                width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
 
                 icon_size = QSize(width, height)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])

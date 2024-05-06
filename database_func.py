@@ -9,7 +9,7 @@ import base64
 import string
 import random
 
-project_dir = os.getcwd()
+project_dir = "DiscordProject"
 folder_name = "discord_app_files"
 files_folder_path = os.path.join(project_dir, folder_name)
 pepper = "c5b97dce"

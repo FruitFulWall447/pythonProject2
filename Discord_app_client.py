@@ -2593,8 +2593,8 @@ class VideoClient(QMainWindow):
         layout = QVBoxLayout(self.central_widget)
         layout.addWidget(self.image_label)
 
-        x, y = (int(self.page_controller_object.screen_width * 0.052), int(self.page_controller_object.screen_height * 0.092))
-        width, height = (int(self.page_controller_object.screen_width * 0.416), int(self.page_controller_object.screen_height * 0.555))
+        x, y = (int(self.main_page.screen_width * 0.052), int(self.main_page.screen_height * 0.092))
+        width, height = (int(self.main_page.screen_width * 0.416), int(self.main_page.screen_height * 0.555))
         self.setGeometry(x, y, width, height)
         self.setWindowTitle('Video Client')
 
