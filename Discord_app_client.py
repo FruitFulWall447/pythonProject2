@@ -1921,8 +1921,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                 self.chats_list.remove(self.selected_chat)
                                 self.chats_list.insert(0, self.selected_chat)
                             self.chat_box.text_entry.setFocus()
-                            self.is_new_chat_clicked = True
-                            self.updated_chat()
+                            self.insert_new_message_in_chat(message_dict)
                             self.chat_box.text_entry.setFocus(True)
                 if self.file_to_send:
                     print(len(self.file_to_send))
@@ -1964,11 +1963,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         print(f"error in sending message")
                     self.file_to_send = None
                     self.file_name = ""
-                    self.is_new_chat_clicked = True
                     if self.selected_chat != self.chats_list[0]:
                         self.chats_list.remove(self.selected_chat)
                         self.chats_list.insert(0, self.selected_chat)
-                    self.updated_chat()
+                    self.insert_new_message_in_chat(message_dict)
                     self.chat_box.text_entry.setFocus(True)
                 elif self.social_clicked:
                     self.friends_box.send_friend_request()

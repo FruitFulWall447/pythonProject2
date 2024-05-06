@@ -2418,7 +2418,7 @@ class ScrollableWidget(QWidget):
         self.scroll_value_changed(self.scroll_area.verticalScrollBar().value())
 
     def scroll_value_changed(self, value):
-        # Update your variable with the current scroll value
+        # I don't want to ask for more message when I just load the messages in
         if value == 0 and not self.parent.parent.is_new_chat_clicked:
             if len(self.main_page_object.list_messages) >= 15:
                 self.main_page_object.Network.ask_for_more_messages()
