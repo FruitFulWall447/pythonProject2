@@ -2163,7 +2163,6 @@ class ScrollableWidget(QWidget):
     def scroll_maximum(self):
         maximum = self.scroll_area.verticalScrollBar().maximum()
         self.scroll_area.verticalScrollBar().setValue(maximum)
-        self.main_page_object.chat_start_index = maximum
 
     def update_scroll_area_parent(self, new_parent):
         self.scroll_area.setParent(new_parent)
