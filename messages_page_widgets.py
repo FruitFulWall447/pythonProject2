@@ -2147,10 +2147,10 @@ class ScrollableWidget(QWidget):
             self.scroll_area.setWidget(inner_widget)
             self.scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
             if self.parent.parent.is_new_chat_clicked:
-                max = self.scroll_area.verticalScrollBar().maximum()
-                self.scroll_area.verticalScrollBar().setValue(max)
-                print(f"Scrolled to maximum {max}")
-                self.scroll_value_changed(max)
+                maximum = self.scroll_area.verticalScrollBar().maximum()
+                self.scroll_area.verticalScrollBar().setValue(maximum)
+                print(f"Scrolled to maximum {maximum}")
+                self.scroll_value_changed(maximum)
                 # Reset the flag
                 self.parent.parent.is_new_chat_clicked = False
             else:
