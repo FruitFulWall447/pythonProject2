@@ -169,10 +169,9 @@ def thread_recv_messages(page_controller_object):
                     if page_controller_object.main_page.selected_chat == chat:
                         message_dict = json.loads(data.get("message_dict"))
                         page_controller_object.main_page.list_messages.insert(0, message_dict)
-                        temp_list = [message_dict]
-                        page_controller_object.main_page.insert_messages_into_message_box_signal.emit(temp_list)
+                        page_controller_object.main_page.insert_new_message_in_chat_signal.emit(message_dict)
+                        print("got new message from current chat")
                     else:
-                        new_message = data.get("new_message")
                         QMetaObject.invokeMethod(page_controller_object.main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
                         print("got new message")
                 elif message_type == "requests_list":
@@ -803,6 +802,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updating_profile_dict_signal = pyqtSignal(str, dict)
     update_group_lists_by_group = pyqtSignal(dict)
     insert_messages_into_message_box_signal = pyqtSignal(list)
+    insert_new_message_in_chat = pyqtSignal(dict)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     insert_search_result_signal = pyqtSignal(dict)
     update_settings_from_dict_signal = pyqtSignal(dict)
@@ -1007,6 +1007,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_message_box_signal.connect(self.update_message_box)
         self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
         self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
+        self.insert_new_message_in_chat_signal.connect(self.insert_new_message_in_chat)
         self.insert_search_result_signal.connect(self.insert_search_result)
         self.close_call_threads_signal.connect(self.close_call_threads)
         self.start_call_threads_signal.connect(self.start_call_threads)
@@ -1367,6 +1368,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def insert_messages_into_message_box(self, messages_list):
         self.messages_content_saver.insert_messages_list_to_layout(messages_list)
+
+    def insert_new_message_in_chat(self, message_dict):
+        self.messages_content_saver.add_new_message_at_start(message_dict)
 
     def update_message_box(self):
         self.messages_content_saver.update_messages_layout()
@@ -3185,13 +3189,13 @@ class PageController:
                 self.is_logged_in = False
                 self.is_waiting_for_2fa_code = False
                 self.splash_page = SplashScreen(self)
+                self.splash_page.showMaximized()
                 self.sign_up_page = Sign_up_page(self)
                 self.forget_password_page = Forget_password_page(self)
                 self.login_page = Login_page(self)
                 self.main_page = MainPage(self.n, self)
                 self.change_password_page = Change_password_page(self)
                 self.verification_code_page = Verification_code_page(self)
-                self.splash_page.showMaximized()
                 self.main_page.showMaximized()
                 self.main_page.hide()
                 self.sign_up_page.showMaximized()

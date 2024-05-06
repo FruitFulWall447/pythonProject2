@@ -2177,6 +2177,9 @@ class ScrollableWidget(QWidget):
         for i in message_list:
             self.insert_message_to_layout(i)
 
+    def add_new_message_at_start(self, message_dict):
+        self.add_message_to_layout(message_dict)
+
     def add_or_insert_message_to_layout(self, message, is_insert):
         basic_files_types = ["xlsx", "py", "docx", "pptx", "txt", "pdf"]
         i = message

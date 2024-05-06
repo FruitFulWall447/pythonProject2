@@ -12,6 +12,7 @@ import zlib
 import logging
 import base64
 from song_search_engine import extract_audio_bytes
+import datetime
 
 # Set up the logging configuration
 logging.basicConfig(filename="example.log",
@@ -152,6 +153,22 @@ def threaded_logged_in_client(n, User):
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
                                                                                       , messages_list_max_index)
                     n.send_messages_list(list_dict_of_messages)
+                elif message_type == "add_message":
+                    sender = message.get("sender")
+                    if sender == client_current_chat:
+                        content = message.get("content")
+                        type_of_message = message.get("type")
+                        file_name = message.get("file_name")
+                        time_now = datetime.datetime.now()
+                        formatted_time = time_now.strftime('%Y-%m-%d %H:%M')
+                        formatted_message = {
+                            "content": content,
+                            "sender_id": sender,
+                            "timestamp": formatted_time,
+                            "message_type": type_of_message,
+                            "file_name": file_name
+                        }
+                        n.send_new_message_content(sender, formatted_message)
                 if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
                             messages_list_max_index + 1, messages_list_max_index + 6)
@@ -493,14 +510,14 @@ def thread_recv_messages(n, addr):
                 database_func.add_message(sender, receiver, content, type_of_message, file_name)
                 # fix it...
                 if not receiver.startswith("("):
-                    add_message_for_client(receiver, f"got_new_message:{sender}")
+                    add_message_for_client(receiver, data)
                 else:
                     # means its a group therefore need to update message for every member of group
                     group_name, group_id = gets_group_attributes_from_format(receiver)
                     group_members = database_func.get_group_members(group_id)
                     group_members.remove(User)
                     for member in group_members:
-                        add_message_for_client(member, f"got_new_message:{receiver}")
+                        add_message_for_client(member, data)
                 logger.info(f"added new message from {User} to {receiver}")
             elif message_type == "update_profile_pic":
                 b64_encoded_profile_pic = data.get("b64_encoded_profile_pic")
