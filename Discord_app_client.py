@@ -1372,6 +1372,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def insert_new_message_in_chat(self, message_dict):
         self.messages_content_saver.add_new_message_at_start(message_dict)
 
+    def scroll_maximum_down(self):
+        self.messages_content_saver.scroll_maximum()
+
     def update_message_box(self):
         self.messages_content_saver.update_messages_layout()
 
@@ -1967,6 +1970,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         self.chats_list.remove(self.selected_chat)
                         self.chats_list.insert(0, self.selected_chat)
                     self.insert_new_message_in_chat(message_dict)
+                    self.
                     self.chat_box.text_entry.setFocus(True)
                 elif self.social_clicked:
                     self.friends_box.send_friend_request()
