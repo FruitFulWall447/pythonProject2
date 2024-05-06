@@ -27,7 +27,7 @@ console_handler.setFormatter(formatter)
 # Add the StreamHandler to the root logger
 logging.getLogger().addHandler(console_handler)
 
-server = "127.0.0.1"
+server = "0.0.0.0"
 port = 5555
 tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
