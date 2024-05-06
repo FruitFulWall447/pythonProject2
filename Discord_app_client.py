@@ -802,7 +802,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updating_profile_dict_signal = pyqtSignal(str, dict)
     update_group_lists_by_group = pyqtSignal(dict)
     insert_messages_into_message_box_signal = pyqtSignal(list)
-    insert_new_message_in_chat = pyqtSignal(dict)
+    insert_new_message_in_chat_signal = pyqtSignal(dict)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     insert_search_result_signal = pyqtSignal(dict)
     update_settings_from_dict_signal = pyqtSignal(dict)
