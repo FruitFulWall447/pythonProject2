@@ -1940,7 +1940,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     compressed_base64_file = base64.b64encode(compressed_byte_file).decode()
                     # print(len(compressed_base64_image))
                     current_time = datetime.datetime.now()
-                    formatted_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+                    formatted_time = current_time.strftime('%Y-%m-%d %H:%M')
                     file_type = ""
                     if self.file_name.endswith(("png", "jpg")):
                         file_type = "image"
