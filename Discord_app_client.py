@@ -22,21 +22,23 @@ import datetime
 import pickle
 import cv2
 import numpy as np
-import multiprocessing
 import pyautogui
-import struct
-from functools import partial
 import re
-from queue import Queue, Empty
 from PIL import ImageGrab
-from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
+
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex",
                    "mail.ru",
-                   "tutanota", "icloud", "rackspace", "mailchimp",
+                   "tutanota", "icloud", "rackspace", "mailchimp"]
 
-                   ]
-from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
+CAMERA_FPS = 60
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
+CHUNK = 1024
+p = pyaudio.PyAudio()
+SCREEN_FPS = 30
 
 
 def duration_to_milliseconds(duration_str):
@@ -47,6 +49,7 @@ def duration_to_milliseconds(duration_str):
     total_duration_ms = (minutes * 60 + seconds) * 1000
 
     return total_duration_ms
+
 
 def save_token(token):
     settings = QSettings("Connectify_App", "Connectify")
@@ -78,17 +81,6 @@ def is_email_provider_in_list(email):
 
 
 def create_message_dict(content, sender_id, timestamp, message_type, file_name):
-    """Creates a dictionary representing a message.
-
-    Args:
-        content (str): The content of the message.
-        sender_id (str): The ID of the sender.
-        timestamp (str): The timestamp of the message.
-        message_type (str): The type of the message.
-
-    Returns:
-        dict: A dictionary representing the message.
-    """
     message_dict = {
         "content": content,
         "sender_id": sender_id,
@@ -119,7 +111,6 @@ def is_string(variable):
     return isinstance(variable, str)
 
 
-CAMERA_FPS = 60
 vc_data_fragments_list = []
 share_screen_data_fragments_list = []
 share_camera_data_fragments_list = []
@@ -205,17 +196,6 @@ def handle_udp_data(data, main_page_object):
         print(f"error in rebuilding udp packets {e}")
 
 
-flag_updates = True
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
-RATE = 44100
-CHUNK = 1024
-p = pyaudio.PyAudio()
-vc_thread_flag = False
-vc_play_flag = False
-vc_data_queue = Queue()
-
-
 def audio_data_list_set_volume(datalist, volume):
     """ Change value of list of audio chunks """
     sound_level = (volume / 100.)
@@ -228,9 +208,6 @@ def audio_data_list_set_volume(datalist, volume):
         modified_datalist.append(modified_chunk)
 
     return modified_datalist
-
-
-SCREEN_FPS = 30
 
 
 def set_camera_properties(cap):
