@@ -2907,7 +2907,7 @@ class PageController:
 
         if is_connected:
             try:
-                self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
+                self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
                 self.is_logged_in = False
                 self.is_waiting_for_2fa_code = False
                 self.splash_page = SplashScreen(self)
@@ -2962,7 +2962,7 @@ class PageController:
             self.clear_all_pages()
             self.hide_all_pages()
             self.receive_thread_after_login.join()
-            self.receive_thread_after_login = threading.Thread(target=thread_recv_messages, args=(self,))
+            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
             self.change_to_login_page()
         except Exception as e:
             print(f"error in log out {e}")
