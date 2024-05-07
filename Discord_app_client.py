@@ -170,6 +170,8 @@ def thread_recv_messages(page_controller_object):
                         message_dict = json.loads(data.get("message_dict"))
                         page_controller_object.main_page.list_messages.insert(0, message_dict)
                         page_controller_object.main_page.insert_new_message_in_chat_signal.emit(message_dict)
+                        page_controller_object.main_page.chats_list.remove(chat)
+                        page_controller_object.main_page.chats_list.insert(0, chat)
                         print("got new message from current chat")
                     else:
                         QMetaObject.invokeMethod(page_controller_object.main_page, "new_message_play_audio_signal", Qt.QueuedConnection)
