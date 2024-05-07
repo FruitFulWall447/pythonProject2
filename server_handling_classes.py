@@ -888,6 +888,7 @@ class UDPClientHandler:
                     if compressed_vc_data is not None:
                         vc_data = zlib.decompress(compressed_vc_data)
                         self.ServerHandler_object.send_vc_data_to_call(vc_data, self.client_username)
+                    self.vc_data = []
                 elif is_last:
                     self.vc_data.append(data.get("sliced_data"))
                     full_compressed_vc_data = b''.join(self.vc_data)
@@ -895,7 +896,6 @@ class UDPClientHandler:
                     self.ServerHandler_object.send_vc_data_to_call(vc_data, self.client_username)
                     self.vc_data = []
                 elif is_first:
-                    self.vc_data = []
                     self.vc_data.append(data.get("sliced_data"))
                 else:
                     self.vc_data.append(data.get("sliced_data"))
@@ -909,6 +909,7 @@ class UDPClientHandler:
                         share_screen_data = zlib.decompress(compressed_share_screen_data)
                         self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
                                                                      "ScreenStream")
+                    self.share_screen_data = []
                 elif is_last:
                     self.share_screen_data.append(data.get("sliced_data"))
                     shape_of_frame = data.get("shape_of_frame")
@@ -919,7 +920,6 @@ class UDPClientHandler:
                                                                              "ScreenStream")
                     self.share_screen_data = []
                 elif is_first:
-                    self.share_screen_data = []
                     self.share_screen_data.append(data.get("sliced_data"))
                 else:
                     self.share_screen_data.append(data.get("sliced_data"))
@@ -943,7 +943,6 @@ class UDPClientHandler:
                                                                              "CameraStream")
                     self.share_camera_data = []
                 elif is_first:
-                    self.share_camera_data = []
                     self.share_camera_data.append(data.get("sliced_data"))
                 else:
                     self.share_camera_data.append(data.get("sliced_data"))
