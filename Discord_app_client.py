@@ -711,6 +711,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     if compressed_vc_data is not None:
                         vc_data = zlib.decompress(compressed_vc_data)
                         self.vc_data_list.append((vc_data, speaker))
+                    self.vc_data_fragments_list = []
                 elif is_last:
                     self.vc_data_fragments_list.append(data.get("sliced_data"))
                     speaker = data.get("speaker")
@@ -733,6 +734,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         share_screen_data = zlib.decompress(compressed_share_screen_data)
                         decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
                         self.update_stream_screen_frame(decompressed_frame)
+                    self.share_screen_data_fragments_list = []
                 elif is_last:
                     self.share_screen_data_fragments_list.append(data.get("sliced_data"))
                     shape_of_frame = data.get("shape_of_frame")
@@ -757,6 +759,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         share_screen_data = zlib.decompress(compressed_share_camera_data)
                         decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
                         self.update_stream_screen_frame(decompressed_frame)
+                    self.share_camera_data_fragments_list = []
                 elif is_last:
                     self.share_camera_data_fragments_list.append(data.get("sliced_data"))
                     shape_of_frame = data.get("shape_of_frame")
