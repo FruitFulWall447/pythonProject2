@@ -703,81 +703,46 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         message_type = data.get("message_type")
         try:
             if message_type == "vc_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_vc_data = data.get("sliced_data")
-                    speaker = data.get("speaker")
-                    if compressed_vc_data is not None:
-                        vc_data = zlib.decompress(compressed_vc_data)
-                        self.vc_data_list.append((vc_data, speaker))
-                    self.vc_data_fragments_list = []
-                elif is_last:
-                    self.vc_data_fragments_list.append(data.get("sliced_data"))
-                    speaker = data.get("speaker")
-                    full_compressed_vc_data = b''.join(self.vc_data_fragments_list)
-                    vc_data = zlib.decompress(full_compressed_vc_data)
-                    self.vc_data_list.append((vc_data, speaker))
-                    self.vc_data_fragments_list = []
-                elif is_first:
-                    self.vc_data_fragments_list = []
-                    self.vc_data_fragments_list.append(data.get("sliced_data"))
-                else:
-                    self.vc_data_fragments_list.append(data.get("sliced_data"))
-            elif message_type == "share_screen_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_screen_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    if compressed_share_screen_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_screen_data)
-                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                        self.update_stream_screen_frame(decompressed_frame)
-                    self.share_screen_data_fragments_list = []
-                elif is_last:
-                    self.share_screen_data_fragments_list.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    compressed_share_screen_data = b''.join(self.share_screen_data_fragments_list)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                    self.update_stream_screen_frame(decompressed_frame)
-                    self.share_screen_data_fragments_list = []
-                elif is_first:
-                    self.share_screen_data_fragments_list = []
-                    self.share_screen_data_fragments_list.append(data.get("sliced_data"))
-                else:
-                    self.share_screen_data_fragments_list.append(data.get("sliced_data"))
-            elif message_type == "share_camera_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_camera_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    if compressed_share_camera_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_camera_data)
-                        decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                        self.update_stream_screen_frame(decompressed_frame)
-                    self.share_camera_data_fragments_list = []
-                elif is_last:
-                    self.share_camera_data_fragments_list.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    speaker = data.get("speaker")
-                    compressed_share_screen_data = b''.join(self.share_camera_data_fragments_list)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(shape_of_frame)
-                    self.update_stream_screen_frame(decompressed_frame)
-                    self.share_camera_data_fragments_list = []
-                elif is_first:
-                    self.share_camera_data_fragments_list = []
-                    self.share_camera_data_fragments_list.append(data.get("sliced_data"))
-                else:
-                    self.share_camera_data_fragments_list.append(data.get("sliced_data"))
+                self.handle_vc_data(data)
+            elif message_type in ["share_screen_data", "share_camera_data"]:
+                self.handle_stream_data(data)
         except Exception as e:
-            print(f"error in rebuilding udp packets {e}")
+            print(f"Error in rebuilding UDP packets: {e}")
+
+    def handle_vc_data(self, data):
+        is_last = data.get("is_last")
+        is_first = data.get("is_first")
+        data_list = self.vc_data_fragments_list
+
+        self.handle_data_fragment(data_list, data, is_first, is_last, "vc_data")
+
+    def handle_stream_data(self, data):
+        is_last = data.get("is_last")
+        is_first = data.get("is_first")
+        data_list = self.share_screen_data_fragments_list if data.get(
+            "message_type") == "share_screen_data" else self.share_camera_data_fragments_list
+
+        self.handle_data_fragment(data_list, data, is_first, is_last, "stream_data")
+
+    def handle_data_fragment(self, data_list, data, is_first, is_last, data_type):
+        if is_first:
+            data_list.clear()
+
+        data_list.append(data.get("sliced_data"))
+
+        if is_last:
+            compressed_data = b''.join(data_list)
+            speaker = data.get("speaker")
+            shape_of_frame = data.get("shape_of_frame") if data_type == "stream_data" else None
+
+            decompressed_data = zlib.decompress(compressed_data)
+            if data_type == "stream_data":
+                decompressed_frame = np.frombuffer(decompressed_data, dtype=np.uint8).reshape(shape_of_frame)
+                self.update_stream_screen_frame(decompressed_frame)
+            elif data_type == "vc_data":
+                self.vc_data_list.append((decompressed_data, speaker))
+
+            data_list.clear()
 
     def exit_group(self, group_id):
         try:
