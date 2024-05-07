@@ -933,6 +933,7 @@ class UDPClientHandler:
                         share_screen_data = zlib.decompress(compressed_share_camera_data)
                         self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
                                                                      "CameraStream")
+                    self.share_camera_data = []
                 elif is_last:
                     self.share_camera_data.append(data.get("sliced_data"))
                     shape_of_frame = data.get("shape_of_frame")
