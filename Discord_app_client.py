@@ -461,93 +461,6 @@ vc_play_flag = False
 vc_data_queue = Queue()
 
 
-def play_audio(queue):
-    """Function to handle audio playback process."""
-    p = pyaudio.PyAudio()
-    output_stream = None
-    current_output_device_index = None  # Track the current output device index
-
-    try:
-        while True:
-            try:
-                data = queue.get(timeout=1)  # Timeout to avoid blocking indefinitely
-                if data is None:
-                    break  # Exit loop if None is received (end of playback)
-
-                # Extract audio data and output device index from the received data
-                audio_data, output_device_index = data['audio_data'], data['output_device_index']
-
-                # Open the output stream if not already opened or if the device index has changed
-                if output_device_index != current_output_device_index:
-                    if output_stream is not None:
-                        output_stream.stop_stream()
-                        output_stream.close()
-                    output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True,
-                                           frames_per_buffer=CHUNK, output_device_index=output_device_index)
-                    current_output_device_index = output_device_index
-
-                # Write the audio data to the output stream
-                output_stream.write(audio_data)
-
-            except Empty:
-                pass  # Handle queue being empty
-
-    finally:
-        # Close the output stream when playback ends
-        if output_stream is not None:
-            output_stream.stop_stream()
-            output_stream.close()
-        p.terminate()  # Clean up PyAudio resources
-
-
-def thread_play_vc_data(page_controller_object):
-    try:
-        print("started play voice data thread....")
-        output_device_name = page_controller_object.main_page.output_device_name  # Get the output device name from main_page
-
-        if output_device_name == "Default":
-            def_device_name = get_default_output_device_name()
-            output_device_index = find_output_device_index(def_device_name)
-        else:
-            output_device_index = find_output_device_index(output_device_name)
-
-        if output_device_index is None:
-            print(f"Output device '{output_device_name}' not found.")
-        else:
-            print(f"Output index is {output_device_name}")
-
-        queue = multiprocessing.Queue()
-
-        # Start the playback process
-        playback_process = multiprocessing.Process(target=play_audio, args=(queue,))
-        playback_process.start()
-        while page_controller_object.main_page.vc_play_flag:
-            try:
-                vc_data_tuple = page_controller_object.main_page.vc_data_list[0]
-                vc_data = vc_data_tuple[0]
-                modified_data_list = audio_data_list_set_volume([vc_data], volume=page_controller_object.main_page.volume)  # Adjust volume to 10%
-                modified_data = b''.join(modified_data_list)
-                # Play the modified audio data
-                # output_stream.write(modified_data)
-
-                try:
-                    data_packet = {
-                        'audio_data': modified_data,
-                        'output_device_index': output_device_index
-                    }
-
-                    queue.put(data_packet)
-                except Exception as e:
-                    print(f"error with multiprocessing: {e} ")
-                del page_controller_object.main_page.vc_data_list[0]
-            except Exception as e:
-                pass  # Handle the case where the queue is empty
-        queue.put(None)
-        playback_process.join()
-    except Exception as e:
-        print(f"error in thread_play_vc_data {e}")
-
-
 def audio_data_list_set_volume(datalist, volume):
     """ Change value of list of audio chunks """
     sound_level = (volume / 100.)
@@ -560,52 +473,6 @@ def audio_data_list_set_volume(datalist, volume):
         modified_datalist.append(modified_chunk)
 
     return modified_datalist
-
-
-def thread_send_voice_chat_data(page_controller_object):
-    n = page_controller_object.n
-    try:
-        accumulated_data = []
-        print("started voice chat thread....")
-        input_device_name = page_controller_object.main_page.input_device_name  # Get the output device name from main_page
-
-        if input_device_name == "Default" or input_device_name == "default":
-            def_device_name = get_default_input_device_name()
-            input_device_index = find_input_device_index(def_device_name)
-        else:
-            input_device_index = find_input_device_index(input_device_name)
-
-        if input_device_index is None:
-            print(f"Input device '{input_device_name}' not found.")
-        print(f"input index is {input_device_index}")
-
-        input_stream = p.open(format=FORMAT,
-                              channels=CHANNELS,
-                              rate=RATE,
-                              input=True,
-                              frames_per_buffer=CHUNK,
-                              input_device_index=input_device_index)
-        count = 0
-        const = 20
-        # Open output stream (speakers)
-        while page_controller_object.main_page.vc_thread_flag:
-            if not page_controller_object.main_page.mute and not page_controller_object.main_page.deafen:
-                input_data = input_stream.read(CHUNK)
-                accumulated_data.append(input_data)
-
-                count += 1
-                if count % const == 0:  # Send every 10 chunks (adjust as needed)
-                    # Send the accumulated data over the network
-                    data = b''.join(accumulated_data)
-                    n.send_vc_data(data)
-                    accumulated_data = []  # Reset accumulated data
-            else:
-                time.sleep(0.1)
-        input_stream.stop_stream()
-        input_stream.close()
-        print("stopped voice chat thread....")
-    except Exception as e:
-        print(f"error in thread_send_voice_chat_data {e}")
 
 
 SCREEN_FPS = 30
@@ -817,11 +684,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.vc_data_list = []
 
         self.vc_thread_flag = False
-        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=(self.page_controller_object,))
+        self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
         self.vc_play_flag = False
-        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=(self.page_controller_object,))
-
+        self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
 
         self.listen_udp = True
         self.listen_udp_thread = threading.Thread(target=listen_udp, args=(self,))
@@ -1090,6 +956,87 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in closing threads {e}")
 
+    def thread_play_vc_data(self):
+        try:
+            print("started play voice data thread....")
+            output_device_name = self.output_device_name  # Get the output device name from main_page
+
+            if output_device_name == "Default":
+                def_device_name = get_default_output_device_name()
+                output_device_index = find_output_device_index(def_device_name)
+            else:
+                output_device_index = find_output_device_index(output_device_name)
+
+            if output_device_index is None:
+                print(f"Output device '{output_device_name}' not found.")
+            else:
+                print(f"Output index is {output_device_name}")
+
+            output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK,
+                                   output_device_index=output_device_index)
+            while self.vc_play_flag:
+                try:
+                    vc_data_tuple = self.vc_data_list[0]
+                    vc_data = vc_data_tuple[0]
+                    modified_data_list = audio_data_list_set_volume([vc_data],
+                                                                    volume=self.volume)  # Adjust volume to 10%
+                    modified_data = b''.join(modified_data_list)
+                    # Play the modified audio data
+                    output_stream.write(modified_data)
+                    del self.vc_data_list[0]
+                except Exception as e:
+                    print(e)
+                    pass  # Handle the case where the queue is empty
+            output_stream.stop_stream()
+            output_stream.close()
+        except Exception as e:
+            print(f"error in thread_play_vc_data {e}")
+
+    def thread_send_voice_chat_data(self):
+        n = self.Network
+        try:
+            accumulated_data = []
+            print("started voice chat thread....")
+            input_device_name = self.input_device_name  # Get the output device name from main_page
+
+            if input_device_name == "Default" or input_device_name == "default":
+                def_device_name = get_default_input_device_name()
+                input_device_index = find_input_device_index(def_device_name)
+            else:
+                input_device_index = find_input_device_index(input_device_name)
+
+            if input_device_index is None:
+                print(f"Input device '{input_device_name}' not found.")
+            print(f"input index is {input_device_index}")
+
+            input_stream = p.open(format=FORMAT,
+                                  channels=CHANNELS,
+                                  rate=RATE,
+                                  input=True,
+                                  frames_per_buffer=CHUNK,
+                                  input_device_index=input_device_index)
+            count = 0
+            const = 20
+            # Open output stream (speakers)
+            while self.vc_thread_flag:
+                if not self.mute and not self.deafen:
+                    input_data = input_stream.read(CHUNK)
+                    accumulated_data.append(input_data)
+
+                    count += 1
+                    if count % const == 0:  # Send every 10 chunks (adjust as needed)
+                        # Send the accumulated data over the network
+                        data = b''.join(accumulated_data)
+                        n.send_vc_data(data)
+                        accumulated_data = []  # Reset accumulated data
+                else:
+                    time.sleep(0.1)
+            input_stream.stop_stream()
+            input_stream.close()
+            print("stopped voice chat thread....")
+        except Exception as e:
+            print(f"error in thread_send_voice_chat_data {e}")
+
     def exit_group(self, group_id):
         try:
             group_name = self.get_group_name_by_id(group_id)
@@ -1347,12 +1294,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def close_listen_thread(self):
         self.vc_play_flag = False
         self.play_vc_data_thread.join()
-        self.play_vc_data_thread = threading.Thread(target=thread_play_vc_data, args=(self.page_controller_object,))
+        self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
 
     def close_send_vc_thread(self):
         self.vc_thread_flag = False
         self.send_vc_data_thread.join()
-        self.send_vc_data_thread = threading.Thread(target=thread_send_voice_chat_data, args=(self.page_controller_object,))
+        self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
     def start_listen_thread(self):
         self.vc_play_flag = True
