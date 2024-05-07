@@ -350,20 +350,6 @@ def thread_recv_messages(page_controller_object):
     print("thread receive messages ended")
 
 
-def listen_udp(main_page_object):
-    print("started listen_udp thread")
-    network = main_page_object.Network
-    while main_page_object.listen_udp:
-        try:
-            fragment_data, address = network.recv_udp()
-            if fragment_data:
-                data = pickle.loads(fragment_data)
-                handle_udp_data(data, main_page_object)
-        except OSError as os_err:
-            print(f"OS error: {os_err}")
-        except Exception as e:
-            print(f"Exception: {e}")
-
 
 vc_data_fragments_list = []
 share_screen_data_fragments_list = []
@@ -478,26 +464,6 @@ def audio_data_list_set_volume(datalist, volume):
 SCREEN_FPS = 30
 
 
-def thread_send_share_screen_data(main_page):
-    time_between_frame = 1 / SCREEN_FPS
-    try:
-        while main_page.is_screen_shared:
-            # Capture the screen using PyAutoGUI
-            screen = ImageGrab.grab()
-            # Convert the screenshot to a NumPy array
-            frame = np.array(screen)
-            frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-
-            frame_bytes = frame_bgr.tobytes()
-            # Send the frame to the server
-            main_page.Network.send_share_screen_data(frame_bytes, frame.shape)
-
-            time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
-        print("send share screen data thread closed")
-    except Exception as e:
-        print(f"Screen sharing error: {e}")
-
-
 def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Set frame width to 1280 pixels
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set frame height to 720 pixels
@@ -505,37 +471,6 @@ def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_FOCUS, 0)  # Set focus to minimum (if supported)
     cap.set(cv2.CAP_PROP_ZOOM, 1)  # Set zoom to minimum (if supported)
     cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
-
-
-def thread_send_share_camera_data(main_page):
-    time_between_frame = 1 / CAMERA_FPS
-    network = main_page.Network
-    try:
-        # Initialize the camera
-        cap = cv2.VideoCapture(main_page.camera_index)  # Use 0 for default camera, change as needed
-        set_camera_properties(cap)
-        while main_page.is_camera_shared:
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-            if not ret:
-                print("Error: Couldn't capture frame from camera.")
-                break
-
-            # Convert the frame to a NumPy array
-            frame_np = np.asarray(frame)
-
-            # Convert the NumPy array to bytes
-            frame_bytes = frame_np.tobytes()
-
-            # Send the frame to the server
-            network.send_share_camera_data(frame_bytes, frame_np.shape)
-
-            time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
-        # Release the camera and close thread
-        cap.release()
-        print("send share camera data thread closed")
-    except Exception as e:
-        print(f"Camera sharing error: {e}")
 
 
 class SplashScreen(QWidget):
@@ -690,17 +625,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
 
         self.listen_udp = True
-        self.listen_udp_thread = threading.Thread(target=listen_udp, args=(self,))
+        self.listen_udp_thread = threading.Thread(target=self.listen_udp_socket_thread, args=())
 
         self.is_watching_screen = False
         self.watching_user = ""
         self.watching_type = None
 
         self.is_screen_shared = False
-        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
+        self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
 
         self.is_camera_shared = False
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
+        self.send_camera_data_thread = threading.Thread(target=self.thread_send_share_camera_data, args=())
 
         self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
 
@@ -1036,6 +971,69 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print("stopped voice chat thread....")
         except Exception as e:
             print(f"error in thread_send_voice_chat_data {e}")
+
+    def thread_send_share_screen_data(self):
+        time_between_frame = 1 / SCREEN_FPS
+        try:
+            while self.is_screen_shared:
+                # Capture the screen using PyAutoGUI
+                screen = ImageGrab.grab()
+                # Convert the screenshot to a NumPy array
+                frame = np.array(screen)
+                frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+                frame_bytes = frame_bgr.tobytes()
+                # Send the frame to the server
+                self.Network.send_share_screen_data(frame_bytes, frame.shape)
+
+                time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
+            print("send share screen data thread closed")
+        except Exception as e:
+            print(f"Screen sharing error: {e}")
+
+    def thread_send_share_camera_data(self):
+        time_between_frame = 1 / CAMERA_FPS
+        network = self.Network
+        try:
+            # Initialize the camera
+            cap = cv2.VideoCapture(self.camera_index)  # Use 0 for default camera, change as needed
+            set_camera_properties(cap)
+            while self.is_camera_shared:
+                # Capture frame-by-frame
+                ret, frame = cap.read()
+                if not ret:
+                    print("Error: Couldn't capture frame from camera.")
+                    break
+
+                # Convert the frame to a NumPy array
+                frame_np = np.asarray(frame)
+
+                # Convert the NumPy array to bytes
+                frame_bytes = frame_np.tobytes()
+
+                # Send the frame to the server
+                network.send_share_camera_data(frame_bytes, frame_np.shape)
+
+                time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
+            # Release the camera and close thread
+            cap.release()
+            print("send share camera data thread closed")
+        except Exception as e:
+            print(f"Camera sharing error: {e}")
+
+    def listen_udp_socket_thread(self):
+        print("started listen_udp thread")
+        network = self.Network
+        while self.listen_udp:
+            try:
+                fragment_data, address = network.recv_udp()
+                if fragment_data:
+                    data = pickle.loads(fragment_data)
+                    handle_udp_data(data, self)
+            except OSError as os_err:
+                print(f"OS error: {os_err}")
+            except Exception as e:
+                print(f"Exception: {e}")
 
     def exit_group(self, group_id):
         try:
@@ -1547,15 +1545,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         print("Started Share camera thread")
 
     def update_share_screen_thread(self):
-        self.send_share_screen_thread = threading.Thread(target=thread_send_share_screen_data, args=(self,))
+        self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
 
     def update_share_camera_thread(self):
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
+        self.send_camera_data_thread = threading.Thread(target=self.thread_send_share_camera_data, args=())
 
     def end_share_camera_thread(self):
         self.is_camera_shared = False
         self.send_camera_data_thread.join()
-        self.send_camera_data_thread = threading.Thread(target=thread_send_share_camera_data, args=(self,))
+        self.send_camera_data_thread = threading.Thread(target=self.thread_send_share_camera_data, args=())
 
     def update_stream_screen_frame(self, frame):
         try:
