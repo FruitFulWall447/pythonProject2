@@ -575,16 +575,16 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                    output_device_index=output_device_index)
             while self.vc_play_flag:
                 try:
-                    vc_data_tuple = self.vc_data_list[0]
-                    vc_data = vc_data_tuple[0]
-                    modified_data_list = audio_data_list_set_volume([vc_data],
-                                                                    volume=self.volume)  # Adjust volume to 10%
-                    modified_data = b''.join(modified_data_list)
-                    # Play the modified audio data
-                    output_stream.write(modified_data)
-                    del self.vc_data_list[0]
+                    if len(self.vc_data_list) > 0:
+                        vc_data_tuple = self.vc_data_list[0]
+                        vc_data = vc_data_tuple[0]
+                        modified_data_list = audio_data_list_set_volume([vc_data],
+                                                                        volume=self.volume)  # Adjust volume to 10%
+                        modified_data = b''.join(modified_data_list)
+                        # Play the modified audio data
+                        output_stream.write(modified_data)
+                        del self.vc_data_list[0]
                 except Exception as e:
-                    print(e)
                     pass  # Handle the case where the queue is empty
             output_stream.stop_stream()
             output_stream.close()
