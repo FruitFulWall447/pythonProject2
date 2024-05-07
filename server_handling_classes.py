@@ -876,83 +876,48 @@ class UDPClientHandler:
         return decrypt_with_aes(self.aes_key, data)
 
     def handle_udp_message(self, fragment):
-        pickled_data = self.decrypt_data(fragment)
         try:
+            pickled_data = self.decrypt_data(fragment)
             data = pickle.loads(pickled_data)
             message_type = data.get("message_type")
+            is_first = data.get("is_first")
+            is_last = data.get("is_last")
+            sliced_data = data.get("sliced_data")
+            shape_of_frame = data.get("shape_of_frame")
             if message_type == "vc_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_vc_data = data.get("sliced_data")
-                    if compressed_vc_data is not None:
-                        vc_data = zlib.decompress(compressed_vc_data)
-                        self.ServerHandler_object.send_vc_data_to_call(vc_data, self.client_username)
-                    self.vc_data = []
-                elif is_last:
-                    self.vc_data.append(data.get("sliced_data"))
-                    full_compressed_vc_data = b''.join(self.vc_data)
-                    vc_data = zlib.decompress(full_compressed_vc_data)
-                    self.ServerHandler_object.send_vc_data_to_call(vc_data, self.client_username)
-                    self.vc_data = []
-                elif is_first:
-                    self.vc_data.append(data.get("sliced_data"))
-                else:
-                    self.vc_data.append(data.get("sliced_data"))
+                self.handle_data_fragment(self.vc_data, sliced_data, is_first, is_last, "vc_data")
             elif message_type == "share_screen_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_screen_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    if compressed_share_screen_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_screen_data)
-                        self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
-                                                                     "ScreenStream")
-                    self.share_screen_data = []
-                elif is_last:
-                    self.share_screen_data.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    compressed_share_screen_data = b''.join(self.share_screen_data)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame,
-                                                                             self.client_username,
-                                                                             "ScreenStream")
-                    self.share_screen_data = []
-                elif is_first:
-                    self.share_screen_data.append(data.get("sliced_data"))
-                else:
-                    self.share_screen_data.append(data.get("sliced_data"))
+                self.handle_data_fragment(self.share_screen_data, sliced_data, is_first, is_last, "ScreenStream",
+                                          shape_of_frame)
             elif message_type == "share_camera_data":
-                is_last = data.get("is_last")
-                is_first = data.get("is_first")
-                if is_last and is_first:
-                    compressed_share_camera_data = data.get("sliced_data")
-                    shape_of_frame = data.get("shape_of_frame")
-                    if compressed_share_camera_data is not None:
-                        share_screen_data = zlib.decompress(compressed_share_camera_data)
-                        self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame, self.client_username,
-                                                                     "CameraStream")
-                    self.share_camera_data = []
-                elif is_last:
-                    self.share_camera_data.append(data.get("sliced_data"))
-                    shape_of_frame = data.get("shape_of_frame")
-                    compressed_share_screen_data = b''.join(self.share_camera_data)
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    self.ServerHandler_object.send_share_screen_data_to_call(share_screen_data, shape_of_frame,
-                                                                             self.client_username,
-                                                                             "CameraStream")
-                    self.share_camera_data = []
-                elif is_first:
-                    self.share_camera_data.append(data.get("sliced_data"))
-                else:
-                    self.share_camera_data.append(data.get("sliced_data"))
+                self.handle_data_fragment(self.share_camera_data, sliced_data, is_first, is_last, "CameraStream",
+                                          shape_of_frame)
             self.gotten_packets += 1
         except:
             self.lost_packets += 1
             self.gotten_packets += 1
-            if self.lost_packets % 100 == 0:
-                self.logger.info(f"lost {self.lost_packets} out of {self.gotten_packets}, {(self.lost_packets / self.gotten_packets) * 100}%")
+
+        if self.gotten_packets > 0 and self.lost_packets > 0 and self.lost_packets % 100 == 0:
+            loss_percentage = (self.lost_packets / self.gotten_packets) * 100
+            self.logger.info(f"Lost {self.lost_packets} out of {self.gotten_packets}, {loss_percentage}%")
+
+    def handle_data_fragment(self, data_list, sliced_data, is_first, is_last, data_type, shape_of_frame=None):
+        if is_first:
+            data_list.clear()
+        data_list.append(sliced_data)
+
+        if is_last:
+            full_data = b''.join(data_list)
+            decompressed_data = zlib.decompress(full_data)
+            if data_type == "vc_data":
+                self.ServerHandler_object.send_vc_data_to_call(decompressed_data, self.client_username)
+            elif data_type == "ScreenStream":
+                self.ServerHandler_object.send_share_screen_data_to_call(decompressed_data, shape_of_frame,
+                                                                         self.client_username, data_type)
+            elif data_type == "CameraStream":
+                self.ServerHandler_object.send_share_screen_data_to_call(decompressed_data, shape_of_frame,
+                                                                         self.client_username, data_type)
+            data_list.clear()
 
 
 
