@@ -720,6 +720,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.vc_data_list.append((vc_data, speaker))
                     self.vc_data_fragments_list = []
                 elif is_first:
+                    self.vc_data_fragments_list = []
                     self.vc_data_fragments_list.append(data.get("sliced_data"))
                 else:
                     self.vc_data_fragments_list.append(data.get("sliced_data"))
@@ -745,6 +746,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.update_stream_screen_frame(decompressed_frame)
                     self.share_screen_data_fragments_list = []
                 elif is_first:
+                    self.share_screen_data_fragments_list = []
                     self.share_screen_data_fragments_list.append(data.get("sliced_data"))
                 else:
                     self.share_screen_data_fragments_list.append(data.get("sliced_data"))
@@ -770,6 +772,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.update_stream_screen_frame(decompressed_frame)
                     self.share_camera_data_fragments_list = []
                 elif is_first:
+                    self.share_camera_data_fragments_list = []
                     self.share_camera_data_fragments_list.append(data.get("sliced_data"))
                 else:
                     self.share_camera_data_fragments_list.append(data.get("sliced_data"))
