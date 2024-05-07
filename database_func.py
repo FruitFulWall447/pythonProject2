@@ -2260,6 +2260,29 @@ def create_tables():
     create_songs_table()
 
 
+def clear_sqlite_table(table_name):
+    try:
+        # Connect to the SQLite database
+        conn = connect_to_kevindb()
+        cursor = conn.cursor()
+
+        # Construct and execute the DELETE statement
+        delete_query = f"DELETE FROM {table_name}"
+        cursor.execute(delete_query)
+
+        # Commit the transaction
+        conn.commit()
+        print(f"All rows deleted from table '{table_name}'.")
+
+    except sqlite3.Error as e:
+        print(f"Error occurred: {e}")
+
+    finally:
+        # Close the connection
+        if conn:
+            conn.close()
+
+
 def connect_to_kevindb():
     try:
         # Connect to the existing SQLite database
