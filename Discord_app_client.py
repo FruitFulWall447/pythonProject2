@@ -3169,7 +3169,7 @@ class PageController:
                                 print("call ended")
                                 QMetaObject.invokeMethod(self.main_page, "close_call_threads_signal",
                                                          Qt.QueuedConnection)
-                                QMetaObject.invokeMethod(page_controller_object.main_page, "reset_call_var_signal",
+                                QMetaObject.invokeMethod(self.main_page, "reset_call_var_signal",
                                                          Qt.QueuedConnection)
                         if call_action_type == "call_dictionary":
                             action = data.get("action")
