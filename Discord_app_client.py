@@ -597,6 +597,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         self.audio_data_lock.release()
                 except Exception as e:
                     pass  # Handle the case where the queue is empty
+                time.sleep(0.02)
             output_stream.stop_stream()
             output_stream.close()
         except Exception as e:
