@@ -2499,8 +2499,9 @@ class Verification_code_page(QWidget):
         try:
             if obj == self.info_label and event.type() == event.Enter:
                 # Set a fixed position for the tooltip
-                pos = int(self.page_controller_object.screen_width * 0.416, int(self.page_controller_object.screen_height * 0.277))
-                fixed_position = self.mapToGlobal(QPoint(pos))
+                xpos = int(self.page_controller_object.screen_width * 0.416)
+                ypos = int(self.page_controller_object.screen_height * 0.277)
+                fixed_position = QPoint(xpos, ypos)
                 QToolTip.showText(fixed_position, self.info_label.toolTip())
                 return True  # Consume the event to prevent further processing
             return super().eventFilter(obj, event)
