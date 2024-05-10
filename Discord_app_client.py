@@ -112,14 +112,18 @@ def is_string(variable):
 
 def audio_data_list_set_volume(datalist, volume):
     """ Change value of list of audio chunks """
-    sound_level = (volume / 100.)
-    modified_datalist = []
+    sound_level = volume / 100.0
 
-    for i in range(len(datalist)):
-        chunk = np.frombuffer(datalist[i], dtype=np.int16)
-        chunk = chunk * sound_level
-        modified_chunk = chunk.astype(np.int16)
-        modified_datalist.append(modified_chunk)
+    modified_datalist = []
+    for chunk_bytes in datalist:
+        # Convert bytes to NumPy array of int16
+        chunk_array = np.frombuffer(chunk_bytes, dtype=np.int16)
+
+        # Scale audio data to adjust volume
+        scaled_chunk = (chunk_array * sound_level).astype(np.int16)
+
+        # Convert back to bytes and append to modified_datalist
+        modified_datalist.append(scaled_chunk.tobytes())
 
     return modified_datalist
 
