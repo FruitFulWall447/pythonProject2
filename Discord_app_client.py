@@ -626,20 +626,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                   input=True,
                                   frames_per_buffer=CHUNK,
                                   input_device_index=input_device_index)
-            count = 0
-            const = 20
-            # Open output stream (speakers)
+
             while self.vc_thread_flag:
                 if not self.mute and not self.deafen:
                     input_data = input_stream.read(CHUNK)
-                    accumulated_data.append(input_data)
-
-                    count += 1
-                    if count % const == 0:  # Send every 10 chunks (adjust as needed)
-                        # Send the accumulated data over the network
-                        data = b''.join(accumulated_data)
-                        n.send_vc_data(data)
-                        accumulated_data = []  # Reset accumulated data
+                    n.send_vc_data(input_data)
                 else:
                     time.sleep(0.1)
             input_stream.stop_stream()
