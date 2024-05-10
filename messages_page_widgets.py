@@ -600,9 +600,6 @@ class ChatBox(QWidget):
         self.around_name.move(around_name_x, around_name_y)
         self.around_name.raise_()
 
-
-
-
         self.call_profiles_list = []
 
         if self.parent.selected_chat != "":
@@ -1240,11 +1237,11 @@ class ChatBox(QWidget):
     def add_user_to_group_pressed(self):
         if self.parent.is_create_group_inside_chat_pressed:
             self.parent.is_create_group_inside_chat_pressed = False
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
         else:
             self.parent.is_create_group_pressed = False
             self.parent.is_create_group_inside_chat_pressed = True
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
 
     def change_group_image(self):
         self.open_file_dialog_for_changing_group_image()
