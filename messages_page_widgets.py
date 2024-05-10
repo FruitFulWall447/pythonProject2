@@ -1455,7 +1455,7 @@ class ChatBox(QWidget):
             self.parent.is_create_group_inside_chat_pressed = False
             self.parent.selected_group_members.clear()
             self.parent.create_group_index = 0
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
 
     def add_users_to_group(self):
         group_id = self.current_group_id
@@ -1466,7 +1466,7 @@ class ChatBox(QWidget):
             self.parent.is_create_group_inside_chat_pressed = False
             self.parent.selected_group_members.clear()
             self.parent.create_group_index = 0
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
 
     def friend_checkbox_changed(self, state):
         checkbox = self.sender()
@@ -1480,7 +1480,6 @@ class ChatBox(QWidget):
                     self.parent.selected_group_members.remove(friend_name)
         except Exception as e:
             print(f"friend_checkbox_changed error :{e}")
-        #self.parent.updated_chat()
 
     def is_mouse_on_chats_list(self, mouse_pos):
         box_geometry = self.border_label.geometry()
@@ -1791,7 +1790,7 @@ class ChatBox(QWidget):
                     print("image to send defined")
                     self.filename_label.setText(self.parent.file_name + " is loaded")
                     self.filename_label.show()
-                    self.parent.updated_chat()
+                    self.parent.update_chat_page_without_messages()
                     self.parent.activateWindow()
                 else:
                     print("couldn't load image")
@@ -1800,21 +1799,21 @@ class ChatBox(QWidget):
                 self.parent.file_to_send = video_bytes
                 self.filename_label.setText(self.parent.file_name + " is loaded")
                 self.filename_label.show()
-                self.parent.updated_chat()
+                self.parent.update_chat_page_without_messages()
                 self.parent.activateWindow()
             elif selected_files and file_types[0] in ["mp3"]:
                 audio_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = audio_bytes
                 self.filename_label.setText(self.parent.file_name + " is loaded")
                 self.filename_label.show()
-                self.parent.updated_chat()
+                self.parent.update_chat_page_without_messages()
                 self.parent.activateWindow()
             elif selected_files and file_types[0] in basic_files_types:
                 file_bytes = file_to_bytes(selected_files[0])
                 self.parent.file_to_send = file_bytes
                 self.filename_label.setText(self.parent.file_name + " is loaded")
                 self.filename_label.show()
-                self.parent.updated_chat()
+                self.parent.update_chat_page_without_messages()
                 self.parent.activateWindow()
 
     def open_image_file_dialog(self):
@@ -2059,7 +2058,7 @@ class ChatBox(QWidget):
     def garbage_button_clicked(self):
         self.parent.file_to_send = None
         self.parent.file_name = ""
-        self.parent.updated_chat()
+        self.parent.update_chat_page_without_messages()
 
     def selected_chat_changed(self, name):
         if name != self.parent.selected_chat:
