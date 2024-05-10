@@ -476,7 +476,9 @@ def calculate_division_value(friends_list_length):
     elif 1 <= friends_list_length <= 5:
         return 1
     else:
-        return friends_list_length // 5
+        if friends_list_length % 5 == 0:
+            return friends_list_length // 5
+        return (friends_list_length // 5) + 1
 
 
 def gets_group_attributes_from_format(group_format):
@@ -2519,7 +2521,7 @@ class CreateGroupBox(QWidget):
             starter_y = self.y + 150
             i = 0
             for friend in self.friends_list:
-                if i >= self.create_group_index * 5:
+                if self.create_group_index * 5 <= i < (self.create_group_index + 1) * 5:
                     friend_label = QPushButton(friend, self.parent)
                     friend_label.friend_name = friend
                     friend_label.setStyleSheet(f'''
