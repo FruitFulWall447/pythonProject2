@@ -2496,13 +2496,16 @@ class Verification_code_page(QWidget):
         self.page_controller_object.change_to_login_page()
 
     def eventFilter(self, obj, event):
-        if obj == self.info_label and event.type() == event.Enter:
-            # Set a fixed position for the tooltip
-            pos = (int(self.page_controller_object.screen_width * 0.416), int(self.page_controller_object.screen_height * 0.277))
-            fixed_position = self.mapToGlobal(QPoint(pos))
-            QToolTip.showText(fixed_position, self.info_label.toolTip())
-            return True  # Consume the event to prevent further processing
-        return super().eventFilter(obj, event)
+        try:
+            if obj == self.info_label and event.type() == event.Enter:
+                # Set a fixed position for the tooltip
+                pos = int(self.page_controller_object.screen_width * 0.416, int(self.page_controller_object.screen_height * 0.277))
+                fixed_position = self.mapToGlobal(QPoint(pos))
+                QToolTip.showText(fixed_position, self.info_label.toolTip())
+                return True  # Consume the event to prevent further processing
+            return super().eventFilter(obj, event)
+        except Exception as e:
+            print(e)
 
     def create_label(self, text, position):
         label = QLabel(text, self)
