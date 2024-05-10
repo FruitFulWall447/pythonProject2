@@ -282,16 +282,6 @@ class VideoPlayer(QWidget):
         self.video_widget.setGeometry(0, 0, screen_width, int(screen_height*0.83))
 
         self.slider = QSlider(Qt.Horizontal, self)
-        # self.slider.
-        # self.slider.setStyleSheet(
-        #     f"""
-        #     QSlider::handle {{
-        #         width: 1px;  /* Set width of the handle */
-        #         height: 1px; /* Set height of the handle */
-        #         background-color: {self.parent.standard_hover_color}; /* Set the color of the handle */
-        #     }}
-        #     """
-        # )
         self.slider.sliderReleased.connect(self.set_position)
         slider_x, slider_y, slider_width, slider_height = int(screen_width*0.1), int(screen_height*0.85), int(screen_width*0.8), int(screen_height*0.05)
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
