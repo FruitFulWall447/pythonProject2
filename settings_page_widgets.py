@@ -699,6 +699,7 @@ class SettingsBox(QWidget):
             print("send profile pic to server")
             self.parent.activateWindow()
             self.parent.update_profile_pic_dicts_list(self.parent.username, None)
+            self.parent.updated_settings_page()
         except Exception as e:
             print(f"error in resetting profile pic {e}")
 

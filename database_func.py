@@ -365,8 +365,6 @@ def change_user_setting(user_id, setting_name, new_value):
         cursor.close()
         db_connection.close()
 
-        print(f"Setting '{setting_name}' changed successfully.")
-
     except sqlite3.Error as e:
         print(f"Error: {e}")
         print("Failed to change setting.")
