@@ -776,9 +776,6 @@ class ServerHandler:
         udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
         self.UDPClientHandler_list.append(udp_handler_object)
 
-    def handle_udp_data(self, data, username):
-        x = 5
-
     def get_aes_key_by_by_username(self, username):
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
