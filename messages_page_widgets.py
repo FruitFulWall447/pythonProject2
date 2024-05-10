@@ -1837,9 +1837,13 @@ class ChatBox(QWidget):
                 return image_bytes
 
     def join_call(self):
-        self.parent.is_joining_call = True
-        self.parent.joining_to = self.parent.selected_chat
-        self.Network.send_join_call_of_group_id(self.current_group_id)
+        try:
+            print("trying to join call of current group")
+            self.parent.is_joining_call = True
+            self.parent.joining_to = self.parent.selected_chat
+            self.Network.send_join_call_of_group_id(self.current_group_id)
+        except Exception as e:
+            print(f"error in joining call {e}")
 
     def end_current_call(self):
         self.parent.end_current_call()
