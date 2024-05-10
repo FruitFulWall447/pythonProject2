@@ -1496,12 +1496,12 @@ class ChatBox(QWidget):
                 if len(self.find_contact_text_entry.text()) > 0:
                     self.parent.current_chat_box_search = True
                     self.parent.temp_search_list = self.return_search_list()
-                    self.parent.update_chat_for_chats_scroll()
+                    self.parent.update_chat_page_without_messages()
                 else:
                     try:
                         self.parent.current_chat_box_search = False
                         self.parent.temp_search_list = []
-                        self.parent.update_chat_for_chats_scroll()
+                        self.parent.update_chat_page_without_messages()
                     except Exception as e:
                         print(f"text_changed error :{e}")
         except Exception as e:
