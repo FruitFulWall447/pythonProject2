@@ -283,6 +283,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
         self.vc_play_flag = False
+        self.audio_data_lock = threading.Lock()
         self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
 
         self.vc_data_fragments_list = []
@@ -579,14 +580,17 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             while self.vc_play_flag:
                 try:
                     if len(self.vc_data_list) > 0:
-                        vc_data_tuple = self.vc_data_list[0]
-                        vc_data = vc_data_tuple[0]
-                        modified_data_list = audio_data_list_set_volume([vc_data],
-                                                                        volume=self.volume)  # Adjust volume to 10%
-                        modified_data = b''.join(modified_data_list)
+                        self.audio_data_lock.acquire()
+                        all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, _ in self.vc_data_list]
+                        mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
+                        mixed_data_audio_bytes = mixed_data.tobytes()
+                        self.vc_data_list = []  # Clear the vc_data_list after processing
+
+                        modified_audio_data_list = audio_data_list_set_volume([mixed_data_audio_bytes], volume=self.volume)
+                        modified_data = b''.join(modified_audio_data_list)
                         # Play the modified audio data
                         output_stream.write(modified_data)
-                        del self.vc_data_list[0]
+                        self.audio_data_lock.release()
                 except Exception as e:
                     pass  # Handle the case where the queue is empty
             output_stream.stop_stream()
@@ -743,7 +747,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 decompressed_frame = np.frombuffer(decompressed_data, dtype=np.uint8).reshape(shape_of_frame)
                 self.update_stream_screen_frame(decompressed_frame)
             elif data_type == "vc_data":
+                self.audio_data_lock.acquire()
                 self.vc_data_list.append((decompressed_data, speaker))
+                self.audio_data_lock.release()
 
             data_list.clear()
 
@@ -2897,7 +2903,6 @@ class PageController:
         self.n = client_net()
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
-
         self.app = QApplication(sys.argv)
 
         if is_connected:
