@@ -1446,7 +1446,7 @@ class ChatBox(QWidget):
         except Exception as e:
             print("error in hadnling index")
         if change:
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
         else:
             print("no change")
 
