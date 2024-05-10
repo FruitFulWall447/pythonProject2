@@ -251,6 +251,7 @@ class SplashScreen(QWidget):
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
+    update_chat_page_without_messages_signal = pyqtSignal()
     updated_requests_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
     stop_sound_signal = pyqtSignal()
@@ -478,6 +479,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.start_call_threads_signal.connect(self.start_call_threads)
         self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
         self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
+        self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages_signal)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -3080,7 +3082,7 @@ class PageController:
                         self.main_page.friends_list = friends_list
                         QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
                                                  Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         print(f"Got friends list: {self.main_page.friends_list}")
                         print("Updated friends_list list")
@@ -3089,7 +3091,7 @@ class PageController:
                         self.main_page.online_users_list = online_users_list
                         QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
                                                  Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         print(f"Got online users list: {online_users_list}")
                     elif message_type == "blocked_list":
@@ -3101,7 +3103,7 @@ class PageController:
                     elif message_type == "groups_list":
                         groups_list = json.loads(data.get("groups_list"))
                         self.main_page.groups_list = groups_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         QMetaObject.invokeMethod(self.main_page,
                                                  "caching_circular_images_of_groups_signal", Qt.QueuedConnection)
@@ -3109,14 +3111,14 @@ class PageController:
                     elif message_type == "chats_list":
                         chats_list = json.loads(data.get("chats_list"))
                         self.main_page.chats_list = chats_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         print("Updated the chats list")
                         print(f"chats list is: {self.main_page.chats_list}")
                     elif message_type == "add_chat":
                         new_chat = data.get("chat_to_add")
                         self.main_page.chats_list.insert(0, new_chat)
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         print("Updated the chats list")
                         print(f"chats list is: {self.main_page.chats_list}")
@@ -3141,7 +3143,7 @@ class PageController:
                                         self.main_page.is_getting_called = True
                                         self.main_page.getting_called_by = getting_called_by
                                         QMetaObject.invokeMethod(self.main_page,
-                                                                 "updated_chat_signal", Qt.QueuedConnection)
+                                                                 "update_chat_page_without_messages_signal", Qt.QueuedConnection)
                                         QMetaObject.invokeMethod(self.main_page,
                                                                  "getting_call_signal", Qt.QueuedConnection)
                                     except Exception as e:
@@ -3199,7 +3201,7 @@ class PageController:
                                                                              Qt.QueuedConnection)
                                 else:
                                     self.main_page.call_dicts.append(call_dict)
-                                QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                                QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                          Qt.QueuedConnection)
                             if action == "list_call_dicts":
                                 list_call_dicts = json.loads(data.get("list_call_dicts"))
@@ -3217,7 +3219,7 @@ class PageController:
                         self.main_page.list_user_profile_dicts = profile_dicts_list
                         QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",
                                                  Qt.QueuedConnection)
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         QMetaObject.invokeMethod(self.main_page,
                                                  "caching_circular_images_of_users_signal", Qt.QueuedConnection)
