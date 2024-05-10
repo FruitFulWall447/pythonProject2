@@ -35,7 +35,7 @@ CAMERA_FPS = 60
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
-CHUNK = 1024
+CHUNK = 4096
 p = pyaudio.PyAudio()
 SCREEN_FPS = 30
 
