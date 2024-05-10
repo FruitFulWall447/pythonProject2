@@ -138,7 +138,6 @@ def threaded_logged_in_client(n, User):
     messages_list_max_index = numbers_of_starter_message
     while ServerHandler.is_user_online(User):
         time.sleep(0.05)
-
         if is_client_waits_for_message(User):
             message = get_and_remove_message_for_client(User)
             if isinstance(message, dict):
@@ -189,21 +188,12 @@ def threaded_logged_in_client(n, User):
                 friends_list = database_func.get_user_friends(User)
                 n.send_friends_list(friends_list)
                 logger.info(f"Sent friend list ({friends_list}) to user {User}")
-            if isinstance(message, str) and message.startswith("update_chat_list"):
-                x = 5
-
-
-
-vc_data_sequence = br'\vc_data'
-share_screen_sequence = br'\share_screen_data'
-share_camera_sequence = br'\share_camera_data'
 
 
 def thread_recv_messages(n, addr):
     User = ""
     is_logged_in = False
     logger = logging.getLogger(__name__)
-
     while True:
         if not is_logged_in:
             try:
