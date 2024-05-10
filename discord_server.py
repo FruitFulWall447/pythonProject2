@@ -208,6 +208,8 @@ def thread_recv_messages(n, addr):
         if not is_logged_in:
             try:
                 data = n.recv_str()
+                if data is None:
+                    break
                 message_type = data.get("message_type")
                 if message_type == "login":
                     username = data.get("username")
