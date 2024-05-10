@@ -883,10 +883,6 @@ class UDPClientHandler:
             self.lost_packets += 1
             self.gotten_packets += 1
 
-        if self.gotten_packets > 0 and self.lost_packets > 0 and self.lost_packets % 100 == 0:
-            loss_percentage = (self.lost_packets / self.gotten_packets) * 100
-            self.logger.info(f"Lost {self.lost_packets} out of {self.gotten_packets}, {loss_percentage}%")
-
     def handle_data_fragment(self, data_list, sliced_data, is_first, is_last, data_type, shape_of_frame=None):
         if is_first:
             data_list.clear()
