@@ -132,18 +132,7 @@ class Call:
 
     def send_call_object_to_clients(self):
         # Extract relevant attributes to send
-        call_data = {
-            "is_group_call": self.is_group_call,
-            "call_id": self.call_id,
-            "participants": self.participants,
-            "muted": self.muted,
-            "deafened": self.deafened,
-            "screen_streamers": self.get_all_video_screen_streamers(),
-            "camera_streamers": self.get_all_video_camera_streamers(),
-            "group_id": self.group_id if self.is_group_call else None,
-            # Add more attributes as needed
-        }
-
+        call_data = self.get_call_dict()
         for name, net in self.call_nets.items():
             if net is not None:
                 net.send_call_dict(call_data)
