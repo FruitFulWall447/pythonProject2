@@ -1309,10 +1309,11 @@ def add_chat_to_user(username, new_chat_name):
 
             # If the current_chats_list_json is None, set it to an empty list
             current_chats_list = json.loads(current_chats_list_json) if current_chats_list_json else []
-            new_chat_name_id = get_id_from_username(new_chat_name)
-
-            # Append the new_chat_name to the current_chats_list
-            current_chats_list.append(new_chat_name_id)
+            if not new_chat_name.startswith("("):
+                new_chat_name_id = get_id_from_username(new_chat_name)
+                current_chats_list.append(new_chat_name_id)
+            else:
+                current_chats_list.append(new_chat_name)
 
             # Convert the updated_chats_list to JSON format
             updated_chats_list_json = json.dumps(current_chats_list)
