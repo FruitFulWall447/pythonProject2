@@ -840,7 +840,10 @@ def update_profile_pic(username, profile_pic_encoded):
         file_path = result[0]  # Extract the file path from the tuple
 
         if file_path is not None:
-            os.remove(file_path)
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print("couldn't find file path")
 
         table_name = "sign_up_table"
 
