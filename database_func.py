@@ -2025,7 +2025,11 @@ def get_group_by_id(group_id):
         group_data = cursor.fetchone()
 
         if group_data:
-            group_members_list = json.loads(group_data[2]) if group_data[2] else []
+            group_members_id_list = json.loads(group_data[2]) if group_data[2] else []
+            group_members_list = []
+
+            for chat_id in group_members_id_list:
+                group_members_list.append(get_username_from_id(chat_id))
             group_image_bytes = file_to_bytes(group_data[5]) if group_data[5] else None
             timestamp_datetime = datetime.fromisoformat(group_data[4])
 
