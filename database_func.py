@@ -1182,8 +1182,7 @@ def send_friend_request(username, friend_username):
 
 
 def handle_friend_request(username, friend_username, accept):
-    # Assuming you have a MySQL database connection
-    # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
+
     username_id = get_id_from_username(username)
     friend_username_id = get_id_from_username(friend_username)
     connection = connect_to_kevindb()
@@ -1310,9 +1309,10 @@ def add_chat_to_user(username, new_chat_name):
 
             # If the current_chats_list_json is None, set it to an empty list
             current_chats_list = json.loads(current_chats_list_json) if current_chats_list_json else []
+            new_chat_name_id = get_id_from_username(new_chat_name)
 
             # Append the new_chat_name to the current_chats_list
-            current_chats_list.append(new_chat_name)
+            current_chats_list.append(new_chat_name_id)
 
             # Convert the updated_chats_list to JSON format
             updated_chats_list_json = json.dumps(current_chats_list)
@@ -1437,7 +1437,14 @@ def get_user_chats(username):
 
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
-        sorted_chats_list = sort_chat_list(current_chats_list, username)
+        chat_list_names = []
+        for chat in current_chats_list:
+            if isinstance(chat, int):
+                chat_list_names.append(get_username_from_id(chat))
+            else:
+                chat_list_names.append(chat)
+
+        sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
 
     except sqlite3.Error as err:
@@ -1523,8 +1530,9 @@ def remove_chat_from_user(username, chat_to_remove):
 
             # Remove the specified chat from the current_chats_list
             if not chat_to_remove.startswith("("):
-                if chat_to_remove in current_chats_list:
-                    current_chats_list.remove(chat_to_remove)
+                chat_to_remove_id = get_id_from_username(chat_to_remove)
+                if chat_to_remove_id in current_chats_list:
+                    current_chats_list.remove(chat_to_remove_id)
 
                     # Convert the updated_chats_list to JSON format
                     updated_chats_list_json = json.dumps(current_chats_list)
@@ -1587,7 +1595,10 @@ def get_blocked_users(username):
             return []
 
         # Convert the blocked_list JSON to a Python list
-        blocked_users = json.loads(result[0])
+        blocked_users_id = json.loads(result[0])
+        blocked_users = []
+        for user_id in blocked_users_id:
+            blocked_users.append(get_username_from_id(user_id))
 
         return blocked_users
 
@@ -1622,7 +1633,8 @@ def block_user(username, user_to_block):
             blocked_list = json.loads(blocked_list_json) if blocked_list_json else []
 
             # Add the user_to_block to the blocked_list
-            blocked_list.append(user_to_block)
+            user_to_block_id = get_id_from_username(user_to_block)
+            blocked_list.append(user_to_block_id)
 
             # Convert the updated blocked_list to JSON format
             updated_blocked_list_json = json.dumps(blocked_list)
@@ -1668,8 +1680,9 @@ def unblock_user(username, user_to_unblock):
             blocked_list = json.loads(blocked_list_json) if blocked_list_json else []
 
             # Remove the user_to_unblock from the blocked_list if it exists
-            if user_to_unblock in blocked_list:
-                blocked_list.remove(user_to_unblock)
+            user_to_unblock_id = get_id_from_username(user_to_unblock)
+            if user_to_unblock_id in blocked_list:
+                blocked_list.remove(user_to_unblock_id)
 
                 # Convert the updated blocked_list to JSON format
                 updated_blocked_list_json = json.dumps(blocked_list)
@@ -1711,7 +1724,10 @@ def create_group(group_name, group_manager, group_members_list=None):
         cursor = connection.cursor()
 
         # Convert group_members_list to a JSON-formatted string
-        group_members_json = json.dumps(group_members_list) if group_members_list else None
+        group_members_id_list = []
+        for member in group_members_list:
+            group_members_id_list.append(get_id_from_username(member))
+        group_members_json = json.dumps(group_members_id_list) if group_members_list else None
 
         # Insert the group into the 'my_groups' table
         timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
@@ -1819,8 +1835,9 @@ def remove_group_member(group_id, group_member):
         current_members_list = json.loads(row) if row else []
 
         # Remove the group member from the list
-        if group_member in current_members_list:
-            current_members_list.remove(group_member)
+        group_member_id = get_id_from_username(group_member)
+        if group_member_id in current_members_list:
+            current_members_list.remove(group_member_id)
 
             # Update the group_members_list for the specified group_id
             cursor.execute("UPDATE my_groups SET group_members_list = ? WHERE group_id = ?",
@@ -1858,7 +1875,10 @@ def get_group_members(group_id):
 
         # Check if the group exists and has members
         if members_list_json:
-            members_list = json.loads(members_list_json[0])
+            members_list_id = json.loads(members_list_json[0])
+            members_list = []
+            for id in members_list_id:
+                members_list.append(get_username_from_id(id))
             return members_list
         else:
             print(f"Group with ID {group_id} not found or has no members.")
@@ -1890,7 +1910,8 @@ def append_group_member(group_id, group_member):
         current_members_list = json.loads(row[0]) if row else []
 
         # Append the new group member to the list
-        current_members_list.append(group_member)
+        group_member_id = get_id_from_username(group_member)
+        current_members_list.append(group_member_id)
 
         # Update the group_members_list for the specified group_id
         cursor.execute("UPDATE my_groups SET group_members_list = ? WHERE group_id = ?",
@@ -1954,7 +1975,10 @@ def get_user_groups(username):
 
         user_groups = []
         for row in cursor.fetchall():
-            group_members_list = json.loads(row[2]) if row[2] else []
+            group_members_id_list = json.loads(row[2]) if row[2] else []
+            group_members_list = []
+            for member_id in group_members_id_list:
+                group_members_list.append(get_username_from_id(member_id))
             group_image_bytes = file_to_bytes(row[5]) if row[5] else None
             # Check if the specified username is a group member or the manager
             if row[4]:
