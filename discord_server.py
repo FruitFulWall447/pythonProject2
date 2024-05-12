@@ -508,6 +508,7 @@ def thread_recv_messages(n, addr):
                     # means its a group therefore need to update message for every member of group
                     group_name, group_id = gets_group_attributes_from_format(receiver)
                     group_members = database_func.get_group_members(group_id)
+                    print(group_members)
                     group_members.remove(User)
                     for member in group_members:
                         add_message_for_client(member, data)
