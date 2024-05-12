@@ -421,7 +421,7 @@ class ServerHandler:
                     }
                     n = self.get_net_by_name(user)
                     n.send_new_message_content(chat_name, formatted_message)
-                    self.logger.info(f"send new message to {user}")
+                    self.logger.info(f"send new message to {user} in chat {chat_name}")
 
     def is_user_online(self, user):
         return user in self.online_users
