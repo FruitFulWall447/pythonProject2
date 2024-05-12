@@ -817,6 +817,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
             menu = QMenu(parent)
+            menu.setStyleSheet(f"""
+                QMenu {{
+                    color: white; /* Text color of menu items */
+                    border: 1px solid gray; /* Border style */
+                }}
+                QMenu::item:selected {{
+                    background-color: {self.standard_hover_color}; /* Hover color when item is selected */
+                }}
+            """)
             for item1 in actions_list:
                 action = menu.addAction(item1.replace("_", " "))
                 if item1 == "remove_chat":

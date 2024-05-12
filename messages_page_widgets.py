@@ -1436,7 +1436,7 @@ class ChatBox(QWidget):
         change = False
         try:
             if format == "down":
-                if len(self.parent.friends_list) + self.parent.create_group_index > 5:
+                if len(self.parent.friends_list) > (self.parent.create_group_index + 1) * 5:
                     self.parent.create_group_index += 1
                     change = True
             else:
