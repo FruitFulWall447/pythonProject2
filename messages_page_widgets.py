@@ -2050,6 +2050,9 @@ class ChatBox(QWidget):
             return label
         except Exception as e:
             print(f"error in creating message label {e}")
+            label = QLabel(message, self)
+            label.setStyleSheet(f"color: white")
+            return label
 
     def delete_message_labels(self):
         for label in self.message_labels:
