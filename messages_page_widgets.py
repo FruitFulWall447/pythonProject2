@@ -2043,16 +2043,14 @@ class ChatBox(QWidget):
             font = QFont(self.parent.font_text)
             font.setPixelSize(self.parent.font_size)
             label.setFont(font)
-            # number_of_rows = math.floor(len(message) / 160) + 1
-            # if len(message) > 0 and number_of_rows > 1:
-            #     format_label_text_by_row(label, message, number_of_rows)
-            #     label.adjustSize()
+            number_of_rows = math.floor(len(message) / 160) + 1
+            if len(message) > 0 and number_of_rows > 1:
+                format_label_text_by_row(label, message, number_of_rows)
+                label.adjustSize()
             return label
         except Exception as e:
             print(f"error in creating message label {e}")
-            label = QLabel(message, self)
-            label.setStyleSheet(f"color: white")
-            return label
+            return None
 
     def delete_message_labels(self):
         for label in self.message_labels:
