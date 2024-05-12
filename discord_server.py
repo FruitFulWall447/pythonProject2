@@ -503,13 +503,13 @@ def thread_recv_messages(n, addr):
                 database_func.add_message(sender, receiver, content, type_of_message, file_name)
                 # fix it...
                 if not receiver.startswith("("):
-                    ServerHandler.update_message_for_users([receiver], data)
+                    ServerHandler.update_message_for_users([receiver], data, User)
                 else:
                     group_name, group_id = gets_group_attributes_from_format(receiver)
                     group_members = database_func.get_group_members(group_id)
                     print(group_members)
                     group_members.remove(User)
-                    ServerHandler.update_message_for_users(group_members, data)
+                    ServerHandler.update_message_for_users(group_members, data, receiver)
                 logger.info(f"added new message from {User} to {receiver}")
             elif message_type == "update_profile_pic":
                 b64_encoded_profile_pic = data.get("b64_encoded_profile_pic")

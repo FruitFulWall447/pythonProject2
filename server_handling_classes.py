@@ -401,7 +401,7 @@ class ServerHandler:
         self.UDPClientHandler_list = []
         self.server_mtu = None
 
-    def update_message_for_users(self, users, message):
+    def update_message_for_users(self, users, message, chat_name=None):
         for user in users:
             if self.is_user_online(user):
                 message_type = message.get("message_type")
@@ -420,7 +420,7 @@ class ServerHandler:
                         "file_name": file_name
                     }
                     n = self.get_net_by_name(user)
-                    n.send_new_message_content(sender, formatted_message)
+                    n.send_new_message_content(chat_name, formatted_message)
                     self.logger.info(f"send new message to {user}")
 
     def is_user_online(self, user):

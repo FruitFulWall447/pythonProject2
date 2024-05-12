@@ -3089,14 +3089,14 @@ class PageController:
                         self.main_page.scroll_back_to_index_before_update_signal.emit(
                             len(message_list_addition))
                     elif message_type == "new_message":
-                        chat = data.get("sender_id")
+                        chat = data.get("chat_name")
                         if self.main_page.selected_chat == chat:
                             message_dict = json.loads(data.get("message_dict"))
                             self.main_page.list_messages.insert(0, message_dict)
                             self.main_page.insert_new_message_in_chat_signal.emit(message_dict)
                             self.main_page.chats_list.remove(chat)
                             self.main_page.chats_list.insert(0, chat)
-                            print("got new message from current chat")
+                            print("got new message from current chat from {}")
                         else:
                             QMetaObject.invokeMethod(self.main_page, "new_message_play_audio_signal",
                                                      Qt.QueuedConnection)
