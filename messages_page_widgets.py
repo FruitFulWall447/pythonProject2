@@ -2012,6 +2012,15 @@ class ChatBox(QWidget):
 
     def show_context_menu(self, pos, button, file_bytes, type, file_name):
         menu = QMenu(self)
+        menu.setStyleSheet(f"""
+            QMenu {{
+                color: white; /* Text color of menu items */
+                border: 1px solid gray; /* Border style */
+            }}
+            QMenu::item:selected {{
+                background-color: {self.parent.standard_hover_color}; /* Hover color when item is selected */
+            }}
+        """)
         download_action = menu.addAction("Download")
         download_action.triggered.connect(lambda: download_file_from_bytes(file_bytes, type, file_name))
 
