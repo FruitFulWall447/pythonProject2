@@ -952,7 +952,7 @@ class server_net:
 
     def send_new_message_content(self, chat, message_dict):
         message = {"message_type": "new_message",
-                   "chat": chat,
+                   "chat_name": chat,
                    "message_dict": json.dumps(message_dict)
                    }
         self.send_message_dict_tcp(message)
