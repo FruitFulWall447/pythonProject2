@@ -168,6 +168,7 @@ def threaded_logged_in_client(n, User):
                             "file_name": file_name
                         }
                         n.send_new_message_content(sender, formatted_message)
+                        logger.info(f"send new message to {User}")
                 if message_type == "more_messages":
                     list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
                             messages_list_max_index + 1, messages_list_max_index + 6)
