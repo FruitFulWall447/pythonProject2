@@ -144,6 +144,7 @@ def threaded_logged_in_client(n, User):
                 message_type = message.get("message_type")
                 if message_type == "current_chat":
                     client_current_chat = message.get("current_chat")
+                    messages_list_max_index = 20
                     logger.info(f"{User} current chat is {client_current_chat}")
                     if client_current_chat not in database_func.get_user_chats(User):
                         database_func.add_chat_to_user(User, client_current_chat)
