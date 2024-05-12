@@ -10,7 +10,7 @@ import pickle
 from discord_comms_protocol import decrypt_with_aes, encrypt_with_aes, slice_up_data
 import zlib
 import socket
-
+import datetime as date
 
 def create_profile_pic_dict(username, image_bytes_encoded):
     if isinstance(image_bytes_encoded, bytes):
@@ -400,6 +400,28 @@ class ServerHandler:
         self.udp_socket = None
         self.UDPClientHandler_list = []
         self.server_mtu = None
+
+    def update_message_for_users(self, users, message):
+        for user in users:
+            if self.is_user_online(user):
+                message_type = message.get("message_type")
+                sender = message.get("sender")
+                if message_type == "add_message":
+                    content = message.get("content")
+                    type_of_message = message.get("type")
+                    file_name = message.get("file_name")
+                    time_now = date.datetime.now()
+                    formatted_time = time_now.strftime('%Y-%m-%d %H:%M')
+                    formatted_message = {
+                        "content": content,
+                        "sender_id": sender,
+                        "timestamp": formatted_time,
+                        "message_type": type_of_message,
+                        "file_name": file_name
+                    }
+                    n = self.get_net_by_name(user)
+                    n.send_new_message_content(sender, formatted_message)
+                    self.logger.info(f"send new message to {user}")
 
     def is_user_online(self, user):
         return user in self.online_users
