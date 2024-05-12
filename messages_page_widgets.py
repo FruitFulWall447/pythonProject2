@@ -2169,6 +2169,8 @@ class ScrollableWidget(QWidget):
         self.scroll_area.verticalScrollBar().setValue(maximum)
 
     def update_scroll_area_parent(self, new_parent):
+        self.setParent(new_parent)
+        self.parent = new_parent
         self.scroll_area.setParent(new_parent)
 
     def load_all_message_func(self, message_list):
@@ -2203,7 +2205,6 @@ class ScrollableWidget(QWidget):
             content_label = self.parent.create_temp_message_label(message_content)
 
             # second part = Name + timestamp
-            title_label = QLabel()
             title_label = self.parent.create_temp_message_label("")
             title_label.setText(
                 f'<span style="font-size: {self.main_page_object.font_size + 2}px; color: white; font-weight: bold;">{message_sender}</span>'

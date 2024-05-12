@@ -1763,7 +1763,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             has_had_focus_of_search_bar = self.chat_box.find_contact_text_entry.hasFocus()
             self.stacked_widget.removeWidget(self.chat_box)
             self.chat_box.deleteLater()  # Schedule deletion of the old ChatBox widget
-            name = self.selected_chat
             search_bar_text = self.chat_box.find_contact_text_entry.text()
             try:
                 self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
