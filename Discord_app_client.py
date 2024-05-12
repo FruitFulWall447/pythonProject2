@@ -3089,7 +3089,7 @@ class PageController:
                         self.main_page.scroll_back_to_index_before_update_signal.emit(
                             len(message_list_addition))
                     elif message_type == "new_message":
-                        chat = data.get("chat")
+                        chat = data.get("sender_id")
                         if self.main_page.selected_chat == chat:
                             message_dict = json.loads(data.get("message_dict"))
                             self.main_page.list_messages.insert(0, message_dict)
