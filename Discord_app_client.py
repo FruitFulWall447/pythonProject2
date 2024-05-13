@@ -1620,6 +1620,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def keyPressEvent(self, event):
         n = self.Network
+        if self.push_to_talk_key is not None:
+            if self.reversed_keys_mapping.get(event.key()) == self.push_to_talk_key:
+                print("push to talk button toggled")
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
                 if self.chat_clicked and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
@@ -1709,47 +1712,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         else:
             if self.setting_clicked and self.is_editing_push_to_talk_button:
                 key = event.key()
-                special_keys_mapping = {
-                    Qt.Key_Return: "Return",
-                    Qt.Key_Enter: "Enter",
-                    Qt.Key_Escape: "Escape",
-                    Qt.Key_Tab: "Tab",
-                    Qt.Key_Backspace: "Backspace",
-                    Qt.Key_Delete: "Delete",
-                    Qt.Key_Insert: "Insert",
-                    Qt.Key_Home: "Home",
-                    Qt.Key_End: "End",
-                    Qt.Key_PageUp: "Page Up",
-                    Qt.Key_PageDown: "Page Down",
-                    Qt.Key_Left: "Left Arrow",
-                    Qt.Key_Right: "Right Arrow",
-                    Qt.Key_Up: "Up Arrow",
-                    Qt.Key_Down: "Down Arrow",
-                    Qt.Key_F1: "F1",
-                    Qt.Key_F2: "F2",
-                    Qt.Key_F3: "F3",
-                    Qt.Key_F4: "F4",
-                    Qt.Key_F5: "F5",
-                    Qt.Key_F6: "F6",
-                    Qt.Key_F7: "F7",
-                    Qt.Key_F8: "F8",
-                    Qt.Key_F9: "F9",
-                    Qt.Key_F10: "F10",
-                    Qt.Key_F11: "F11",
-                    Qt.Key_F12: "F12",
-                    Qt.Key_Shift: "Shift",
-                    Qt.Key_Control: "Control",
-                    Qt.Key_Alt: "Alt",
-                    Qt.Key_Meta: "Meta/Windows",
-                    Qt.Key_CapsLock: "Caps Lock",
-                    Qt.Key_NumLock: "Num Lock",
-                    Qt.Key_ScrollLock: "Scroll Lock",
-                    # Add more key mappings as needed
-                }
-
-                # Use the dictionary or fallback to Qt enumeration values
-
-                key_string = chr(key) if 32 <= key <= 126 else special_keys_mapping.get(key)
+                key_string = chr(key) if 32 <= key <= 126 else self.special_keys_mapping.get(key)
                 self.push_to_talk_key = key_string
                 self.is_editing_push_to_talk_button = False
                 self.updated_settings_page()
