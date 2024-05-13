@@ -811,7 +811,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def remove_friend(self, chat):
         self.friends_list.remove(chat)
         self.updated_requests()
-        self.updated_chat()
+        self.update_chat_page_without_messages()
         self.Network.send_remove_chat(chat)
 
     def send_friend_request_for_user(self, user):
@@ -1104,7 +1104,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"updated group dict of id {updated_group_dict.get('group_id')}")
                 new_image = base64.b64decode(updated_group_dict.get('group_b64_encoded_image'))
                 self.update_circular_photo_of_group(updated_group_dict.get('group_id'), new_image)
-                self.updated_chat()
+                self.update_chat_page_without_messages()
                 return
             index += 1
 
@@ -1176,7 +1176,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
             }
             self.circular_images_dicts_list_of_users.append(circular_images_dict)
-        self.updated_chat()
+        self.update_chat_page_without_messages()
         self.updated_settings_page()
 
     def caching_circular_images_of_groups(self):
@@ -1195,7 +1195,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
             }
             self.circular_images_dicts_list_of_groups.append(circular_images_dict)
-        self.updated_chat()
+        self.update_chat_page_without_messages()
 
     def update_profile_dict_of_user(self, name, new_profile_dict):
         try:
@@ -1242,7 +1242,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"update_circular_photo_of_user of {username}")
                 break
         # After updating, call the method to notify any listeners about the update
-        self.updated_chat()
+        self.update_chat_page_without_messages()
 
     def update_circular_photo_of_group(self, group_id, new_photo, circular_pic_bytes=None):
         if new_photo is None:
@@ -1262,7 +1262,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"update_circular_photo_of_user of group id :{group_id}")
                 break
         # After updating, call the method to notify any listeners about the update
-        self.updated_chat()
+        self.update_chat_page_without_messages()
 
     def get_profile_pic_by_username(self, username):
         if self.list_user_profile_dicts is not None:
