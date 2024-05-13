@@ -670,8 +670,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
             while self.vc_thread_flag:
                 if not self.mute and not self.deafen:
-                    input_data = input_stream.read(CHUNK)
-                    n.send_vc_data(input_data)
+                    if self.is_push_to_talk:
+                        if self.is_push_to_talk_pressed:
+                            input_data = input_stream.read(CHUNK)
+                            n.send_vc_data(input_data)
+                    else:
+                        input_data = input_stream.read(CHUNK)
+                        n.send_vc_data(input_data)
                 else:
                     time.sleep(0.1)
             input_stream.stop_stream()
