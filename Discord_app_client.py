@@ -455,6 +455,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.selected_settings = "My Account"
         self.is_push_to_talk = False
+        self.is_push_to_talk_pressed = False
         self.is_editing_push_to_talk_button = False
         self.profile_pic = None
         self.list_user_profile_dicts = []
@@ -1618,6 +1619,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in updated_settings_page error:{e}")
 
+    def keyReleaseEvent(self, event):
+        if self.push_to_talk_key is not None:
+            key = event.key()
+            key_string = chr(key) if 32 <= key <= 126 else self.special_keys_mapping.get(key)
+            if key_string == self.push_to_talk_key:
+                if self.is_push_to_talk:
+                    self.is_push_to_talk_pressed = False
+                    print("push to talk released")
+
     def keyPressEvent(self, event):
         n = self.Network
         if self.push_to_talk_key is not None:
@@ -1625,10 +1635,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             key_string = chr(key) if 32 <= key <= 126 else self.special_keys_mapping.get(key)
             if key_string == self.push_to_talk_key:
                 if self.is_push_to_talk:
-                    self.is_push_to_talk = False
-                else:
-                    self.is_push_to_talk = True
-                print("push to talk button toggled")
+                    self.is_push_to_talk_pressed = True
+                    print("push to talk button toggled")
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
                 if self.chat_clicked and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
