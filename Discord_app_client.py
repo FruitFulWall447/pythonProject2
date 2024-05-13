@@ -674,6 +674,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         if self.is_push_to_talk_pressed:
                             input_data = input_stream.read(CHUNK)
                             n.send_vc_data(input_data)
+                        else:
+                            time.sleep(0.1)
                     else:
                         input_data = input_stream.read(CHUNK)
                         n.send_vc_data(input_data)
