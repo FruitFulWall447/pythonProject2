@@ -1622,7 +1622,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         n = self.Network
         print(f"key pressed {event.key()}")
         if self.push_to_talk_key is not None:
-            if self.reversed_keys_mapping.get(event.key()) == self.push_to_talk_key:
+            key = event.key()
+            key_string = chr(key) if 32 <= key <= 126 else self.special_keys_mapping.get(key)
+            if key_string == self.push_to_talk_key:
                 print("push to talk button toggled")
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
