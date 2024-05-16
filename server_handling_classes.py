@@ -11,6 +11,7 @@ from discord_comms_protocol import decrypt_with_aes, encrypt_with_aes, slice_up_
 import zlib
 import socket
 import datetime as date
+import logging
 
 
 def create_profile_pic_dict(username, image_bytes_encoded):
@@ -385,8 +386,6 @@ class Ring:
     def is_ring_by_ringer(self, ringer):
         return self.ringer == ringer
 
-
-import logging
 
 
 class ServerHandler:
