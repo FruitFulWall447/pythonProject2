@@ -12,6 +12,7 @@ import zlib
 import socket
 import datetime as date
 
+
 def create_profile_pic_dict(username, image_bytes_encoded):
     if isinstance(image_bytes_encoded, bytes):
         image_bytes_encoded = base64.b64encode(image_bytes_encoded).decode('utf-8')
