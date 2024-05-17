@@ -7,20 +7,14 @@ from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath, QFont
 from PyQt5.QtMultimedia import QMediaContent
 from io import BytesIO
 import base64
-import binascii
 import zlib
-from PIL import Image, ImageDraw
-import webbrowser
-import io
+from PIL import Image
 import tempfile
 import os
 import math
 import subprocess
-import platform
 import random
 import string
-import warnings
-import re
 import pyaudio
 import cv2
 
@@ -139,21 +133,14 @@ def open_text_file_from_bytes(file_bytes):
 def download_file_from_bytes(file_bytes, file_extension, file_name):
     try:
         # Get the path to the user's downloads directory
-        if platform.system() == 'Windows':
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-        elif platform.system() == 'Darwin':
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-        else:
-            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+        downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
 
 
-        # Generate a random file name with the same extension
+
         if not file_name:
             file_name = generate_random_filename(file_extension)
 
 
-        # Prompt the user to choose a file name and location
-        #file_path, _ = QFileDialog.getSaveFileName(None, "Save File", os.path.join(downloads_dir, file_name))
         path = os.path.join(downloads_dir, file_name)
 
         if path:
@@ -1967,7 +1954,7 @@ class ChatBox(QWidget):
             # Attempt to decode the Base64 string
             decoded_bytes = base64.b64decode(s)
             return True
-        except (binascii.Error, TypeError):
+        except:
             # If decoding fails, it's not a valid Base64 string
             return False
 

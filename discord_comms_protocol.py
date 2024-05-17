@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import padding as aes_padding
 import secrets
 import pickle
-import binascii
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
@@ -112,12 +111,6 @@ def decrypt_with_aes(key, ciphertext):
         unpadded_data = unpadder.update(decrypted_data) + unpadder.finalize()
         # return type bytes
         return unpadded_data
-    except binascii.Error:
-        # If binascii.Error occurs (invalid base64 string), return 1 without printing the error
-        return 1
-    except TypeError:
-        # If TypeError occurs, return 1 without printing the error
-        return 1
     except Exception as e:
         print(f"Error in decryption: {e}")
         return 1

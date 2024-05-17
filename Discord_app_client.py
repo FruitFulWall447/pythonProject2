@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
-from PyQt5.QtCore import Qt, QSize, QPoint, QTimer, QMetaObject, pyqtSignal, \
+from PyQt5.QtCore import QSize, QPoint, QTimer, QMetaObject, pyqtSignal, \
     QSettings, Qt, QUrl, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
@@ -38,6 +38,25 @@ RATE = 44100
 CHUNK = 4096
 p = pyaudio.PyAudio()
 SCREEN_FPS = 30
+
+
+def parse_group_caller_format(input_format):
+    # Define a regular expression pattern to capture the information
+    pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
+
+    # Use the pattern to match the input_format
+    match = pattern.match(input_format)
+
+    if match:
+        # Extract the matched groups
+        group_id = int(match.group(1))
+        group_name = match.group(2).strip()
+        group_caller = match.group(3).strip()
+
+        return group_id, group_name, group_caller
+    else:
+        # Return None if no match is found
+        return None
 
 
 def duration_to_milliseconds(duration_str):
@@ -382,7 +401,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.reversed_keys_mapping = {value: key for key, value in self.special_keys_mapping.items()}
 
 
-
         self.standard_hover_color = "#2980b9"
         self.background_color_hex = "#141c4b"
         self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
@@ -548,50 +566,43 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
         self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
         self.sound_effect_media_player.setMedia(self.ringtone)
+        x, y = (int(self.page_controller_object.screen_width * 0.052),
+                int(self.page_controller_object.screen_height * 0.092))
+        width, height = (int(self.page_controller_object.screen_width * 0.3125),
+                         int(self.page_controller_object.screen_height * 0.37))
 
-        self.init_ui()
+        self.setGeometry(x, y, width, height)
+        self.setWindowTitle('Main Page')
+        self.setStyleSheet(f'''
+            QWidget {{
+                background-color: {self.background_color_hex};
+            }}
+        ''')
+        # Create an instance of ChatBox
+        if self.chat_clicked:
+            self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
 
-    def init_ui(self):
-        # Set up the main window
-        try:
-            x, y = (int(self.page_controller_object.screen_width * 0.052),
-                    int(self.page_controller_object.screen_height * 0.092))
-            width, height = (int(self.page_controller_object.screen_width * 0.3125),
-                             int(self.page_controller_object.screen_height * 0.37))
+        buttons_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addSpacing(30)
+        self.main_layout.addLayout(buttons_layout)
+        self.friends_box = FriendsBox(friends_list=self.friends_list,
+                                      requests_list=self.request_list, Network=self.Network, username=self.username,
+                                      parent=self)
+        self.friends_box.hide()
+        self.settings_box = SettingsBox(parent=self)
+        self.settings_box.hide()
+        self.music_box = PlaylistWidget(main_page_widget=self)
+        self.music_box.hide()
+        self.stacked_widget = QStackedWidget(self)
+        self.stacked_widget.addWidget(self.chat_box)
+        self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
+        self.stacked_widget.addWidget(self.friends_box)
+        self.stacked_widget.addWidget(self.music_box)
+        self.main_layout.addWidget(self.stacked_widget)
 
-            self.setGeometry(x, y, width, height)
-            self.setWindowTitle('Main Page')
-            self.setStyleSheet(f'''
-                QWidget {{
-                    background-color: {self.background_color_hex};
-                }}
-            ''')
-            # Create an instance of ChatBox
-            if self.chat_clicked:
-                self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
+        self.setLayout(self.main_layout)
 
-            buttons_layout = QHBoxLayout()
-            self.main_layout = QVBoxLayout(self)
-            self.main_layout.addSpacing(30)
-            self.main_layout.addLayout(buttons_layout)
-            self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                          requests_list=self.request_list, Network=self.Network, username=self.username,
-                                          parent=self)
-            self.friends_box.hide()
-            self.settings_box = SettingsBox(parent=self)
-            self.settings_box.hide()
-            self.music_box = PlaylistWidget(main_page_widget=self)
-            self.music_box.hide()
-            self.stacked_widget = QStackedWidget(self)
-            self.stacked_widget.addWidget(self.chat_box)
-            self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
-            self.stacked_widget.addWidget(self.friends_box)
-            self.stacked_widget.addWidget(self.music_box)
-            self.main_layout.addWidget(self.stacked_widget)
-
-            self.setLayout(self.main_layout)
-        except Exception as e:
-            print(f"Error is: {e}")
 
     def close_all_threads(self):
         # turns every thread flag to False
@@ -1451,24 +1462,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"end_current_call error: {e}")
 
-    def parse_group_caller_format(self, input_format):
-        # Define a regular expression pattern to capture the information
-        pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
-
-        # Use the pattern to match the input_format
-        match = pattern.match(input_format)
-
-        if match:
-            # Extract the matched groups
-            group_id = int(match.group(1))
-            group_name = match.group(2).strip()
-            group_caller = match.group(3).strip()
-
-            return group_id, group_name, group_caller
-        else:
-            # Return None if no match is found
-            return None
-
     def initiate_call(self):
         self.is_in_a_call = True
         self.is_calling = False
@@ -1487,7 +1480,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.calling_to = ""
             elif self.getting_called_by != "":
                 if "(" in self.getting_called_by:
-                    group_id, group_name, group_caller = self.parse_group_caller_format(self.getting_called_by)
+                    group_id, group_name, group_caller = parse_group_caller_format(self.getting_called_by)
                     self.in_call_with = "(" + str(group_id) + ")" + group_name
                     print(f"in call with {self.in_call_with}")
                     self.getting_called_by = ""
@@ -1836,7 +1829,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.page_controller_object.quit_application()
 
 
-class Sign_up_page(QWidget):
+class SignUpPage(QWidget):
     def __init__(self, page_controller_object):
 
         super().__init__()
@@ -2042,7 +2035,7 @@ class Sign_up_page(QWidget):
         self.page_controller_object.change_to_login_page()
 
 
-class Login_page(QWidget):
+class LoginPage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
@@ -2336,7 +2329,7 @@ class VideoClient(QMainWindow):
             self.close()
 
 
-class Forget_password_page(QWidget):
+class ForgetPasswordPage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
@@ -2481,7 +2474,7 @@ class Forget_password_page(QWidget):
         print(4)
 
 
-class Verification_code_page(QWidget):
+class VerificationCodePage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
@@ -2715,7 +2708,7 @@ class Verification_code_page(QWidget):
             print("resend code")
 
 
-class Change_password_page(QWidget):
+class ChangePasswordPage(QWidget):
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
@@ -2940,12 +2933,12 @@ class PageController:
                 self.is_waiting_for_2fa_code = False
                 self.splash_page = SplashScreen(self)
                 self.splash_page.showMaximized()
-                self.sign_up_page = Sign_up_page(self)
-                self.forget_password_page = Forget_password_page(self)
-                self.login_page = Login_page(self)
+                self.sign_up_page = SignUpPage(self)
+                self.forget_password_page = ForgetPasswordPage(self)
+                self.LoginPage = LoginPage(self)
                 self.main_page = MainPage(self.n, self)
-                self.change_password_page = Change_password_page(self)
-                self.verification_code_page = Verification_code_page(self)
+                self.change_password_page = ChangePasswordPage(self)
+                self.verification_code_page = VerificationCodePage(self)
                 self.main_page.showMaximized()
                 self.main_page.hide()
                 self.sign_up_page.showMaximized()
@@ -2998,12 +2991,12 @@ class PageController:
     def clear_all_pages(self):
         try:
             self.splash_page = SplashScreen(self)
-            self.sign_up_page = Sign_up_page(self)
-            self.forget_password_page = Forget_password_page(self)
-            self.login_page = Login_page(self)
+            self.sign_up_page = SignUpPage(self)
+            self.forget_password_page = ForgetPasswordPage(self)
+            self.LoginPage = LoginPage(self)
             self.main_page = MainPage(self.n, self)
-            self.change_password_page = Change_password_page(self)
-            self.verification_code_page = Verification_code_page(self)
+            self.change_password_page = ChangePasswordPage(self)
+            self.verification_code_page = VerificationCodePage(self)
         except Exception as e:
             print(f"error in clearing pages {e}")
 

@@ -4,7 +4,6 @@ from PyQt5.QtCore import QSize, pyqtSignal, Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from io import BytesIO
 from PIL import Image, ImageDraw
-import warnings
 import re
 import pyaudio
 import cv2
@@ -251,20 +250,6 @@ def make_circular_image(image_bytes):
 
 def make_q_object_clear(object):
     object.setStyleSheet("background-color: transparent; border: none;")
-
-
-def check_camera(i):
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")  # Ignore OpenCV warnings
-            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
-        if cap.isOpened():
-            _, frame = cap.read()
-            cap.release()
-            return f"Camera {i}"
-    except Exception as e:
-        pass  # Handle any exceptions that may occur during camera check
-    return None
 
 
 def get_camera_names():

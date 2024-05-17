@@ -13,6 +13,18 @@ import datetime as date
 import logging
 
 
+def get_id_from_format(str_format):
+    temp = str_format.split("(")[1]
+    temp = temp.split(")")[0]
+    return int(temp)
+
+
+def find_common_elements(list1, list2):
+    # Use set intersection to find common elements
+    common_elements = list(set(list1) & set(list2))
+    return common_elements
+
+
 def create_profile_pic_dict(username, image_bytes_encoded):
     if isinstance(image_bytes_encoded, bytes):
         image_bytes_encoded = base64.b64encode(image_bytes_encoded).decode('utf-8')
@@ -290,7 +302,6 @@ class Ring:
         self.is_ringer_stopped_call = False
         threading.Thread(target=self.process_call_and_send_response, args=()).start()
 
-
     def rejected_ring(self, user):
         self.rejected_rings.append(user)
         self.logger.info(f"{user} declined call")
@@ -386,7 +397,6 @@ class Ring:
         return self.ringer == ringer
 
 
-
 class ServerHandler:
     def __init__(self):
         self.calls = []
@@ -433,7 +443,7 @@ class ServerHandler:
             # Encrypt the data if encryption is enabled
             aes_key = None
             if sending_to_user is not None:
-                aes_key = self.get_aes_key_by_by_username(sending_to_user)
+                aes_key = self.get_aes_key_by_username(sending_to_user)
             if aes_key is not None:
                 encrypted_data = encrypt_with_aes(aes_key, data)
                 data = encrypted_data
@@ -516,7 +526,7 @@ class ServerHandler:
         user_chats_list = database_func.get_user_chats(User)
         net.send_user_chats_list(user_chats_list)
         self.logger.info(f"Sent Chats list to user {User}")
-        online_friends = self.find_common_elements(self.online_users, friends_list)
+        online_friends = find_common_elements(self.online_users, friends_list)
         net.send_online_users_list(online_friends)
         self.logger.info(f"Sent Online friends list to user {User}")
         list_call_dicts = self.get_list_of_calls_for_user(User)
@@ -574,13 +584,8 @@ class ServerHandler:
             if friend in self.online_users:
                 friend_friends_list = database_func.get_user_friends(friend)
                 friends_net = self.get_net_by_name(friend)
-                online_friends = self.find_common_elements(self.online_users, friend_friends_list)
+                online_friends = find_common_elements(self.online_users, friend_friends_list)
                 friends_net.send_online_users_list(online_friends)
-
-    def find_common_elements(self, list1, list2):
-        # Use set intersection to find common elements
-        common_elements = list(set(list1) & set(list2))
-        return common_elements
 
     def user_online(self, user, net):
         self.online_users.append(user)
@@ -667,11 +672,6 @@ class ServerHandler:
         call = Call(parent=self, participants=participants, nets=self.nets_dict, group_id=group_id)
         self.add_call(call)
 
-    def get_id_from_format(self, format):
-        temp = format.split("(")[1]
-        temp = temp.split(")")[0]
-        return int(temp)
-
     def add_ring(self, ring):
         self.rings.append(ring)
 
@@ -683,7 +683,7 @@ class ServerHandler:
 
     def create_ring(self, ringer, ringing_to):
         if ringing_to.startswith("("):
-            group_id = self.get_id_from_format(ringing_to)
+            group_id = get_id_from_format(ringing_to)
             ring = Ring(Parent=self, ringer=ringer, nets=self.nets_dict, group_id=group_id)
             self.add_ring(ring)
         else:
@@ -786,7 +786,7 @@ class ServerHandler:
         udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
         self.UDPClientHandler_list.append(udp_handler_object)
 
-    def get_aes_key_by_by_username(self, username):
+    def get_aes_key_by_username(self, username):
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
 
@@ -808,7 +808,7 @@ class VideoStream:
         self.data_collection = []  # List of tuples containing user and vc_data
         self.stop_thread = threading.Event()  # Event for signaling the thread to stop
         self.thread = threading.Thread(target=self.process_share_screen_data)
-        self.logger.info(f"Video Stream of id {self.stream_id} and type {self.stream_type} was created")
+        self.thread.info(f"Video Stream of id {self.stream_id} and type {self.stream_type} was created")
 
     def remove_spectator(self, user):
         self.spectators.remove(user)
@@ -872,7 +872,7 @@ class UDPClientHandler:
         self.ServerHandler_object = ServerHandler_object
         self.client_username = client_username
         self.logger.info(f"create udp client handler of udp address {self.udp_address} and tcp address of {self.tcp_address} of username {self.client_username}")
-        self.aes_key = self.ServerHandler_object.get_aes_key_by_by_username(self.client_username)
+        self.aes_key = self.ServerHandler_object.get_aes_key_by_username(self.client_username)
         self.lost_packets = 0
         self.gotten_packets = 0
         self.vc_data = []

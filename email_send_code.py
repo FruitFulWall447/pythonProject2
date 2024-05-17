@@ -1,9 +1,3 @@
-from email.message import EmailMessage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-import ssl
-import smtplib
 import os
 import smtplib
 from email.mime.multipart import MIMEMultipart

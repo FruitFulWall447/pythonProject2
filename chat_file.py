@@ -6,7 +6,6 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from io import BytesIO
 from PIL import Image, ImageDraw
-import warnings
 import pyaudio
 import cv2
 from datetime import datetime
@@ -34,21 +33,6 @@ def remove_row(table, row_number):
         print(f"Row {row_number} removed successfully.")
     else:
         print("Invalid row number. Row not removed.")
-
-
-
-def check_camera(i):
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")  # Ignore OpenCV warnings
-            cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
-        if cap.isOpened():
-            _, frame = cap.read()
-            cap.release()
-            return f"Camera {i}"
-    except Exception as e:
-        pass  # Handle any exceptions that may occur during camera check
-    return None
 
 
 def get_camera_names():
