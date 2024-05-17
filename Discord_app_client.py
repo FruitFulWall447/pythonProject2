@@ -40,6 +40,10 @@ p = pyaudio.PyAudio()
 SCREEN_FPS = 30
 
 
+def find_difference(list1, list2):
+    return list(set(list1) - set(list2))
+
+
 def parse_group_caller_format(input_format):
     # Define a regular expression pattern to capture the information
     pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
@@ -1410,9 +1414,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 return True
         return False
 
-    def find_difference(self, list1, list2):
-        return list(set(list1) - set(list2))
-
     def update_call_dict_by_id(self, updated_call_dict):
         updated_participants = updated_call_dict.get("participants")
         for call_dict in self.call_dicts:
@@ -1420,7 +1421,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if call_dict.get("call_id") == updated_call_dict.get("call_id"):
                 self.call_dicts.remove(call_dict)
                 if len(updated_participants) > len(participants_before) and self.username in updated_participants:
-                    different_users = self.find_difference(updated_participants, participants_before)
+                    different_users = find_difference(updated_participants, participants_before)
                     if len(different_users) == 1 and self.username not in different_users:
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
                         self.play_sound_effect(join_sound)
@@ -2077,15 +2078,15 @@ class LoginPage(QWidget):
 
         self.password.move(password_x, password_y)
 
-        self.username_enrty = QLineEdit(self)
+        self.username_entry = QLineEdit(self)
         self.remember_me_status = False
-        self.username_enrty.setPlaceholderText("Username")
-        self.username_enrty.setStyleSheet("color: white;")
+        self.username_entry.setPlaceholderText("Username")
+        self.username_entry.setStyleSheet("color: white;")
 
-        username_enrty_x, username_enrty_y = (
+        username_entry_x, username_entry_y = (
         int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.259))
 
-        self.username_enrty.move(username_enrty_x, username_enrty_y)
+        self.username_entry.move(username_entry_x, username_entry_y)
         self.incorrect_label = QLabel('Username or Password incorrect', self)
         self.incorrect_label.setStyleSheet(
             "color: red; font-size: 12px;")  # Set the text color to blue and font size to 12px
@@ -2230,7 +2231,7 @@ class LoginPage(QWidget):
             n = self.page_controller_object.n
             self.incorrect_label.hide()
             self.user_is_logged_in.hide()
-            self.username = self.username_enrty.text()
+            self.username = self.username_entry.text()
             password = self.password.text()
             n.send_login_info(self.username, password)
             data = n.recv_str()
@@ -2586,7 +2587,7 @@ class VerificationCodePage(QWidget):
         code_label.setStyleSheet("color: blue; font-size: 15px;")  # Set the text color to blue and font size to 12px
 
         # Connect the linkActivated signal to a custom slot
-        code_label.linkActivated.connect(self.Resend_code_clicked)
+        code_label.linkActivated.connect(self.resend_code_clicked)
         code_label_x, code_label_y = (
         int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.3796))
 
@@ -2687,7 +2688,7 @@ class VerificationCodePage(QWidget):
                                     n.ask_for_security_token()
                                     print("You will be remembered")
                                 try:
-                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_enrty.text()
+                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
                                     self.page_controller_object.main_page.update_values()
                                     self.page_controller_object.is_logged_in = True
                                     self.page_controller_object.start_receive_thread_after_login()
@@ -2702,7 +2703,7 @@ class VerificationCodePage(QWidget):
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
-    def Resend_code_clicked(self, link):
+    def resend_code_clicked(self, link):
         if link == "resend":
             print("resend code")
 
@@ -2873,10 +2874,6 @@ class ChangePasswordPage(QWidget):
             }
         """)
 
-    def return_button_pressed(self):
-        if self.status:
-            self.page_controller_object.change_to_login_page()
-
     def submit_form(self):
         n = self.page_controller_object.n
         self.too_short.hide()
@@ -2920,8 +2917,8 @@ class ServerIsDownPage(QWidget):
 
 class PageController:
     def __init__(self):
-        self.n = ClientNet()
-        is_connected = self.n.connect_tcp()
+        self.network = ClientNet()
+        is_connected = self.network.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
 
@@ -2935,7 +2932,7 @@ class PageController:
                 self.sign_up_page = SignUpPage(self)
                 self.forget_password_page = ForgetPasswordPage(self)
                 self.login_page = LoginPage(self)
-                self.main_page = MainPage(self.n, self)
+                self.main_page = MainPage(self.network, self)
                 self.change_password_page = ChangePasswordPage(self)
                 self.verification_code_page = VerificationCodePage(self)
                 self.main_page.showMaximized()
@@ -2965,7 +2962,7 @@ class PageController:
         if self.is_logged_in:
             print("closing app...")
             self.is_logged_in = False
-            self.n.close()
+            self.network.close()
             self.main_page.close_all_threads()
             self.close_all_pages()
             del self.app
@@ -2974,7 +2971,7 @@ class PageController:
     def log_out(self):
         try:
             print("logging out")
-            self.n.send_logout_message()
+            self.network.send_logout_message()
             self.main_page.close_all_threads()
             self.current_page = None
             self.is_logged_in = False
@@ -2992,8 +2989,8 @@ class PageController:
             self.splash_page = SplashScreen(self)
             self.sign_up_page = SignUpPage(self)
             self.forget_password_page = ForgetPasswordPage(self)
-            self.LoginPage = LoginPage(self)
-            self.main_page = MainPage(self.n, self)
+            self.login_page = LoginPage(self)
+            self.main_page = MainPage(self.network, self)
             self.change_password_page = ChangePasswordPage(self)
             self.verification_code_page = VerificationCodePage(self)
         except Exception as e:
@@ -3071,7 +3068,7 @@ class PageController:
             self.current_page = self.splash_page
 
     def thread_recv_messages(self):
-        n = self.n
+        n = self.network
         print("receiving thread started running")
         while self.is_logged_in:
             data = n.recv_str()
