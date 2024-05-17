@@ -19,6 +19,16 @@ import pyaudio
 import cv2
 
 
+def is_base64_encoded(s):
+    try:
+        # Attempt to decode the Base64 string
+        decoded_bytes = base64.b64decode(s)
+        return True
+    except:
+        # If decoding fails, it's not a valid Base64 string
+        return False
+
+
 def try_to_open_output_stream(index):
     audio_format = pyaudio.paInt16
     channels = 1
@@ -630,7 +640,7 @@ class ChatBox(QWidget):
                 border-color: #72767d;
             }}
             """)
-            self.send_image_button.clicked.connect(self.open_image_file_dialog)
+            self.send_image_button.clicked.connect(self.open_file_dialog)
 
             if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
                 try:
@@ -1025,14 +1035,6 @@ class ChatBox(QWidget):
         else:
             self.image_too_big.hide()
 
-        #self.show_messages_on_screen(self.messages_list)
-
-        style_sheet = '''
-            color: white;
-            font-size: 15px;
-            margin-bottom: 2px;
-        '''
-
         self.chats_label = QLabel("DIRECT MESSAGES", self)
         self.chats_label.setStyleSheet('''
             color: white;
@@ -1117,7 +1119,7 @@ class ChatBox(QWidget):
 
         # Optional: Adjust the spacing between the icon and text
         self.friends_button.setIconSize(QSize(50, 50))  # Adjust size as needed
-        self.friends_button.clicked.connect(self.parent.Social_clicked)
+        self.friends_button.clicked.connect(self.parent.social_clicked)
 
         try:
             friend_x = 250
@@ -1173,7 +1175,7 @@ class ChatBox(QWidget):
             }
 
         ''')
-        settings_button.clicked.connect(self.parent.Settings_clicked)
+        settings_button.clicked.connect(self.parent.settings_clicked)
         pause_mp3_files_button = QPushButton(self)
         mp3_pause_path = "discord_app_assets/pause_and_play_icon.png"
         set_button_icon(pause_mp3_files_button, mp3_pause_path, 40, 40)
@@ -1499,26 +1501,6 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"return_search_list error :{e}")
 
-    def drew_friends_buttons_on_screen_by_list(self, list):
-        # Clear the existing buttons
-        for _, button in self.chats_buttons_list:
-            button.setParent(None)
-            button.deleteLater()
-
-        self.chats_buttons_list.clear()
-        self.friends_button_height = 50
-        friend_starter_y = 170 + (self.parent.chat_box_chats_index * -50)
-        self.parent.chat_box_index_y_start = friend_starter_y
-        friend_x = 250
-        for chat in list:
-            try:
-                button = self.create_friend_button(chat, (friend_x, friend_starter_y))
-                self.chats_buttons_list.append((chat, button))
-                friend_starter_y += self.friends_button_height
-            except Exception as e:
-                print(f"error in drew friends button {e}")
-        self.raise_needed_elements()
-
     def raise_needed_elements(self):
         try:
             if self.parent.selected_chat != "":
@@ -1794,9 +1776,6 @@ class ChatBox(QWidget):
                 self.parent.update_chat_page_without_messages()
                 self.parent.activateWindow()
 
-    def open_image_file_dialog(self):
-        self.open_file_dialog()
-
     def file_to_bytes(self, file_path):
         with open(file_path, "rb") as file:
             image_bytes = file.read()
@@ -1928,24 +1907,6 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"error on_friend_button_clicked {e}")
 
-    def Return_pos(self):
-        return self.square_pos[0], self.square_pos[1]
-
-    def custom_show(self):
-        self.showMaximized()
-
-    def showEvent(self, event):
-        super().showEvent(event)
-
-    def is_base64_encoded(self, s):
-        try:
-            # Attempt to decode the Base64 string
-            decoded_bytes = base64.b64decode(s)
-            return True
-        except:
-            # If decoding fails, it's not a valid Base64 string
-            return False
-
     def load_image_from_bytes_to_label(self, image_bytes, label):
         pixmap = QPixmap()
         pixmap.loadFromData(image_bytes)
@@ -2005,21 +1966,6 @@ class ChatBox(QWidget):
         # Show the context menu at the adjusted position
         menu.exec_(global_pos)
 
-    def on_button_clicked(self, label):
-        self.button_clicked_signal.emit(label)
-
-    def create_temp_button(self, button_label):
-
-        x_pos = 470
-        button = QPushButton(button_label, self)
-        button.setStyleSheet("color: white;")
-        font = button.font()
-        font.setPointSize(12)
-        button.setFont(font)
-        button.clicked.connect(lambda checked, label=button_label: self.on_button_clicked(label))
-
-        return button
-
     def create_temp_message_label(self, message):
         try:
             label = QLabel(message, self)
@@ -2036,16 +1982,8 @@ class ChatBox(QWidget):
             print(f"error in creating message label {e}")
             return None
 
-    def delete_message_labels(self):
-        for label in self.message_labels:
-            label.deleteLater()
-        self.message_labels = []
-
     def check_editing_status(self):
         return self.text_entry.hasFocus()
-
-    def updated_chatbox(self, updated_list):
-        self.messages_list = updated_list
 
     def garbage_button_clicked(self):
         self.parent.file_to_send = None

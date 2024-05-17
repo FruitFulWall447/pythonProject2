@@ -692,12 +692,12 @@ class FriendsBox(QWidget):
                 if len(self.search.text()) > 0:
                     self.parent.current_friends_box_search = True
                     self.parent.temp_search_list = filter_and_sort_chats(self.search.text(), default_list)
-                    self.parent.updated_requests()
+                    self.parent.updated_social_page()
                 else:
                     try:
                         self.parent.current_friends_box_search = False
                         self.parent.temp_search_list = []
-                        self.parent.updated_requests()
+                        self.parent.updated_social_page()
                     except Exception as e:
                         print(f"problem with updating screen:{e}")
         except Exception as e:
@@ -735,7 +735,7 @@ class FriendsBox(QWidget):
             self.parent.temp_search_list = []
             self.parent.friends_box_index = 0
             self.parent.friends_box_page = "online"
-            self.parent.updated_requests()
+            self.parent.updated_social_page()
 
     def all_button_pressed(self):
         if self.parent.friends_box_page != "all":
@@ -745,7 +745,7 @@ class FriendsBox(QWidget):
             self.parent.temp_search_list = []
             self.parent.friends_box_index = 0
             self.parent.friends_box_page = "all"
-            self.parent.updated_requests()
+            self.parent.updated_social_page()
 
     def pending_button_pressed(self):
         try:
@@ -756,7 +756,7 @@ class FriendsBox(QWidget):
                 self.parent.temp_search_list = []
                 self.parent.friends_box_index = 0
                 self.parent.friends_box_page = "pending"
-                self.parent.updated_requests()
+                self.parent.updated_social_page()
         except Exception as e:
             print(f"error pending_button_pressed {e}")
 
@@ -768,7 +768,7 @@ class FriendsBox(QWidget):
             self.parent.temp_search_list = []
             self.parent.friends_box_index = 0
             self.parent.friends_box_page = "blocked"
-            self.parent.updated_requests()
+            self.parent.updated_social_page()
 
     def add_friend_button_pressed(self):
         try:
@@ -779,7 +779,7 @@ class FriendsBox(QWidget):
                 self.parent.temp_search_list = []
                 self.parent.friends_box_index = 0
                 self.parent.friends_box_page = "add friend"
-                self.parent.updated_requests()
+                self.parent.updated_social_page()
         except Exception as e:
             print(f"error add_friend_button_pressed {e}")
 
@@ -787,14 +787,14 @@ class FriendsBox(QWidget):
         # Implement the logic to start a chat with the selected friend
         print(f"Starting chat with {friend}")
         self.parent.chat_box.selected_chat_changed(friend)
-        self.parent.Chat_clicked()
+        self.parent.chat_clicked()
 
     def remove_friend(self, friend):
         # Implement the logic to start a chat with the selected friend
         print(f"Removing {friend} as friend")
         self.Network.send_remove_friend(friend)
         self.parent.friends_list.remove(friend)
-        self.parent.updated_requests()
+        self.parent.updated_social_page()
 
     def block_friend(self, friend):
         # Implement the logic to start a chat with the selected friend
@@ -856,4 +856,4 @@ class FriendsBox(QWidget):
 
         # Remove the friend from the requests list
         del self.requests_items[index:index + 3]
-        self.parent.updated_requests()
+        self.parent.updated_social_page()

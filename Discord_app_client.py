@@ -278,7 +278,7 @@ class SplashScreen(QWidget):
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
     update_chat_page_without_messages_signal = pyqtSignal()
-    updated_requests_signal = pyqtSignal()
+    updated_social_page_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
     stop_sound_signal = pyqtSignal()
     initiating_call_signal = pyqtSignal()
@@ -404,7 +404,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         }
         self.reversed_keys_mapping = {value: key for key, value in self.special_keys_mapping.items()}
 
-
         self.standard_hover_color = "#2980b9"
         self.background_color_hex = "#141c4b"
         self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
@@ -524,7 +523,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.temp_search_list = []
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.updated_chat_signal.connect(self.updated_chat)
-        self.updated_requests_signal.connect(self.updated_requests)
+        self.updated_social_page_signal.connect(self.updated_social_page)
         self.updated_settings_signal.connect(self.updated_settings_page)
         self.getting_call_signal.connect(self.getting_a_call)
         self.stop_sound_signal.connect(self.stop_sound)
@@ -826,7 +825,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def remove_friend(self, chat):
         self.friends_list.remove(chat)
-        self.updated_requests()
+        self.updated_social_page()
         self.update_chat_page_without_messages()
         self.Network.send_remove_chat(chat)
 
@@ -1140,8 +1139,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def update_every_screen(self):
         try:
             self.updated_chat()
-            self.updated_requests()
+            self.updated_social_page()
             self.updated_settings_page()
+            self.update_message_box()
         except Exception as e:
             print(f"error in updating screens: {e}")
 
@@ -1297,6 +1297,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.stacked_widget.setCurrentIndex(2)
         elif self.setting_clicked:
             self.stacked_widget.setCurrentIndex(1)
+        elif self.music_clicked:
+            self.stacked_widget.setCurrentIndex(3)
 
     def stop_watching_video(self):
         try:
@@ -1543,7 +1545,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"Error stopping sound: {e}")
 
-    def Chat_clicked(self):
+    def chat_clicked(self):
         if not self.chat_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
@@ -1555,7 +1557,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setting_clicked = False
             self.social_clicked = False
 
-    def Settings_clicked(self):
+    def settings_clicked(self):
         if not self.setting_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
@@ -1564,7 +1566,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setting_clicked = True
             self.social_clicked = False
 
-    def Social_clicked(self):
+    def social_clicked(self):
         if not self.social_clicked:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
@@ -1574,7 +1576,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.setting_clicked = False
             self.social_clicked = True
 
-    def updated_requests(self):
+    def updated_social_page(self):
         try:
             if self.friends_box_page == "add friend":
                 self.stacked_widget.removeWidget(self.friends_box)
@@ -1716,7 +1718,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"expection in key press event:{e}")
         elif event.key() == Qt.Key_Escape:
             if not self.chat_clicked:
-                self.Chat_clicked()
+                self.chat_clicked()
                 self.updated_chat()
             else:
                 if self.is_create_group_pressed:
@@ -1755,11 +1757,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     # Scrolling up
 
                     self.friends_box_index += 1
-                    self.updated_requests()
+                    self.updated_social_page()
                 elif delta < 0 and self.friends_box.is_mouse_on_friends_box(mouse_pos) and self.is_friends_box_full:
                     # Scrolling down, but prevent scrolling beyond the first message
                     self.friends_box_index -= 1
-                    self.updated_requests()
+                    self.updated_social_page()
             except Exception as e:
                 print(f"error in social_clicked scrolling error:{e}")
 
@@ -3125,7 +3127,7 @@ class PageController:
                     elif message_type == "requests_list":
                         requests_list = json.loads(data.get("requests_list"))
                         self.main_page.request_list = requests_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
+                        QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                                  Qt.QueuedConnection)
                         print("Updated the requests list")
                     elif message_type == "vc_data":
@@ -3151,7 +3153,7 @@ class PageController:
                         json_friends_list = data.get("friends_list")
                         friends_list = json.loads(json_friends_list)
                         self.main_page.friends_list = friends_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
+                        QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                                  Qt.QueuedConnection)
                         QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
@@ -3160,7 +3162,7 @@ class PageController:
                     elif message_type == "online_users_list":
                         online_users_list = json.loads(data.get("online_users_list"))
                         self.main_page.online_users_list = online_users_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
+                        QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                                  Qt.QueuedConnection)
                         QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
@@ -3168,7 +3170,7 @@ class PageController:
                     elif message_type == "blocked_list":
                         blocked_list = json.loads(data.get("blocked_list"))
                         self.main_page.blocked_list = blocked_list
-                        QMetaObject.invokeMethod(self.main_page, "updated_requests_signal",
+                        QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                                  Qt.QueuedConnection)
                         print("Updated the requests list")
                     elif message_type == "groups_list":
