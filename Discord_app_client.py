@@ -603,7 +603,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.setLayout(self.main_layout)
 
-
     def close_all_threads(self):
         # turns every thread flag to False
         try:
@@ -2935,7 +2934,7 @@ class PageController:
                 self.splash_page.showMaximized()
                 self.sign_up_page = SignUpPage(self)
                 self.forget_password_page = ForgetPasswordPage(self)
-                self.LoginPage = LoginPage(self)
+                self.login_page = LoginPage(self)
                 self.main_page = MainPage(self.n, self)
                 self.change_password_page = ChangePasswordPage(self)
                 self.verification_code_page = VerificationCodePage(self)
