@@ -1,8 +1,6 @@
 import socket
 import json
-import time
 import zlib
-import pickle
 import threading
 import logging
 import base64
@@ -12,12 +10,9 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import padding as aes_padding
-from cryptography.fernet import Fernet
 import secrets
-import struct
 import pickle
 import binascii
-import datetime
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'

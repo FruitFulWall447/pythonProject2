@@ -1,34 +1,12 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap, QIcon, QPainter, QColor
-from PyQt5.QtCore import pyqtSignal
-from functools import partial
-from discord_comms_protocol import client_net
-from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
-from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal,  QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile
-from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath
+from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
+from PyQt5.QtCore import QSize, QTimer, Qt, QUrl, QTime, QTemporaryFile
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5 import QtCore
-from PIL import Image
 from io import BytesIO
-import base64
-import binascii
-import zlib
-import pygetwindow
-import numpy as np
 from PIL import Image, ImageDraw
-import webbrowser
-import io
-import tempfile
-import os
-import math
-import subprocess
-import platform
-import random
-import string
-import concurrent.futures
 import warnings
-import re
 import pyaudio
 import cv2
 from datetime import datetime

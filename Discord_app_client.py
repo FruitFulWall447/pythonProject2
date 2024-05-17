@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
-from PyQt5.QtCore import Qt, QSize, QPoint, QCoreApplication, QTimer, QMetaObject, Q_ARG, QObject, pyqtSignal, \
-    QSettings, QUrl, Qt, QUrl, QTime, QBuffer, QIODevice, QTemporaryFile, pyqtSlot
+from PyQt5.QtCore import Qt, QSize, QPoint, QTimer, QMetaObject, pyqtSignal, \
+    QSettings, Qt, QUrl, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from discord_comms_protocol import client_net
 from social_page_widgets import FriendsBox

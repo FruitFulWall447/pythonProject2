@@ -3,7 +3,6 @@ import time
 import uuid
 import database_func
 import copy
-from discord_comms_protocol import server_net
 import threading
 import base64
 import pickle
