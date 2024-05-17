@@ -241,18 +241,6 @@ def extract_first_frame(video_bytes):
         return None
 
 
-def open_file_with_default_app(file_path):
-    try:
-        if os.name == 'nt':
-            os.startfile(file_path)
-        elif os.name == 'posix':
-            subprocess.run(['xdg-open', file_path])
-        else:
-            print("Unsupported operating system.")
-    except Exception as e:
-        print(f"Error opening file: {e}")
-
-
 def open_image_bytes(image_bytes):
     try:
         temp_file_path = save_bytes_to_temp_file(image_bytes, 'png')

@@ -1,6 +1,6 @@
 import socket
 import threading
-from discord_comms_protocol import server_net
+from discord_comms_protocol import ServerNet
 from email_send_code import *
 from server_handling_classes import ServerHandler
 import database_func
@@ -637,7 +637,7 @@ def tcp_server():
     while True:
         conn, addr = tcp_server_socket.accept()
         logger.info(f"connect to: {addr}")
-        n = server_net(conn, addr)
+        n = ServerNet(conn, addr)
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 

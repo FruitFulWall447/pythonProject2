@@ -143,7 +143,7 @@ def send_data_in_chunks(sock, data):
         return False
 
 
-class client_net:
+class ClientNet:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
@@ -812,7 +812,7 @@ class client_net:
         self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
 
 
-class server_net:
+class ServerNet:
     def __init__(self, s, addr):
         self.client_tcp_socket_address = addr
         self.logger = logging.getLogger(__name__)

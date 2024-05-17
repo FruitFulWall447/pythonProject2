@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
 from PyQt5.QtCore import QSize, QPoint, QTimer, QMetaObject, pyqtSignal, \
     QSettings, Qt, QUrl, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from discord_comms_protocol import client_net
+from discord_comms_protocol import ClientNet
 from social_page_widgets import FriendsBox
 from settings_page_widgets import SettingsBox
 from messages_page_widgets import ChatBox, play_mp3_from_bytes, make_q_object_clear
@@ -1843,19 +1843,19 @@ class SignUpPage(QWidget):
         self.password_not_match_label.hide()
 
         x = int(self.page_controller_object.screen_width * 0.453)
-        email_Required_field_y = int(self.page_controller_object.screen_height * 0.529)
-        username_Required_field_y = int(self.page_controller_object.screen_height * 0.307)
-        password_Required_field_y = int(self.page_controller_object.screen_height * 0.381)
-        confirm_password_Required_field_y = int(self.page_controller_object.screen_height * 0.4555)
+        email_required_field_y = int(self.page_controller_object.screen_height * 0.529)
+        username_required_field_y = int(self.page_controller_object.screen_height * 0.307)
+        password_required_field_y = int(self.page_controller_object.screen_height * 0.381)
+        confirm_password_required_field_y = int(self.page_controller_object.screen_height * 0.4555)
         invalid_email_y = int(self.page_controller_object.screen_height * 0.529)
         password_too_short_y = int(self.page_controller_object.screen_height * 0.382)
         username_already_used_y = int(self.page_controller_object.screen_height * 0.307)
 
-        self.email_Required_field = self.create_label("Required field", (x, email_Required_field_y))
-        self.username_Required_field = self.create_label("Required field", (x, username_Required_field_y))
-        self.password_Required_field = self.create_label("Required field", (x, password_Required_field_y))
-        self.confirm_password_Required_field = self.create_label("Required field",
-                                                                 (x, confirm_password_Required_field_y))
+        self.email_required_field = self.create_label("Required field", (x, email_required_field_y))
+        self.username_required_field = self.create_label("Required field", (x, username_required_field_y))
+        self.password_required_field = self.create_label("Required field", (x, password_required_field_y))
+        self.confirm_password_required_field = self.create_label("Required field",
+                                                                 (x, confirm_password_required_field_y))
         self.invalid_email = self.create_label("Invalid Email", (x, invalid_email_y))
         self.password_too_short = self.create_label("Password too short", (x, password_too_short_y))
         self.username_already_used = self.create_label("Username is taken", (x, username_already_used_y))
@@ -1863,9 +1863,9 @@ class SignUpPage(QWidget):
 
     def hide_every_error_label(self):
         self.password_too_short.hide()
-        self.email_Required_field.hide()
-        self.username_Required_field.hide()
-        self.password_Required_field.hide()
+        self.email_required_field.hide()
+        self.username_required_field.hide()
+        self.password_required_field.hide()
         self.confirm_password_Required_field.hide()
         self.invalid_email.hide()
         self.password_not_match_label.hide()
@@ -2920,7 +2920,7 @@ class ServerIsDownPage(QWidget):
 
 class PageController:
     def __init__(self):
-        self.n = client_net()
+        self.n = ClientNet()
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
