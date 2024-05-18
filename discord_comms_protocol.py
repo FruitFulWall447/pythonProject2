@@ -193,31 +193,6 @@ class ClientNet:
             self.logger.info("couldn't connect udp socket to server")
             pass
 
-    def send_str(self, data):
-        try:
-            # Convert the length of the data to a string
-            self.sending_tcp_data_lock.acquire()
-            encoded_data = data.encode('utf-8')
-            encoded_encrypted_data = encrypt_with_aes(self.aes_key, encoded_data)
-
-            # Use the size of encoded_encrypted_data
-            size_str = str(len(encoded_encrypted_data))
-
-            # Padding adjustment
-            number_of_zero = self.original_len - len(size_str)
-            size = ("0" * number_of_zero) + size_str
-
-            # Send the size as a string
-            self.client_tcp_socket.send(size.encode('utf-8'))
-
-            # Send the actual data
-            self.client_tcp_socket.send(encoded_encrypted_data)
-        except socket.error as e:
-            print(e)
-        finally:
-            # Release the lock
-            self.sending_tcp_data_lock.release()
-
     def send_bytes(self, data):
         try:
             # Convert the length of the data to a string
@@ -246,11 +221,6 @@ class ClientNet:
         finally:
             # Release the lock
             self.sending_tcp_data_lock.release()
-
-    def send_fragment_count(self, count):
-        message = {"message_type": "fragment_count", "fragment_count": count}
-        pickled_data = pickle.dumps(message)
-        self.send_bytes_udp(pickled_data)
 
     def send_large_udp_data(self, data, data_type, shape_of_frame=None):
         if len(data) > self.mtu:
@@ -707,23 +677,6 @@ class ClientNet:
 
         return bytes(received_data)
 
-    def recv_login_info(self):
-        try:
-            size_str = self.client_tcp_socket.recv(self.original_len).decode('utf-8')
-
-            # Convert the size string to an integer
-            size = int(size_str)
-
-            # Receive the actual data based on the size
-            data = self.receive_by_size(size)
-            message = json.loads(data)
-            username = message.get("username")
-            password = message.get("password")
-            return username, password
-            # Process username and password here
-        except json.JSONDecodeError as json_error:
-            print(f"Error decoding JSON: {json_error}")
-
     def recv_str(self):
         try:
             # Receive the size as binary data and convert it to an integer
@@ -942,16 +895,6 @@ class ServerNet:
         message = {"message_type": "new_message",
                    "chat_name": chat,
                    "message_dict": json.dumps(message_dict)
-                   }
-        self.send_message_dict_tcp(message)
-
-    def send_new_message(self, message, chat):
-        message = {"message_type": "new_message", "new_message": message, "chat": chat
-                   }
-        self.send_message_dict_tcp(message)
-
-    def send_new_message_of_other_chat(self):
-        message = {"message_type": "new_message", "new_message": ""
                    }
         self.send_message_dict_tcp(message)
 
@@ -1226,20 +1169,6 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
-    def send_username_to_client_login_valid(self, username):
-        try:
-            message = {"message_type": "login_action", "username": username, "login_status": "valid"}
-            self.send_message_dict_tcp(message)
-        except socket.error as e:
-            print(e)
-
-    def send_username_to_client_login_invalid(self, username):
-        try:
-            message = {"message_type": "login_action", "username": username, "login_status": "invalid"}
-            self.send_message_dict_tcp(message)
-        except socket.error as e:
-            print(e)
-
     def send_forget_password_info_valid(self):
         try:
             message = {"message_type": "forget_password", "forget_password_status": "valid"}
@@ -1288,35 +1217,6 @@ class ServerNet:
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
-
-    def recv_login_info(self):
-        try:
-            size_str = self.server.recv(self.original_len).decode('utf-8')
-
-            # Convert the size string to an integer
-            size = int(size_str)
-
-            # Receive the actual data based on the size
-            encrypted_data = self.receive_by_size(size)
-            print(encrypted_data)
-            if encrypted_data:
-                data = decrypt_with_aes(self.aes_key, encrypted_data)
-                message = json.loads(data)
-                format = message.get("format")
-                username = message.get("username")
-                password = message.get("password")
-                email = message.get("email")
-                security = message.get("security_token")
-                return username, password, format, email, security
-            else:
-                return None, None, None
-            # Process username and password here
-        except json.JSONDecodeError as json_error:
-            print(f"Error decoding JSON: {json_error}")
-        except TypeError as type_error:
-            print(f"TypeError: {type_error}")
-        except ValueError as e:
-            print("Value error")
 
     def recv_str(self):
         try:

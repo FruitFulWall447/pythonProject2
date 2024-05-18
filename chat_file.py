@@ -289,7 +289,7 @@ class VideoPlayer(QWidget):
         self.duration_label.setText(f"{position_time} / {duration_time}")
         self.slider.setValue(position)
 
-    def toggle_play_pause(self, event):
+    def toggle_play_pause(self):
         if self.media_player.state() == QMediaPlayer.PlayingState:
             self.media_player.pause()
             self.position_timer.stop()

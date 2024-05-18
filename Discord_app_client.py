@@ -1869,7 +1869,7 @@ class SignUpPage(QWidget):
         self.email_required_field.hide()
         self.username_required_field.hide()
         self.password_required_field.hide()
-        self.confirm_password_Required_field.hide()
+        self.confirm_password_required_field.hide()
         self.invalid_email.hide()
         self.password_not_match_label.hide()
         self.username_already_used.hide()
