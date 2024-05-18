@@ -40,13 +40,7 @@ def create_dictionary_with_message_type(message_type, keys, values):
     return result
 
 
-def generate_secure_symmetric_key():
-    symmetric_key = secrets.token_bytes(32)
-    return symmetric_key
-
-
 def generate_aes_key():
-    # Generate a random 256-bit (32-byte) key for AES-256
     aes_key = secrets.token_bytes(32)
     return aes_key
 
