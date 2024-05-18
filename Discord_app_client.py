@@ -221,7 +221,7 @@ class SplashScreen(QWidget):
             self.page_controller_object.is_logged_in = True
             self.hide()
         except Exception as e:
-            print(e)
+            print("error in close_page_open_main_page")
 
     def update_loading_dots(self):
         n = self.page_controller_object.n
@@ -265,7 +265,7 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.start_receive_thread_after_login()
                                         self.hide()
                                     except Exception as e:
-                                        print(e)
+                                        print(f"error in logging in {e}")
                                 elif action_state == "invalid":
                                     print("username already logged in")
                         elif server_answer == "invalid":
@@ -2572,7 +2572,7 @@ class VerificationCodePage(QWidget):
                 return True  # Consume the event to prevent further processing
             return super().eventFilter(obj, event)
         except Exception as e:
-            print(e)
+            print(f"error in eventFilter {e}")
 
     def create_label(self, text, position):
         label = QLabel(text, self)
@@ -2697,11 +2697,11 @@ class VerificationCodePage(QWidget):
                                     self.page_controller_object.main_page.start_listen_udp_thread()
                                     self.page_controller_object.change_to_splash_page()
                                 except Exception as e:
-                                    print(e)
+                                    print(f"error in 2fa {e}")
                             elif result == "invalid":
                                 pass
                     except Exception as e:
-                        print(e)
+                        print(f"error in 2fa {e}")
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
@@ -2914,7 +2914,7 @@ class ServerIsDownPage(QWidget):
                 }
             """)
         except Exception as e:
-            print(e)
+            print("error in server id down page")
 
 
 class PageController:
@@ -2951,7 +2951,7 @@ class PageController:
                 self.change_password_page.hide()
                 self.current_page = self.login_page
             except Exception as e:
-                print(e)
+                print(f"error in is_connected")
         else:
             self.server_is_down_page = ServerIsDownPage(self)
             self.server_is_down_page.showMaximized()
