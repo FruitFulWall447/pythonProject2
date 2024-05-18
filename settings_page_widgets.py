@@ -9,6 +9,15 @@ import pyaudio
 import cv2
 
 
+def handle_combobox_visibility_changed(is_visible, arrow_label):
+    if is_visible:
+        arrow_label.setPixmap(
+            QPixmap("discord_app_assets/up_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
+    else:
+        arrow_label.setPixmap(
+            QPixmap("discord_app_assets/down_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
+
+
 def is_valid_image(image_bytes):
     try:
         # Use Pillow to try opening the image from bytes
@@ -313,9 +322,7 @@ class SettingsBox(QWidget):
         self.file_dialog.setFileMode(QFileDialog.ExistingFile)
         self.file_dialog.setNameFilter("Image files (*.png *.jpg)")
 
-
         delta_of_main_buttons = 50
-
         starter_x_of_main_buttons = 350
         starter_y_of_main_buttons = 100
 
@@ -864,18 +871,10 @@ class SettingsBox(QWidget):
         color_combobox.setGeometry(x, y, width, height)
         icon_path = "discord_app_assets/down_arrow_icon.png"
         arrow_label = self.create_image_label(icon_path, 30, x + (width * 0.87), x + (width * 0.87), y + 10)
-        color_combobox.visibility_changed.connect(lambda is_visible: self.handle_combobox_visibility_changed(is_visible, arrow_label))
+        color_combobox.visibility_changed.connect(lambda is_visible: handle_combobox_visibility_changed(is_visible, arrow_label))
         arrow_label.mousePressEvent = lambda event: color_combobox.showPopup()
 
         return color_combobox
-
-    def handle_combobox_visibility_changed(self, is_visible, arrow_label):
-        if is_visible:
-            arrow_label.setPixmap(
-                QPixmap("discord_app_assets/up_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
-        else:
-            arrow_label.setPixmap(
-                QPixmap("discord_app_assets/down_arrow_icon.png").scaledToWidth(30, Qt.SmoothTransformation))
 
     def create_image_label(self, image_path, height, width, x, y):
         image_label = QLabel(self)

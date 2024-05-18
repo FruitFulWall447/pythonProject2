@@ -598,7 +598,7 @@ class ChatBox(QWidget):
                 temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037)
 
             if self.parent.is_messages_need_update or self.parent.messages_content_saver is None:
-                temp_widget = ScrollableWidget(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
+                temp_widget = MessagesBox(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
                 self.parent.messages_content_saver = temp_widget
                 self.parent.is_messages_need_update = False
             else:
@@ -2024,7 +2024,7 @@ class ChatBox(QWidget):
         return box_geometry.contains(mouse_pos)
 
 
-class ScrollableWidget(QWidget):
+class MessagesBox(QWidget):
     def __init__(self, parent, width, height, x, y):
         super().__init__()
         self.parent = parent
@@ -2033,9 +2033,9 @@ class ScrollableWidget(QWidget):
         self.main_page_object = self.parent.parent
         self.x = x
         self.y = y
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         # Create a scroll area
         try:
             self.scroll_area = QScrollArea(self.parent)
@@ -2338,9 +2338,9 @@ class ScrollableWidget(QWidget):
         # Set the scroll bar value to scroll to the specified index
         scroll_bar.setValue(index)
 
-    def scroll_up_by_N_widgets(self, N):
+    def scroll_up_by_n_widgets(self, n):
         total_height = 0
-        for i in range(min(N * 2, self.layout.count())):
+        for i in range(min(n * 2, self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget:
                 total_height += widget.sizeHint().height() + self.space_between_widgets
@@ -2375,9 +2375,9 @@ class CreateGroupBox(QWidget):
             self.create_group_index = self.parent.parent.create_group_index
         except Exception as e:
             print(f"error in initiating create group box {e}")
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         try:
             if self.box_format == "create":
                 submit_button_text = "Create DM"
