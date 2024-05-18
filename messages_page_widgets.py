@@ -480,143 +480,63 @@ class ChatBox(QWidget):
 
     def __init__(self, messages_list, Network, parent=None):
         super().__init__()
-        screen = QDesktopWidget().screenGeometry()
-        # Extract the screen width and height
-        self.screen_width = screen.width()
-        self.screen_height = screen.height()
-        self.Network = Network
-        self.parent = parent
-        self.is_getting_called = self.parent.is_getting_called
-        self.square_label = QLabel(self)
-        self.width_of_chat_box = int(self.screen_width * 0.416)
-        self.height_of_chat_box = int(self.screen_height * 0.926)
-        self.file_dialog = QFileDialog(self)
-        self.file_dialog.setFileMode(QFileDialog.ExistingFile)
-        filter_str = "All files (*)"
-        self.file_dialog.setNameFilter(filter_str)
-        self.file_name = ""
-        self.image_height = int(self.screen_height * 0.277)
-        self.image_width = int(self.screen_width * 0.1197)
-        self.chats_buttons_list = []
-        self.border_labels = []
-        self.buttons_style_sheet = """
-        QPushButton {
-            color: white;
-            font-size: 16px;
-            background-color: rgba(0, 0, 0, 0); /* Transparent background */
-            border: 2px solid #2980b9; /* Use a slightly darker shade for the border */
-            border-radius: 5px;
-            }
-                        QPushButton:hover {
-                background-color: #2980b9;
-            }
-        """
-        self.call_button_style_sheet = """
+        try:
+            screen = QDesktopWidget().screenGeometry()
+            # Extract the screen width and height
+            self.screen_width = screen.width()
+            self.screen_height = screen.height()
+            self.Network = Network
+            self.parent = parent
+            self.is_getting_called = self.parent.is_getting_called
+            self.square_label = QLabel(self)
+            self.width_of_chat_box = int(self.screen_width * 0.416)
+            self.height_of_chat_box = int(self.screen_height * 0.926)
+            self.file_dialog = QFileDialog(self)
+            self.file_dialog.setFileMode(QFileDialog.ExistingFile)
+            filter_str = "All files (*)"
+            self.file_dialog.setNameFilter(filter_str)
+            self.file_name = ""
+            self.image_height = int(self.screen_height * 0.277)
+            self.image_width = int(self.screen_width * 0.1197)
+            self.chats_buttons_list = []
+            self.border_labels = []
+            self.buttons_style_sheet = """
             QPushButton {
                 color: white;
                 font-size: 16px;
                 background-color: rgba(0, 0, 0, 0); /* Transparent background */
-            }
-            QPushButton:hover {
-                filter: brightness(80%); /* Adjust the brightness to make it darker */
-            }
-        """
+                border: 2px solid #2980b9; /* Use a slightly darker shade for the border */
+                border-radius: 5px;
+                }
+                            QPushButton:hover {
+                    background-color: #2980b9;
+                }
+            """
+            self.call_button_style_sheet = """
+                QPushButton {
+                    color: white;
+                    font-size: 16px;
+                    background-color: rgba(0, 0, 0, 0); /* Transparent background */
+                }
+                QPushButton:hover {
+                    filter: brightness(80%); /* Adjust the brightness to make it darker */
+                }
+            """
 
-        self.draw_message_start_x = int(self.screen_width * 0.323)
-        self.friends_button_height = int(self.screen_height * 0.0462)
+            self.draw_message_start_x = int(self.screen_width * 0.323)
+            self.friends_button_height = int(self.screen_height * 0.0462)
 
-        self.create_group_open = QPushButton(self)
-
-        # Load an image and set it as the button's icon
-        icon = QIcon("discord_app_assets/add_image_button.png")
-        self.create_group_open.setIcon(icon)
-
-        # Set the desired size for the button
-
-        width, height = int(self.screen_width * 0.013), int(self.screen_height * 0.023)
-        button_size = QSize(width, height)  # Adjust this to your desired button size
-        self.create_group_open.setFixedSize(button_size)
-
-        # Scale the icon while keeping its aspect ratio
-        icon_size = QSize(width, height)  # Set your desired icon size
-        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-
-        # Set the scaled icon size for the button
-        self.create_group_open.setIconSize(scaled_size)
-        self.create_group_open.setStyleSheet("""            
-         QPushButton {
-            background-color: transparent;
-            }
-        QPushButton:pressed {
-            background-color: #202225;
-            border-color: #72767d;
-        }
-        """)
-        self.create_group_open_x = int(self.screen_width * 0.2968)
-        self.create_group_open_y = int(self.screen_height * 0.132)
-        self.create_group_open.move(self.create_group_open_x, self.create_group_open_y)
-        self.create_group_open.clicked.connect(self.create_group_clicked)
-        self.text_entry = QLineEdit(self)
-        self.text_entry.hide()
-
-        self.square_pos = (int(self.screen_width * 0.3125), 0)
-        self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
-                                      self.height_of_chat_box)
-        self.square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
-
-        around_name_y = self.square_pos[1]
-        around_name_x = self.square_pos[0]
-        self.around_name = QLabel(self)
-        self.around_name.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
-        start_height_of_around_name = int(self.screen_height * 0.0462)
-        height_of_around_name = start_height_of_around_name
-        self.around_name_delta = int(self.screen_height * 0.2037)
-        if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
-                (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
-            height_of_around_name = start_height_of_around_name + self.around_name_delta
-
-        self.call_profiles_list = []
-
-        self.current_chat, self.current_group_id = gets_group_attributes_from_format(self.parent.selected_chat)
-        if self.current_group_id:
-            if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
-                height_of_around_name = start_height_of_around_name + self.around_name_delta
-
-        self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
-        self.around_name.move(around_name_x, around_name_y)
-        self.around_name.raise_()
-
-        self.call_profiles_list = []
-
-        if self.parent.selected_chat != "":
-            temp_widget_x, temp_widget_y = (int(self.screen_width * 0.3177), height_of_around_name)
-            temp_widget_width = int(self.width_of_chat_box * 0.98)
-            if height_of_around_name != start_height_of_around_name:
-                temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037) - self.around_name_delta
-            else:
-                temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037)
-
-            if self.parent.is_messages_need_update or self.parent.messages_content_saver is None:
-                temp_widget = MessagesBox(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
-                self.parent.messages_content_saver = temp_widget
-                self.parent.is_messages_need_update = False
-            else:
-                self.parent.messages_content_saver.update_scroll_area_parent(self)
-            self.around_name.raise_()
-            self.ringing_square_label = QLabel(self)
-
-            self.send_image_button = QPushButton(self)
+            self.create_group_open = QPushButton(self)
 
             # Load an image and set it as the button's icon
             icon = QIcon("discord_app_assets/add_image_button.png")
-            self.send_image_button.setIcon(icon)
+            self.create_group_open.setIcon(icon)
 
             # Set the desired size for the button
-            width, height = int(self.screen_width * 0.018), int(self.screen_height * 0.032)
 
+            width, height = int(self.screen_width * 0.013), int(self.screen_height * 0.023)
             button_size = QSize(width, height)  # Adjust this to your desired button size
-            self.send_image_button.setFixedSize(button_size)
+            self.create_group_open.setFixedSize(button_size)
 
             # Scale the icon while keeping its aspect ratio
             icon_size = QSize(width, height)  # Set your desired icon size
@@ -624,594 +544,708 @@ class ChatBox(QWidget):
             scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
             # Set the scaled icon size for the button
-            self.send_image_button.setIconSize(scaled_size)
-            self.send_image_y = int(self.screen_height * 0.859)
-            self.send_image_x = int(self.screen_width * 0.3177)
-            self.send_image_button.move(self.send_image_x, self.send_image_y)
-            self.send_image_button.setStyleSheet(f"""            
-            QPushButton:hover {{
-                background-color: {self.parent.standard_hover_color};
-            }}
-             QPushButton {{
+            self.create_group_open.setIconSize(scaled_size)
+            self.create_group_open.setStyleSheet("""            
+             QPushButton {
                 background-color: transparent;
-                }}
-            QPushButton:pressed {{
+                }
+            QPushButton:pressed {
                 background-color: #202225;
                 border-color: #72767d;
-            }}
+            }
             """)
-            self.send_image_button.clicked.connect(self.open_file_dialog)
-
-            if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
-                try:
-                    y_of_label = int(self.screen_height * 0.087)
-                    rings_to_x = int(self.screen_width * 0.479)
-                    if self.parent.selected_chat.startswith("("):
-                        text = f"Ringing Group..."
-                    else:
-                        text = f"Ringing User..."
-                    self.ringing_to_label = QLabel(text, self)
-                    self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
-                    self.ringing_to_label.move(rings_to_x, y_of_label)
-                    text_1_width = self.ringing_to_label.width()
-
-                    text = f"{self.parent.calling_to}"
-                    self.calling_to_label = QLabel(text, self)
-                    self.calling_to_label.setStyleSheet("color: white; font-size: 25px; margin: 10px;")
-                    text_2_width = self.calling_to_label.width()
-                    self.calling_to_label.move(rings_to_x + (text_1_width - text_2_width), y_of_label + 20)
-
-                    self.stop_calling_button = QPushButton(self)
-
-                    # Set button styles
-                    width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
-                    button_size = QSize(width, height)  # Adjust this to your desired button size
-                    self.stop_calling_button.setFixedSize(button_size)
-
-
-                    icon = QIcon("discord_app_assets/reject_button.png")
-                    self.stop_calling_button.setIcon(icon)
-                    width, height = int(self.screen_width * 0.033), int(self.screen_width * 0.033)
-
-                    icon_size = QSize(width, height)  # Set your desired icon size
-                    icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                    scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                    self.stop_calling_button.setIconSize(scaled_size)
-                    self.stop_calling_button.setObjectName("stop_calling_button")
-                    original_style_sheet = self.buttons_style_sheet
-
-                    # Define a more specific style for self.stop_calling_button
-                    specific_style = """
-                        QPushButton#stop_calling_button {
-                            border: none;
-                        }
-                    """
-
-                    # Append the specific style for self.stop_calling_button to the original style sheet
-                    modified_style_sheet = original_style_sheet + specific_style
-
-                    # Apply the modified style sheet to the button
-                    self.stop_calling_button.setStyleSheet(modified_style_sheet)
-                    stop_calling_button_x, stop_calling_button_y = rings_to_x + (text_1_width // 2) - int(self.screen_width * 0.008), y_of_label + int(self.screen_height * 0.101)
-                    self.stop_calling_button.move(stop_calling_button_x, stop_calling_button_y)
-                    self.stop_calling_button.clicked.connect(self.stop_calling)
-                except Exception as e:
-                    print(f"error in showing calling {e}")
-
-            if self.parent.is_getting_called:
-                pop_up_x = int(self.screen_width * 0.4427)
-                pop_up_y = int(self.screen_height * 0.231)
-                pop_up_width = int(self.screen_width * 0.1041)
-                pop_up_height = int(self.screen_height * 0.2777)
-
-                text = f"Incoming Call..."
-                y_of_label = pop_up_y + int(self.screen_height * 0.1111)
-                self.incoming_call_label = QLabel(text, self)
-                self.incoming_call_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px "
-                                                       ";background-color: transparent;")
-                self.incoming_call_label.move(pop_up_x + int(self.screen_width * 0.0234), y_of_label)
-
-                text = f"{self.parent.getting_called_by}"
-                self.caller_label = QLabel(text, self)
-                start_point = int(len(text) - 4) * 1
-                font_size = calculate_font_size(text)
-                if start_point < 0:
-                    start_point = pop_up_x + int(self.screen_width * 0.026)
-                else:
-                    start_point = pop_up_x + int(self.screen_width * 0.026) - start_point
-
-                self.caller_label.setStyleSheet(f"color: white; font-size: {font_size}px; margin: 10px; "
-                                                "background-color: transparent;")
-                self.caller_label.move(start_point, y_of_label - int(self.screen_height * 0.02777))
-
-                self.pop_up_label = QLabel(self)
-                custom_color = QColor("#053d76")
-                self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
-                self.pop_up_label.setGeometry(pop_up_x, pop_up_y, pop_up_width, pop_up_height)
-
-                self.accept_button = QPushButton(self)
-                self.reject_button = QPushButton(self)
-
-                # Set button styles
-                width, height = int(self.screen_width * 0.0182),int(self.screen_width * 0.0182)
-                button_size = QSize(width, height)  # Adjust this to your desired button size
-                self.accept_button.setFixedSize(button_size)
-                self.reject_button.setFixedSize(button_size)
-                # Set button icons (assuming you have phone icons available)
-
-                icon = QIcon("discord_app_assets/accept_button.png")
-                self.accept_button.setIcon(icon)
-
-                width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
-
-                icon_size = QSize(width, height)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-
-                self.accept_button.setIconSize(scaled_size)
-                self.accept_button.setStyleSheet(self.call_button_style_sheet)
-                icon = QIcon("discord_app_assets/reject_button.png")
-                self.reject_button.setIcon(icon)
-                icon_size = QSize(width, height)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                self.reject_button.setIconSize(scaled_size)
-                # Set button positions
-                accept_button_x = pop_up_x + int(self.screen_width * 0.059)
-                reject_button_x = pop_up_x + int(self.screen_width * 0.026)
-
-                self.accept_button.move(accept_button_x, pop_up_y + int(self.screen_height * 0.185))
-                self.reject_button.move(reject_button_x, pop_up_y + int(self.screen_height * 0.185))
-                self.reject_button.setStyleSheet(self.call_button_style_sheet)
-                # Connect button signals to functions
-                self.accept_button.clicked.connect(self.accept_call)
-                self.reject_button.clicked.connect(self.reject_call)
-            if self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with:
-                try:
-                    share_camera_height = int(self.screen_height * 0.041666)
-                    share_camera_button_width = int(self.screen_height * 0.041666)
-                    share_camera_x = int(self.screen_width * 0.4375)
-                    share_camera_y = int(self.screen_height * 0.199)
-                    self.share_camera_off_icon = QIcon("discord_app_assets/no_camera_icon.png")
-                    self.share_camera_on_icon = QIcon("discord_app_assets/camera_icon.png")
-                    self.share_camera_button = self.create_custom_in_call_button(share_camera_height, share_camera_button_width, share_camera_x,
-                                                                        share_camera_y, self.share_camera_and_unshare)
-                    share_screen_height = int(self.screen_height * 0.041666)
-                    share_screen_button_width = int(self.screen_height * 0.041666)
-                    share_screen_x = int(self.screen_width * 0.4713)
-                    share_screen_y = int(self.screen_height * 0.199)
-                    self.share_screen_button = self.create_custom_in_call_button(share_screen_height,
-                                                                                 share_screen_button_width,
-                                                                                 share_screen_x,
-                                                                                 share_screen_y,
-                                                                                 self.share_screen_and_unshare)
-                    try:
-                        try:
-                            if self.parent.is_camera_shared:
-                                set_button_icon(self.share_camera_button, self.share_camera_on_icon, share_camera_height, share_camera_button_width)
-                            else:
-                                set_button_icon(self.share_camera_button, self.share_camera_off_icon, share_camera_height,
-                                                     share_camera_button_width)
-                        except Exception as e:
-                            print(f"error in setting camera icon {e}")
-
-                        self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
-                        self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
-                        try:
-                            if self.parent.is_screen_shared:
-                                set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
-                            else:
-                                set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
-                                                     share_screen_button_width)
-                        except Exception as e:
-                            print(f"error in setting icon for share screen button{e}")
-                    except Exception as e:
-                        print(f"error in creating shares buttons {e}")
-
-                    deafen_button_height = int(self.screen_height * 0.041666)
-                    deafen_button_width = int(self.screen_height * 0.041666)
-                    self.deafened_icon = QIcon("discord_app_assets/deafened.png")
-                    self.not_deafened_icon = QIcon("discord_app_assets/not_deafened.png")
-                    deafen_x = share_screen_x + int(self.screen_width * 0.0338)
-                    deafen_y = share_screen_y
-                    self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
-                    if self.parent.deafen:
-                        set_button_icon(self.deafen_button, self.deafened_icon, deafen_button_width, deafen_button_height)
-                    else:
-                        set_button_icon(self.deafen_button, self.not_deafened_icon, deafen_button_width,
-                                             deafen_button_height)
-
-
-                    mic_button_height = int(self.screen_height * 0.041666)
-                    mic_button_width = int(self.screen_height * 0.041666)
-                    self.unmuted_mic_icon = QIcon("discord_app_assets/mic_not_muted_icon.png")
-                    self.muted_mic_icon = QIcon("discord_app_assets/mic_muted_icon.png")
-                    mic_x = deafen_x + int(self.screen_width * 0.0338)
-                    mic_button_y = share_screen_y
-                    self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
-                    if self.parent.mute:
-                        set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
-                    else:
-                        set_button_icon(self.mic_button, self.unmuted_mic_icon, mic_button_width, mic_button_height)
-
-                    self.end_call_button = QPushButton(self)
-
-                    # Set button styles
-                    call_button_height = int(self.screen_width * 0.0364)
-                    call_button_width = int(self.screen_width * 0.0364)
-                    button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
-                    self.end_call_button.setFixedSize(button_size)
-                    set_button_icon(self.end_call_button, "discord_app_assets/reject_button.png", call_button_width, call_button_height)
-                    self.end_call_button.setStyleSheet(self.call_button_style_sheet)
-                    end_call_button_x = mic_x + int(self.screen_width * 0.028)
-                    self.end_call_button.move(end_call_button_x,
-                                              share_screen_y-int(self.screen_height * 0.013888))
-                    self.end_call_button.clicked.connect(self.end_current_call)
-                    self.put_call_icons_on_the_screen()
-                except Exception as e:
-                    print(f"error in incall func {e}")
-
-
-            # Load an image and set it as the button's icon
-            icon = QIcon("discord_app_assets/ringing_blue_icon.png")
-            call_button_x = int(self.screen_width * 0.3125) + (self.width_of_chat_box // 2) + int(self.screen_width * 0.1777)
-            call_button_y = int(self.screen_height * 0.0074)
-            self.call_button = self.create_top_page_button(call_button_x, call_button_y, icon)
-            self.call_button.clicked.connect(self.call_user)
-            icon = QIcon("discord_app_assets/add_user.png")
-            self.add_user_x = call_button_x - int(self.screen_width * 0.026)
-            self.add_user_y = call_button_y
-            self.add_user_button = self.create_top_page_button(self.add_user_x, self.add_user_y, icon)
-            self.add_user_button.clicked.connect(self.add_user_to_group_pressed)
-
-            if self.current_group_id:
-                group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
-                if group_manager == self.parent.username:
-                    icon = QIcon("discord_app_assets/edit_name.png")
-                    rename_group_x = self.add_user_x - int(self.screen_width * 0.026)
-                    rename_group_y = call_button_y
-                    self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
-                    icon = QIcon("discord_app_assets/edit_image_icon.png")
-                    edit_group_image_x = rename_group_x - int(self.screen_width * 0.026)
-                    edit_group_image_y = rename_group_y
-                    self.edit_group_image_button = self.create_top_page_button(edit_group_image_x, edit_group_image_y,
-                                                                               icon)
-                    self.edit_group_image_button.clicked.connect(self.change_group_image)
-
-                # if in chat where there is a group call gives option to join
-                if self.current_group_id:
-                    if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
-
-                        icon_size = int(self.screen_width * 0.03125)
-                        y_of_label = int(self.screen_height * 0.0879)
-                        rings_to_x = int(self.screen_width * 0.4791)
-                        icon = QIcon("discord_app_assets/accept_button.png")
-
-                        join_button_x = rings_to_x + int(self.screen_width * 0.016666)
-                        join_button_y = y_of_label + int(self.screen_height * 0.101)
-                        join_button_width_or_height = int(self.screen_width * 0.026)
-                        self.join_call_button = self.create_custom_in_call_button(join_button_width_or_height, join_button_width_or_height,
-                                                                                  join_button_x, join_button_y,  self.join_call)
-                        set_button_icon(self.join_call_button, icon, icon_size, icon_size)
-                        self.put_call_icons_on_the_screen()
-                try:
-                    starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
-                    group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
-                    for member in group_members:
-                        pos = (starter_x_of_group_members, starter_y_of_group_members)
-                        button = self.create_member_button(member, pos)
-                        starter_y_of_group_members += button.height()
-                except Exception as e:
-                    print(f"error in drawing members {e}")
-
+            self.create_group_open_x = int(self.screen_width * 0.2968)
+            self.create_group_open_y = int(self.screen_height * 0.132)
+            self.create_group_open.move(self.create_group_open_x, self.create_group_open_y)
+            self.create_group_open.clicked.connect(self.create_group_clicked)
             self.text_entry = QLineEdit(self)
-            if self.parent.background_color == "Black and White":
-                text_entry_color = "black"
-            else:
-                text_entry_color = "white"
-            text_entry_y = self.send_image_y-int(self.screen_height * 0.0046)
-            text_entry_x = int(self.screen_width * 0.33854)
-            text_entry_height = int(self.screen_height * 0.037)
-            self.text_entry.setGeometry(text_entry_x, text_entry_y, self.width_of_chat_box-int(self.screen_width * 0.0364), text_entry_height)
-            self.text_entry.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
-            text = self.current_chat.replace("/", "")
-            place_holder_text = "Message" + " " + text
-            self.text_entry.setPlaceholderText(place_holder_text)
-            self.send_image_button.raise_()
-        else:
-            if self.parent.is_getting_called:
-                pop_up_x = 850
-                pop_up_y = 250
-                pop_up_width = 200
-                pop_up_height = 300
+            self.text_entry.hide()
 
-                text = f"Incoming Call..."
-                y_of_label = pop_up_y + 120
-                self.incoming_call_label = QLabel(text, self)
-                self.incoming_call_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px "
-                                                       ";background-color: transparent;")
-                self.incoming_call_label.move(pop_up_x + 45, y_of_label)
+            self.square_pos = (int(self.screen_width * 0.3125), 0)
+            self.square_label.setGeometry(self.square_pos[0], self.square_pos[1], self.width_of_chat_box,
+                                          self.height_of_chat_box)
+            self.square_label.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
 
-                text = f"{self.parent.getting_called_by}"
-                self.caller_label = QLabel(text, self)
-                start_point = int(len(text) - 4) * 1
-                font_size = calculate_font_size(text)
-                if start_point < 0:
-                    start_point = pop_up_x + 50
+            around_name_y = self.square_pos[1]
+            around_name_x = self.square_pos[0]
+            self.around_name = QLabel(self)
+            self.around_name.setStyleSheet(f"background-color: {self.parent.background_color_hex}; border: 5px solid {self.parent.standard_hover_color};")
+            start_height_of_around_name = int(self.screen_height * 0.0462)
+            height_of_around_name = start_height_of_around_name
+            self.around_name_delta = int(self.screen_height * 0.2037)
+            if (self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to) or \
+                    (self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with):
+                height_of_around_name = start_height_of_around_name + self.around_name_delta
+
+            self.call_profiles_list = []
+
+            self.current_chat, self.current_group_id = gets_group_attributes_from_format(self.parent.selected_chat)
+            if self.current_group_id:
+                if self.parent.is_call_dict_exist_by_group_id(self.current_group_id):
+                    height_of_around_name = start_height_of_around_name + self.around_name_delta
+
+            self.around_name.setGeometry(self.square_pos[0], around_name_y, self.width_of_chat_box, height_of_around_name)
+            self.around_name.move(around_name_x, around_name_y)
+            self.around_name.raise_()
+
+            self.call_profiles_list = []
+
+            if self.parent.selected_chat != "":
+                temp_widget_x, temp_widget_y = (int(self.screen_width * 0.3177), height_of_around_name)
+                temp_widget_width = int(self.width_of_chat_box * 0.98)
+                if height_of_around_name != start_height_of_around_name:
+                    temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037) - self.around_name_delta
                 else:
-                    start_point = pop_up_x + 50 - start_point
+                    temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037)
 
-                self.caller_label.setStyleSheet(f"color: white; font-size: {font_size}px; margin: 10px; "
-                                                "background-color: transparent;")
-                self.caller_label.move(start_point, y_of_label - 30)
+                if self.parent.is_messages_need_update or self.parent.messages_content_saver is None:
+                    temp_widget = MessagesBox(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
+                    self.parent.messages_content_saver = temp_widget
+                    self.parent.is_messages_need_update = False
+                else:
+                    self.parent.messages_content_saver.update_scroll_area_parent(self)
+                self.around_name.raise_()
+                self.ringing_square_label = QLabel(self)
 
-                self.pop_up_label = QLabel(self)
-                custom_color = QColor("#053d76")
-                self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
-                self.pop_up_label.setGeometry(pop_up_x, pop_up_y, pop_up_width, pop_up_height)
+                self.send_image_button = QPushButton(self)
 
-                self.accept_button = QPushButton(self)
-                self.reject_button = QPushButton(self)
+                # Load an image and set it as the button's icon
+                icon = QIcon("discord_app_assets/add_image_button.png")
+                self.send_image_button.setIcon(icon)
 
-                # Set button styles
-                button_size = QSize(35, 35)  # Adjust this to your desired button size
-                self.accept_button.setFixedSize(button_size)
-                self.reject_button.setFixedSize(button_size)
-                # Set button icons (assuming you have phone icons available)
+                # Set the desired size for the button
+                width, height = int(self.screen_width * 0.018), int(self.screen_height * 0.032)
 
-                icon = QIcon("discord_app_assets/accept_button.png")
-                self.accept_button.setIcon(icon)
-                icon_size = QSize(50, 50)  # Set your desired icon size
+                button_size = QSize(width, height)  # Adjust this to your desired button size
+                self.send_image_button.setFixedSize(button_size)
+
+                # Scale the icon while keeping its aspect ratio
+                icon_size = QSize(width, height)  # Set your desired icon size
                 icon_actual_size = icon.actualSize(icon.availableSizes()[0])
                 scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
 
-                self.accept_button.setIconSize(scaled_size)
-                self.accept_button.setStyleSheet(self.call_button_style_sheet)
-                icon = QIcon("discord_app_assets/reject_button.png")
-                self.reject_button.setIcon(icon)
-                icon_size = QSize(50, 50)  # Set your desired icon size
-                icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-                scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-                self.reject_button.setIconSize(scaled_size)
-                # Set button positions
-                accept_button_x = pop_up_x + 115
-                reject_button_x = pop_up_x + 50
+                # Set the scaled icon size for the button
+                self.send_image_button.setIconSize(scaled_size)
+                self.send_image_y = int(self.screen_height * 0.859)
+                self.send_image_x = int(self.screen_width * 0.3177)
+                self.send_image_button.move(self.send_image_x, self.send_image_y)
+                self.send_image_button.setStyleSheet(f"""            
+                QPushButton:hover {{
+                    background-color: {self.parent.standard_hover_color};
+                }}
+                 QPushButton {{
+                    background-color: transparent;
+                    }}
+                QPushButton:pressed {{
+                    background-color: #202225;
+                    border-color: #72767d;
+                }}
+                """)
+                self.send_image_button.clicked.connect(self.open_file_dialog)
 
-                self.accept_button.move(accept_button_x, pop_up_y + 200)
-                self.reject_button.move(reject_button_x, pop_up_y + 200)
-                self.reject_button.setStyleSheet(self.call_button_style_sheet)
-                # Connect button signals to functions
-                self.accept_button.clicked.connect(self.accept_call)
-                self.reject_button.clicked.connect(self.reject_call)
+                try:
+                    if self.parent.is_calling and self.parent.selected_chat == self.parent.calling_to:
+                        try:
+                            y_of_label = int(self.screen_height * 0.087)
+                            rings_to_x = int(self.screen_width * 0.479)
+                            if self.parent.selected_chat.startswith("("):
+                                text = f"Ringing Group..."
+                            else:
+                                text = f"Ringing User..."
+                            self.ringing_to_label = QLabel(text, self)
+                            self.ringing_to_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px;")
+                            self.ringing_to_label.move(rings_to_x, y_of_label)
+                            text_1_width = self.ringing_to_label.width()
 
-        # List to store message labels
-        self.chat_name_label = QLabel(self.current_chat.replace("/", ""), self)
-        self.chat_name_label.setStyleSheet("color: white; font-size: 20px; margin: 10px;")
-        # Set a fixed width for the label
-        self.chat_name_label.setFixedWidth(200)
-        chat_name_label_x = 620
-        self.chat_name_label.move(chat_name_label_x, 3)
-        self.messages_list = messages_list
-        self.message_labels = []
+                            text = f"{self.parent.calling_to}"
+                            self.calling_to_label = QLabel(text, self)
+                            self.calling_to_label.setStyleSheet("color: white; font-size: 25px; margin: 10px;")
+                            text_2_width = self.calling_to_label.width()
+                            self.calling_to_label.move(rings_to_x + (text_1_width - text_2_width), y_of_label + 20)
 
-        self.filename_label = QLabel(self)
-        self.filename_label.move(620, 830)
-        file_name_y = 860
-        file_name_x = 620
-        file_name_width = 300
-        self.filename_label.setGeometry(file_name_x, file_name_y, file_name_width, 50)  # Adjust the size as needed
-        self.filename_label.setWordWrap(True)  # Enable word wrap
-        self.filename_label.raise_()
-        self.filename_label.setStyleSheet(
-            "background-color: #333333; color: white; font-size: 16px;"
-        )
-        self.filename_label.hide()
-        self.garbage_button = QPushButton(self)
-        garbage_icon_path = "discord_app_assets/garbage_icon.png"
-        garbage_icon_width, garbage_icon_height = (35, 35)
-        set_button_icon(self.garbage_button, garbage_icon_path, garbage_icon_width, garbage_icon_height)
-        self.garbage_button.setGeometry(file_name_x + file_name_width - 50, file_name_y+8, garbage_icon_width, garbage_icon_height)
-        self.garbage_button.hide()
-        self.garbage_button.clicked.connect(self.garbage_button_clicked)
-        make_q_object_clear(self.garbage_button)
-        if self.parent.file_name != "":
-            self.filename_label.setText(self.parent.file_name + " is loaded")
-            self.filename_label.show()
-            self.garbage_button.show()
-        else:
-            self.filename_label.setText(self.parent.file_name)
+                            self.stop_calling_button = QPushButton(self)
 
-        self.image_too_big = QLabel(self)
-        self.image_too_big.move(620, 830)
-        self.image_too_big.setGeometry(620, 830, 200, 50)  # Adjust the size as needed
-        self.image_too_big.setWordWrap(True)  # Enable word wrap
-        self.image_too_big.raise_()
-        self.image_too_big.setStyleSheet(
-            "background-color: #333333; color: red; font-size: 16px;"
-        )
-        self.image_too_big.setText("Image size it too big")
-        if self.parent.size_error_label:
-            self.image_too_big.show()
-        else:
-            self.image_too_big.hide()
+                            # Set button styles
+                            width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
+                            button_size = QSize(width, height)  # Adjust this to your desired button size
+                            self.stop_calling_button.setFixedSize(button_size)
 
-        self.chats_label = QLabel("DIRECT MESSAGES", self)
-        self.chats_label.setStyleSheet('''
-            color: white;
-            font-size: 12px;
-            padding: 5px;
-            margin-bottom: 2px;
-        ''')
-        friend_starter_y = 170
-        friend_x = 250
-        self.chats_label.move(friend_x + 15, friend_starter_y - 28)
-        friends_button_y = 90
-        friends_button_height = self.friends_button_height
-        border_height = 912
-        border_width = 350
-        info_y = 902
-        self.border_label = QLabel(self)
-        self.border_label.setStyleSheet(f'''
-                        border: 2px solid {self.parent.standard_hover_color};
-                        border-radius: 5px;
-                        padding: 5px;
-                        margin-bottom: 2px;
-                    ''')
-        self.border_label.setGeometry(friend_x, 0, border_width, border_height)
-        self.border_label.lower()
 
-        self.border_label2 = QLabel(self)
-        self.border_label2.setStyleSheet(f'''
+                            icon = QIcon("discord_app_assets/reject_button.png")
+                            self.stop_calling_button.setIcon(icon)
+                            width, height = int(self.screen_width * 0.033), int(self.screen_width * 0.033)
+
+                            icon_size = QSize(width, height)  # Set your desired icon size
+                            icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                            scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+                            self.stop_calling_button.setIconSize(scaled_size)
+                            self.stop_calling_button.setObjectName("stop_calling_button")
+                            original_style_sheet = self.buttons_style_sheet
+
+                            # Define a more specific style for self.stop_calling_button
+                            specific_style = """
+                                QPushButton#stop_calling_button {
+                                    border: none;
+                                }
+                            """
+
+                            # Append the specific style for self.stop_calling_button to the original style sheet
+                            modified_style_sheet = original_style_sheet + specific_style
+
+                            # Apply the modified style sheet to the button
+                            self.stop_calling_button.setStyleSheet(modified_style_sheet)
+                            stop_calling_button_x, stop_calling_button_y = rings_to_x + (text_1_width // 2) - int(self.screen_width * 0.008), y_of_label + int(self.screen_height * 0.101)
+                            self.stop_calling_button.move(stop_calling_button_x, stop_calling_button_y)
+                            self.stop_calling_button.clicked.connect(self.stop_calling)
+                        except Exception as e:
+                            print(f"error in showing calling {e}")
+
+                    if self.parent.is_getting_called:
+                        pop_up_x = int(self.screen_width * 0.4427)
+                        pop_up_y = int(self.screen_height * 0.231)
+                        pop_up_width = int(self.screen_width * 0.1041)
+                        pop_up_height = int(self.screen_height * 0.2777)
+
+                        text = f"Incoming Call..."
+                        y_of_label = pop_up_y + int(self.screen_height * 0.1111)
+                        self.incoming_call_label = QLabel(text, self)
+                        self.incoming_call_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px "
+                                                               ";background-color: transparent;")
+                        self.incoming_call_label.move(pop_up_x + int(self.screen_width * 0.0234), y_of_label)
+
+                        text = f"{self.parent.getting_called_by}"
+                        self.caller_label = QLabel(text, self)
+                        start_point = int(len(text) - 4) * 1
+                        font_size = calculate_font_size(text)
+                        if start_point < 0:
+                            start_point = pop_up_x + int(self.screen_width * 0.026)
+                        else:
+                            start_point = pop_up_x + int(self.screen_width * 0.026) - start_point
+
+                        self.caller_label.setStyleSheet(f"color: white; font-size: {font_size}px; margin: 10px; "
+                                                        "background-color: transparent;")
+                        self.caller_label.move(start_point, y_of_label - int(self.screen_height * 0.02777))
+
+                        self.pop_up_label = QLabel(self)
+                        custom_color = QColor("#053d76")
+                        self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
+                        self.pop_up_label.setGeometry(pop_up_x, pop_up_y, pop_up_width, pop_up_height)
+
+                        self.accept_button = QPushButton(self)
+                        self.reject_button = QPushButton(self)
+
+                        # Set button styles
+                        width, height = int(self.screen_width * 0.0182),int(self.screen_width * 0.0182)
+                        button_size = QSize(width, height)  # Adjust this to your desired button size
+                        self.accept_button.setFixedSize(button_size)
+                        self.reject_button.setFixedSize(button_size)
+                        # Set button icons (assuming you have phone icons available)
+
+                        icon = QIcon("discord_app_assets/accept_button.png")
+                        self.accept_button.setIcon(icon)
+
+                        width, height = int(self.screen_width * 0.026), int(self.screen_width * 0.026)
+
+                        icon_size = QSize(width, height)  # Set your desired icon size
+                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+
+                        self.accept_button.setIconSize(scaled_size)
+                        self.accept_button.setStyleSheet(self.call_button_style_sheet)
+                        icon = QIcon("discord_app_assets/reject_button.png")
+                        self.reject_button.setIcon(icon)
+                        icon_size = QSize(width, height)  # Set your desired icon size
+                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+                        self.reject_button.setIconSize(scaled_size)
+                        # Set button positions
+                        accept_button_x = pop_up_x + int(self.screen_width * 0.059)
+                        reject_button_x = pop_up_x + int(self.screen_width * 0.026)
+
+                        self.accept_button.move(accept_button_x, pop_up_y + int(self.screen_height * 0.185))
+                        self.reject_button.move(reject_button_x, pop_up_y + int(self.screen_height * 0.185))
+                        self.reject_button.setStyleSheet(self.call_button_style_sheet)
+                        # Connect button signals to functions
+                        self.accept_button.clicked.connect(self.accept_call)
+                        self.reject_button.clicked.connect(self.reject_call)
+                    if self.parent.is_in_a_call and self.parent.selected_chat == self.parent.in_call_with:
+                        try:
+                            share_camera_height = int(self.screen_height * 0.041666)
+                            share_camera_button_width = int(self.screen_height * 0.041666)
+                            share_camera_x = int(self.screen_width * 0.4375)
+                            share_camera_y = int(self.screen_height * 0.199)
+                            self.share_camera_off_icon = QIcon("discord_app_assets/no_camera_icon.png")
+                            self.share_camera_on_icon = QIcon("discord_app_assets/camera_icon.png")
+                            self.share_camera_button = self.create_custom_in_call_button(share_camera_height, share_camera_button_width, share_camera_x,
+                                                                                share_camera_y, self.share_camera_and_unshare)
+                            share_screen_height = int(self.screen_height * 0.041666)
+                            share_screen_button_width = int(self.screen_height * 0.041666)
+                            share_screen_x = int(self.screen_width * 0.4713)
+                            share_screen_y = int(self.screen_height * 0.199)
+                            self.share_screen_button = self.create_custom_in_call_button(share_screen_height,
+                                                                                         share_screen_button_width,
+                                                                                         share_screen_x,
+                                                                                         share_screen_y,
+                                                                                         self.share_screen_and_unshare)
+                            try:
+                                try:
+                                    if self.parent.is_camera_shared:
+                                        set_button_icon(self.share_camera_button, self.share_camera_on_icon, share_camera_height, share_camera_button_width)
+                                    else:
+                                        set_button_icon(self.share_camera_button, self.share_camera_off_icon, share_camera_height,
+                                                             share_camera_button_width)
+                                except Exception as e:
+                                    print(f"error in setting camera icon {e}")
+
+                                self.share_screen_off_icon = QIcon("discord_app_assets/share_screen_off_icon.png")
+                                self.share_screen_on_icon = QIcon("discord_app_assets/share_screen_on_icon.png")
+                                try:
+                                    if self.parent.is_screen_shared:
+                                        set_button_icon(self.share_screen_button, self.share_screen_on_icon, share_screen_height, share_screen_button_width)
+                                    else:
+                                        set_button_icon(self.share_screen_button, self.share_screen_off_icon, share_screen_height,
+                                                             share_screen_button_width)
+                                except Exception as e:
+                                    print(f"error in setting icon for share screen button{e}")
+                            except Exception as e:
+                                print(f"error in creating shares buttons {e}")
+
+                            deafen_button_height = int(self.screen_height * 0.041666)
+                            deafen_button_width = int(self.screen_height * 0.041666)
+                            self.deafened_icon = QIcon("discord_app_assets/deafened.png")
+                            self.not_deafened_icon = QIcon("discord_app_assets/not_deafened.png")
+                            deafen_x = share_screen_x + int(self.screen_width * 0.0338)
+                            deafen_y = share_screen_y
+                            self.deafen_button = self.create_custom_in_call_button(deafen_button_width, deafen_button_height, deafen_x, deafen_y, self.deafen_and_undeafen)
+                            if self.parent.deafen:
+                                set_button_icon(self.deafen_button, self.deafened_icon, deafen_button_width, deafen_button_height)
+                            else:
+                                set_button_icon(self.deafen_button, self.not_deafened_icon, deafen_button_width,
+                                                     deafen_button_height)
+
+
+                            mic_button_height = int(self.screen_height * 0.041666)
+                            mic_button_width = int(self.screen_height * 0.041666)
+                            self.unmuted_mic_icon = QIcon("discord_app_assets/mic_not_muted_icon.png")
+                            self.muted_mic_icon = QIcon("discord_app_assets/mic_muted_icon.png")
+                            mic_x = deafen_x + int(self.screen_width * 0.0338)
+                            mic_button_y = share_screen_y
+                            self.mic_button = self.create_custom_in_call_button(mic_button_width, mic_button_height, mic_x, mic_button_y, self.mute_and_unmute)
+                            if self.parent.mute:
+                                set_button_icon(self.mic_button, self.muted_mic_icon, mic_button_width, mic_button_height)
+                            else:
+                                set_button_icon(self.mic_button, self.unmuted_mic_icon, mic_button_width, mic_button_height)
+
+                            self.end_call_button = QPushButton(self)
+
+                            # Set button styles
+                            call_button_height = int(self.screen_width * 0.0364)
+                            call_button_width = int(self.screen_width * 0.0364)
+                            button_size = QSize(call_button_width, call_button_height)  # Adjust this to your desired button size
+                            self.end_call_button.setFixedSize(button_size)
+                            set_button_icon(self.end_call_button, "discord_app_assets/reject_button.png", call_button_width, call_button_height)
+                            self.end_call_button.setStyleSheet(self.call_button_style_sheet)
+                            end_call_button_x = mic_x + int(self.screen_width * 0.028)
+                            self.end_call_button.move(end_call_button_x,
+                                                      share_screen_y-int(self.screen_height * 0.013888))
+                            self.end_call_button.clicked.connect(self.end_current_call)
+                            self.put_call_icons_on_the_screen()
+                        except Exception as e:
+                            print(f"error in incall func {e}")
+                except Exception as e:
+                    print(f"error in first try in chatbox {e}")
+
+
+                # Load an image and set it as the button's icon
+                icon = QIcon("discord_app_assets/ringing_blue_icon.png")
+                call_button_x = int(self.screen_width * 0.3125) + (self.width_of_chat_box // 2) + int(self.screen_width * 0.1777)
+                call_button_y = int(self.screen_height * 0.0074)
+                self.call_button = self.create_top_page_button(call_button_x, call_button_y, icon)
+                self.call_button.clicked.connect(self.call_user)
+                icon = QIcon("discord_app_assets/add_user.png")
+                self.add_user_x = call_button_x - int(self.screen_width * 0.026)
+                self.add_user_y = call_button_y
+                self.add_user_button = self.create_top_page_button(self.add_user_x, self.add_user_y, icon)
+                self.add_user_button.clicked.connect(self.add_user_to_group_pressed)
+
+                if self.current_group_id:
+                    group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
+                    if group_manager == self.parent.username:
+                        icon = QIcon("discord_app_assets/edit_name.png")
+                        rename_group_x = self.add_user_x - int(self.screen_width * 0.026)
+                        rename_group_y = call_button_y
+                        self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+                        icon = QIcon("discord_app_assets/edit_image_icon.png")
+                        edit_group_image_x = rename_group_x - int(self.screen_width * 0.026)
+                        edit_group_image_y = rename_group_y
+                        self.edit_group_image_button = self.create_top_page_button(edit_group_image_x, edit_group_image_y,
+                                                                                   icon)
+                        self.edit_group_image_button.clicked.connect(self.change_group_image)
+
+                    # if in chat where there is a group call gives option to join
+                    if self.current_group_id:
+                        if self.parent.is_call_dict_exist_by_group_id(self.current_group_id) and not self.parent.is_in_a_call:
+
+                            icon_size = int(self.screen_width * 0.03125)
+                            y_of_label = int(self.screen_height * 0.0879)
+                            rings_to_x = int(self.screen_width * 0.4791)
+                            icon = QIcon("discord_app_assets/accept_button.png")
+
+                            join_button_x = rings_to_x + int(self.screen_width * 0.016666)
+                            join_button_y = y_of_label + int(self.screen_height * 0.101)
+                            join_button_width_or_height = int(self.screen_width * 0.026)
+                            self.join_call_button = self.create_custom_in_call_button(join_button_width_or_height, join_button_width_or_height,
+                                                                                      join_button_x, join_button_y,  self.join_call)
+                            set_button_icon(self.join_call_button, icon, icon_size, icon_size)
+                            self.put_call_icons_on_the_screen()
+                    try:
+                        starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
+                        group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
+                        for member in group_members:
+                            pos = (starter_x_of_group_members, starter_y_of_group_members)
+                            button = self.create_member_button(member, pos)
+                            starter_y_of_group_members += button.height()
+                    except Exception as e:
+                        print(f"error in drawing members {e}")
+
+                self.text_entry = QLineEdit(self)
+                if self.parent.background_color == "Black and White":
+                    text_entry_color = "black"
+                else:
+                    text_entry_color = "white"
+                text_entry_y = self.send_image_y-int(self.screen_height * 0.0046)
+                text_entry_x = int(self.screen_width * 0.33854)
+                text_entry_height = int(self.screen_height * 0.037)
+                self.text_entry.setGeometry(text_entry_x, text_entry_y, self.width_of_chat_box-int(self.screen_width * 0.0364), text_entry_height)
+                self.text_entry.setStyleSheet(f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                text = self.current_chat.replace("/", "")
+                place_holder_text = "Message" + " " + text
+                self.text_entry.setPlaceholderText(place_holder_text)
+                self.send_image_button.raise_()
+            else:
+                try:
+                    if self.parent.is_getting_called:
+                        pop_up_x = 850
+                        pop_up_y = 250
+                        pop_up_width = 200
+                        pop_up_height = 300
+
+                        text = f"Incoming Call..."
+                        y_of_label = pop_up_y + 120
+                        self.incoming_call_label = QLabel(text, self)
+                        self.incoming_call_label.setStyleSheet("color: gray; font-size: 14px; margin: 10px "
+                                                               ";background-color: transparent;")
+                        self.incoming_call_label.move(pop_up_x + 45, y_of_label)
+
+                        text = f"{self.parent.getting_called_by}"
+                        self.caller_label = QLabel(text, self)
+                        start_point = int(len(text) - 4) * 1
+                        font_size = calculate_font_size(text)
+                        if start_point < 0:
+                            start_point = pop_up_x + 50
+                        else:
+                            start_point = pop_up_x + 50 - start_point
+
+                        self.caller_label.setStyleSheet(f"color: white; font-size: {font_size}px; margin: 10px; "
+                                                        "background-color: transparent;")
+                        self.caller_label.move(start_point, y_of_label - 30)
+
+                        self.pop_up_label = QLabel(self)
+                        custom_color = QColor("#053d76")
+                        self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
+                        self.pop_up_label.setGeometry(pop_up_x, pop_up_y, pop_up_width, pop_up_height)
+
+                        self.accept_button = QPushButton(self)
+                        self.reject_button = QPushButton(self)
+
+                        # Set button styles
+                        button_size = QSize(35, 35)  # Adjust this to your desired button size
+                        self.accept_button.setFixedSize(button_size)
+                        self.reject_button.setFixedSize(button_size)
+                        # Set button icons (assuming you have phone icons available)
+
+                        icon = QIcon("discord_app_assets/accept_button.png")
+                        self.accept_button.setIcon(icon)
+                        icon_size = QSize(50, 50)  # Set your desired icon size
+                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+
+                        self.accept_button.setIconSize(scaled_size)
+                        self.accept_button.setStyleSheet(self.call_button_style_sheet)
+                        icon = QIcon("discord_app_assets/reject_button.png")
+                        self.reject_button.setIcon(icon)
+                        icon_size = QSize(50, 50)  # Set your desired icon size
+                        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
+                        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
+                        self.reject_button.setIconSize(scaled_size)
+                        # Set button positions
+                        accept_button_x = pop_up_x + 115
+                        reject_button_x = pop_up_x + 50
+
+                        self.accept_button.move(accept_button_x, pop_up_y + 200)
+                        self.reject_button.move(reject_button_x, pop_up_y + 200)
+                        self.reject_button.setStyleSheet(self.call_button_style_sheet)
+                        # Connect button signals to functions
+                        self.accept_button.clicked.connect(self.accept_call)
+                        self.reject_button.clicked.connect(self.reject_call)
+                except Exception as e:
+                    print(f"error in gettin g called {e}")
+
+            # List to store message labels
+            try:
+                try:
+
+                    self.chat_name_label = QLabel(self.current_chat.replace("/", ""), self)
+                    self.chat_name_label.setStyleSheet("color: white; font-size: 20px; margin: 10px;")
+                    # Set a fixed width for the label
+                    self.chat_name_label.setFixedWidth(200)
+                    chat_name_label_x = 620
+                    self.chat_name_label.move(chat_name_label_x, 3)
+                    self.messages_list = messages_list
+                    self.message_labels = []
+
+                    self.filename_label = QLabel(self)
+                    self.filename_label.move(620, 830)
+                    file_name_y = 860
+                    file_name_x = 620
+                    file_name_width = 300
+                    self.filename_label.setGeometry(file_name_x, file_name_y, file_name_width, 50)  # Adjust the size as needed
+                    self.filename_label.setWordWrap(True)  # Enable word wrap
+                    self.filename_label.raise_()
+                    self.filename_label.setStyleSheet(
+                        "background-color: #333333; color: white; font-size: 16px;"
+                    )
+                    self.filename_label.hide()
+                    self.garbage_button = QPushButton(self)
+                    garbage_icon_path = "discord_app_assets/garbage_icon.png"
+                    garbage_icon_width, garbage_icon_height = (35, 35)
+                    set_button_icon(self.garbage_button, garbage_icon_path, garbage_icon_width, garbage_icon_height)
+                    self.garbage_button.setGeometry(file_name_x + file_name_width - 50, file_name_y+8, garbage_icon_width, garbage_icon_height)
+                    self.garbage_button.hide()
+                    self.garbage_button.clicked.connect(self.garbage_button_clicked)
+                    make_q_object_clear(self.garbage_button)
+
+                    if self.parent.file_name != "":
+                        self.filename_label.setText(self.parent.file_name + " is loaded")
+                        self.filename_label.show()
+                        self.garbage_button.show()
+                    else:
+                        self.filename_label.setText(self.parent.file_name)
+
+                    self.image_too_big = QLabel(self)
+                    self.image_too_big.move(620, 830)
+                    self.image_too_big.setGeometry(620, 830, 200, 50)  # Adjust the size as needed
+                    self.image_too_big.setWordWrap(True)  # Enable word wrap
+                    self.image_too_big.raise_()
+                    self.image_too_big.setStyleSheet(
+                        "background-color: #333333; color: red; font-size: 16px;"
+                    )
+                    self.image_too_big.setText("Image size it too big")
+                    if self.parent.size_error_label:
+                        self.image_too_big.show()
+                    else:
+                        self.image_too_big.hide()
+                except Exception as e:
+                    print(f"error in drawing filename and image_too_big {e}")
+
+                try:
+                    try:
+                        self.chats_label = QLabel("DIRECT MESSAGES", self)
+                        self.chats_label.setStyleSheet('''
+                            color: white;
+                            font-size: 12px;
                             padding: 5px;
                             margin-bottom: 2px;
-                            border-top: 2px solid {self.parent.standard_hover_color}; /* Top border */
-                            border-left: 2px solid {self.parent.standard_hover_color}; /* Left border */
-                            border-right: 2px solid {self.parent.standard_hover_color}; /* Right border */
                         ''')
-        self.border_label2.setGeometry(friend_x, 0, border_width, 170)
-        self.border_label2.lower()
+                        friend_starter_y = 170
+                        friend_x = 250
+                        self.chats_label.move(friend_x + 15, friend_starter_y - 28)
+                        friends_button_y = 90
+                        friends_button_height = self.friends_button_height
+                        border_height = 912
+                        border_width = 350
+                        info_y = 902
+                        self.border_label = QLabel(self)
+                        self.border_label.setStyleSheet(f'''
+                                        border: 2px solid {self.parent.standard_hover_color};
+                                        border-radius: 5px;
+                                        padding: 5px;
+                                        margin-bottom: 2px;
+                                    ''')
+                        self.border_label.setGeometry(friend_x, 0, border_width, border_height)
+                        self.border_label.lower()
 
-        find_contact_pos = (260, 20)
-        find_contact_size = (320, 40)
-        self.find_contact_text_entry = QLineEdit(self)
-        if self.parent.background_color == "Black and White":
-            text_entry_color = "black"
-        else:
-            text_entry_color = "white"
-        self.find_contact_text_entry.setPlaceholderText("Find a conversation")
-        self.find_contact_text_entry.setStyleSheet(
-            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
-        self.find_contact_text_entry.setGeometry(find_contact_pos[0], find_contact_pos[1], find_contact_size[0],
-                                                 find_contact_size[1])
-        self.find_contact_text_entry.textChanged.connect(self.on_text_changed_in_contact_search)
+                        self.border_label2 = QLabel(self)
+                        self.border_label2.setStyleSheet(f'''
+                                            padding: 5px;
+                                            margin-bottom: 2px;
+                                            border-top: 2px solid {self.parent.standard_hover_color}; /* Top border */
+                                            border-left: 2px solid {self.parent.standard_hover_color}; /* Left border */
+                                            border-right: 2px solid {self.parent.standard_hover_color}; /* Right border */
+                                        ''')
+                        self.border_label2.setGeometry(friend_x, 0, border_width, 170)
+                        self.border_label2.lower()
 
-        self.friends_button = QPushButton("  Social", self)
-        self.friends_button.setStyleSheet(f'''
-            QPushButton {{
-            color: white;
-            font-size: 15px;
-            border: none;  /* Remove the border */
-            border-radius: 5px;
-            padding: 5px;
-            margin-bottom: 2px;
-            text-align: left;  /* Align the text to the left */
-            alignment: left;   /* Align the icon and text to the left */
-            padding-left: 10px;   /* Adjust the starting position to the right */
-            }}
-            QPushButton:hover {{
-                background-color: {self.parent.standard_hover_color};
-            }}
+                        find_contact_pos = (260, 20)
+                        find_contact_size = (320, 40)
+                        self.find_contact_text_entry = QLineEdit(self)
+                    except Exception as e:
+                        print(f"error in first part of creating direct mesages button")
+                    try:
+                        if self.parent.background_color == "Black and White":
+                            text_entry_color = "black"
+                        else:
+                            text_entry_color = "white"
+                        self.find_contact_text_entry.setPlaceholderText("Find a conversation")
+                    except Exception as e:
+                        print(f"error in if {e}")
 
-            QPushButton:pressed {{
-                background-color: #202225;
-                border-color: #72767d;
-            }}
+                    try:
+                        self.find_contact_text_entry.setStyleSheet(
+                            f"background-color: {self.parent.standard_hover_color}; color: {text_entry_color}; padding: 10px; border: 1px solid #2980b9; border-radius: 5px; font-size: 14px;")
+                        self.find_contact_text_entry.setGeometry(find_contact_pos[0], find_contact_pos[1], find_contact_size[0],
+                                                                 find_contact_size[1])
+                        self.find_contact_text_entry.textChanged.connect(self.on_text_changed_in_contact_search)
 
-        ''')
-        icon = QIcon("discord_app_assets/friends_icon.png")  # Replace with the path to your icon image
-        self.friends_button.setIcon(icon)
+                        self.friends_button = QPushButton("  Social", self)
+                        self.friends_button.setStyleSheet(f'''
+                            QPushButton {{
+                            color: white;
+                            font-size: 15px;
+                            border: none;  /* Remove the border */
+                            border-radius: 5px;
+                            padding: 5px;
+                            margin-bottom: 2px;
+                            text-align: left;  /* Align the text to the left */
+                            alignment: left;   /* Align the icon and text to the left */
+                            padding-left: 10px;   /* Adjust the starting position to the right */
+                            }}
+                            QPushButton:hover {{
+                                background-color: {self.parent.standard_hover_color};
+                            }}
+                
+                            QPushButton:pressed {{
+                                background-color: #202225;
+                                border-color: #72767d;
+                            }}
+                
+                        ''')
+                        icon = QIcon("discord_app_assets/friends_icon.png")  # Replace with the path to your icon image
+                        self.friends_button.setIcon(icon)
 
-        # Set the position and size of the button
-        self.friends_button.setGeometry(friend_x + 5, friends_button_y - 10, border_width - 15,
-                                        friends_button_height)  # Adjust size as needed
+                        # Set the position and size of the button
+                        self.friends_button.setGeometry(friend_x + 5, friends_button_y - 10, border_width - 15,
+                                                        friends_button_height)  # Adjust size as needed
 
-        # Set the text alignment to show both the icon and text
+                        # Set the text alignment to show both the icon and text
 
-        # Optional: Adjust the spacing between the icon and text
-        self.friends_button.setIconSize(QSize(50, 50))  # Adjust size as needed
-        self.friends_button.clicked.connect(self.parent.social_clicked)
+                        # Optional: Adjust the spacing between the icon and text
+                        self.friends_button.setIconSize(QSize(50, 50))  # Adjust size as needed
+                        self.friends_button.clicked.connect(self.parent.social_clicked)
+                    except Exception as e:
+                        print(f"error in second part of try {e}")
+                except Exception as e:
+                    print(f"error in creating direct mesages button and friends_button {e}")
 
-        try:
-            friend_x = 250
-            if not self.parent.current_chat_box_search:
-                chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
-            else:
-                chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                try:
+                    friend_x = 250
+                    if not self.parent.current_chat_box_search:
+                        chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
+                    else:
+                        chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                except Exception as e:
+                    print(f"error in showing chats list{e}")
+
+                try:
+                    username_label = QLabel(self.parent.username, self)
+                    if text_entry_color == "black":
+                        username_label_background_color = "black"
+                    else:
+                        username_label_background_color = self.parent.standard_hover_color
+
+                    username_label_margin_bottom = int(self.parent.screen_width * 0.013)
+                    username_label_padding = int(self.parent.screen_width * 0.035)
+                    username_label.setStyleSheet(f'''
+                        color: white;
+                        font-size: 20px;
+                        background-color: {username_label_background_color};
+                        border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
+                        border-radius: 5px;
+                        padding: {username_label_padding}px;
+                        margin-bottom: {username_label_margin_bottom}px;
+                    ''')
+
+                    username_label.setGeometry(friend_x, info_y, border_width, 90)
+
+                    profile_image_label_position = int(friend_x + self.parent.screen_width * 0.005), int(info_y + self.parent.screen_height * 0.004)
+                    width, height = (55, 55)
+                    profile_image_label = create_custom_circular_label(width, height, self)
+                    chat_image = self.parent.get_profile_pic_by_username(self.parent.username)
+                    if chat_image is None:
+                        icon_path = self.parent.regular_profile_image_path
+                        set_icon_from_path_to_label(profile_image_label, icon_path)
+                    else:
+                        circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(self.parent.username)
+                        set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
+                    profile_image_label.move(profile_image_label_position[0], profile_image_label_position[1])
+                except Exception as e:
+                    print(f"error in drawing profile pic in chatbox {e}")
+
+                settings_button = QPushButton(self)
+                settings_button.setFixedSize(50, 50)  # Set the fixed size of the button
+                # Set the icon for the chat button
+                settings_button_icon = QIcon(QPixmap("discord_app_assets/Setting_logo.png"))
+                settings_button.setIcon(settings_button_icon)
+                settings_button.setIconSize(settings_button_icon.actualSize(QSize(50, 50)))  # Adjust the size as needed
+                settings_button.move(friend_x + 295, info_y + 10)
+                settings_button.setStyleSheet('''
+                    QPushButton {
+                        background-color: transparent;
+                    }
+        
+                ''')
+                settings_button.clicked.connect(self.parent.settings_clicked)
+                pause_mp3_files_button = QPushButton(self)
+                mp3_pause_path = "discord_app_assets/pause_and_play_icon.png"
+                set_button_icon(pause_mp3_files_button, mp3_pause_path, 40, 40)
+                pause_mp3_files_button.move(friend_x + 240, info_y + 10)
+                pause_mp3_files_button.setStyleSheet('''
+                    QPushButton {
+                        background-color: transparent;
+                    }
+        
+                ''')
+                pause_mp3_files_button.clicked.connect(self.parent.pause_or_unpause_mp3_files_player)
+
+                music_page_button = QPushButton(self)
+                mp3_pause_path = "discord_app_assets/music_icon.png"
+                set_button_icon(music_page_button, mp3_pause_path, 40, 40)
+                music_page_button.move(friend_x + 185, info_y + 10)
+                music_page_button.setStyleSheet('''
+                    QPushButton {
+                        background-color: transparent;
+                    }
+        
+                ''')
+                music_page_button.clicked.connect(self.parent.music_button_clicked)
+                try:
+                    if self.parent.is_create_group_pressed:
+                       create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
+                       create_group_box.raise_()
+                    elif self.parent.is_create_group_inside_chat_pressed:
+                        if self.parent.is_current_chat_a_group:
+                            create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "add")
+                        else:
+                            create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "create")
+                        create_group_box.raise_()
+                    chats_widget.raise_()
+                    self.raise_needed_elements()
+                except Exception as e:
+                    print(f"error in creaing CreateGroupBox in chatbox {e}")
+            except Exception as e:
+                print(f"error in last level in creating chat box {e}")
         except Exception as e:
-            print(f"error in showing chats list{e}")
-
-        username_label = QLabel(self.parent.username, self)
-        if text_entry_color == "black":
-            username_label_background_color = "black"
-        else:
-            username_label_background_color = self.parent.standard_hover_color
-
-        username_label_margin_bottom = int(self.parent.screen_width * 0.013)
-        username_label_padding = int(self.parent.screen_width * 0.035)
-        username_label.setStyleSheet(f'''
-            color: white;
-            font-size: 20px;
-            background-color: {username_label_background_color};
-            border: 2px solid {self.parent.standard_hover_color};  /* Use a slightly darker shade for the border */
-            border-radius: 5px;
-            padding: {username_label_padding}px;
-            margin-bottom: {username_label_margin_bottom}px;
-        ''')
-
-        username_label.setGeometry(friend_x, info_y, border_width, 90)
-
-        profile_image_label_position = int(friend_x + self.parent.screen_width * 0.005), int(info_y + self.parent.screen_height * 0.004)
-        width, height = (55, 55)
-        profile_image_label = create_custom_circular_label(width, height, self)
-        chat_image = self.parent.get_profile_pic_by_username(self.parent.username)
-        if chat_image is None:
-            icon_path = self.parent.regular_profile_image_path
-            set_icon_from_path_to_label(profile_image_label, icon_path)
-        else:
-            circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(self.parent.username)
-            set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
-        profile_image_label.move(profile_image_label_position[0], profile_image_label_position[1])
-
-        settings_button = QPushButton(self)
-        settings_button.setFixedSize(50, 50)  # Set the fixed size of the button
-        # Set the icon for the chat button
-        settings_button_icon = QIcon(QPixmap("discord_app_assets/Setting_logo.png"))
-        settings_button.setIcon(settings_button_icon)
-        settings_button.setIconSize(settings_button_icon.actualSize(QSize(50, 50)))  # Adjust the size as needed
-        settings_button.move(friend_x + 295, info_y + 10)
-        settings_button.setStyleSheet('''
-            QPushButton {
-                background-color: transparent;
-            }
-
-        ''')
-        settings_button.clicked.connect(self.parent.settings_clicked)
-        pause_mp3_files_button = QPushButton(self)
-        mp3_pause_path = "discord_app_assets/pause_and_play_icon.png"
-        set_button_icon(pause_mp3_files_button, mp3_pause_path, 40, 40)
-        pause_mp3_files_button.move(friend_x + 240, info_y + 10)
-        pause_mp3_files_button.setStyleSheet('''
-            QPushButton {
-                background-color: transparent;
-            }
-
-        ''')
-        pause_mp3_files_button.clicked.connect(self.parent.pause_or_unpause_mp3_files_player)
-
-        music_page_button = QPushButton(self)
-        mp3_pause_path = "discord_app_assets/music_icon.png"
-        set_button_icon(music_page_button, mp3_pause_path, 40, 40)
-        music_page_button.move(friend_x + 185, info_y + 10)
-        music_page_button.setStyleSheet('''
-            QPushButton {
-                background-color: transparent;
-            }
-
-        ''')
-        music_page_button.clicked.connect(self.parent.music_button_clicked)
-
-        if self.parent.is_create_group_pressed:
-           create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
-           create_group_box.raise_()
-        elif self.parent.is_create_group_inside_chat_pressed:
-            if self.parent.is_current_chat_a_group:
-                create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "add")
-            else:
-                create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "create")
-            create_group_box.raise_()
-            #self.display_create_group_box()
-        chats_widget.raise_()
-        self.raise_needed_elements()
+            print(f"error in creating chat box {e}")
 
     def add_user_to_group_pressed(self):
         if self.parent.is_create_group_inside_chat_pressed:

@@ -370,145 +370,148 @@ class PlaylistWidget(QWidget):
     def init_ui(self):
 
         # Create a table widget
-        self.sliders_style_sheet = f"""
-                       QSlider::groove:horizontal {{
-                           border: 1px solid #bbb;
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
-                           height: 10px;
-                           margin: 0px;
-                       }}
+        try:
+            self.sliders_style_sheet = f"""
+                           QSlider::groove:horizontal {{
+                               border: 1px solid #bbb;
+                               background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                               height: 10px;
+                               margin: 0px;
+                           }}
+    
+                           QSlider::handle:horizontal {{
+                               background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                               border: 1px solid #777;
+                               width: 20px;
+                                margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                               border-radius: 5px;
+                           }}
+    
+                           QSlider::add-page:horizontal {{
+                               background: #fff;
+                           }}
+    
+                           QSlider::sub-page:horizontal {{
+                               background: {self.parent.standard_hover_color}; /* Change this color to the desired color for the left side */
+                           }}
+                                   """
+            self.last_selected_row = None
+            table_x, table_y = 0, 70
+            table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
+            self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y, "")
+            self.search_table.insertRow(0)
+            self.search_table.clearSelection()
+            self.search_table.setSelectionMode(QAbstractItemView.NoSelection)
 
-                       QSlider::handle:horizontal {{
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
-                           border: 1px solid #777;
-                           width: 20px;
-                            margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-                           border-radius: 5px;
-                       }}
+            table_x, table_y = 0, self.parent.screen_height // 5.4
+            table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
+            self.table = self.create_table_widget(table_width, table_height, table_x, table_y, "playlist_table")
 
-                       QSlider::add-page:horizontal {{
-                           background: #fff;
-                       }}
+            self.search_song_entry = QLineEdit(self)
+            search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
+            width, height = 450, 40
+            self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
+            self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
 
-                       QSlider::sub-page:horizontal {{
-                           background: {self.parent.standard_hover_color}; /* Change this color to the desired color for the left side */
-                       }}
-                               """
-        self.last_selected_row = None
-        table_x, table_y = 0, 70
-        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
-        self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y, "")
-        self.search_table.insertRow(0)
-        self.search_table.clearSelection()
-        self.search_table.setSelectionMode(QAbstractItemView.NoSelection)
+            self.add_to_playlist_button = QPushButton("➕ Add song to Playlist", self)
+            make_q_object_clear(self.add_to_playlist_button)
+            size = QSize(int(0.072 * self.parent.screen_width), int(self.parent.screen_height * 0.028))
+            self.add_to_playlist_button.setFixedSize(size)
+            add_to_playlist_button_x, add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
+            self.add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
+            self.add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
 
-        table_x, table_y = 0, self.parent.screen_height // 5.4
-        table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.648)
-        self.table = self.create_table_widget(table_width, table_height, table_x, table_y, "playlist_table")
+            self.try_searched_song_button = QPushButton("🎧 Check out the song", self)
+            make_q_object_clear(self.try_searched_song_button)
+            self.try_searched_song_button.setFixedSize(size)
+            try_searched_song_button_x, try_searched_song_button_y = int(size.width() * 1.1), int(
+                self.parent.screen_height * 0.03)
+            self.try_searched_song_button.move(try_searched_song_button_x, try_searched_song_button_y)
+            self.try_searched_song_button.clicked.connect(self.parent.play_search_result)
 
-        self.search_song_entry = QLineEdit(self)
-        search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
-        width, height = 450, 40
-        self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
-        self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
+            self.remove_selected_song_button = QPushButton("❌ Remove selected song", self)
+            make_q_object_clear(self.remove_selected_song_button)
+            self.remove_selected_song_button.setFixedSize(size)
+            remove_selected_song_button_x, remove_selected_song_button_y = 0, int(
+                self.parent.screen_height * 0.15)
+            self.remove_selected_song_button.move(remove_selected_song_button_x, remove_selected_song_button_y)
+            self.remove_selected_song_button.clicked.connect(self.remove_song)
+            self.playlist_duration_slider_current_time_label = QLabel(self)
+            self.playlist_duration_slider_duration_label = QLabel(self)
+            make_q_object_clear(self.playlist_duration_slider_current_time_label)
+            make_q_object_clear(self.playlist_duration_slider_duration_label)
+            playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.265), int(
+                self.parent.screen_height * 0.15)
+            playlist_slider_width, playlist_slider_height = 750, 25
 
-        self.add_to_playlist_button = QPushButton("➕ Add song to Playlist", self)
-        make_q_object_clear(self.add_to_playlist_button)
-        size = QSize(int(0.072 * self.parent.screen_width), int(self.parent.screen_height * 0.028))
-        self.add_to_playlist_button.setFixedSize(size)
-        add_to_playlist_button_x, add_to_playlist_button_y = 0, int(self.parent.screen_height * 0.03)
-        self.add_to_playlist_button.move(add_to_playlist_button_x, add_to_playlist_button_y)
-        self.add_to_playlist_button.clicked.connect(self.parent.save_searched_song_to_playlist)
-
-        self.try_searched_song_button = QPushButton("🎧 Check out the song", self)
-        make_q_object_clear(self.try_searched_song_button)
-        self.try_searched_song_button.setFixedSize(size)
-        try_searched_song_button_x, try_searched_song_button_y = int(size.width() * 1.1), int(
-            self.parent.screen_height * 0.03)
-        self.try_searched_song_button.move(try_searched_song_button_x, try_searched_song_button_y)
-        self.try_searched_song_button.clicked.connect(self.parent.play_search_result)
-
-        self.remove_selected_song_button = QPushButton("❌ Remove selected song", self)
-        make_q_object_clear(self.remove_selected_song_button)
-        self.remove_selected_song_button.setFixedSize(size)
-        remove_selected_song_button_x, remove_selected_song_button_y = 0, int(
-            self.parent.screen_height * 0.15)
-        self.remove_selected_song_button.move(remove_selected_song_button_x, remove_selected_song_button_y)
-        self.remove_selected_song_button.clicked.connect(self.remove_song)
-        self.playlist_duration_slider_current_time_label = QLabel(self)
-        self.playlist_duration_slider_duration_label = QLabel(self)
-        make_q_object_clear(self.playlist_duration_slider_current_time_label)
-        make_q_object_clear(self.playlist_duration_slider_duration_label)
-        playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.265), int(
-            self.parent.screen_height * 0.15)
-        playlist_slider_width, playlist_slider_height = 750, 25
-
-        self.playlist_duration_slider = create_slider(self, 0, 0, 0, None
-                                                      , playlist_duration_slide_x
-                                                      , playlist_duration_slide_y, playlist_slider_width, playlist_slider_height, self.sliders_style_sheet)
-        self.playlist_duration_slider.sliderMoved.connect(self.update_media_player_position)
-        self.playlist_duration_slider_duration_label.move(int((playlist_duration_slide_x + playlist_slider_width)*1.01),
-                                                          int(playlist_duration_slide_y*1.035))
-        self.playlist_duration_slider_current_time_label.move(int(playlist_duration_slide_x*0.92),
+            self.playlist_duration_slider = create_slider(self, 0, 0, 0, None
+                                                          , playlist_duration_slide_x
+                                                          , playlist_duration_slide_y, playlist_slider_width, playlist_slider_height, self.sliders_style_sheet)
+            self.playlist_duration_slider.sliderMoved.connect(self.update_media_player_position)
+            self.playlist_duration_slider_duration_label.move(int((playlist_duration_slide_x + playlist_slider_width)*1.01),
                                                               int(playlist_duration_slide_y*1.035))
-        self.playlist_duration_slider_current_time_label.setStyleSheet("color: white")
-        self.playlist_duration_slider_duration_label.setStyleSheet("color: white")
+            self.playlist_duration_slider_current_time_label.move(int(playlist_duration_slide_x*0.92),
+                                                                  int(playlist_duration_slide_y*1.035))
+            self.playlist_duration_slider_current_time_label.setStyleSheet("color: white")
+            self.playlist_duration_slider_duration_label.setStyleSheet("color: white")
 
-        last_song_button = QPushButton(self)
-        next_song_button = QPushButton(self)
-        pause_and_play_button = QPushButton(self)
-        self.shuffle_button = QPushButton(self)
-        self.replay_song_button = QPushButton(self)
-        last_song_button_icon_path = "discord_app_assets/last_song_icon.png"
-        next_song_button_icon_path = "discord_app_assets/next_song_icon.png"
-        pause_and_play_button_icon_path = "discord_app_assets/pause_and_play_icon.png"
-        shuffle_button_icon_path = "discord_app_assets/suffle_icon.png"
-        replay_song_button_icon_path = "discord_app_assets/replaying_icon.png"
-        buttons_width, buttons_height = int(self.parent.screen_width*0.026), int(self.parent.screen_height*0.0462)
-        set_button_icon(self.replay_song_button, replay_song_button_icon_path, buttons_width, buttons_height)
-        set_button_icon(last_song_button, last_song_button_icon_path, buttons_width, buttons_height)
-        set_button_icon(next_song_button, next_song_button_icon_path, buttons_width, buttons_height)
-        set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, buttons_width, buttons_height)
-        set_button_icon(self.shuffle_button, shuffle_button_icon_path, buttons_width, buttons_height)
-        first_button_x = int(self.parent.screen_width * 0.43)
-        buttons_y = int(self.parent.screen_height * 0.842)
-        playlist_volume_slider_x, playlist_volume_slider_y = int(buttons_width * 1.2), int(
-            self.parent.screen_height * 0.854)
-        playlist_volume_slider_width, playlist_volume_slider_height = 500, 25
-        self.playlist_volume_slider_label = QLabel(self)
-        make_q_object_clear(self.playlist_volume_slider_label)
-        self.playlist_volume_slider = create_slider(self, 0, 100, self.parent.volume
-                                                    , self.playlist_volume_update,
-                                                    playlist_volume_slider_x, playlist_volume_slider_y, playlist_volume_slider_width, playlist_volume_slider_height, self.sliders_style_sheet
-                                                    )
-        self.playlist_volume_slider_label.move(int(playlist_volume_slider_x*0.4), int(playlist_volume_slider_y*0.995))
-        self.set_icon_for_volume_label()
-        # self.volume_slider.
+            last_song_button = QPushButton(self)
+            next_song_button = QPushButton(self)
+            pause_and_play_button = QPushButton(self)
+            self.shuffle_button = QPushButton(self)
+            self.replay_song_button = QPushButton(self)
+            last_song_button_icon_path = "discord_app_assets/last_song_icon.png"
+            next_song_button_icon_path = "discord_app_assets/next_song_icon.png"
+            pause_and_play_button_icon_path = "discord_app_assets/pause_and_play_icon.png"
+            shuffle_button_icon_path = "discord_app_assets/suffle_icon.png"
+            replay_song_button_icon_path = "discord_app_assets/replaying_icon.png"
+            buttons_width, buttons_height = int(self.parent.screen_width*0.026), int(self.parent.screen_height*0.0462)
+            set_button_icon(self.replay_song_button, replay_song_button_icon_path, buttons_width, buttons_height)
+            set_button_icon(last_song_button, last_song_button_icon_path, buttons_width, buttons_height)
+            set_button_icon(next_song_button, next_song_button_icon_path, buttons_width, buttons_height)
+            set_button_icon(pause_and_play_button, pause_and_play_button_icon_path, buttons_width, buttons_height)
+            set_button_icon(self.shuffle_button, shuffle_button_icon_path, buttons_width, buttons_height)
+            first_button_x = int(self.parent.screen_width * 0.43)
+            buttons_y = int(self.parent.screen_height * 0.842)
+            playlist_volume_slider_x, playlist_volume_slider_y = int(buttons_width * 1.2), int(
+                self.parent.screen_height * 0.854)
+            playlist_volume_slider_width, playlist_volume_slider_height = 500, 25
+            self.playlist_volume_slider_label = QLabel(self)
+            make_q_object_clear(self.playlist_volume_slider_label)
+            self.playlist_volume_slider = create_slider(self, 0, 100, self.parent.volume
+                                                        , self.playlist_volume_update,
+                                                        playlist_volume_slider_x, playlist_volume_slider_y, playlist_volume_slider_width, playlist_volume_slider_height, self.sliders_style_sheet
+                                                        )
+            self.playlist_volume_slider_label.move(int(playlist_volume_slider_x*0.4), int(playlist_volume_slider_y*0.995))
+            self.set_icon_for_volume_label()
+            # self.volume_slider.
 
-        delta_between_button = int(self.parent.screen_width * 0.03125)
-        self.replay_song_button.move(first_button_x+(delta_between_button*3), buttons_y)
-        self.shuffle_button.move(first_button_x-delta_between_button, buttons_y)
-        last_song_button.move(first_button_x, buttons_y)
-        pause_and_play_button.move(first_button_x+delta_between_button, buttons_y)
-        next_song_button.move(first_button_x+(delta_between_button*2), buttons_y)
-        make_q_object_clear(last_song_button)
-        make_q_object_clear(next_song_button)
-        make_q_object_clear(pause_and_play_button)
-        make_q_object_clear(self.shuffle_button)
-        make_q_object_clear(self.replay_song_button)
-        last_song_button.raise_()
-        next_song_button.raise_()
-        pause_and_play_button.raise_()
-        pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
-        last_song_button.clicked.connect(self.parent.go_to_last_song)
-        next_song_button.clicked.connect(self.parent.go_to_next_song)
-        self.shuffle_button.clicked.connect(self.toggle_shuffle)
-        self.replay_song_button.clicked.connect(self.toggle_replay_song)
+            delta_between_button = int(self.parent.screen_width * 0.03125)
+            self.replay_song_button.move(first_button_x+(delta_between_button*3), buttons_y)
+            self.shuffle_button.move(first_button_x-delta_between_button, buttons_y)
+            last_song_button.move(first_button_x, buttons_y)
+            pause_and_play_button.move(first_button_x+delta_between_button, buttons_y)
+            next_song_button.move(first_button_x+(delta_between_button*2), buttons_y)
+            make_q_object_clear(last_song_button)
+            make_q_object_clear(next_song_button)
+            make_q_object_clear(pause_and_play_button)
+            make_q_object_clear(self.shuffle_button)
+            make_q_object_clear(self.replay_song_button)
+            last_song_button.raise_()
+            next_song_button.raise_()
+            pause_and_play_button.raise_()
+            pause_and_play_button.clicked.connect(self.parent.pause_and_unpause_playlist)
+            last_song_button.clicked.connect(self.parent.go_to_last_song)
+            next_song_button.clicked.connect(self.parent.go_to_next_song)
+            self.shuffle_button.clicked.connect(self.toggle_shuffle)
+            self.replay_song_button.clicked.connect(self.toggle_replay_song)
 
-        self.update_music_page_style_sheet()
-        # Ensure the data is visible
+            self.update_music_page_style_sheet()
+            # Ensure the data is visible
 
-        self.table.show()
+            self.table.show()
+        except Exception as e:
+            print(f"error in creating music box {e}")
 
     def update_media_player_position(self, new_position):
         # Convert the new position to seconds

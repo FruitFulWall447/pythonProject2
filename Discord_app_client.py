@@ -221,7 +221,7 @@ class SplashScreen(QWidget):
             self.page_controller_object.is_logged_in = True
             self.hide()
         except Exception as e:
-            print("error in close_page_open_main_page")
+            print(e)
 
     def update_loading_dots(self):
         n = self.page_controller_object.n
@@ -239,7 +239,7 @@ class SplashScreen(QWidget):
             if self.page_controller_object.main_page.username == "":
                 if not are_token_saved():
                     self.loading_timer.stop()
-                    self.page_controller_object.change_to_login_page()
+                    self.page_controller_object.change_to_LoginPage()
                     self.hide()
                 else:
                     security_token = get_saved_token()
@@ -265,13 +265,13 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.start_receive_thread_after_login()
                                         self.hide()
                                     except Exception as e:
-                                        print(f"error in logging in {e}")
+                                        print(e)
                                 elif action_state == "invalid":
                                     print("username already logged in")
                         elif server_answer == "invalid":
                             print("security token isn't valid")
                             self.loading_timer.stop()
-                            self.page_controller_object.change_to_login_page()
+                            self.page_controller_object.change_to_LoginPage()
                             self.hide()
 
 
@@ -303,310 +303,310 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def __init__(self, Network, page_controller_object):
         super().__init__()
-        try:
-            self.page_controller_object = page_controller_object
-            self.vc_data_list = []
+        self.page_controller_object = page_controller_object
+        self.vc_data_list = []
 
-            self.vc_thread_flag = False
-            self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
+        self.vc_thread_flag = False
+        self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
-            self.vc_play_flag = False
-            self.audio_data_lock = threading.Lock()
-            self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
+        self.vc_play_flag = False
+        self.audio_data_lock = threading.Lock()
+        self.play_vc_data_thread = threading.Thread(target=self.thread_play_vc_data, args=())
 
-            self.vc_data_fragments_list = []
-            self.share_screen_data_fragments_list = []
-            self.share_camera_data_fragments_list = []
-            self.listen_udp = True
-            self.listen_udp_thread = threading.Thread(target=self.listen_udp_socket_thread, args=())
+        self.vc_data_fragments_list = []
+        self.share_screen_data_fragments_list = []
+        self.share_camera_data_fragments_list = []
+        self.listen_udp = True
+        self.listen_udp_thread = threading.Thread(target=self.listen_udp_socket_thread, args=())
 
-            self.is_watching_screen = False
-            self.watching_user = ""
-            self.watching_type = None
+        self.is_watching_screen = False
+        self.watching_user = ""
+        self.watching_type = None
 
-            self.is_screen_shared = False
-            self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
+        self.is_screen_shared = False
+        self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
 
-            self.is_camera_shared = False
-            self.send_camera_data_thread = threading.Thread(target=self.thread_send_share_camera_data, args=())
+        self.is_camera_shared = False
+        self.send_camera_data_thread = threading.Thread(target=self.thread_send_share_camera_data, args=())
 
-            self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
+        self.regular_profile_image_path = "discord_app_assets/regular_profile.png"
 
-            self.blueish_background_color = "#141c4b"
-            self.blackish_background_color = "#000000"
-            self.reddish_background_color = "#5c1114"
-            self.grayish_background_color = "#363131"
-            self.special_design_color = "#2b2d31"
+        self.blueish_background_color = "#141c4b"
+        self.blackish_background_color = "#000000"
+        self.reddish_background_color = "#5c1114"
+        self.grayish_background_color = "#363131"
+        self.special_design_color = "#2b2d31"
 
-            self.blueish_style_hover_color = "#2980b9"
-            self.blackish_style_hover_color = "#FFFFFF"
-            self.reddish_style_hover_color = "#7d1d21"
-            self.grayish_style_hover_color = "#5c4a4b"
-            self.special_design_hover_color = "#36373d"
+        self.blueish_style_hover_color = "#2980b9"
+        self.blackish_style_hover_color = "#FFFFFF"
+        self.reddish_style_hover_color = "#7d1d21"
+        self.grayish_style_hover_color = "#5c4a4b"
+        self.special_design_hover_color = "#36373d"
 
-            self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color,
-                                     self.blackish_style_hover_color, self.grayish_style_hover_color,
-                                     self.special_design_hover_color]
+        self.hex_hover_colors = [self.reddish_style_hover_color, self.blueish_style_hover_color,
+                                 self.blackish_style_hover_color, self.grayish_style_hover_color,
+                                 self.special_design_hover_color]
 
-            self.hex_colors = [self.reddish_background_color, self.blueish_background_color, self.blackish_background_color,
-                               self.grayish_background_color, self.special_design_color]
-            self.color_design_options = ["Red", "Blue", "Black and White", "Gray", "Connectify Special"]
-            self.color_design_mapping = {
-                self.color_design_options[0]: self.hex_colors[0],
-                self.color_design_options[1]: self.hex_colors[1],
-                self.color_design_options[2]: self.hex_colors[2],
-                self.color_design_options[3]: self.hex_colors[3],
-                self.color_design_options[4]: self.hex_colors[4]
-            }
+        self.hex_colors = [self.reddish_background_color, self.blueish_background_color, self.blackish_background_color,
+                           self.grayish_background_color, self.special_design_color]
+        self.color_design_options = ["Red", "Blue", "Black and White", "Gray", "Connectify Special"]
+        self.color_design_mapping = {
+            self.color_design_options[0]: self.hex_colors[0],
+            self.color_design_options[1]: self.hex_colors[1],
+            self.color_design_options[2]: self.hex_colors[2],
+            self.color_design_options[3]: self.hex_colors[3],
+            self.color_design_options[4]: self.hex_colors[4]
+        }
 
-            self.style_color_hover_mapping = {
-                self.color_design_options[0]: self.hex_hover_colors[0],
-                self.color_design_options[1]: self.hex_hover_colors[1],
-                self.color_design_options[2]: self.hex_hover_colors[2],
-                self.color_design_options[3]: self.hex_hover_colors[3],
-                self.color_design_options[4]: self.hex_hover_colors[4]
-            }
-            self.special_keys_mapping = {
-                Qt.Key_Return: "Return",
-                Qt.Key_Enter: "Enter",
-                Qt.Key_Escape: "Escape",
-                Qt.Key_Tab: "Tab",
-                Qt.Key_Backspace: "Backspace",
-                Qt.Key_Delete: "Delete",
-                Qt.Key_Insert: "Insert",
-                Qt.Key_Home: "Home",
-                Qt.Key_End: "End",
-                Qt.Key_PageUp: "Page Up",
-                Qt.Key_PageDown: "Page Down",
-                Qt.Key_Left: "Left Arrow",
-                Qt.Key_Right: "Right Arrow",
-                Qt.Key_Up: "Up Arrow",
-                Qt.Key_Down: "Down Arrow",
-                Qt.Key_F1: "F1",
-                Qt.Key_F2: "F2",
-                Qt.Key_F3: "F3",
-                Qt.Key_F4: "F4",
-                Qt.Key_F5: "F5",
-                Qt.Key_F6: "F6",
-                Qt.Key_F7: "F7",
-                Qt.Key_F8: "F8",
-                Qt.Key_F9: "F9",
-                Qt.Key_F10: "F10",
-                Qt.Key_F11: "F11",
-                Qt.Key_F12: "F12",
-                Qt.Key_Shift: "Shift",
-                Qt.Key_Control: "Control",
-                Qt.Key_Alt: "Alt",
-                Qt.Key_Meta: "Meta/Windows",
-                Qt.Key_CapsLock: "Caps Lock",
-                Qt.Key_NumLock: "Num Lock",
-                Qt.Key_ScrollLock: "Scroll Lock",
-                # Add more key mappings as needed
-            }
-            self.reversed_keys_mapping = {value: key for key, value in self.special_keys_mapping.items()}
+        self.style_color_hover_mapping = {
+            self.color_design_options[0]: self.hex_hover_colors[0],
+            self.color_design_options[1]: self.hex_hover_colors[1],
+            self.color_design_options[2]: self.hex_hover_colors[2],
+            self.color_design_options[3]: self.hex_hover_colors[3],
+            self.color_design_options[4]: self.hex_hover_colors[4]
+        }
+        self.special_keys_mapping = {
+            Qt.Key_Return: "Return",
+            Qt.Key_Enter: "Enter",
+            Qt.Key_Escape: "Escape",
+            Qt.Key_Tab: "Tab",
+            Qt.Key_Backspace: "Backspace",
+            Qt.Key_Delete: "Delete",
+            Qt.Key_Insert: "Insert",
+            Qt.Key_Home: "Home",
+            Qt.Key_End: "End",
+            Qt.Key_PageUp: "Page Up",
+            Qt.Key_PageDown: "Page Down",
+            Qt.Key_Left: "Left Arrow",
+            Qt.Key_Right: "Right Arrow",
+            Qt.Key_Up: "Up Arrow",
+            Qt.Key_Down: "Down Arrow",
+            Qt.Key_F1: "F1",
+            Qt.Key_F2: "F2",
+            Qt.Key_F3: "F3",
+            Qt.Key_F4: "F4",
+            Qt.Key_F5: "F5",
+            Qt.Key_F6: "F6",
+            Qt.Key_F7: "F7",
+            Qt.Key_F8: "F8",
+            Qt.Key_F9: "F9",
+            Qt.Key_F10: "F10",
+            Qt.Key_F11: "F11",
+            Qt.Key_F12: "F12",
+            Qt.Key_Shift: "Shift",
+            Qt.Key_Control: "Control",
+            Qt.Key_Alt: "Alt",
+            Qt.Key_Meta: "Meta/Windows",
+            Qt.Key_CapsLock: "Caps Lock",
+            Qt.Key_NumLock: "Num Lock",
+            Qt.Key_ScrollLock: "Scroll Lock",
+            # Add more key mappings as needed
+        }
+        self.reversed_keys_mapping = {value: key for key, value in self.special_keys_mapping.items()}
 
-            self.standard_hover_color = "#2980b9"
-            self.background_color_hex = "#141c4b"
-            self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
 
-            self.blur_effect = QGraphicsBlurEffect()
-            self.blur_effect.setBlurRadius(90)  # Adjust the blur radius as needed
-            screen = QDesktopWidget().screenGeometry()
-            # Extract the screen width and height
-            self.screen_width = screen.width()
-            self.screen_height = screen.height()
 
-            self.is_create_group_pressed = False
-            self.is_create_group_inside_chat_pressed = False
+        self.standard_hover_color = "#2980b9"
+        self.background_color_hex = "#141c4b"
+        self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
 
-            self.is_rename_group_pressed = False
-            self.is_add_users_to_group_pressed = False
+        self.blur_effect = QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(90)  # Adjust the blur radius as needed
+        screen = QDesktopWidget().screenGeometry()
+        # Extract the screen width and height
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
 
-            self.current_search_song_dict = None
-            self.phone_number = None
-            self.email = None
-            self.messages_font_size = 12
+        self.is_create_group_pressed = False
+        self.is_create_group_inside_chat_pressed = False
 
-            self.volume = 50
-            self.output_device_name = ""
-            self.input_device_name = ""
-            self.camera_index = 0
-            self.font_size = 12
-            self.font_text = self.font_options[0]
-            self.background_color = "Blue"
-            self.censor_data_from_strangers = True
-            self.is_private_account = True
-            self.push_to_talk_key = None
-            self.two_factor_authentication = False
+        self.is_rename_group_pressed = False
+        self.is_add_users_to_group_pressed = False
 
-            self.playlist_volume = self.volume
-            self.playlist_songs = []
-            self.playlist_index = 0
-            self.playlist_last_index = 0
-            self.shuffle = False
-            self.replay_song = False
+        self.current_search_song_dict = None
+        self.phone_number = None
+        self.email = None
+        self.messages_font_size = 12
 
-            self.size_error_label = False
-            self.is_chat_box_full = False
-            self.is_friends_box_full = False
-            self.is_last_message_on_screen = False
+        self.volume = 50
+        self.output_device_name = ""
+        self.input_device_name = ""
+        self.camera_index = 0
+        self.font_size = 12
+        self.font_text = self.font_options[0]
+        self.background_color = "Blue"
+        self.censor_data_from_strangers = True
+        self.is_private_account = True
+        self.push_to_talk_key = None
+        self.two_factor_authentication = False
 
-            self.list_messages = []
-            self.is_user_have_current_chat_all_messages = False
+        self.playlist_volume = self.volume
+        self.playlist_songs = []
+        self.playlist_index = 0
+        self.playlist_last_index = 0
+        self.shuffle = False
+        self.replay_song = False
 
-            self.request_list = []
-            self.is_in_a_call = False
-            self.is_calling = False
-            self.calling_to = ""
-            self.in_call_with = ""
-            self.is_getting_called = False
-            self.getting_called_by = ""
-            self.is_joining_call = False
-            self.joining_to = ""
-            self.call_dicts = []
+        self.size_error_label = False
+        self.is_chat_box_full = False
+        self.is_friends_box_full = False
+        self.is_last_message_on_screen = False
 
-            self.username = ""
+        self.list_messages = []
+        self.is_user_have_current_chat_all_messages = False
 
-            self.selected_chat = ""
-            self.is_current_chat_a_group = False
+        self.request_list = []
+        self.is_in_a_call = False
+        self.is_calling = False
+        self.calling_to = ""
+        self.in_call_with = ""
+        self.is_getting_called = False
+        self.getting_called_by = ""
+        self.is_joining_call = False
+        self.joining_to = ""
+        self.call_dicts = []
 
-            self.camera_devices_names = get_camera_names()
+        self.username = ""
 
-            self.mute = False
-            self.deafen = False
+        self.selected_chat = ""
+        self.is_current_chat_a_group = False
 
-            self.selected_settings = "My Account"
-            self.is_push_to_talk = False
-            self.is_push_to_talk_pressed = False
-            self.is_editing_push_to_talk_button = False
-            self.profile_pic = None
-            self.list_user_profile_dicts = []
-            self.circular_images_dicts_list_of_users = []
-            self.circular_images_dicts_list_of_groups = []
+        self.camera_devices_names = get_camera_names()
 
-            self.is_watching_video = False
-            # the scroll widget that contain all of the messages
-            self.messages_content_saver = None
-            self.is_messages_need_update = True
+        self.mute = False
+        self.deafen = False
 
-            self.online_users_list = []
-            self.friends_list = []
-            # friend_box_page could be online, add friend, blocked, all, pending
-            self.friends_box_page = "online"
-            self.chats_list = []
-            self.file_to_send = None
-            self.file_name = ""
-            self.chat_start_index = None
-            self.Network = Network
-            self.chat_box_chats_index = 0
-            self.chat_box_index_y_start = 100
+        self.selected_settings = "My Account"
+        self.is_push_to_talk = False
+        self.is_push_to_talk_pressed = False
+        self.is_editing_push_to_talk_button = False
+        self.profile_pic = None
+        self.list_user_profile_dicts = []
+        self.circular_images_dicts_list_of_users = []
+        self.circular_images_dicts_list_of_groups = []
 
-            self.friends_box_index = 0
-            self.friends_box_index_y_start = 100
-            self.current_friends_box_search = False
+        self.is_watching_video = False
+        # the scroll widget that contain all of the messages
+        self.messages_content_saver = None
+        self.is_messages_need_update = True
 
-            self.selected_group_members = []
-            self.create_group_index = 0
-            self.add_users_to_group_index = 0
-            self.group_max_members = 10
+        self.online_users_list = []
+        self.friends_list = []
+        # friend_box_page could be online, add friend, blocked, all, pending
+        self.friends_box_page = "online"
+        self.chats_list = []
+        self.file_to_send = None
+        self.file_name = ""
+        self.chat_start_index = None
+        self.Network = Network
+        self.chat_box_chats_index = 0
+        self.chat_box_index_y_start = 100
 
-            self.blocked_list = []
-            self.groups_list = []
+        self.friends_box_index = 0
+        self.friends_box_index_y_start = 100
+        self.current_friends_box_search = False
 
-            self.chat_clicked = True
-            self.social_clicked = False
-            self.setting_clicked = False
-            self.music_clicked = False
+        self.selected_group_members = []
+        self.create_group_index = 0
+        self.add_users_to_group_index = 0
+        self.group_max_members = 10
 
-            self.is_new_chat_clicked = True
+        self.blocked_list = []
+        self.groups_list = []
 
-            self.current_chat_box_search = False
-            self.temp_search_list = []
-            self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.updated_chat_signal.connect(self.updated_chat)
-            self.updated_social_page_signal.connect(self.updated_social_page)
-            self.updated_settings_signal.connect(self.updated_settings_page)
-            self.getting_call_signal.connect(self.getting_a_call)
-            self.stop_sound_signal.connect(self.stop_sound)
-            self.initiating_call_signal.connect(self.initiate_call)
-            self.reset_call_var_signal.connect(self.reset_call_var)
-            self.new_message_play_audio_signal.connect(self.new_message_play_audio)
-            self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
-            self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
-            self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
-            self.disconnect_signal.connect(self.page_controller_object.quit_application)
-            self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
-            self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
-            self.update_message_box_signal.connect(self.update_message_box)
-            self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
-            self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
-            self.insert_new_message_in_chat_signal.connect(self.insert_new_message_in_chat)
-            self.insert_search_result_signal.connect(self.insert_search_result)
-            self.close_call_threads_signal.connect(self.close_call_threads)
-            self.start_call_threads_signal.connect(self.start_call_threads)
-            self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
-            self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
-            self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
+        self.chat_clicked_var = True
+        self.social_clicked_var = False
+        self.setting_clicked = False
+        self.music_clicked = False
 
-            self.sound_effect_media_player = QMediaPlayer()
-            self.sound_effect_media_player.setVolume(50)
+        self.is_new_chat_clicked = True
 
-            self.mp3_message_media_player = QMediaPlayer()
-            self.mp3_message_media_player.setVolume(50)
+        self.current_chat_box_search = False
+        self.temp_search_list = []
+        self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.updated_chat_signal.connect(self.updated_chat)
+        self.updated_social_page_signal.connect(self.updated_social_page)
+        self.updated_settings_signal.connect(self.updated_settings_page)
+        self.getting_call_signal.connect(self.getting_a_call)
+        self.stop_sound_signal.connect(self.stop_sound)
+        self.initiating_call_signal.connect(self.initiate_call)
+        self.reset_call_var_signal.connect(self.reset_call_var)
+        self.new_message_play_audio_signal.connect(self.new_message_play_audio)
+        self.stop_watching_stream_signal.connect(self.stop_watching_video_stream)
+        self.caching_circular_images_of_users_signal.connect(self.caching_circular_images_of_users)
+        self.caching_circular_images_of_groups_signal.connect(self.caching_circular_images_of_groups)
+        self.disconnect_signal.connect(self.page_controller_object.quit_application)
+        self.updating_profile_dict_signal.connect(self.update_profile_dict_of_user)
+        self.update_group_lists_by_group.connect(self.update_groups_list_by_dict)
+        self.update_message_box_signal.connect(self.update_message_box)
+        self.scroll_back_to_index_before_update_signal.connect(self.scroll_back_to_index_before_update)
+        self.insert_messages_into_message_box_signal.connect(self.insert_messages_into_message_box)
+        self.insert_new_message_in_chat_signal.connect(self.insert_new_message_in_chat)
+        self.insert_search_result_signal.connect(self.insert_search_result)
+        self.close_call_threads_signal.connect(self.close_call_threads)
+        self.start_call_threads_signal.connect(self.start_call_threads)
+        self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
+        self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
+        self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
 
-            self.calling_media_player = QMediaPlayer()
-            self.calling_media_player.setVolume(50)
+        self.sound_effect_media_player = QMediaPlayer()
+        self.sound_effect_media_player.setVolume(50)
 
-            self.playlist_media_player = QMediaPlayer()
-            self.playlist_media_player.setVolume(50)
-            self.playlist_media_player.mediaStatusChanged.connect(self.handle_playlist_song_state_change)
-            self.playlist_media_player.positionChanged.connect(self.update_slider_position)
+        self.mp3_message_media_player = QMediaPlayer()
+        self.mp3_message_media_player.setVolume(50)
 
-            self.ringtone_media_player = QMediaPlayer()
-            self.ringtone_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
-            self.ringtone_media_player.setVolume(50)
+        self.calling_media_player = QMediaPlayer()
+        self.calling_media_player.setVolume(50)
 
-            self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
-            self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
-            self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
-            self.sound_effect_media_player.setMedia(self.ringtone)
-            x, y = (int(self.page_controller_object.screen_width * 0.052),
-                    int(self.page_controller_object.screen_height * 0.092))
-            width, height = (int(self.page_controller_object.screen_width * 0.3125),
-                             int(self.page_controller_object.screen_height * 0.37))
+        self.playlist_media_player = QMediaPlayer()
+        self.playlist_media_player.setVolume(50)
+        self.playlist_media_player.mediaStatusChanged.connect(self.handle_playlist_song_state_change)
+        self.playlist_media_player.positionChanged.connect(self.update_slider_position)
 
-            self.setGeometry(x, y, width, height)
-            self.setWindowTitle('Main Page')
-            self.setStyleSheet(f'''
-                QWidget {{
-                    background-color: {self.background_color_hex};
-                }}
-            ''')
-            # Create an instance of ChatBox
+        self.ringtone_media_player = QMediaPlayer()
+        self.ringtone_media_player.stateChanged.connect(self.handle_state_changed_sound_effect)
+        self.ringtone_media_player.setVolume(50)
+
+        self.ringtone = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Getting_called_sound_effect.mp3'))
+        self.ding_sound_effect = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Ding Sound Effect.mp3'))
+        self.new_message_audio = QMediaContent(QUrl.fromLocalFile('discord_app_assets/new_message_sound_effect.mp3'))
+        self.sound_effect_media_player.setMedia(self.ringtone)
+        x, y = (int(self.page_controller_object.screen_width * 0.052),
+                int(self.page_controller_object.screen_height * 0.092))
+        width, height = (int(self.page_controller_object.screen_width * 0.3125),
+                         int(self.page_controller_object.screen_height * 0.37))
+
+        self.setGeometry(x, y, width, height)
+        self.setWindowTitle('Main Page')
+        self.setStyleSheet(f'''
+            QWidget {{
+                background-color: {self.background_color_hex};
+            }}
+        ''')
+        # Create an instance of ChatBox
+        if self.chat_clicked_var:
             self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
 
-            buttons_layout = QHBoxLayout()
-            self.main_layout = QVBoxLayout(self)
-            self.main_layout.addSpacing(30)
-            self.main_layout.addLayout(buttons_layout)
-            self.friends_box = FriendsBox(friends_list=self.friends_list,
-                                          requests_list=self.request_list, Network=self.Network, username=self.username,
-                                          parent=self)
-            self.friends_box.hide()
-            self.settings_box = SettingsBox(parent=self)
-            self.settings_box.hide()
-            self.music_box = PlaylistWidget(main_page_widget=self)
-            self.music_box.hide()
-            self.stacked_widget = QStackedWidget(self)
-            self.stacked_widget.addWidget(self.chat_box)
-            self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
-            self.stacked_widget.addWidget(self.friends_box)
-            self.stacked_widget.addWidget(self.music_box)
-            self.main_layout.addWidget(self.stacked_widget)
+        buttons_layout = QHBoxLayout()
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addSpacing(30)
+        self.main_layout.addLayout(buttons_layout)
+        self.friends_box = FriendsBox(friends_list=self.friends_list,
+                                      requests_list=self.request_list, Network=self.Network, username=self.username,
+                                      parent=self)
+        self.friends_box.hide()
+        self.settings_box = SettingsBox(parent=self)
+        self.settings_box.hide()
+        self.music_box = PlaylistWidget(main_page_widget=self)
+        self.music_box.hide()
+        self.stacked_widget = QStackedWidget(self)
+        self.stacked_widget.addWidget(self.chat_box)
+        self.stacked_widget.addWidget(self.settings_box)  # Placeholder for the Settings page
+        self.stacked_widget.addWidget(self.friends_box)
+        self.stacked_widget.addWidget(self.music_box)
+        self.main_layout.addWidget(self.stacked_widget)
 
-            self.setLayout(self.main_layout)
-        except Exception as e:
-            print(f"error in starting main_page {e} ")
+        self.setLayout(self.main_layout)
 
     def close_all_threads(self):
         # turns every thread flag to False
@@ -898,8 +898,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Couldn't remove song {e}")
 
     def music_button_clicked(self):
-        self.chat_clicked = False
-        self.social_clicked = False
+        self.chat_clicked_var = False
+        self.social_clicked_var = False
         self.setting_clicked = False
         self.music_clicked = True
         self.stacked_widget.setCurrentIndex(3)
@@ -1143,7 +1143,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.updated_chat()
             self.updated_social_page()
             self.updated_settings_page()
-            self.update_message_box()
         except Exception as e:
             print(f"error in updating screens: {e}")
 
@@ -1293,14 +1292,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         return None
 
     def set_page_index_by_clicked(self):
-        if self.chat_clicked:
+        if self.chat_clicked_var:
             self.stacked_widget.setCurrentIndex(0)
-        elif self.social_clicked:
+        elif self.social_clicked_var:
             self.stacked_widget.setCurrentIndex(2)
         elif self.setting_clicked:
             self.stacked_widget.setCurrentIndex(1)
-        elif self.music_clicked:
-            self.stacked_widget.setCurrentIndex(3)
 
     def stop_watching_video(self):
         try:
@@ -1418,6 +1415,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 return True
         return False
 
+    def find_difference(self, list1, list2):
+        return list(set(list1) - set(list2))
+
     def update_call_dict_by_id(self, updated_call_dict):
         updated_participants = updated_call_dict.get("participants")
         for call_dict in self.call_dicts:
@@ -1425,7 +1425,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if call_dict.get("call_id") == updated_call_dict.get("call_id"):
                 self.call_dicts.remove(call_dict)
                 if len(updated_participants) > len(participants_before) and self.username in updated_participants:
-                    different_users = find_difference(updated_participants, participants_before)
+                    different_users = self.find_difference(updated_participants, participants_before)
                     if len(different_users) == 1 and self.username not in different_users:
                         join_sound = QMediaContent(QUrl.fromLocalFile('discord_app_assets/join_call_sound_effect.mp3'))
                         self.play_sound_effect(join_sound)
@@ -1466,6 +1466,24 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"end_current_call error: {e}")
 
+    def parse_group_caller_format(self, input_format):
+        # Define a regular expression pattern to capture the information
+        pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
+
+        # Use the pattern to match the input_format
+        match = pattern.match(input_format)
+
+        if match:
+            # Extract the matched groups
+            group_id = int(match.group(1))
+            group_name = match.group(2).strip()
+            group_caller = match.group(3).strip()
+
+            return group_id, group_name, group_caller
+        else:
+            # Return None if no match is found
+            return None
+
     def initiate_call(self):
         self.is_in_a_call = True
         self.is_calling = False
@@ -1484,7 +1502,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.calling_to = ""
             elif self.getting_called_by != "":
                 if "(" in self.getting_called_by:
-                    group_id, group_name, group_caller = parse_group_caller_format(self.getting_called_by)
+                    group_id, group_name, group_caller = self.parse_group_caller_format(self.getting_called_by)
                     self.in_call_with = "(" + str(group_id) + ")" + group_name
                     print(f"in call with {self.in_call_with}")
                     self.getting_called_by = ""
@@ -1548,35 +1566,35 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Error stopping sound: {e}")
 
     def chat_clicked(self):
-        if not self.chat_clicked:
+        if not self.chat_clicked_var:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.temp_search_list = []
-            self.chat_clicked = True
+            self.chat_clicked_var = True
             self.stacked_widget.setCurrentIndex(0)
             if self.setting_clicked:
                 self.update_settings_dict()
             self.setting_clicked = False
-            self.social_clicked = False
+            self.social_clicked_var = False
 
     def settings_clicked(self):
-        if not self.setting_clicked:
+        if not self.setting_clicked_var:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.stacked_widget.setCurrentIndex(1)
-            self.chat_clicked = False
+            self.chat_clicked_var = False
             self.setting_clicked = True
-            self.social_clicked = False
+            self.social_clicked_var = False
 
     def social_clicked(self):
-        if not self.social_clicked:
+        if not self.social_clicked_var:
             self.current_friends_box_search = False
             self.current_chat_box_search = False
             self.temp_search_list = []
             self.stacked_widget.setCurrentIndex(2)
-            self.chat_clicked = False
+            self.chat_clicked_var = False
             self.setting_clicked = False
-            self.social_clicked = True
+            self.social_clicked_var = True
 
     def updated_social_page(self):
         try:
@@ -1587,7 +1605,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                               username=self.username,
                                               parent=self)
                 self.stacked_widget.insertWidget(2, self.friends_box)
-                if self.social_clicked:
+                if self.social_clicked_var:
                     self.stacked_widget.setCurrentIndex(2)
             else:
                 search_bar_text = self.friends_box.search.text()
@@ -1608,7 +1626,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         self.friends_box.search.setFocus(True)
                         self.friends_box.search.deselect()
 
-                if self.social_clicked:
+                if self.social_clicked_var:
                     self.stacked_widget.setCurrentIndex(2)
         except Exception as e:
             print(f"error in updating social page{e}")
@@ -1643,7 +1661,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     print("push to talk button toggled")
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             try:
-                if self.chat_clicked and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
+                if self.chat_clicked_var and self.chat_box.chat_name_label.text() != "" or self.setting_clicked:
                     if self.chat_box.check_editing_status():
                         if len(self.chat_box.text_entry.text()) > 0:
                             current_time = datetime.datetime.now()
@@ -1709,7 +1727,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.is_new_chat_clicked = True
                     self.updated_chat()
                     self.chat_box.text_entry.setFocus(True)
-                elif self.social_clicked:
+                elif self.social_clicked_var:
                     self.friends_box.send_friend_request()
                 elif self.music_clicked:
                     search_str = self.music_box.search_song_entry.text()
@@ -1719,7 +1737,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             except Exception as e:
                 print(f"expection in key press event:{e}")
         elif event.key() == Qt.Key_Escape:
-            if not self.chat_clicked:
+            if not self.chat_clicked_var:
                 self.chat_clicked()
                 self.updated_chat()
             else:
@@ -1737,7 +1755,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def wheelEvent(self, event):
         # Handle the wheel event (scrolling)
-        if self.chat_clicked:
+        if self.chat_clicked_var:
             delta = event.angleDelta().y() / 120  # Normalize the delta
             mouse_pos = event.pos()
             if delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (
@@ -1750,7 +1768,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Scrolling down, but prevent scrolling beyond the first message
                 self.chat_box_chats_index -= 1
                 self.update_chat_page_without_messages()
-        if self.social_clicked:
+        if self.social_clicked_var:
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
                 mouse_pos = event.pos()
@@ -1810,7 +1828,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 if has_had_focus_of_search_bar:
                     self.chat_box.find_contact_text_entry.setFocus(True)
                     self.chat_box.find_contact_text_entry.deselect()
-            if self.chat_clicked:
+            if self.chat_clicked_var:
                 self.stacked_widget.setCurrentIndex(0)
         except Exception as e:
             self.chat_box = ChatBox(self.list_messages, parent=self, Network=self.Network)
@@ -2921,10 +2939,11 @@ class ServerIsDownPage(QWidget):
 
 class PageController:
     def __init__(self):
-        self.network = ClientNet()
-        is_connected = self.network.connect_tcp()
+        self.n = ClientNet()
+        is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
+
         if is_connected:
             try:
                 self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
@@ -2933,26 +2952,26 @@ class PageController:
                 self.splash_page = SplashScreen(self)
                 self.splash_page.showMaximized()
                 self.sign_up_page = SignUpPage(self)
-                self.forget_password_page = ForgetPasswordPage(self)
-                self.login_page = LoginPage(self)
-                self.main_page = MainPage(self.network, self)
-                self.change_password_page = ChangePasswordPage(self)
-                self.verification_code_page = VerificationCodePage(self)
+                self.ForgetPasswordPage = ForgetPasswordPage(self)
+                self.LoginPage = LoginPage(self)
+                self.main_page = MainPage(self.n, self)
+                self.ChangePasswordPage = ChangePasswordPage(self)
+                self.VerificationCodePage = VerificationCodePage(self)
                 self.main_page.showMaximized()
                 self.main_page.hide()
                 self.sign_up_page.showMaximized()
-                self.forget_password_page.showMaximized()
-                self.login_page.showMaximized()
-                self.login_page.hide()
-                self.verification_code_page.showMaximized()
+                self.ForgetPasswordPage.showMaximized()
+                self.LoginPage.showMaximized()
+                self.LoginPage.hide()
+                self.VerificationCodePage.showMaximized()
                 self.sign_up_page.hide()
-                self.forget_password_page.hide()
-                self.verification_code_page.hide()
-                self.change_password_page.showMaximized()
-                self.change_password_page.hide()
-                self.current_page = self.login_page
+                self.ForgetPasswordPage.hide()
+                self.VerificationCodePage.hide()
+                self.ChangePasswordPage.showMaximized()
+                self.ChangePasswordPage.hide()
+                self.current_page = self.LoginPage
             except Exception as e:
-                print(f"error in is_connected {e}")
+                print(e)
         else:
             self.server_is_down_page = ServerIsDownPage(self)
             self.server_is_down_page.showMaximized()
@@ -2965,7 +2984,7 @@ class PageController:
         if self.is_logged_in:
             print("closing app...")
             self.is_logged_in = False
-            self.network.close()
+            self.n.close()
             self.main_page.close_all_threads()
             self.close_all_pages()
             del self.app
@@ -2974,7 +2993,7 @@ class PageController:
     def log_out(self):
         try:
             print("logging out")
-            self.network.send_logout_message()
+            self.n.send_logout_message()
             self.main_page.close_all_threads()
             self.current_page = None
             self.is_logged_in = False
@@ -2983,7 +3002,7 @@ class PageController:
             self.hide_all_pages()
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-            self.change_to_login_page()
+            self.change_to_LoginPage()
         except Exception as e:
             print(f"error in log out {e}")
 
@@ -2991,21 +3010,21 @@ class PageController:
         try:
             self.splash_page = SplashScreen(self)
             self.sign_up_page = SignUpPage(self)
-            self.forget_password_page = ForgetPasswordPage(self)
-            self.login_page = LoginPage(self)
-            self.main_page = MainPage(self.network, self)
-            self.change_password_page = ChangePasswordPage(self)
-            self.verification_code_page = VerificationCodePage(self)
+            self.ForgetPasswordPage = ForgetPasswordPage(self)
+            self.LoginPage = LoginPage(self)
+            self.main_page = MainPage(self.n, self)
+            self.ChangePasswordPage = ChangePasswordPage(self)
+            self.VerificationCodePage = VerificationCodePage(self)
         except Exception as e:
             print(f"error in clearing pages {e}")
 
     def close_all_pages(self):
         try:
             self.main_page.close()
-            self.change_password_page.close()
-            self.verification_code_page.close()
-            self.login_page.close()
-            self.forget_password_page.close()
+            self.ChangePasswordPage.close()
+            self.VerificationCodePage.close()
+            self.LoginPage.close()
+            self.ForgetPasswordPage.close()
             self.sign_up_page.close()
             self.splash_page.close()
         except Exception as e:
@@ -3015,31 +3034,31 @@ class PageController:
         try:
             self.splash_page.hide()
             self.sign_up_page.hide()
-            self.forget_password_page.hide()
-            self.login_page.hide()
+            self.ForgetPasswordPage.hide()
+            self.LoginPage.hide()
             self.main_page.hide()
-            self.change_password_page.hide()
-            self.verification_code_page.hide()
+            self.ChangePasswordPage.hide()
+            self.VerificationCodePage.hide()
         except Exception as e:
             print(f"error in hiding pages {e}")
 
-    def change_to_login_page(self):
-        self.change_page("login_page")
+    def change_to_LoginPage(self):
+        self.change_page("LoginPage")
 
     def change_to_sign_up_page(self):
         self.change_page("sign_up_page")
 
-    def change_to_change_password_page(self):
-        self.change_page("change_password_page")
+    def change_to_ChangePasswordPage(self):
+        self.change_page("ChangePasswordPage")
 
-    def change_to_verification_code_page(self):
-        self.change_page("verification_code_page")
+    def change_to_VerificationCodePage(self):
+        self.change_page("VerificationCodePage")
 
     def change_to_main_page(self):
         self.change_page("main_page")
 
-    def change_to_forget_password_page(self):
-        self.change_page("forget_password_page")
+    def change_to_ForgetPasswordPage(self):
+        self.change_page("ForgetPasswordPage")
 
     def change_to_splash_page(self):
         self.change_page("splash_page")
@@ -3053,25 +3072,25 @@ class PageController:
         elif page_name == "sign_up_page":
             self.sign_up_page.showMaximized()
             self.current_page = self.sign_up_page
-        elif page_name == "change_password_page":
-            self.change_password_page.showMaximized()
-            self.current_page = self.change_password_page
-        elif page_name == "verification_code_page":
-            self.verification_code_page.showMaximized()
-            self.current_page = self.verification_code_page
-        elif page_name == "login_page":
-            self.login_page.showMaximized()
-            self.current_page = self.login_page
-        elif page_name == "forget_password_page":
-            self.forget_password_page.showMaximized()
-            self.current_page = self.forget_password_page
+        elif page_name == "ChangePasswordPage":
+            self.ChangePasswordPage.showMaximized()
+            self.current_page = self.ChangePasswordPage
+        elif page_name == "VerificationCodePage":
+            self.VerificationCodePage.showMaximized()
+            self.current_page = self.VerificationCodePage
+        elif page_name == "LoginPage":
+            self.LoginPage.showMaximized()
+            self.current_page = self.LoginPage
+        elif page_name == "ForgetPasswordPage":
+            self.ForgetPasswordPage.showMaximized()
+            self.current_page = self.ForgetPasswordPage
         elif page_name == "splash_page":
             self.splash_page = SplashScreen(self)
             self.splash_page.showMaximized()
             self.current_page = self.splash_page
 
     def thread_recv_messages(self):
-        n = self.network
+        n = self.n
         print("receiving thread started running")
         while self.is_logged_in:
             data = n.recv_str()

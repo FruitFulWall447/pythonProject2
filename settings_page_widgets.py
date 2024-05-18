@@ -314,117 +314,120 @@ def find_output_device_index(device_name):
 class SettingsBox(QWidget):
     def __init__(self, parent):
         super().__init__()
-        self.font_size = 60
-        self.parent = parent
-        self.Network = self.parent.Network
-        self.settings_button_height = 50
-        self.file_dialog = QFileDialog(self)
-        self.file_dialog.setFileMode(QFileDialog.ExistingFile)
-        self.file_dialog.setNameFilter("Image files (*.png *.jpg)")
+        try:
+            self.font_size = 60
+            self.parent = parent
+            self.Network = self.parent.Network
+            self.settings_button_height = 50
+            self.file_dialog = QFileDialog(self)
+            self.file_dialog.setFileMode(QFileDialog.ExistingFile)
+            self.file_dialog.setNameFilter("Image files (*.png *.jpg)")
 
-        delta_of_main_buttons = 50
-        starter_x_of_main_buttons = 350
-        starter_y_of_main_buttons = 100
+            delta_of_main_buttons = 50
+            starter_x_of_main_buttons = 350
+            starter_y_of_main_buttons = 100
 
-        self.privacy_button_width, self.privacy_button_height = (200, 30)
+            self.privacy_button_width, self.privacy_button_height = (200, 30)
 
-        label_height = 30
-        label_width = 300
-        self.default_labels_font_size = 10
-        user_settings_label = self.create_white_label(starter_x_of_main_buttons+10 , starter_y_of_main_buttons-35, self.default_labels_font_size,label_width, label_height, "USER SETTINGS")
-        self.my_account_button = self.create_settings_main_buttons("My Account", self.my_account_pressed, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            label_height = 30
+            label_width = 300
+            self.default_labels_font_size = 10
+            user_settings_label = self.create_white_label(starter_x_of_main_buttons+10 , starter_y_of_main_buttons-35, self.default_labels_font_size,label_width, label_height, "USER SETTINGS")
+            self.my_account_button = self.create_settings_main_buttons("My Account", self.my_account_pressed, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        starter_y_of_main_buttons += delta_of_main_buttons
+            starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.user_profile_button = self.create_settings_main_buttons("User Profile", self.user_profile_pressed, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            self.user_profile_button = self.create_settings_main_buttons("User Profile", self.user_profile_pressed, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        starter_y_of_main_buttons += delta_of_main_buttons
+            starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.appearance_button = self.create_settings_main_buttons("Appearance", self.appearance_pressed, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            self.appearance_button = self.create_settings_main_buttons("Appearance", self.appearance_pressed, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        starter_y_of_main_buttons += delta_of_main_buttons
+            starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.voice_video_button = self.create_settings_main_buttons("Voice && Video", self.voice_video_pressed, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            self.voice_video_button = self.create_settings_main_buttons("Voice && Video", self.voice_video_pressed, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        starter_y_of_main_buttons += delta_of_main_buttons
+            starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.privacy_safety, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            self.privacy_safety_button = self.create_settings_main_buttons("Privacy && Safety", self.privacy_safety, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        starter_y_of_main_buttons += delta_of_main_buttons
+            starter_y_of_main_buttons += delta_of_main_buttons
 
-        self.log_out_button = self.create_settings_main_buttons("Log Out",
-                                                                       self.parent.page_controller_object.log_out, (
-        starter_x_of_main_buttons, starter_y_of_main_buttons))
+            self.log_out_button = self.create_settings_main_buttons("Log Out",
+                                                                           self.parent.page_controller_object.log_out, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
-        background_color = self.parent.background_color_hex
-        hover_color = self.parent.standard_hover_color
+            background_color = self.parent.background_color_hex
+            hover_color = self.parent.standard_hover_color
 
-        self.label = QLabel(self)
-        self.label.setStyleSheet(f"border-right: 3px solid {self.parent.standard_hover_color}; padding-left: 10px;")
-        self.label.setGeometry(starter_x_of_main_buttons + self.privacy_safety_button.width()-3, -20, 3, 1020)
+            self.label = QLabel(self)
+            self.label.setStyleSheet(f"border-right: 3px solid {self.parent.standard_hover_color}; padding-left: 10px;")
+            self.label.setGeometry(starter_x_of_main_buttons + self.privacy_safety_button.width()-3, -20, 3, 1020)
 
-        self.combo_box_style_sheet = """
-            QComboBox {
-                background-color: %s;
-                selection-background-color: %s;
-                border: 1px solid %s;
-                border-radius: 5px;
-                padding: 2px 18px 2px 3px;
-                color: white;
-                min-width: 150px;  /* Adjust min-width as needed */
-                max-width: 500px;  /* Set max-width to accommodate longer text */
-                font-size: 14px;  /* Adjust font size as needed */
-            }
+            self.combo_box_style_sheet = """
+                QComboBox {
+                    background-color: %s;
+                    selection-background-color: %s;
+                    border: 1px solid %s;
+                    border-radius: 5px;
+                    padding: 2px 18px 2px 3px;
+                    color: white;
+                    min-width: 150px;  /* Adjust min-width as needed */
+                    max-width: 500px;  /* Set max-width to accommodate longer text */
+                    font-size: 14px;  /* Adjust font size as needed */
+                }
+    
+                QComboBox::drop-down {
+                    subcontrol-origin: padding;
+                    subcontrol-position: top right;  /* Position the drop-down at the top right */
+                    width: 20px;
+                    border-left: 1px solid transparent;
+                }
+    
+                QComboBox QAbstractItemView {
+                    color: white;
+                    background-color: %s;
+                    selection-background-color: %s;
+                    padding: 2px;
+                    font-size: 14px;
+                }
+    
+            """ % (background_color, hover_color, hover_color, background_color, hover_color)
 
-            QComboBox::drop-down {
-                subcontrol-origin: padding;
-                subcontrol-position: top right;  /* Position the drop-down at the top right */
-                width: 20px;
-                border-left: 1px solid transparent;
-            }
+            slider_style_sheet_color = "#3498db"
+            self.volume_slider_style_sheet = f"""
+                           QSlider::groove:horizontal {{
+                               border: 1px solid #bbb;
+                               background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
+                               height: 10px;
+                               margin: 0px;
+                           }}
+    
+                           QSlider::handle:horizontal {{
+                               background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
+                               border: 1px solid #777;
+                               width: 20px;
+                                margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+                               border-radius: 5px;
+                           }}
+    
+                           QSlider::add-page:horizontal {{
+                               background: #fff;
+                           }}
+    
+                           QSlider::sub-page:horizontal {{
+                               background: {slider_style_sheet_color}; /* Change this color to the desired color for the left side */
+                           }}
+                                   """
 
-            QComboBox QAbstractItemView {
-                color: white;
-                background-color: %s;
-                selection-background-color: %s;
-                padding: 2px;
-                font-size: 14px;
-            }
-
-        """ % (background_color, hover_color, hover_color, background_color, hover_color)
-
-        slider_style_sheet_color = "#3498db"
-        self.volume_slider_style_sheet = f"""
-                       QSlider::groove:horizontal {{
-                           border: 1px solid #bbb;
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ddd, stop:1 #eee);
-                           height: 10px;
-                           margin: 0px;
-                       }}
-
-                       QSlider::handle:horizontal {{
-                           background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #eee, stop:1 #ccc);
-                           border: 1px solid #777;
-                           width: 20px;
-                            margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-                           border-radius: 5px;
-                       }}
-
-                       QSlider::add-page:horizontal {{
-                           background: #fff;
-                       }}
-
-                       QSlider::sub-page:horizontal {{
-                           background: {slider_style_sheet_color}; /* Change this color to the desired color for the left side */
-                       }}
-                               """
-
-        label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)
+            label_page = self.create_white_label(800, 70, 20, None, None, self.parent.selected_settings)
+        except Exception as e:
+            print(f"error in creating setting box {e}")
         try:
             dark_green = "#1e9644"
             other_green = "#044f1c"
