@@ -6,7 +6,7 @@ import copy
 import threading
 import base64
 import pickle
-from discord_comms_protocol import decrypt_with_aes, encrypt_with_aes, slice_up_data
+from server_net import decrypt_with_aes, encrypt_with_aes, slice_up_data
 import zlib
 import socket
 import datetime as date

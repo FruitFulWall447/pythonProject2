@@ -1,6 +1,6 @@
 import socket
 import threading
-from discord_comms_protocol import ServerNet
+from server_net import ServerNet
 from email_send_code import *
 from server_handling_classes import ServerHandler
 import database_func

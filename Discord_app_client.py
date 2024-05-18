@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap, QIntValidator, QIcon, QImage
 from PyQt5.QtCore import QSize, QPoint, QTimer, QMetaObject, pyqtSignal, \
     QSettings, Qt, QUrl, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from discord_comms_protocol import ClientNet
+from client_net import ClientNet
 from social_page_widgets import FriendsBox
 from settings_page_widgets import SettingsBox
 from messages_page_widgets import ChatBox, play_mp3_from_bytes, make_q_object_clear
@@ -239,7 +239,7 @@ class SplashScreen(QWidget):
             if self.page_controller_object.main_page.username == "":
                 if not are_token_saved():
                     self.loading_timer.stop()
-                    self.page_controller_object.change_to_LoginPage()
+                    self.page_controller_object.change_to_login_page()
                     self.hide()
                 else:
                     security_token = get_saved_token()
@@ -271,7 +271,7 @@ class SplashScreen(QWidget):
                         elif server_answer == "invalid":
                             print("security token isn't valid")
                             self.loading_timer.stop()
-                            self.page_controller_object.change_to_LoginPage()
+                            self.page_controller_object.change_to_login_page()
                             self.hide()
 
 
@@ -1578,13 +1578,16 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.social_clicked_var = False
 
     def settings_clicked(self):
-        if not self.setting_clicked_var:
-            self.current_friends_box_search = False
-            self.current_chat_box_search = False
-            self.stacked_widget.setCurrentIndex(1)
-            self.chat_clicked_var = False
-            self.setting_clicked = True
-            self.social_clicked_var = False
+        try:
+            if not self.setting_clicked:
+                self.current_friends_box_search = False
+                self.current_chat_box_search = False
+                self.stacked_widget.setCurrentIndex(1)
+                self.chat_clicked_var = False
+                self.setting_clicked = True
+                self.social_clicked_var = False
+        except Exception as e:
+            print(e)
 
     def social_clicked(self):
         if not self.social_clicked_var:
@@ -2290,7 +2293,10 @@ class LoginPage(QWidget):
         self.page_controller_object.change_to_forget_password_page()
 
     def move_to_sign_up_page(self):
-        self.page_controller_object.change_to_sign_up_page()
+        try:
+            self.page_controller_object.change_to_sign_up_page()
+        except Exception as e:
+            print(e)
 
     def show_password_button_pressed(self):
         if self.current_icon == "discord_app_assets/show_password_icon.png":
@@ -2952,24 +2958,24 @@ class PageController:
                 self.splash_page = SplashScreen(self)
                 self.splash_page.showMaximized()
                 self.sign_up_page = SignUpPage(self)
-                self.ForgetPasswordPage = ForgetPasswordPage(self)
-                self.LoginPage = LoginPage(self)
+                self.forget_password_page = ForgetPasswordPage(self)
+                self.login_page = LoginPage(self)
                 self.main_page = MainPage(self.n, self)
-                self.ChangePasswordPage = ChangePasswordPage(self)
-                self.VerificationCodePage = VerificationCodePage(self)
+                self.change_password_page = ChangePasswordPage(self)
+                self.verification_code_page = VerificationCodePage(self)
                 self.main_page.showMaximized()
                 self.main_page.hide()
                 self.sign_up_page.showMaximized()
-                self.ForgetPasswordPage.showMaximized()
-                self.LoginPage.showMaximized()
-                self.LoginPage.hide()
-                self.VerificationCodePage.showMaximized()
+                self.forget_password_page.showMaximized()
+                self.login_page.showMaximized()
+                self.login_page.hide()
+                self.verification_code_page.showMaximized()
                 self.sign_up_page.hide()
-                self.ForgetPasswordPage.hide()
-                self.VerificationCodePage.hide()
-                self.ChangePasswordPage.showMaximized()
-                self.ChangePasswordPage.hide()
-                self.current_page = self.LoginPage
+                self.forget_password_page.hide()
+                self.verification_code_page.hide()
+                self.change_password_page.showMaximized()
+                self.change_password_page.hide()
+                self.current_page = self.login_page
             except Exception as e:
                 print(e)
         else:
@@ -3002,7 +3008,7 @@ class PageController:
             self.hide_all_pages()
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-            self.change_to_LoginPage()
+            self.change_to_login_page()
         except Exception as e:
             print(f"error in log out {e}")
 
@@ -3010,21 +3016,21 @@ class PageController:
         try:
             self.splash_page = SplashScreen(self)
             self.sign_up_page = SignUpPage(self)
-            self.ForgetPasswordPage = ForgetPasswordPage(self)
-            self.LoginPage = LoginPage(self)
+            self.forget_password_page = ForgetPasswordPage(self)
+            self.login_page = LoginPage(self)
             self.main_page = MainPage(self.n, self)
-            self.ChangePasswordPage = ChangePasswordPage(self)
-            self.VerificationCodePage = VerificationCodePage(self)
+            self.change_password_page = ChangePasswordPage(self)
+            self.verification_code_page = VerificationCodePage(self)
         except Exception as e:
             print(f"error in clearing pages {e}")
 
     def close_all_pages(self):
         try:
             self.main_page.close()
-            self.ChangePasswordPage.close()
-            self.VerificationCodePage.close()
-            self.LoginPage.close()
-            self.ForgetPasswordPage.close()
+            self.change_password_page.close()
+            self.verification_code_page.close()
+            self.login_page.close()
+            self.forget_password_page.close()
             self.sign_up_page.close()
             self.splash_page.close()
         except Exception as e:
@@ -3034,31 +3040,31 @@ class PageController:
         try:
             self.splash_page.hide()
             self.sign_up_page.hide()
-            self.ForgetPasswordPage.hide()
-            self.LoginPage.hide()
+            self.forget_password_page.hide()
+            self.login_page.hide()
             self.main_page.hide()
-            self.ChangePasswordPage.hide()
-            self.VerificationCodePage.hide()
+            self.change_password_page.hide()
+            self.verification_code_page.hide()
         except Exception as e:
             print(f"error in hiding pages {e}")
 
-    def change_to_LoginPage(self):
-        self.change_page("LoginPage")
+    def change_to_login_page(self):
+        self.change_page("login_page")
 
     def change_to_sign_up_page(self):
         self.change_page("sign_up_page")
 
-    def change_to_ChangePasswordPage(self):
-        self.change_page("ChangePasswordPage")
+    def change_to_change_password_page(self):
+        self.change_page("change_password_page")
 
-    def change_to_VerificationCodePage(self):
-        self.change_page("VerificationCodePage")
+    def change_to_verification_code_page(self):
+        self.change_page("verification_code_page")
 
     def change_to_main_page(self):
         self.change_page("main_page")
 
-    def change_to_ForgetPasswordPage(self):
-        self.change_page("ForgetPasswordPage")
+    def change_to_forget_password_page(self):
+        self.change_page("forget_password_page")
 
     def change_to_splash_page(self):
         self.change_page("splash_page")
@@ -3072,18 +3078,18 @@ class PageController:
         elif page_name == "sign_up_page":
             self.sign_up_page.showMaximized()
             self.current_page = self.sign_up_page
-        elif page_name == "ChangePasswordPage":
-            self.ChangePasswordPage.showMaximized()
-            self.current_page = self.ChangePasswordPage
-        elif page_name == "VerificationCodePage":
-            self.VerificationCodePage.showMaximized()
-            self.current_page = self.VerificationCodePage
-        elif page_name == "LoginPage":
-            self.LoginPage.showMaximized()
-            self.current_page = self.LoginPage
-        elif page_name == "ForgetPasswordPage":
-            self.ForgetPasswordPage.showMaximized()
-            self.current_page = self.ForgetPasswordPage
+        elif page_name == "change_password_page":
+            self.change_password_page.showMaximized()
+            self.current_page = self.change_password_page
+        elif page_name == "verification_code_page":
+            self.verification_code_page.showMaximized()
+            self.current_page = self.verification_code_page
+        elif page_name == "login_page":
+            self.login_page.showMaximized()
+            self.current_page = self.login_page
+        elif page_name == "forget_password_page":
+            self.forget_password_page.showMaximized()
+            self.current_page = self.forget_password_page
         elif page_name == "splash_page":
             self.splash_page = SplashScreen(self)
             self.splash_page.showMaximized()

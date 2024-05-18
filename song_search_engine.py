@@ -3,7 +3,6 @@ from pytube import YouTube
 import tempfile
 import os
 import moviepy.editor as mp
-import youtube_dl
 from PIL import Image
 from io import BytesIO
 import requests
