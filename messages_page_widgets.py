@@ -17,6 +17,7 @@ import random
 import string
 import pyaudio
 import cv2
+import hashlib
 
 
 def is_base64_encoded(s):
@@ -103,9 +104,28 @@ def open_pdf_from_bytes(pdf_bytes):
 
 
 def save_bytes_to_temp_file(file_bytes, extension):
+    # Calculate the hash of the file bytes
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+
+    # Get the temporary directory
+    temp_dir = tempfile.gettempdir()
+
+    # Iterate over files in the temporary directory
+    for filename in os.listdir(temp_dir):
+        if filename.endswith('.' + extension):
+            file_path = os.path.join(temp_dir, filename)
+            # Open and read the existing file
+            with open(file_path, 'rb') as existing_file:
+                existing_file_bytes = existing_file.read()
+                # Compare hashes to avoid loading large files into memory
+                if hashlib.sha256(existing_file_bytes).hexdigest() == file_hash:
+                    return file_path
+
+    # If no matching file is found, create a new temporary file
     temp_file = tempfile.NamedTemporaryFile(suffix='.' + extension, delete=False)
     temp_file.write(file_bytes)
     temp_file.close()
+
     return temp_file.name
 
 
@@ -144,13 +164,8 @@ def download_file_from_bytes(file_bytes, file_extension, file_name):
     try:
         # Get the path to the user's downloads directory
         downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
-
-
-
         if not file_name:
             file_name = generate_random_filename(file_extension)
-
-
         path = os.path.join(downloads_dir, file_name)
 
         if path:
