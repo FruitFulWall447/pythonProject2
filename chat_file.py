@@ -263,8 +263,6 @@ class VideoPlayer(QWidget):
         duration_label_x, duration_label_y = int(screen_width*0.03), int(screen_height*0.865)
         self.duration_label.move(duration_label_x, duration_label_y)
 
-        self.video_widget.mousePressEvent = self.toggle_play_pause
-
         # Set media player to use video widget
         self.media_player.setVideoOutput(self.video_widget)
         self.media_player.durationChanged.connect(self.update_duration)
@@ -278,6 +276,15 @@ class VideoPlayer(QWidget):
         # Start the position update timer with a short interval (e.g., 1 milliseconds)
         self.position_timer.start(1)
 
+    def mousePressEvent(self, event):
+        # Call the toggle play/pause method when the widget is clicked
+        try:
+            mouse_pos = event.pos()
+            if self.video_widget.geometry().contains(mouse_pos):
+                self.toggle_play_pause()
+        except Exception as e:
+            print(e)
+
     def update_slider_position(self):
         # Update the slider position based on the current media player position
         position = self.media_player.position()
@@ -290,12 +297,15 @@ class VideoPlayer(QWidget):
         self.slider.setValue(position)
 
     def toggle_play_pause(self):
-        if self.media_player.state() == QMediaPlayer.PlayingState:
-            self.media_player.pause()
-            self.position_timer.stop()
-        else:
-            self.media_player.play()
-            self.position_timer.start()
+        try:
+            if self.media_player.state() == QMediaPlayer.PlayingState:
+                self.media_player.pause()
+                self.position_timer.stop()
+            else:
+                self.media_player.play()
+                self.position_timer.start()
+        except Exception as e:
+            print(f"error in pausing video {e}")
 
     def stop_watching(self):
         self.media_player.stop()
