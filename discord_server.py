@@ -99,6 +99,10 @@ def parse_group_caller_format(input_format):
         return None
 
 
+def generate_6_digit_code():
+    return int(f"{random.randint(0, 999999):06d}")
+
+
 def handle_code_wait(n, code, logger, addr, code_type, email= None, username=None, password=None):
     attempts_remaining = 3  # Set the maximum number of attempts
     expected_message_type = None
@@ -160,6 +164,7 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                     logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
                     n.send_forget_password_code_invalid()
                     attempts_remaining -= 1
+    return False, False
 
 
 def thread_recv_messages(n, addr):
@@ -194,34 +199,13 @@ def thread_recv_messages(n, addr):
                             else:
                                 user_mail = database_func.get_email_by_username(username)
                                 logger.info(f"{username} has 2fa On")
-                                code = random.randint(100000, 999999)
+                                code = generate_6_digit_code()
                                 send_login_code_to_client_email(code, user_mail, username)
                                 n.send_2fa_on()
                                 status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
                                 if status:
                                     is_logged_in = True
                                     User = username_from_waiting
-                                    print(1)
-                                # attempts_remaining = 3  # Set the maximum number of attempts
-                                # while attempts_remaining > 0:
-                                #     data = n.recv_str()
-                                #     message_type = data.get("message_type")
-                                #     if message_type == "login":
-                                #         action = data.get("action")
-                                #         if action == "2fa":
-                                #             code_gotten = data.get("code")
-                                #             code_gotten = int(code_gotten)
-                                #             if code_gotten == code:
-                                #                 n.send_2fa_code_valid()
-                                #                 logger.info(f"got right 2fa code from {username}")
-                                #                 logger.info(f"Server sent Confirmed to client {username}")
-                                #                 logger.info(f"Client {username} logged in")
-                                #                 User = username
-                                #                 ServerHandler.user_online(User, n)
-                                #                 is_logged_in = True
-                                #                 break
-                                #             else:
-                                #                 attempts_remaining -= 1
                         else:
                             n.send_already_logged_in()
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
@@ -235,36 +219,10 @@ def thread_recv_messages(n, addr):
                     is_valid = not database_func.username_exists(username)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
-                        code = random.randint(100000, 999999)
+                        code = generate_6_digit_code()
                         send_sing_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
-                        attempts_remaining = 3  # Set the maximum number of attempts
-                        while attempts_remaining > 0:
-                            data = n.recv_str()
-                            message_type = data.get("message_type")
-                            if message_type == "sign_up":
-                                action = data.get("action")
-                                if action == "verification_code":
-                                    code_gotten = data.get("code")
-                                    if code_gotten is None:
-                                        logger.info(f"lost connection with ({addr})")
-                                        break
-                                    code_gotten = int(code_gotten)
-                                    logger.info(f"Server got {code_gotten} from ({addr})")
-                                    if code_gotten == code:
-                                        send_confirmation_to_client_email(email, username)
-                                        logger.info(f"Server sent Confirmed to ({addr})")
-                                        n.send_sign_up_code_valid()
-                                        database_func.insert_user(username, password, email)
-                                        logger.info(f"inserted: {username} to data base")
-                                        break
-                                    elif code_gotten == "sign_up:cancel":
-                                        logger.info(f"({addr}) existed code menu")
-                                        break
-                                    else:
-                                        logger.info(f"Server sent sign_up Invalid to ({addr})")
-                                        n.send_sign_up_code_invalid()
-                                        attempts_remaining -= 1
+                        handle_code_wait(n, code, logger, addr, "sign_up", email, username, password)
                     else:
                         logger.info(f"Server sent Invalid to ({addr})")
                         n.send_sign_up_invalid()
@@ -274,43 +232,45 @@ def thread_recv_messages(n, addr):
                     is_valid = database_func.user_exists_with_email(username, email)
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
-                        code = random.randint(100000, 999999)
+                        code = generate_6_digit_code()
                         send_forget_password_code_to_email(code, email, username)
                         n.send_forget_password_info_valid()
-                        attempts_remaining = 3  # Set the maximum number of attempts
-                        while attempts_remaining > 0:
-                            code_gotten_data = n.recv_str()
-                            message_type = code_gotten_data.get("message_type")
-                            if message_type == "sign_up":
-                                action = code_gotten_data.get("action")
-                                if action == "verification_code":
-                                    code_gotten = code_gotten_data.get("code")
-                                    logger.info(f"got {code_gotten} from ({addr})")
-                                    if code_gotten is None:
-                                        logger.info(f"lost connection with ({addr})")
-                                        break
-                                    code_gotten = int(code_gotten)
-                                    logger.info(f"Server got {code_gotten} from ({addr})")
-                                    if code_gotten == code:
-                                        logger.info(f"code gotten from {username} is correct")
-                                        n.send_forget_password_code_valid()
-                                        data = n.recv_str()
-                                        message_type = data.get("message_type")
-                                        if message_type == "password":
-                                            action = data.get("action")
-                                            if action == "new_password":
-                                                new_password = data.get("new_password")
-                                                database_func.change_password(username, new_password)
-                                                send_changed_password_to_email(email, username)
-                                                logger.info(f"{username} changed password")
-                                                break
-                                    elif code_gotten == "Exit":
-                                        logger.info(f"({addr}) existed code menu")
-                                        break
-                                    else:
-                                        logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
-                                        n.send_forget_password_code_invalid()
-                                        attempts_remaining -= 1
+                        handle_code_wait(n, code, logger, addr, "forget password", email, username, None)
+
+                        # attempts_remaining = 3  # Set the maximum number of attempts
+                        # while attempts_remaining > 0:
+                        #     code_gotten_data = n.recv_str()
+                        #     message_type = code_gotten_data.get("message_type")
+                        #     if message_type == "sign_up":
+                        #         action = code_gotten_data.get("action")
+                        #         if action == "verification_code":
+                        #             code_gotten = code_gotten_data.get("code")
+                        #             logger.info(f"got {code_gotten} from ({addr})")
+                        #             if code_gotten is None:
+                        #                 logger.info(f"lost connection with ({addr})")
+                        #                 break
+                        #             code_gotten = int(code_gotten)
+                        #             logger.info(f"Server got {code_gotten} from ({addr})")
+                        #             if code_gotten == code:
+                        #                 logger.info(f"code gotten from {username} is correct")
+                        #                 n.send_forget_password_code_valid()
+                        #                 data = n.recv_str()
+                        #                 message_type = data.get("message_type")
+                        #                 if message_type == "password":
+                        #                     action = data.get("action")
+                        #                     if action == "new_password":
+                        #                         new_password = data.get("new_password")
+                        #                         database_func.change_password(username, new_password)
+                        #                         send_changed_password_to_email(email, username)
+                        #                         logger.info(f"{username} changed password")
+                        #                         break
+                        #             elif code_gotten == "Exit":
+                        #                 logger.info(f"({addr}) existed code menu")
+                        #                 break
+                        #             else:
+                        #                 logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
+                        #                 n.send_forget_password_code_invalid()
+                        #                 attempts_remaining -= 1
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
                         n.send_forget_password_info_invalid()
