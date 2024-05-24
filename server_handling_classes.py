@@ -410,6 +410,19 @@ class ServerHandler:
         self.UDPClientHandler_list = []
         self.server_mtu = None
 
+    def send_friend_request(self, name):
+        net = self.get_net_by_name(name)
+        if net:
+            friend_request_list = database_func.get_friend_requests(name)
+            net.send_requests_list(friend_request_list)
+
+    def send_friends_list(self, name):
+        net = self.get_net_by_name(name)
+        if net:
+            friends_list = database_func.get_user_friends(name)
+            net.send_friends_list(friends_list)
+            self.logger.info(f"Sent friend list ({friends_list}) to user {name}")
+
     def update_message_for_users(self, users, message, chat_name=None):
         for user in users:
             if self.is_user_online(user):

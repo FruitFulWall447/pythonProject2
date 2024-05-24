@@ -252,9 +252,8 @@ class SplashScreen(QWidget):
                             data = n.recv_str()
                             message_type = data.get("message_type")
                             if message_type == "login_action":
-                                parts = data.split(":")
                                 username, action_state = data.get("username"), data.get("login_status")
-                                if action_state == "valid":
+                                if action_state:
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     try:
@@ -266,7 +265,7 @@ class SplashScreen(QWidget):
                                         self.hide()
                                     except Exception as e:
                                         print(e)
-                                elif action_state == "invalid":
+                                else:
                                     print("username already logged in")
                         elif server_answer == "invalid":
                             print("security token isn't valid")

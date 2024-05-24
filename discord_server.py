@@ -183,14 +183,6 @@ def threaded_logged_in_client(n, User):
                 online_list = message
                 message = list(set(friends_list) & set(online_list))
                 n.send_online_users_list(message)
-            if message == "friends_request:send":
-                friend_request_list = database_func.get_friend_requests(User)
-                n.send_requests_list(friend_request_list)
-                print(f"Sent requests list ({friend_request_list}) to user {User}")
-            if message == "friends_list:send":
-                friends_list = database_func.get_user_friends(User)
-                n.send_friends_list(friends_list)
-                logger.info(f"Sent friend list ({friends_list}) to user {User}")
 
 
 def thread_recv_messages(n, addr):
@@ -361,7 +353,6 @@ def thread_recv_messages(n, addr):
                             n.send_username_to_client_login_invalid(username)
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
                             logger.info(f"Blocked User from logging in from 2 devices")
-
             except Exception as e:
                 print(e)
         else:
@@ -553,7 +544,7 @@ def thread_recv_messages(n, addr):
                                                                                                          friend_user):
                     database_func.send_friend_request(user, friend_user)
                     logger.info(f"{user} sent friend request to {friend_user}")
-                    add_message_for_client(friend_user, "friends_request:send")
+                    ServerHandler.send_friend_request(friend_user)
                     n.sent_friend_request_status("worked")
                 else:
                     if database_func.is_active_request(user, friend_user):
@@ -569,21 +560,21 @@ def thread_recv_messages(n, addr):
                     accepted_or_rejected_user = data.get("accepted_user")
                     database_func.handle_friend_request(User, accepted_or_rejected_user, True)
                     logger.info(f"{User} accepted {accepted_or_rejected_user} friend request")
-                    add_message_for_client(User, "friends_request:send")
-                    add_message_for_client(accepted_or_rejected_user, "friends_request:send")
-                    add_message_for_client(User, "friends_list:send")
-                    add_message_for_client(accepted_or_rejected_user, "friends_list:send")
+                    ServerHandler.send_friend_request(User)
+                    ServerHandler.send_friend_request(accepted_or_rejected_user)
+                    ServerHandler.send_friends_list(User)
+                    ServerHandler.send_friends_list(accepted_or_rejected_user)
                 else:
                     accepted_or_rejected_user = data.get("rejected_user")
                     database_func.handle_friend_request(User, accepted_or_rejected_user, False)
                     logger.info(f"{User} rejected {accepted_or_rejected_user} friend request")
-                    add_message_for_client(User, "friends_request:send")
-                    add_message_for_client(accepted_or_rejected_user, "friends_request:send")
+                    ServerHandler.send_friend_request(User)
+                    ServerHandler.send_friend_request(accepted_or_rejected_user)
             elif message_type == "friend_remove":
                 friends_to_remove = data.get("username_to_remove")
                 database_func.remove_friend(User, friends_to_remove)
                 if friends_to_remove in online_users:
-                    add_message_for_client(friends_to_remove, "friends_list:send")
+                    ServerHandler.send_friends_list(friends_to_remove)
                 logger.info(f"{User} removed {friends_to_remove} as friend")
             elif message_type == "block":
                 user_to_block = data.get("user_to_block")
