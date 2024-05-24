@@ -203,26 +203,26 @@ def thread_recv_messages(n, addr):
                                     is_logged_in = True
                                 break
 
-                                attempts_remaining = 3  # Set the maximum number of attempts
-                                while attempts_remaining > 0:
-                                    data = n.recv_str()
-                                    message_type = data.get("message_type")
-                                    if message_type == "login":
-                                        action = data.get("action")
-                                        if action == "2fa":
-                                            code_gotten = data.get("code")
-                                            code_gotten = int(code_gotten)
-                                            if code_gotten == code:
-                                                n.send_2fa_code_valid()
-                                                logger.info(f"got right 2fa code from {username}")
-                                                logger.info(f"Server sent Confirmed to client {username}")
-                                                logger.info(f"Client {username} logged in")
-                                                User = username
-                                                ServerHandler.user_online(User, n)
-                                                is_logged_in = True
-                                                break
-                                            else:
-                                                attempts_remaining -= 1
+                                # attempts_remaining = 3  # Set the maximum number of attempts
+                                # while attempts_remaining > 0:
+                                #     data = n.recv_str()
+                                #     message_type = data.get("message_type")
+                                #     if message_type == "login":
+                                #         action = data.get("action")
+                                #         if action == "2fa":
+                                #             code_gotten = data.get("code")
+                                #             code_gotten = int(code_gotten)
+                                #             if code_gotten == code:
+                                #                 n.send_2fa_code_valid()
+                                #                 logger.info(f"got right 2fa code from {username}")
+                                #                 logger.info(f"Server sent Confirmed to client {username}")
+                                #                 logger.info(f"Client {username} logged in")
+                                #                 User = username
+                                #                 ServerHandler.user_online(User, n)
+                                #                 is_logged_in = True
+                                #                 break
+                                #             else:
+                                #                 attempts_remaining -= 1
                         else:
                             n.send_already_logged_in()
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")

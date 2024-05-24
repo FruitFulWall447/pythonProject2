@@ -4,6 +4,7 @@ from PyQt5.QtCore import QSize, pyqtSignal, Qt
 from PyQt5.QtGui import QIcon, QPixmap
 from io import BytesIO
 from PIL import Image, ImageDraw
+from Discord_app_client import delete_saved_token
 import re
 import pyaudio
 import cv2
@@ -362,6 +363,13 @@ class SettingsBox(QWidget):
                                                                            self.parent.page_controller_object.log_out, (
             starter_x_of_main_buttons, starter_y_of_main_buttons))
 
+            starter_y_of_main_buttons += delta_of_main_buttons
+
+            self.forget_my_account_button = self.create_settings_main_buttons("Forget My Account",
+                                                                           self.forget_my_account, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
+
+
             background_color = self.parent.background_color_hex
             hover_color = self.parent.standard_hover_color
 
@@ -617,6 +625,10 @@ class SettingsBox(QWidget):
                 self.create_privacy_buttons(button_starter_x, button_starter_y, space_between_labels, labels_matching_vars_list, vars_names)
         except Exception as e:
             print(f"error setting page {e}")
+
+    def forget_my_account(self):
+        delete_saved_token()
+        # add logic here...
 
     def input_device_changed(self):
         self.parent.input_device_name = self.input_combobox.currentText()
