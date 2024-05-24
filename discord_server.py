@@ -126,7 +126,7 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                 logger.info(f"got {code_gotten} from ({addr})")
                 if code_gotten is None:
                     logger.info(f"lost connection with ({addr})")
-                    break
+                    return "lost_connection", None
                 code_gotten = int(code_gotten)
                 logger.info(f"Server got {code_gotten} from ({addr})")
                 if code_gotten == code:
@@ -157,7 +157,7 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                         database_func.insert_user(username, password, email)
                         logger.info(f"inserted: {username} to data base")
                         break
-                elif code_gotten == "Exit":
+                elif code_gotten == "exit":
                     logger.info(f"({addr}) existed code menu")
                     break
                 else:
@@ -203,7 +203,9 @@ def thread_recv_messages(n, addr):
                                 send_login_code_to_client_email(code, user_mail, username)
                                 n.send_2fa_on()
                                 status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
-                                if status:
+                                if status == "lost_connection":
+                                    break
+                                elif status:
                                     is_logged_in = True
                                     User = username_from_waiting
                         else:
@@ -222,7 +224,9 @@ def thread_recv_messages(n, addr):
                         code = generate_6_digit_code()
                         send_sing_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
-                        handle_code_wait(n, code, logger, addr, "sign_up", email, username, password)
+                        status, _ = handle_code_wait(n, code, logger, addr, "sign_up", email, username, password)
+                        if status == "lost_connection":
+                            break
                     else:
                         logger.info(f"Server sent Invalid to ({addr})")
                         n.send_sign_up_invalid()
@@ -235,7 +239,9 @@ def thread_recv_messages(n, addr):
                         code = generate_6_digit_code()
                         send_forget_password_code_to_email(code, email, username)
                         n.send_forget_password_info_valid()
-                        handle_code_wait(n, code, logger, addr, "forget password", email, username, None)
+                        status, _ = handle_code_wait(n, code, logger, addr, "forget password", email, username, None)
+                        if status == "lost_connection":
+                            break
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
                         n.send_forget_password_info_invalid()
