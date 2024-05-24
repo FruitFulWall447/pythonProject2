@@ -1,13 +1,17 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QWidget, QLabel
-from PyQt5.QtCore import QSize, pyqtSignal, Qt
+from PyQt5.QtCore import QSize, pyqtSignal, Qt, QSettings
 from PyQt5.QtGui import QIcon, QPixmap
 from io import BytesIO
 from PIL import Image, ImageDraw
-from Discord_app_client import delete_saved_token
 import re
 import pyaudio
 import cv2
+
+
+def delete_saved_token():
+    settings = QSettings("Connectify_App", "Connectify")
+    settings.remove("saved_security_token")
 
 
 def handle_combobox_visibility_changed(is_visible, arrow_label):
