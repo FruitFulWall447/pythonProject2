@@ -132,6 +132,7 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                         logger.info(f"Server sent Confirmed to client {username}")
                         logger.info(f"Client {username} logged in")
                         User = username
+                        ServerHandler.user_online(User, n)
                         return True
                     elif code_type == "forget password":
                         logger.info(f"code gotten from {username} is correct")
@@ -199,7 +200,6 @@ def thread_recv_messages(n, addr):
                                 n.send_2fa_on()
                                 if handle_code_wait(n, code, logger, addr, "2fa", user_mail, username):
                                     is_logged_in = True
-                                    ServerHandler.user_online(User, n)
                                 break
 
                                 # attempts_remaining = 3  # Set the maximum number of attempts
