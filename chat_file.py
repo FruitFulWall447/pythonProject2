@@ -10,7 +10,7 @@ import pyaudio
 import cv2
 from datetime import datetime
 from settings_page_widgets import create_slider
-from messages_page_widgets import make_q_object_clear, set_button_icon, set_icon_from_path_to_label, open_image_bytes
+from messages_page_widgets import make_q_object_clear, set_button_icon, set_icon_from_path_to_label, open_image_bytes, is_bytes_exist_as_temp
 
 
 def insert_item_to_table(table, col, value, row_position):
@@ -314,22 +314,29 @@ class VideoPlayer(QWidget):
     def play_video(self):
         try:
             # Create a temporary file in memory
-            temp_file = QTemporaryFile()
-            if temp_file.open():
-                # Write the video bytes to the temporary file
-                temp_file.write(self.video_bytes)
-                # Flush the data to ensure it's written
-                temp_file.flush()
-
-                # Create a QMediaContent object with the QUrl pointing to the temporary file
-                url = QUrl.fromLocalFile(temp_file.fileName())
+            file_path = is_bytes_exist_as_temp(self.video_bytes)
+            if file_path:
+                url = QUrl.fromLocalFile(file_path)
                 media_content = QMediaContent(url)
 
                 # Set the media content to the media player and play
                 self.media_player.setMedia(media_content)
                 self.media_player.play()
             else:
-                print("Failed to create temporary file")
+                temp_file = QTemporaryFile()
+                if temp_file.open():
+                    # Write the video bytes to the temporary file
+                    temp_file.write(self.video_bytes)
+                    # Flush the data to ensure it's written
+                    temp_file.flush()
+
+                    # Create a QMediaContent object with the QUrl pointing to the temporary file
+                    url = QUrl.fromLocalFile(temp_file.fileName())
+                    media_content = QMediaContent(url)
+
+                    # Set the media content to the media player and play
+                    self.media_player.setMedia(media_content)
+                    self.media_player.play()
         except Exception as e:
             print(f"play_video error :{e}")
 
