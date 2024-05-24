@@ -103,23 +103,31 @@ def open_pdf_from_bytes(pdf_bytes):
     open_file_with_default_app(temp_file_path)
 
 
-def save_bytes_to_temp_file(file_bytes, extension):
-    # Calculate the hash of the file bytes
-    file_hash = hashlib.sha256(file_bytes).hexdigest()
-
-    # Get the temporary directory
-    temp_dir = tempfile.gettempdir()
-
-    # Iterate over files in the temporary directory
-    for filename in os.listdir(temp_dir):
-        if filename.endswith('.' + extension):
+def is_bytes_exist_as_temp(bytes_sequence):
+    try:
+        file_hash = hashlib.sha256(bytes_sequence).hexdigest()
+        # Get the temporary directory
+        temp_dir = tempfile.gettempdir()
+        for filename in os.listdir(temp_dir):
             file_path = os.path.join(temp_dir, filename)
             # Open and read the existing file
-            with open(file_path, 'rb') as existing_file:
-                existing_file_bytes = existing_file.read()
-                # Compare hashes to avoid loading large files into memory
-                if hashlib.sha256(existing_file_bytes).hexdigest() == file_hash:
+            try:
+                file_bytes = file_to_bytes(file_path)
+                if hashlib.sha256(file_bytes).hexdigest() == file_hash:
                     return file_path
+            except:
+                pass
+        return False
+    except Exception as e:
+        print(e)
+        return False
+
+
+def save_bytes_to_temp_file(file_bytes, extension):
+    # Calculate the hash of the file bytes
+    path = is_bytes_exist_as_temp(file_bytes)
+    if path:
+        return path
 
     # If no matching file is found, create a new temporary file
     temp_file = tempfile.NamedTemporaryFile(suffix='.' + extension, delete=False)
@@ -144,7 +152,10 @@ def open_file_with_default_app(file_path):
 def open_text_file_from_bytes(file_bytes):
     try:
         # Create a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.txt') as temp_file:
+        file_path = is_bytes_exist_as_temp(file_bytes)
+        if not file_path:
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.txt')
+
             # Write the bytes to the temporary file
             temp_file.write(file_bytes)
             temp_file.flush()
@@ -152,10 +163,8 @@ def open_text_file_from_bytes(file_bytes):
             # Get the path to the temporary file
             file_path = temp_file.name
 
-            # Open the temporary file using Notepad asynchronously
-            subprocess.Popen(['notepad', file_path])
-
-            # On macOS, you might use: subprocess.Popen(['open', file_path])
+        # Open the temporary file using Notepad asynchronously
+        subprocess.Popen(['notepad', file_path])
     except Exception as e:
         print(f"Error opening text file: {e}")
 
@@ -239,12 +248,18 @@ def make_q_object_clear(object):
 def extract_first_frame(video_bytes):
     try:
         # Write video bytes to a temporary file
-        temp_video_path = tempfile.NamedTemporaryFile(delete=False)
-        temp_video_path.write(video_bytes)
-        temp_video_path.close()
+        file_path = is_bytes_exist_as_temp(video_bytes)
+        is_exist = True
+
+        if not file_path:
+            is_exist = False
+            temp_video_path = tempfile.NamedTemporaryFile(delete=False)
+            temp_video_path.write(video_bytes)
+            temp_video_path.close()
+            file_path = temp_video_path.name
 
         # Open the temporary video file
-        cap = cv2.VideoCapture(temp_video_path.name)
+        cap = cv2.VideoCapture(file_path)
 
         # Read the first frame
         ret, frame = cap.read()
@@ -252,7 +267,9 @@ def extract_first_frame(video_bytes):
         # Release the video capture object and delete the temporary file
         cap.release()
         cv2.destroyAllWindows()
-        temp_video_path.close()
+
+        if not is_exist:
+            temp_video_path.close()
 
         # Convert the first frame to bytes
         retval, buffer = cv2.imencode('.png', frame)
