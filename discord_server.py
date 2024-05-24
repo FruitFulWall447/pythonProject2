@@ -133,8 +133,7 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                         logger.info(f"Client {username} logged in")
                         User = username
                         ServerHandler.user_online(User, n)
-                        is_logged_in = True
-                        break
+                        return True
                     elif code_type == "forget password":
                         logger.info(f"code gotten from {username} is correct")
                         n.send_forget_password_code_valid()
