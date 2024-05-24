@@ -236,41 +236,6 @@ def thread_recv_messages(n, addr):
                         send_forget_password_code_to_email(code, email, username)
                         n.send_forget_password_info_valid()
                         handle_code_wait(n, code, logger, addr, "forget password", email, username, None)
-
-                        # attempts_remaining = 3  # Set the maximum number of attempts
-                        # while attempts_remaining > 0:
-                        #     code_gotten_data = n.recv_str()
-                        #     message_type = code_gotten_data.get("message_type")
-                        #     if message_type == "sign_up":
-                        #         action = code_gotten_data.get("action")
-                        #         if action == "verification_code":
-                        #             code_gotten = code_gotten_data.get("code")
-                        #             logger.info(f"got {code_gotten} from ({addr})")
-                        #             if code_gotten is None:
-                        #                 logger.info(f"lost connection with ({addr})")
-                        #                 break
-                        #             code_gotten = int(code_gotten)
-                        #             logger.info(f"Server got {code_gotten} from ({addr})")
-                        #             if code_gotten == code:
-                        #                 logger.info(f"code gotten from {username} is correct")
-                        #                 n.send_forget_password_code_valid()
-                        #                 data = n.recv_str()
-                        #                 message_type = data.get("message_type")
-                        #                 if message_type == "password":
-                        #                     action = data.get("action")
-                        #                     if action == "new_password":
-                        #                         new_password = data.get("new_password")
-                        #                         database_func.change_password(username, new_password)
-                        #                         send_changed_password_to_email(email, username)
-                        #                         logger.info(f"{username} changed password")
-                        #                         break
-                        #             elif code_gotten == "Exit":
-                        #                 logger.info(f"({addr}) existed code menu")
-                        #                 break
-                        #             else:
-                        #                 logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
-                        #                 n.send_forget_password_code_invalid()
-                        #                 attempts_remaining -= 1
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
                         n.send_forget_password_info_invalid()
