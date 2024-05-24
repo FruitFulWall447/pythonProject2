@@ -99,6 +99,71 @@ def parse_group_caller_format(input_format):
         return None
 
 
+def handle_code_wait(n, code, logger, addr, code_type, email= None, username=None, password=None):
+    attempts_remaining = 3  # Set the maximum number of attempts
+    expected_message_type = None
+    expected_action = None
+    if code_type == "2fa":
+        expected_message_type = "login"
+        expected_action = "2fa"
+    elif code_type == "sign_up":
+        expected_message_type = "sign_up"
+        expected_action = "verification_code"
+    elif code_type == "forget password":
+        expected_message_type = "sign_up"
+        expected_action = "verification_code"
+    while attempts_remaining > 0:
+        code_gotten_data = n.recv_str()
+        message_type = code_gotten_data.get("message_type")
+        if message_type == expected_message_type:
+            action = code_gotten_data.get("action")
+            if action == expected_action:
+                code_gotten = code_gotten_data.get("code")
+                logger.info(f"got {code_gotten} from ({addr})")
+                if code_gotten is None:
+                    logger.info(f"lost connection with ({addr})")
+                    break
+                code_gotten = int(code_gotten)
+                logger.info(f"Server got {code_gotten} from ({addr})")
+                if code_gotten == code:
+                    if code_type == "2fa":
+                        n.send_2fa_code_valid()
+                        logger.info(f"got right 2fa code from {username}")
+                        logger.info(f"Server sent Confirmed to client {username}")
+                        logger.info(f"Client {username} logged in")
+                        User = username
+                        ServerHandler.user_online(User, n)
+                        is_logged_in = True
+                        break
+                    elif code_type == "forget password":
+                        logger.info(f"code gotten from {username} is correct")
+                        n.send_forget_password_code_valid()
+                        data = n.recv_str()
+                        message_type = data.get("message_type")
+                        if message_type == "password":
+                            action = data.get("action")
+                            if action == "new_password":
+                                new_password = data.get("new_password")
+                                database_func.change_password(username, new_password)
+                                send_changed_password_to_email(email, username)
+                                logger.info(f"{username} changed password")
+                                break
+                    elif code_type == "sign_up":
+                        send_confirmation_to_client_email(email, username)
+                        logger.info(f"Server sent Confirmed to ({addr})")
+                        n.send_sign_up_code_valid()
+                        database_func.insert_user(username, password, email)
+                        logger.info(f"inserted: {username} to data base")
+                        break
+                elif code_gotten == "Exit":
+                    logger.info(f"({addr}) existed code menu")
+                    break
+                else:
+                    logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
+                    n.send_forget_password_code_invalid()
+                    attempts_remaining -= 1
+
+
 def thread_recv_messages(n, addr):
     User = ""
     is_logged_in = False
@@ -134,6 +199,10 @@ def thread_recv_messages(n, addr):
                                 code = random.randint(100000, 999999)
                                 send_login_code_to_client_email(code, user_mail, username)
                                 n.send_2fa_on()
+                                if handle_code_wait(n, code, logger, addr, "2fa", user_mail, username):
+                                    is_logged_in = True
+                                break
+
                                 attempts_remaining = 3  # Set the maximum number of attempts
                                 while attempts_remaining > 0:
                                     data = n.recv_str()
@@ -142,7 +211,8 @@ def thread_recv_messages(n, addr):
                                         action = data.get("action")
                                         if action == "2fa":
                                             code_gotten = data.get("code")
-                                            if int(code_gotten) == code:
+                                            code_gotten = int(code_gotten)
+                                            if code_gotten == code:
                                                 n.send_2fa_code_valid()
                                                 logger.info(f"got right 2fa code from {username}")
                                                 logger.info(f"Server sent Confirmed to client {username}")
@@ -519,6 +589,7 @@ def thread_recv_messages(n, addr):
                         logger.info(f"Added {users_to_add} to group of id {group_id} by {User}")
                     else:
                         logger.critical(f"{User} tried to add user to group where he has no permissions")
+                    ServerHandler.update_group_dict_for_members(group_id)
 
 
 ServerHandler = ServerHandler()
@@ -527,7 +598,7 @@ ServerHandler = ServerHandler()
 def tcp_server():
     logger = logging.getLogger(__name__)
     try:
-       tcp_server_socket.bind((server, port))
+        tcp_server_socket.bind((server, port))
     except socket.error as e:
         logger.critical(e)
 
