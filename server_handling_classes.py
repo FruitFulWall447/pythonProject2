@@ -402,6 +402,7 @@ class ServerHandler:
         self.calls = []
         self.rings = []
         self.nets_dict = {}
+        self.user_handlers_dict = {}
         self.udp_addresses_dict = {}
         self.online_users = []
         self.udp_socket = None
@@ -600,15 +601,49 @@ class ServerHandler:
                 online_friends = find_common_elements(self.online_users, friend_friends_list)
                 friends_net.send_online_users_list(online_friends)
 
+    def update_chat_for_user(self, username, new_chat):
+        user_handle = self.get_user_handler_object_of_user(username)
+        if user_handle is not None:
+            user_handle.new_current_chat_value(new_chat)
+
+    def more_messages_for_chat(self, user):
+        user_handle = self.get_user_handler_object_of_user(user)
+        if user_handle is not None:
+            user_handle.more_messages()
+
+    def new_listen_for_user(self, user, new_song_name):
+        user_handle = self.get_user_handler_object_of_user(user)
+        if user_handle is not None:
+            user_handle.new_listen(new_song_name)
+
+    def toggle_type_status(self, username):
+        user_handle = self.get_user_handler_object_of_user(username)
+        if user_handle is not None:
+            user_handle.toggle_type()
+
+    def get_user_handler_object_of_user(self, user):
+        return self.user_handlers_dict.get(user)
+
+    def add_user_handler(self, username):
+        self.user_handlers_dict[username] = UserHandler(username, self.get_net_by_name(username), self)
+
+    def remove_user_handler(self, username):
+        if username in self.user_handlers_dict:
+            del self.user_handlers_dict[username]
+        else:
+            self.logger.warning(f"User Handler object of '{username}' not found.")
+
     def user_online(self, user, net):
         self.online_users.append(user)
         self.add_net(user, net)
+        self.add_user_handler(user)
         self.send_to_user_needed_info(user)
         self.update_online_list_for_users_friends(user)
 
     def user_offline(self, user):
         self.online_users.remove(user)
         self.remove_net_by_name(user)
+        self.remove_user_handler()
         self.update_nets_for_child_class()
         self.update_online_list_for_users_friends(user)
         if self.is_user_in_a_call(user):
@@ -802,6 +837,56 @@ class ServerHandler:
     def get_aes_key_by_username(self, username):
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
+
+
+messages_list_max_index = 20
+
+
+class UserHandler:
+    def __init__(self, username, user_net, server_handler_object):
+        self.user_net = user_net
+        self.username = username
+        self.chat_max_index = 20
+        self.current_chat = None
+        self.it_typing = False
+        self.listens_to = None
+        self.server_handler_object = server_handler_object
+
+    def reset_vars(self):
+        self.chat_max_index = 20
+        self.it_typing = False
+
+    def new_current_chat_value(self, new_chat):
+        if new_chat != self.current_chat:
+            self.current_chat = new_chat
+            self.reset_vars()
+            self.server_handler_object.logger.info(f"{self.username} current chat is {new_chat}")
+            if self.current_chat not in database_func.get_user_chats(self.username):
+                database_func.add_chat_to_user(self.username, self.current_chat)
+                self.user_net.add_new_chat(self.current_chat)
+                self.server_handler_object.logger.info(f"added new chat to {self.username}")
+            list_dict_of_messages = database_func.get_last_amount_of_messages(self.username, self.current_chat, 0
+                                                                              , self.chat_max_index)
+            self.user_net.send_messages_list(list_dict_of_messages)
+
+    def more_messages(self):
+        list_dict_of_messages = database_func.get_last_amount_of_messages(self.username, self.current_chat,
+                                                                          self.chat_max_index + 1,
+                                                                          self.chat_max_index + 6)
+        self.chat_max_index += 6
+        if len(list_dict_of_messages) > 0:
+            self.user_net.send_addition_messages_list(list_dict_of_messages)
+            self.server_handler_object.logger.info(f"sent more messages to {self.username}")
+
+    def new_listen(self, name_of_song):
+        self.listens_to = name_of_song
+        self.server_handler_object.logger.info(f"{self.username} listens to {self.listens_to}")
+
+    def toggle_type(self):
+        if self.it_typing:
+            self.it_typing = False
+        else:
+            self.it_typing = True
 
 
 class VideoStream:

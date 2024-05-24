@@ -33,18 +33,6 @@ tcp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 udp_server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_server_socket.bind((server, port))
 
-# ringing_list made by tuples of len = 2 the [0] in the tuple is the caller and the [1] is the one being called
-ringing_list = []
-# messages_to_clients_list made by tuples of len = 2 the [0] in the tuple is the receiver of the message
-# [1] is the message action
-messages_to_clients_dict = {}
-# current_calls_list made by tuples of len = 2 that represent 2 users that are in call.
-current_calls_list = []
-online_users = []
-
-# made of tuples where [0] is target and [1] is the vc_Data
-list_vc_data_sending = []
-
 
 def is_json_serialized(file_path):
     try:
@@ -85,25 +73,6 @@ def is_zlib_compressed(data):
         return False
 
 
-def is_client_waits_for_message(client):
-    global messages_to_clients_dict
-    # Use the 'in' operator to check if the client is in the dictionary keys
-    return client in messages_to_clients_dict
-
-
-def add_message_for_client(client, message):
-    global messages_to_clients_dict
-    if client in ServerHandler.online_users:
-        messages_to_clients_dict[client] = message
-
-
-def get_and_remove_message_for_client(client):
-    global messages_to_clients_dict
-    # Use the pop method to retrieve and remove the message for the client
-    # If the client is not found, return None
-    return messages_to_clients_dict.pop(client, None)
-
-
 def gets_group_attributes_from_format(group_format):
     parts = group_format.split(")")
     id = parts[0][1]
@@ -130,61 +99,6 @@ def parse_group_caller_format(input_format):
         return None
 
 
-def threaded_logged_in_client(n, User):
-    global list_vc_data_sending
-    client_current_chat = ""
-    logger = logging.getLogger(__name__)
-    numbers_of_starter_message = 20
-    messages_list_max_index = numbers_of_starter_message
-    while ServerHandler.is_user_online(User):
-        time.sleep(0.05)
-        if is_client_waits_for_message(User):
-            message = get_and_remove_message_for_client(User)
-            if isinstance(message, dict):
-                message_type = message.get("message_type")
-                if message_type == "current_chat":
-                    client_current_chat = message.get("current_chat")
-                    messages_list_max_index = 20
-                    logger.info(f"{User} current chat is {client_current_chat}")
-                    if client_current_chat not in database_func.get_user_chats(User):
-                        database_func.add_chat_to_user(User, client_current_chat)
-                        n.add_new_chat(client_current_chat)
-                        logger.info(f"added new chat to {User}")
-                    list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat, 0
-                                                                                      , messages_list_max_index)
-                    n.send_messages_list(list_dict_of_messages)
-                elif message_type == "add_message":
-                    sender = message.get("sender")
-                    if sender == client_current_chat:
-                        content = message.get("content")
-                        type_of_message = message.get("type")
-                        file_name = message.get("file_name")
-                        time_now = datetime.datetime.now()
-                        formatted_time = time_now.strftime('%Y-%m-%d %H:%M')
-                        formatted_message = {
-                            "content": content,
-                            "sender_id": sender,
-                            "timestamp": formatted_time,
-                            "message_type": type_of_message,
-                            "file_name": file_name
-                        }
-                        n.send_new_message_content(sender, formatted_message)
-                        logger.info(f"send new message to {User}")
-                if message_type == "more_messages":
-                    list_dict_of_messages = database_func.get_last_amount_of_messages(User, client_current_chat,
-                            messages_list_max_index + 1, messages_list_max_index + 6)
-                    messages_list_max_index += 6
-                    if len(list_dict_of_messages) > 0:
-                        n.send_addition_messages_list(list_dict_of_messages)
-                        logger.info(f"sent more messages to {User}")
-            if isinstance(message, list):
-                logger.info(f"Sent online users list to {User}")
-                friends_list = database_func.get_user_friends(User)
-                online_list = message
-                message = list(set(friends_list) & set(online_list))
-                n.send_online_users_list(message)
-
-
 def thread_recv_messages(n, addr):
     User = ""
     is_logged_in = False
@@ -206,7 +120,7 @@ def thread_recv_messages(n, addr):
                             is_2fa_for_user = user_settings.get("two_factor_auth")
                         else:
                             is_2fa_for_user = False
-                        if not username in ServerHandler.online_users:
+                        if username not in ServerHandler.online_users:
                             if not is_2fa_for_user:
                                 n.send_confirm_login()
                                 logger.info(f"Server sent Confirmed to client {username}")
@@ -214,7 +128,6 @@ def thread_recv_messages(n, addr):
                                 User = username
                                 ServerHandler.user_online(User, n)
                                 is_logged_in = True
-                                threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                             else:
                                 user_mail = database_func.get_email_by_username(username)
                                 logger.info(f"{username} has 2fa On")
@@ -237,8 +150,6 @@ def thread_recv_messages(n, addr):
                                                 User = username
                                                 ServerHandler.user_online(User, n)
                                                 is_logged_in = True
-                                                threading.Thread(target=threaded_logged_in_client,
-                                                                 args=(n, User)).start()
                                                 break
                                             else:
                                                 attempts_remaining -= 1
@@ -341,14 +252,13 @@ def thread_recv_messages(n, addr):
                         logger.info(f"security token from ({addr}) isn't valid")
                         n.send_security_token_invalid()
                     else:
-                        if username not in online_users:
+                        if username not in ServerHandler.online_users:
                             n.send_security_token_valid()
                             User = username
                             n.send_username_to_client(username)
                             logger.info(f"{User} logged in")
                             ServerHandler.user_online(User, n)
                             is_logged_in = True
-                            threading.Thread(target=threaded_logged_in_client, args=(n, User)).start()
                         else:
                             n.send_username_to_client_login_invalid(username)
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
@@ -404,7 +314,7 @@ def thread_recv_messages(n, addr):
                 logger.info(f"updated {User} settings")
             elif message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
-                add_message_for_client(User, data)
+                ServerHandler.update_chat_for_user(User, user_current_chat)
             elif message_type == "song_search":
                 search_str = data.get("search_str")
                 logger.info(f"searching for {search_str} for {User}")
@@ -426,7 +336,7 @@ def thread_recv_messages(n, addr):
                 database_func.add_song(title, audio_bytes, User, audio_duration, thumbnail_bytes)
                 logger.info(f"Added song {title} to {User} playlist")
             elif message_type == "more_messages":
-                add_message_for_client(User, data)
+                ServerHandler.more_messages_for_chat(User)
             elif message_type == "call":
                 call_action_type = data.get("call_action_type")
                 if call_action_type == "stream":
@@ -500,7 +410,6 @@ def thread_recv_messages(n, addr):
                 else:
                     group_name, group_id = gets_group_attributes_from_format(receiver)
                     group_members = database_func.get_group_members(group_id)
-                    print(group_members)
                     group_members.remove(User)
                     ServerHandler.update_message_for_users(group_members, data, receiver)
                 logger.info(f"added new message from {User} to {receiver}")
@@ -573,7 +482,7 @@ def thread_recv_messages(n, addr):
             elif message_type == "friend_remove":
                 friends_to_remove = data.get("username_to_remove")
                 database_func.remove_friend(User, friends_to_remove)
-                if friends_to_remove in online_users:
+                if friends_to_remove in ServerHandler.online_users:
                     ServerHandler.send_friends_list(friends_to_remove)
                 logger.info(f"{User} removed {friends_to_remove} as friend")
             elif message_type == "block":
