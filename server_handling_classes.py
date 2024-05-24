@@ -521,7 +521,7 @@ class ServerHandler:
             net = self.get_net_by_name(member)
             if net is not None:
                 net.update_group(group_dict)
-        self.logger.info(f"Update group image of id: {group_id} was updated by {User}")
+        self.logger.info(f"Update group image of id: {group_id}")
 
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)
@@ -644,7 +644,7 @@ class ServerHandler:
     def user_offline(self, user):
         self.online_users.remove(user)
         self.remove_net_by_name(user)
-        self.remove_user_handler()
+        self.remove_user_handler(user)
         self.update_nets_for_child_class()
         self.update_online_list_for_users_friends(user)
         if self.is_user_in_a_call(user):
