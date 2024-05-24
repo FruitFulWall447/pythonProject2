@@ -201,8 +201,7 @@ def thread_recv_messages(n, addr):
                                 if status:
                                     is_logged_in = True
                                     User = username_from_waiting
-                                break
-
+                                    print(1)
                                 # attempts_remaining = 3  # Set the maximum number of attempts
                                 # while attempts_remaining > 0:
                                 #     data = n.recv_str()
