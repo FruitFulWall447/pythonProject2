@@ -521,6 +521,7 @@ class ServerHandler:
             net = self.get_net_by_name(member)
             if net is not None:
                 net.update_group(group_dict)
+        self.logger.info(f"Update group image of id: {group_id} was updated by {User}")
 
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)

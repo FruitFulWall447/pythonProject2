@@ -508,7 +508,6 @@ def thread_recv_messages(n, addr):
                     image_bytes = base64.b64decode(encoded_b64_image)
                     database_func.update_group_image(int(group_id), image_bytes)
                     ServerHandler.update_group_dict_for_members(group_id)
-                    logger.info(f"Update group image of id: {group_id} was updated by {User}")
                 elif action == "add_user":
                     group_id = data.get("group_id")
                     users_to_add = json.loads(data.get("users_to_add"))
