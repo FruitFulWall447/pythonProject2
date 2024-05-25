@@ -798,7 +798,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         while self.listen_udp:
             try:
                 fragment_data, address = network.recv_udp()
-                if isinstance(fragment_data, int):
+                if fragment_data == b'a' * len(fragment_data):
                     pass
                 elif fragment_data:
                     data = pickle.loads(fragment_data)
