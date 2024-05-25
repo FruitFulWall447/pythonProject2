@@ -295,7 +295,6 @@ class SplashScreen(QWidget):
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     try:
-                                        self.page_controller_object.login_page.username_entry.setText(username)
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
                                         self.page_controller_object.start_receive_thread_after_login()
@@ -303,6 +302,7 @@ class SplashScreen(QWidget):
                                     except Exception as e:
                                         print(e)
                                 elif action_state == "2fa":
+                                    self.page_controller_object.login_page.username_entry.setText(username)
                                     self.page_controller_object.is_waiting_for_2fa_code = True
                                     self.page_controller_object.main_page.username = username
                                     self.page_controller_object.change_to_verification_code_page()
