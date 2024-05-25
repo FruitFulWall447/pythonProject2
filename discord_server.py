@@ -247,6 +247,11 @@ def thread_recv_messages(n, addr):
                 if message_type == "security_token":
                     security_token = data.get("security_token")
                     username = database_func.check_security_token(security_token)
+                    user_settings = database_func.get_user_settings(username)
+                    if user_settings:
+                        is_2fa_for_user = user_settings.get("two_factor_auth")
+                    else:
+                        is_2fa_for_user = False
                     if not username:
                         logger.info(f"security token from ({addr}) isn't valid")
                         n.send_security_token_invalid()
@@ -254,14 +259,27 @@ def thread_recv_messages(n, addr):
                         if username not in ServerHandler.online_users:
                             n.send_security_token_valid()
                             User = username
-                            n.send_username_to_client(username)
-                            logger.info(f"{User} logged in")
-                            ServerHandler.user_online(User, n)
-                            is_logged_in = True
+                            if not is_2fa_for_user:
+                                n.send_username_to_client(username)
+                                logger.info(f"{User} logged in")
+                                ServerHandler.user_online(User, n)
+                                is_logged_in = True
+                            else:
+                                user_mail = database_func.get_email_by_username(username)
+                                logger.info(f"{username} has 2fa On")
+                                code = generate_6_digit_code()
+                                send_login_code_to_client_email(code, user_mail, username)
+                                n.send_2fa_on()
+                                status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
+                                if status == "lost_connection":
+                                    break
+                                elif status:
+                                    is_logged_in = True
+                                    User = username_from_waiting
                         else:
                             n.send_username_to_client_login_invalid(username)
                             logger.info(f"{username} already logged in from another device, cannot log in from 2 devices")
-                            logger.info(f"Blocked User from logging in from 2 devices")
+                            logger.info(f"Blocked User {username} from logging in from 2 devices")
             except Exception as e:
                 print(e)
         else:
