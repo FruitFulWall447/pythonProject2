@@ -127,7 +127,6 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                 if code_gotten is None:
                     logger.info(f"lost connection with ({addr})")
                     return "lost_connection", None
-                code_gotten = int(code_gotten)
                 logger.info(f"Server got {code_gotten} from ({addr})")
                 if code_gotten == code:
                     if code_type == "2fa":
