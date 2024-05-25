@@ -884,9 +884,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def toggle_mute_of_user(self, user):
         if user in self.muted_users:
+            print(f"unmuted {user}")
             self.muted_users.remove(user)
             self.update_chat_page_without_messages()
         else:
+            print(f"muted {user}")
             self.muted_users.append(user)
             self.update_chat_page_without_messages()
 
