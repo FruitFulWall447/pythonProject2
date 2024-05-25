@@ -309,6 +309,23 @@ def create_custom_circular_label(width, height, parent):
     return label
 
 
+def create_custom_circular_button(width, height, parent):
+    button = QPushButton(parent)
+
+    button_size = QSize(width, height)
+    button.setFixedSize(button_size)
+
+    button.setStyleSheet("""
+        QLabel {
+            border-radius: """ + str(height // 2) + """px; /* Set to half of the label height */
+            background-color: transparent; /* Make the background color transparent */
+
+        }
+    """)
+
+    return button
+
+
 def is_valid_image(image_bytes):
     try:
         # Use Pillow to try opening the image from bytes
@@ -397,6 +414,38 @@ def set_icon_from_path_to_label(label, image_path):
     # Set the scaled pixmap to the label
     label.setPixmap(scaled_pixmap)
     label.setAlignment(Qt.AlignCenter)
+
+
+def set_icon_from_bytes_to_button(button, image_bytes):
+    try:
+        # Load the image from bytes
+        pixmap = QPixmap()
+        pixmap.loadFromData(image_bytes)
+
+        # Get the size of the button
+        button_size = button.size()
+        button_width = button_size.width()
+        button_height = button_size.height()
+
+        # Calculate the aspect ratio of the image
+        image_width = pixmap.width()
+        image_height = pixmap.height()
+        image_aspect_ratio = image_width / image_height
+
+        # Determine how to scale the image based on its aspect ratio
+        if image_aspect_ratio <= 0.5:
+            scaled_pixmap = pixmap.scaledToWidth(button_width, Qt.SmoothTransformation)
+        elif image_aspect_ratio >= 1.5:
+            scaled_pixmap = pixmap.scaledToHeight(button_height, Qt.SmoothTransformation)
+        else:
+            scaled_pixmap = pixmap.scaled(button_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        # Set the scaled pixmap to the button
+        button.setIcon(QIcon(scaled_pixmap))
+        button.setIconSize(button_size)
+        button.setStyleSheet("border: 0;")  # Optional: remove border
+    except Exception as e:
+        print(f"Error in loading image from bytes: {e}")
 
 
 def set_icon_to_circular_label(label, icon_path, width=None, height=None):
@@ -1396,45 +1445,49 @@ class ChatBox(QWidget):
             print(f"Problem with watch button, error {e}")
 
     def create_profile_button(self, x, y, name, dict):
-        width, height = (90, 90)
-        button = create_custom_circular_label(width, height, self)
-
-        status_button = QPushButton(self)
-        make_q_object_clear(status_button)
-        width, height = (30, 30)
-        button_size = QSize(width, height)
-        status_button.setFixedSize(button_size)
-
-        button.move(x, y)
-
-        regular_icon_path = r"discord_app_assets/regular_profile.png"
-        muted_icon = QIcon("discord_app_assets/mic_muted_icon.png")
-        deafened_icon = QIcon("discord_app_assets/deafened.png")
-        regular_icon = QIcon(regular_icon_path)
-        deafened = dict.get("deafened")
-        muted = dict.get("muted")
-
-        if name in dict.get("deafened"):
-            set_button_icon(status_button, deafened_icon, width, height)
-        elif name in dict.get("muted"):
-            set_button_icon(status_button, muted_icon, width, height)
-
-        profile_pic = self.parent.get_circular_image_bytes_by_name(name)
         try:
-            if profile_pic is not None:
-                set_icon_from_bytes_to_label(button, profile_pic)
-            else:
-                regular_icon_bytes = file_to_bytes(regular_icon_path)
-                set_icon_from_bytes_to_label(button, regular_icon_bytes)
+            width, height = (90, 90)
+            button = create_custom_circular_label(width, height, self)
+
+            status_button = QPushButton(self)
+            make_q_object_clear(status_button)
+            width, height = (30, 30)
+            button_size = QSize(width, height)
+            status_button.setFixedSize(button_size)
+
+            button.move(x, y)
+
+            regular_icon_path = r"discord_app_assets/regular_profile.png"
+            muted_icon = QIcon("discord_app_assets/mic_muted_icon.png")
+            deafened_icon = QIcon("discord_app_assets/deafened.png")
+
+            if name in dict.get("deafened"):
+                set_button_icon(status_button, deafened_icon, width, height)
+            elif name in dict.get("muted"):
+                set_button_icon(status_button, muted_icon, width, height)
+
+            profile_pic = self.parent.get_circular_image_bytes_by_name(name)
+            try:
+                if profile_pic is not None:
+                    set_icon_from_bytes_to_label(button, profile_pic)
+                else:
+                    regular_icon_bytes = file_to_bytes(regular_icon_path)
+                    set_icon_from_bytes_to_label(button, regular_icon_bytes)
+            except Exception as e:
+                print(f"error in setting image to profile button {e}")
+            status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
+            self.call_profiles_list.append(button)
+            self.call_profiles_list.append(status_button)
+            actions = ["toggle_mute"]
+            if name != self.parent.username:
+                button.customContextMenuRequested.connect(
+                    lambda pos, parent=self, button=button, actions_list=actions,
+                           chat_name=name: self.parent.right_click_object_func(pos, parent, button,
+                                                                                    actions_list, chat_name))
+            return button
         except Exception as e:
-            print(f"error in setting image to profile button {e}")
-        status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
-        self.call_profiles_list.append(button)
-        self.call_profiles_list.append(status_button)
-        pos = (x, y)
-        actions = ["toggle_mute"]
-        self.parent.right_click_object_func(pos, self, button, actions, chat_name=name)
-        return button
+            print(f"error in creating call icons {e}")
+            return None
 
     def create_top_page_button(self, x, y, icon_path):
         button = QPushButton(self)
