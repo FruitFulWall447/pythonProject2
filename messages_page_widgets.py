@@ -1478,10 +1478,10 @@ class ChatBox(QWidget):
             self.call_profiles_list.append(status_button)
             actions = ["toggle_mute"]
             if name != self.parent.username:
-                status_button.customContextMenuRequested.connect(
-                    lambda pos, parent=self, button=status_button, actions_list=actions,
+                button.customContextMenuRequested.connect(
+                    lambda pos, parent=self, button=button, actions_list=actions,
                            chat_name=name: self.parent.right_click_object_func(pos, parent, button,
-                                                                                    actions_list, chat_name))
+                                                                                    actions, chat_name))
             return button
         except Exception as e:
             print(f"error in creating call icons {e}")
