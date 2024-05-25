@@ -1714,7 +1714,7 @@ class ChatBox(QWidget):
         px_padding_of_button_text = 55
         chat_name = label
         if is_manager:
-            button_text = chat_name + "👑"
+            button_text = chat_name + " 👑"
         else:
             button_text = chat_name
 
