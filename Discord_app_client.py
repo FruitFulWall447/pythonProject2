@@ -914,7 +914,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     action.triggered.connect(lambda: self.remove_user_from_group(chat_name, group_id))
                 elif item1 == "message_user":
                     action.triggered.connect(lambda: self.chat_box.selected_chat_changed(chat_name))
-                elif item1 == "toggle_mute":
+                elif "mute" in item1:
                     action.triggered.connect(lambda: self.toggle_mute_of_user(chat_name))
 
             # Use the position of the button as the reference for menu placement

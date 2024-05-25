@@ -123,30 +123,6 @@ def is_bytes_exist_as_temp(bytes_sequence):
         return False
 
 
-def load_image_from_bytes_to_button(image_bytes, button, button_width, button_height, x, y):
-    image = QImage.fromData(image_bytes)
-
-    if image.isNull() or image.width() == 0 or image.height() == 0:
-        print("There is an error with image_bytes")
-        return
-
-    # Calculate the scaled size while maintaining the aspect ratio
-    aspect_ratio = image.width() / image.height()
-    target_width = button_width
-    target_height = button_height
-
-    # Scale the image to the target size
-    scaled_image = image.scaled(target_width, target_height, Qt.KeepAspectRatio)
-
-    # Convert the QImage to QPixmap for displaying in the button
-    pixmap = QPixmap.fromImage(scaled_image)
-
-    # Set the button's icon
-    button.setIconSize(pixmap.size())
-    button.setIcon(QIcon(pixmap))
-    button.setGeometry(x, y, button_width, button_height)  # Adjust size as needed
-
-
 def save_bytes_to_temp_file(file_bytes, extension):
     # Calculate the hash of the file bytes
     path = is_bytes_exist_as_temp(file_bytes)
@@ -1469,9 +1445,8 @@ class ChatBox(QWidget):
     def create_profile_button(self, x, y, name, dict):
         try:
             width, height = (90, 90)
-            button = QPushButton(self)
-            button_size = QSize(width, height)
-            button.setFixedSize(button_size)
+            button = create_custom_circular_label(width, height, self)
+
             status_button = QPushButton(self)
             make_q_object_clear(status_button)
             width, height = (30, 30)
@@ -1492,19 +1467,22 @@ class ChatBox(QWidget):
             profile_pic = self.parent.get_circular_image_bytes_by_name(name)
             try:
                 if profile_pic is not None:
-                    load_image_from_bytes_to_button(profile_pic, button, width, height, x, y)
+                    set_icon_from_bytes_to_label(button, profile_pic)
                 else:
                     regular_icon_bytes = file_to_bytes(regular_icon_path)
-                    load_image_from_bytes_to_button(regular_icon_bytes, button, width, height, x, y)
+                    set_icon_from_bytes_to_label(button, regular_icon_bytes)
             except Exception as e:
                 print(f"error in setting image to profile button {e}")
             status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
             self.call_profiles_list.append(button)
             self.call_profiles_list.append(status_button)
-            actions_list = ["toggle_mute"]
+            if name in self.parent.muted_users:
+                actions_list = ["mute_user"]
+            else:
+                actions_list = ["unmute_user"]
             chat_name = name
             if name != self.parent.username:
-                print("connected")
+                button.setContextMenuPolicy(Qt.CustomContextMenu)
                 button.customContextMenuRequested.connect(
                     lambda pos, parent=self, button=button, actions_list=actions_list,
                            chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
