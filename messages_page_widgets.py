@@ -1431,6 +1431,9 @@ class ChatBox(QWidget):
         status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
         self.call_profiles_list.append(button)
         self.call_profiles_list.append(status_button)
+        pos = (x, y)
+        actions = ["toggle_mute"]
+        self.parent.right_click_object_func(pos, self, button, actions, chat_name=name)
         return button
 
     def create_top_page_button(self, x, y, icon_path):

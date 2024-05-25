@@ -346,6 +346,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         super().__init__()
         self.page_controller_object = page_controller_object
         self.vc_data_list = []
+        self.muted_users = []
 
         self.vc_thread_flag = False
         self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
@@ -878,6 +879,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def remove_user_from_group(self, user, group_id):
         self.Network.send_remove_user_from_group(user, group_id)
 
+    def toggle_mute_of_user(self, user):
+        if user in self.muted_users:
+            self.muted_users.remove(user)
+        else:
+            self.muted_users.append(user)
+
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
             menu = QMenu(parent)
@@ -902,6 +909,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     action.triggered.connect(lambda: self.remove_user_from_group(chat_name, group_id))
                 elif item1 == "message_user":
                     action.triggered.connect(lambda: self.chat_box.selected_chat_changed(chat_name))
+                elif item1 == "toggle_mute":
+                    action.triggered.connect(lambda: self.toggle_mute_of_user(chat_name))
+
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
 
@@ -3271,7 +3281,7 @@ class PageController:
                     elif message_type == "new_group_dict":
                         new_group_dict = json.loads(data.get("group_dict"))
                         self.main_page.groups_list.append(new_group_dict)
-                        QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+                        QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                                  Qt.QueuedConnection)
                         print("Added new group to group_list")
                     elif message_type == "call":
