@@ -257,7 +257,7 @@ class SplashScreen(QWidget):
         try:
             self.page_controller_object.change_to_main_page()
             self.page_controller_object.is_logged_in = True
-            self.hide()
+            self.close()
         except Exception as e:
             print(e)
 
@@ -278,7 +278,7 @@ class SplashScreen(QWidget):
                 if not are_token_saved():
                     self.loading_timer.stop()
                     self.page_controller_object.change_to_login_page()
-                    self.hide()
+                    self.close()
                 else:
                     security_token = get_saved_token()
                     n.send_security_token(security_token)
@@ -295,25 +295,25 @@ class SplashScreen(QWidget):
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     try:
-                                        self.hide()
                                         self.page_controller_object.login_page.username_entry.setText(username)
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
                                         self.page_controller_object.start_receive_thread_after_login()
+                                        self.close()
                                     except Exception as e:
                                         print(e)
                                 elif action_state == "2fa":
-                                    self.hide()
                                     self.page_controller_object.is_waiting_for_2fa_code = True
                                     self.page_controller_object.main_page.username = username
                                     self.page_controller_object.change_to_verification_code_page()
+                                    self.close()
                                 else:
                                     print("username already logged in")
                         elif server_answer == "invalid":
                             print("security token isn't valid")
                             self.loading_timer.stop()
                             self.page_controller_object.change_to_login_page()
-                            self.hide()
+                            self.close()
 
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
@@ -3113,6 +3113,7 @@ class PageController:
         self.change_page("forget_password_page")
 
     def change_to_splash_page(self):
+        self.splash_page = SplashScreen(self)
         self.change_page("splash_page")
 
     def change_page(self, page_name):
