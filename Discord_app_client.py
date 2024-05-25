@@ -883,6 +883,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.Network.send_remove_user_from_group(user, group_id)
 
     def toggle_mute_of_user(self, user):
+        self.audio_data_lock.acquire()
         if user in self.muted_users:
             print(f"unmuted {user}")
             self.muted_users.remove(user)
@@ -891,6 +892,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"muted {user}")
             self.muted_users.append(user)
             self.update_chat_page_without_messages()
+        self.audio_data_lock.release()
 
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
