@@ -1477,10 +1477,11 @@ class ChatBox(QWidget):
             self.call_profiles_list.append(button)
             self.call_profiles_list.append(status_button)
             actions_list = ["toggle_mute"]
+            chat_name = name
             if name != self.parent.username:
                 button.customContextMenuRequested.connect(
                     lambda pos, parent=self, button=button, actions_list=actions_list,
-                           chat_name=name: self.parent.right_click_object_func(pos, parent, button,
+                           chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
                                                                                     actions_list, chat_name))
             return button
         except Exception as e:
