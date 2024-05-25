@@ -426,6 +426,9 @@ def thread_recv_messages(n, addr):
                     user_security_token = database_func.get_security_token(User)
                     n.send_security_token_to_client(user_security_token)
                     logger.info(f"Sent security token to - {User} , {user_security_token}")
+                elif action == "update":
+                    database_func.update_security_token(User)
+                    logger.info(f"Updated security token of - {User}")
             elif message_type == "vc_data":
                 compressed_vc_data = data.get("compressed_vc_data")
                 if compressed_vc_data is not None:

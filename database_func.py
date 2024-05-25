@@ -778,6 +778,41 @@ def get_security_token(username):
         return None
 
 
+def update_security_token(username):
+    try:
+        # Establish a connection to the database
+        connection = connect_to_kevindb()
+        cursor = connection.cursor()
+        new_token = generate_token()
+        # Define the table name
+        table_name = "sign_up_table"
+
+        # Define the SQL UPDATE statement to update the security token by username
+        update_query = f"UPDATE {table_name} SET security_token = ? WHERE username = ?"
+
+        # Execute the UPDATE statement with the parameterized values
+        cursor.execute(update_query, (new_token, username))
+
+        # Commit the changes
+        connection.commit()
+
+        # Check if the update was successful
+        if cursor.rowcount == 0:
+            print(f"No user found with username: {username}")
+            return False
+
+        # Close the cursor and connection when done
+        cursor.close()
+        connection.close()
+
+        # Return True if the update was successful
+        return True
+
+    except sqlite3.Error as e:
+        print(f"Error: {e}")
+        return False
+
+
 def insert_user(username, password, email):
     try:
         connection = connect_to_kevindb()

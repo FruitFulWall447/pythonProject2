@@ -628,6 +628,14 @@ class ClientNet:
         except socket.error as e:
             print(e)
 
+    def update_security_token(self):
+        try:
+            message = {"message_type": "security_token", "action": "update"
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def send_sign_up_verification_code(self, code):
         try:
             message = {"message_type": "sign_up", "action": "verification_code", "code": code
