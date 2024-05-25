@@ -95,6 +95,8 @@ def encrypt_with_aes(key, data):
 def decrypt_with_aes(key, ciphertext):
     try:
         # get ciphertext as bytes
+        if isinstance(ciphertext, int):
+            return 1
         ciphertext = base64.b64decode(ciphertext)
         cipher = Cipher(algorithms.AES(key), modes.ECB(), backend=default_backend())
         decryptor = cipher.decryptor()
