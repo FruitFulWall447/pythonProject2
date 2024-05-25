@@ -907,7 +907,7 @@ class VideoStream:
         self.data_collection = []  # List of tuples containing user and vc_data
         self.stop_thread = threading.Event()  # Event for signaling the thread to stop
         self.thread = threading.Thread(target=self.process_share_screen_data)
-        self.thread.info(f"Video Stream of id {self.stream_id} and type {self.stream_type} was created")
+        self.logger.info(f"Video Stream of id {self.stream_id} and type {self.stream_type} was created")
 
     def remove_spectator(self, user):
         self.spectators.remove(user)
