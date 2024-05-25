@@ -2753,6 +2753,8 @@ class VerificationCodePage(QWidget):
                             if result == "valid":
                                 print("logged in successfully")
                                 n.connect_between_udp_port_address_to_username()
+                                if self.page_controller_object.login_page.remember_me_status:
+                                    n.ask_for_security_token()
                                 self.hide()
                                 if self.page_controller_object.login_page.remember_me_status:
                                     n.ask_for_security_token()
