@@ -1479,6 +1479,7 @@ class ChatBox(QWidget):
             actions_list = ["toggle_mute"]
             chat_name = name
             if name != self.parent.username:
+                print("connected")
                 button.customContextMenuRequested.connect(
                     lambda pos, parent=self, button=button, actions_list=actions_list,
                            chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
