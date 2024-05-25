@@ -1445,8 +1445,9 @@ class ChatBox(QWidget):
     def create_profile_button(self, x, y, name, dict):
         try:
             width, height = (90, 90)
-            button = create_custom_circular_label(width, height, self)
-
+            button = QPushButton(self)
+            button_size = QSize(width, height)
+            button.setFixedSize(button_size)
             status_button = QPushButton(self)
             make_q_object_clear(status_button)
             width, height = (30, 30)
@@ -1467,10 +1468,10 @@ class ChatBox(QWidget):
             profile_pic = self.parent.get_circular_image_bytes_by_name(name)
             try:
                 if profile_pic is not None:
-                    set_icon_from_bytes_to_label(button, profile_pic)
+                    self.load_image_from_bytes_to_button(profile_pic, button)
                 else:
                     regular_icon_bytes = file_to_bytes(regular_icon_path)
-                    set_icon_from_bytes_to_label(button, regular_icon_bytes)
+                    self.load_image_from_bytes_to_button(regular_icon_bytes, button)
             except Exception as e:
                 print(f"error in setting image to profile button {e}")
             status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
