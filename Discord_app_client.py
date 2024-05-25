@@ -683,8 +683,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 try:
                     if len(self.vc_data_list) > 0:
                         self.audio_data_lock.acquire()
-                        all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, speaker in
-                                          self.vc_data_list if speaker not in self.muted_users]
+                        all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, _ in self.vc_data_list]
 
                         mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
                         mixed_data_audio_bytes = mixed_data.tobytes()
