@@ -686,15 +686,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, speaker in
                                           self.vc_data_list if speaker not in self.muted_users]
 
-                        if all_audio_data is not []:
-                            mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
-                            mixed_data_audio_bytes = mixed_data.tobytes()
-
-                            modified_audio_data_list = audio_data_list_set_volume([mixed_data_audio_bytes], volume=self.volume)
-                            modified_data = b''.join(modified_audio_data_list)
-                            # Play the modified audio data
-                            output_stream.write(modified_data)
+                        mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
+                        mixed_data_audio_bytes = mixed_data.tobytes()
                         self.vc_data_list = []  # Clear the vc_data_list after processing
+
+                        modified_audio_data_list = audio_data_list_set_volume([mixed_data_audio_bytes], volume=self.volume)
+                        modified_data = b''.join(modified_audio_data_list)
+                        # Play the modified audio data
+                        output_stream.write(modified_data)
                         self.audio_data_lock.release()
                 except Exception as e:
                     pass  # Handle the case where the queue is empty
@@ -852,7 +851,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.update_stream_screen_frame(decompressed_frame)
             elif data_type == "vc_data":
                 self.audio_data_lock.acquire()
-                self.vc_data_list.append((decompressed_data, speaker))
+                if speaker not in self.muted_users:
+                    self.vc_data_list.append((decompressed_data, speaker))
                 self.audio_data_lock.release()
 
             data_list.clear()
