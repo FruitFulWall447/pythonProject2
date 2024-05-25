@@ -61,7 +61,7 @@ def is_valid_password(password):
 
 def is_valid_username(username):
     # Check if the username is non-empty
-    if len(username) == 0:
+    if len(username) == 0 or len(username) > 15:
         return False
 
     # Check if the username contains at least one letter
