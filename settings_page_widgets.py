@@ -14,6 +14,11 @@ def delete_saved_token():
     settings.remove("saved_security_token")
 
 
+def are_token_saved():
+    settings = QSettings("Connectify_App", "Connectify")
+    return settings.value("saved_security_token") is not None
+
+
 def handle_combobox_visibility_changed(is_visible, arrow_label):
     if is_visible:
         arrow_label.setPixmap(
@@ -631,8 +636,9 @@ class SettingsBox(QWidget):
             print(f"error setting page {e}")
 
     def forget_my_account(self):
-        delete_saved_token()
-        self.Network.update_security_token()
+        if are_token_saved():
+            delete_saved_token()
+            self.Network.update_security_token()
 
     def input_device_changed(self):
         self.parent.input_device_name = self.input_combobox.currentText()
