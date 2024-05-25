@@ -123,6 +123,30 @@ def is_bytes_exist_as_temp(bytes_sequence):
         return False
 
 
+def load_image_from_bytes_to_button(image_bytes, button, button_width, button_height, x, y):
+    image = QImage.fromData(image_bytes)
+
+    if image.isNull() or image.width() == 0 or image.height() == 0:
+        print("There is an error with image_bytes")
+        return
+
+    # Calculate the scaled size while maintaining the aspect ratio
+    aspect_ratio = image.width() / image.height()
+    target_width = button_width
+    target_height = button_height
+
+    # Scale the image to the target size
+    scaled_image = image.scaled(target_width, target_height, Qt.KeepAspectRatio)
+
+    # Convert the QImage to QPixmap for displaying in the button
+    pixmap = QPixmap.fromImage(scaled_image)
+
+    # Set the button's icon
+    button.setIconSize(pixmap.size())
+    button.setIcon(QIcon(pixmap))
+    button.setGeometry(x, y, button_width, button_height)  # Adjust size as needed
+
+
 def save_bytes_to_temp_file(file_bytes, extension):
     # Calculate the hash of the file bytes
     path = is_bytes_exist_as_temp(file_bytes)
@@ -1468,10 +1492,10 @@ class ChatBox(QWidget):
             profile_pic = self.parent.get_circular_image_bytes_by_name(name)
             try:
                 if profile_pic is not None:
-                    self.load_image_from_bytes_to_button(profile_pic, button)
+                    load_image_from_bytes_to_button(profile_pic, button, width, height, x, y)
                 else:
                     regular_icon_bytes = file_to_bytes(regular_icon_path)
-                    self.load_image_from_bytes_to_button(regular_icon_bytes, button)
+                    load_image_from_bytes_to_button(regular_icon_bytes, button, width, height, x, y)
             except Exception as e:
                 print(f"error in setting image to profile button {e}")
             status_button.move(x + int(0.7 * button.width()), y + int(0.7 * button.height()))
