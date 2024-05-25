@@ -632,8 +632,7 @@ class SettingsBox(QWidget):
 
     def forget_my_account(self):
         delete_saved_token()
-        self.Network.
-        # add logic here...
+        self.Network.update_security_token()
 
     def input_device_changed(self):
         self.parent.input_device_name = self.input_combobox.currentText()
