@@ -40,6 +40,43 @@ p = pyaudio.PyAudio()
 SCREEN_FPS = 30
 
 
+def is_valid_password(password):
+    # Check if the password is at least 8 characters long
+    if len(password) < 8:
+        return False
+
+    # Check if the password contains both letters and numbers
+    contains_letter = any(char.isalpha() for char in password)
+    contains_digit = any(char.isdigit() for char in password)
+
+    if not (contains_letter and contains_digit):
+        return False
+
+    # Check if the password contains only letters, numbers, and special characters
+    if not re.match(r'^[A-Za-z0-9!@#$%^&*(),.?":{}|<>]+$', password):
+        return False
+
+    return True
+
+
+def is_valid_username(username):
+    # Check if the username is non-empty
+    if len(username) == 0:
+        return False
+
+    # Check if the username contains at least one letter
+    contains_letter = any(char.isalpha() for char in username)
+    if not contains_letter:
+        return False
+
+    # Check if the username contains only letters, numbers, and allowed special characters
+    allowed_characters = re.compile(r'^[A-Za-z0-9!@#$%^&*(),.?":{}|<>]+$')
+    if not allowed_characters.match(username):
+        return False
+
+    return True
+
+
 def find_difference(list1, list2):
     return list(set(list1) - set(list2))
 
@@ -2042,6 +2079,11 @@ class SignUpPage(QWidget):
         if not is_email_valid(email) and email != "":
             is_info_valid = False
             self.invalid_email.show()
+        if not is_valid_username(username):
+            is_info_valid = False
+        if not is_valid_password(password):
+            is_info_valid = False
+
         if is_info_valid:
             n.send_sign_up_info(username, password, email)
             data = n.recv_str()
