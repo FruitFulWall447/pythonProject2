@@ -683,18 +683,18 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 try:
                     if len(self.vc_data_list) > 0:
                         self.audio_data_lock.acquire()
-                        # all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, _ in self.vc_data_list]
                         all_audio_data = [np.frombuffer(vc_data, dtype=np.int16) for vc_data, speaker in
                                           self.vc_data_list if speaker not in self.muted_users]
 
-                        mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
-                        mixed_data_audio_bytes = mixed_data.tobytes()
-                        self.vc_data_list = []  # Clear the vc_data_list after processing
+                        if all_audio_data is not []:
+                            mixed_data = np.vstack(all_audio_data).mean(axis=0).astype(np.int16)
+                            mixed_data_audio_bytes = mixed_data.tobytes()
 
-                        modified_audio_data_list = audio_data_list_set_volume([mixed_data_audio_bytes], volume=self.volume)
-                        modified_data = b''.join(modified_audio_data_list)
-                        # Play the modified audio data
-                        output_stream.write(modified_data)
+                            modified_audio_data_list = audio_data_list_set_volume([mixed_data_audio_bytes], volume=self.volume)
+                            modified_data = b''.join(modified_audio_data_list)
+                            # Play the modified audio data
+                            output_stream.write(modified_data)
+                        self.vc_data_list = []  # Clear the vc_data_list after processing
                         self.audio_data_lock.release()
                 except Exception as e:
                     pass  # Handle the case where the queue is empty
@@ -883,7 +883,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.Network.send_remove_user_from_group(user, group_id)
 
     def toggle_mute_of_user(self, user):
-        self.audio_data_lock.acquire()
         if user in self.muted_users:
             print(f"unmuted {user}")
             self.muted_users.remove(user)
@@ -892,7 +891,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"muted {user}")
             self.muted_users.append(user)
             self.update_chat_page_without_messages()
-        self.audio_data_lock.release()
 
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
