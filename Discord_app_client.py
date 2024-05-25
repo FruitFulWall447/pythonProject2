@@ -300,9 +300,12 @@ class SplashScreen(QWidget):
                                         self.page_controller_object.change_to_main_page()
                                         self.page_controller_object.is_logged_in = True
                                         self.page_controller_object.start_receive_thread_after_login()
-                                        self.hide()
                                     except Exception as e:
                                         print(e)
+                                elif action_state == "2fa":
+                                    self.hide()
+                                    self.page_controller_object.main_page.username = username
+                                    self.page_controller_object.change_to_verification_code_page()
                                 else:
                                     print("username already logged in")
                         elif server_answer == "invalid":
