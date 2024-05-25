@@ -265,6 +265,7 @@ def thread_recv_messages(n, addr):
                                 ServerHandler.user_online(User, n)
                                 is_logged_in = True
                             else:
+                                n.send_username_to_client_and_2fa(username)
                                 user_mail = database_func.get_email_by_username(username)
                                 logger.info(f"{username} has 2fa On")
                                 code = generate_6_digit_code()

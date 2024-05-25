@@ -301,6 +301,14 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def send_username_to_client_and_2fa(self, username):
+        try:
+            # Convert the length of the data to a string
+            message = {"message_type": "login_action", "username": username, "login_status": "2fa"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def send_vc_data(self, vc_data, speaker):
         try:
             compressed_vc_data = zlib.compress(vc_data)

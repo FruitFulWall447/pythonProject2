@@ -291,7 +291,7 @@ class SplashScreen(QWidget):
                             message_type = data.get("message_type")
                             if message_type == "login_action":
                                 username, action_state = data.get("username"), data.get("login_status")
-                                if action_state:
+                                if action_state is True:
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     try:
