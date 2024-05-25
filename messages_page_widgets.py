@@ -1374,10 +1374,8 @@ class ChatBox(QWidget):
         try:
             if self.current_group_id:
                 current_call_dict = self.parent.get_call_dict_by_group_id(self.current_group_id)
-                print(f"dict is {current_call_dict}")
             else:
                 current_call_dict = self.parent.get_call_dict_by_user(self.parent.username)
-                print(f"dict is {current_call_dict}")
             numbers_of_users_in_call = len(current_call_dict.get("participants"))
             starts_x = 900+((numbers_of_users_in_call-2) * -70)
             y_of_profiles = 95
