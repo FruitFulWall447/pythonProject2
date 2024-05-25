@@ -111,6 +111,7 @@ def duration_to_milliseconds(duration_str):
 
 
 def save_token(token):
+    delete_saved_token()
     settings = QSettings("Connectify_App", "Connectify")
     settings.setValue("saved_security_token", token)
 
