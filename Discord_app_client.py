@@ -304,6 +304,7 @@ class SplashScreen(QWidget):
                                         print(e)
                                 elif action_state == "2fa":
                                     self.hide()
+                                    self.page_controller_object.is_waiting_for_2fa_code = True
                                     self.page_controller_object.main_page.username = username
                                     self.page_controller_object.change_to_verification_code_page()
                                 else:
