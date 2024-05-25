@@ -803,10 +803,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 elif fragment_data:
                     data = pickle.loads(fragment_data)
                     self.handle_udp_data(data)
-            except OSError as os_err:
-                print(f"OS error: {os_err}")
             except Exception as e:
-                print(f"Exception: {e}")
+                print(f"Exception in listening to udp socket: {e}")
 
     def handle_udp_data(self, data):
         message_type = data.get("message_type")

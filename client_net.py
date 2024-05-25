@@ -723,7 +723,10 @@ class ClientNet:
 
     def recv_udp(self):
         fragment_data, address = self.client_udp_socket.recvfrom(100000)
-        return decrypt_with_aes(self.aes_key, fragment_data), address
+        if isinstance(fragment_data, int):
+            return None, address
+        else:
+            return decrypt_with_aes(self.aes_key, fragment_data), address
 
     def return_socket(self):
         return self.client_tcp_socket
