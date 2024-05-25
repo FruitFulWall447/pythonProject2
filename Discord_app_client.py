@@ -2763,6 +2763,7 @@ class VerificationCodePage(QWidget):
                                     print("You will be remembered")
                                 try:
                                     self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
+                                    print(f"username is {self.page_controller_object.main_page.username}")
                                     self.page_controller_object.main_page.update_values()
                                     self.page_controller_object.is_logged_in = True
                                     self.page_controller_object.start_receive_thread_after_login()
