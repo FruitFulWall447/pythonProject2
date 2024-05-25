@@ -100,7 +100,7 @@ def parse_group_caller_format(input_format):
 
 
 def generate_6_digit_code():
-    return int(f"{random.randint(0, 999999):06d}")
+    return f"{random.randint(0, 999999):06d}"
 
 
 def handle_code_wait(n, code, logger, addr, code_type, email= None, username=None, password=None):

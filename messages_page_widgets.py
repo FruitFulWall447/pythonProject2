@@ -933,9 +933,14 @@ class ChatBox(QWidget):
                     try:
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
+                        group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
                         for member in group_members:
                             pos = (starter_x_of_group_members, starter_y_of_group_members)
-                            button = self.create_member_button(member, pos)
+                            if member == group_manager:
+                                button = self.create_member_button(member, pos, True)
+                            else:
+                                button = self.create_member_button(member, pos, False)
+
                             starter_y_of_group_members += button.height()
                     except Exception as e:
                         print(f"error in drawing members {e}")
@@ -1704,16 +1709,18 @@ class ChatBox(QWidget):
 
         return button
 
-    def create_member_button(self, label, position):
+    def create_member_button(self, label, position, is_manager):
 
         px_padding_of_button_text = 55
         chat_name = label
-        button_text = chat_name
+        if is_manager:
+            button_text = chat_name + "👑"
+        else:
+            button_text = chat_name
 
         width, height = (35, 35)
         profile_image_label = create_custom_circular_label(width, height, self)
         profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
-
 
         chat_image = self.parent.get_profile_pic_by_username(chat_name)
         if chat_image is None:
