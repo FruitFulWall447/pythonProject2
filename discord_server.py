@@ -270,7 +270,6 @@ def thread_recv_messages(n, addr):
                                 logger.info(f"{username} has 2fa On")
                                 code = generate_6_digit_code()
                                 send_login_code_to_client_email(code, user_mail, username)
-                                n.send_2fa_on()
                                 status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
                                 if status == "lost_connection":
                                     break
