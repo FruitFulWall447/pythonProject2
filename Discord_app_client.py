@@ -3077,6 +3077,9 @@ class PageController:
             print(e)
 
     def lost_connection_with_server(self):
+        self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+        self.is_logged_in = False
+        self.is_waiting_for_2fa_code = False
         self.current_page.close()
         self.server_is_down_page = ServerIsDownPage(self)
         self.current_page = self.server_is_down_page
