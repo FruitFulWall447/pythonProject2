@@ -3129,7 +3129,6 @@ class PageController:
         self.change_page("forget_password_page")
 
     def change_to_splash_page(self):
-        self.splash_page = SplashScreen(self)
         self.change_page("splash_page")
 
     def change_page(self, page_name):
