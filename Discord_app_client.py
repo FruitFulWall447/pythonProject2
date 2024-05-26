@@ -3082,16 +3082,9 @@ class PageController:
 
     def lost_connection_with_server(self):
         try:
-            print(1)
-            self.is_logged_in = False
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
             self.is_waiting_for_2fa_code = False
-            print(self.current_page)
-            self.current_page.close()
-            print(2)
-            self.server_is_down_page = ServerIsDownPage(self)
-            self.current_page = self.server_is_down_page
-            self.server_is_down_page.showMaximized()
+            self.change_to_server_is_down()
         except Exception as e:
             print(f"error in lost connection {e}")
 
@@ -3183,13 +3176,19 @@ class PageController:
     def change_to_splash_page(self):
         self.change_page("splash_page")
 
+    def change_to_server_is_down(self):
+        self.change_page("server_is_down")
+
     def change_page(self, page_name):
         if self.current_page is not None:
             self.current_page.close()
         if page_name == "main_page":
-            MainPage(self.n, self)
             self.main_page.showMaximized()
             self.current_page = self.main_page
+        elif page_name == "server_is_down":
+            self.server_is_down_page = ServerIsDownPage(self)
+            self.server_is_down_page.showMaximized()
+            self.current_page = self.server_is_down_page
         elif page_name == "sign_up_page":
             self.sign_up_page = SignUpPage(self)
             self.sign_up_page.showMaximized()
