@@ -2511,13 +2511,6 @@ class ForgetPasswordPage(QWidget):
             }
             QPushButton:pressed {
                 background-color: #1f618d;
-            }
-               QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:pressed {
-                background-color: #1f618d;
-            }
         ''')
 
         # Set styles
@@ -2621,14 +2614,6 @@ class VerificationCodePage(QWidget):
         image_button.move(image_button_x, image_button_y)
         image_button.clicked.connect(self.return_button_pressed)
 
-        image_button.setStyleSheet("""
-            QPushButton {
-                background-color: #141c4b;
-                border-color: black;
-                }  /* Set your desired background color */
-                
-        """)
-
         self.label = QLabel("5:00", self)
         self.label.move(0, 0)
         self.label.setStyleSheet("font-size: 48px;")
@@ -2715,25 +2700,6 @@ class VerificationCodePage(QWidget):
                 border-radius: 5px;
                 font-size: 16px;
                 margin-bottom: 10px;
-            }
-            QPushButton {
-                background-color: #6fa8b6;
-                color: #f0f1f1;
-                padding: 20px;
-                border: 1px solid #2980b9;
-                border-radius: 5px;
-                min-width: 30px;
-                max-width: 100px;
-                min-height: 0px;  /* Set the minimum height to 50 pixels */
-                max-height: 16px; /* Set the maximum height to 200 pixels */
-                font-size: 16px;  /* Set your desired font size */
-                margin-top: 20px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:pressed {
-                background-color: #1f618d;
             }
         """)
 
