@@ -188,6 +188,7 @@ def thread_recv_messages(n, addr):
             try:
                 data = n.recv_str()
                 if data is None:
+                    logger.info(f"lost connection with {addr}")
                     break
                 message_type = data.get("message_type")
                 if message_type == "login":
@@ -228,7 +229,7 @@ def thread_recv_messages(n, addr):
                     else:
                         logger.info(f"Server sent Invalid to address ({addr})")
                         n.send_invalid_login()
-                if message_type == "sign_up":
+                elif message_type == "sign_up":
                     username = data.get("username")
                     password = data.get("password")
                     email = data.get("email")
@@ -245,7 +246,7 @@ def thread_recv_messages(n, addr):
                     else:
                         logger.info(f"Server sent Invalid to ({addr})")
                         n.send_sign_up_invalid()
-                if message_type == "forget password":
+                elif message_type == "forget password":
                     username = data.get("username")
                     email = data.get("email")
                     is_valid = database_func.user_exists_with_email(username, email)
@@ -261,7 +262,7 @@ def thread_recv_messages(n, addr):
                     else:
                         logger.info("Server sent Invalid (Username with email don't exist")
                         n.send_forget_password_info_invalid()
-                if message_type == "security_token":
+                elif message_type == "security_token":
                     security_token = data.get("security_token")
                     username = database_func.check_security_token(security_token)
                     user_settings = database_func.get_user_settings(username)
