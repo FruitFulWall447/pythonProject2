@@ -183,8 +183,6 @@ class ClientNet:
         try:
             self.client_udp_socket.connect(self.addr)
             self.logger.info("udp socket connected to server")
-            address = self.client_udp_socket.getsockname()
-            self.logger.info("udp Socket address:", address)
         except:
             self.logger.info("couldn't connect udp socket to server")
             pass

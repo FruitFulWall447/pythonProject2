@@ -3061,15 +3061,18 @@ class PageController:
         self.app.exec_()
 
     def try_reconnect_to_server(self):
-        self.n.close()
-        is_connected = self.n.connect_tcp()
-        if is_connected:
-            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-            self.is_logged_in = False
-            self.is_waiting_for_2fa_code = False
-            self.change_to_login_page()
-        else:
-            print("tried reconnecting but server still offline")
+        try:
+            self.n.close()
+            is_connected = self.n.connect_tcp()
+            if is_connected:
+                self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+                self.is_logged_in = False
+                self.is_waiting_for_2fa_code = False
+                self.change_to_login_page()
+            else:
+                print("tried reconnecting but server still offline")
+        except Exception as e:
+            print(e)
 
     def lost_connection_with_server(self):
         self.current_page.close()
