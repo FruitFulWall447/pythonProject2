@@ -3061,6 +3061,7 @@ class PageController:
         self.app.exec_()
 
     def try_reconnect_to_server(self):
+        self.n = ClientNet()
         is_connected = self.n.connect_tcp()
         if is_connected:
             self.change_to_login_page()
