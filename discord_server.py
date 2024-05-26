@@ -318,17 +318,19 @@ def thread_recv_messages(n, addr):
             elif message_type == "change_settings":
                 value_to_change = data.get("change_value")
                 if value_to_change == "password":
+                    n.pause_tcp_thread_for_user()
                     logger.info(f"Server sent code to email for ({addr})")
                     email = database_func.get_email_by_username(User)
                     code = generate_6_digit_code()
                     send_forget_password_code_to_email(code, email, User)
-                    n.send_forget_password_info_valid()
                     time_now = datetime.datetime.now()
                     status, _ = handle_code_wait(n, code, logger, addr, "forget password", time_now, email, User,
                                                  None)
                     if status == "lost_connection":
                         ServerHandler.user_offline(User)
                         break
+                    else:
+                        n.unpause_tcp_thread_for_user()
             elif message_type == "logout":
                 logger.info(f"logged out {User}")
                 ServerHandler.user_offline(User)
