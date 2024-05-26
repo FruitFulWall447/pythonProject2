@@ -2846,7 +2846,7 @@ class ChangePasswordPage(QWidget):
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         self.image_button.setIconSize(scaled_size)
         image_button_x, image_button_y = (
-        int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.19))
+        int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
 
         self.image_button.move(image_button_x, image_button_y)
 
