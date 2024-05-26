@@ -3026,7 +3026,7 @@ class PageController:
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
-
+        self.current_page = None
         if is_connected:
             try:
                 self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
@@ -3056,7 +3056,9 @@ class PageController:
             except Exception as e:
                 print(e)
         else:
+            self.main_page = MainPage(self.n, self)
             self.server_is_down_page = ServerIsDownPage(self)
+            self.current_page = self.server_is_down_page
             self.server_is_down_page.showMaximized()
         self.app.exec_()
 
