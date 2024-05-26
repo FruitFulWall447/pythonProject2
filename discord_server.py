@@ -103,8 +103,9 @@ def generate_6_digit_code():
     return f"{random.randint(0, 999999):06d}"
 
 
-def handle_code_wait(n, code, logger, addr, code_type, email= None, username=None, password=None):
+def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email= None, username=None, password=None):
     attempts_remaining = 3  # Set the maximum number of attempts
+    time_to_get_the_code = 300  # Seconds
     expected_message_type = None
     expected_action = None
     if code_type == "2fa":
@@ -123,12 +124,12 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
             action = code_gotten_data.get("action")
             if action == expected_action:
                 code_gotten = code_gotten_data.get("code")
-                logger.info(f"got {code_gotten} from ({addr})")
                 if code_gotten is None:
                     logger.info(f"lost connection with ({addr})")
                     return "lost_connection", None
                 logger.info(f"Server got {code_gotten} from ({addr})")
-                if code_gotten == code:
+                code_delta_time_sec = (datetime.datetime.now() - time_code_was_sent).total_seconds()
+                if code_gotten == code and code_delta_time_sec < time_to_get_the_code:
                     if code_type == "2fa":
                         n.send_2fa_code_valid()
                         logger.info(f"got right 2fa code from {username}")
@@ -161,7 +162,10 @@ def handle_code_wait(n, code, logger, addr, code_type, email= None, username=Non
                     break
                 else:
                     logger.info(f"Server sent Invalid to ({addr}) because code was incorrect")
-                    n.send_forget_password_code_invalid()
+                    if code_type == "sign_up":
+                        n.send_forget_password_code_invalid()
+                    elif code_type == "2fa":
+                        n.send_2fa_code_invalid()
                     attempts_remaining -= 1
     return False, False
 
@@ -201,7 +205,9 @@ def thread_recv_messages(n, addr):
                                 code = generate_6_digit_code()
                                 send_login_code_to_client_email(code, user_mail, username)
                                 n.send_2fa_on()
-                                status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
+                                time_now = datetime.datetime.now()
+                                status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa",
+                                                                                 time_now, user_mail, username)
                                 if status == "lost_connection":
                                     break
                                 elif status:
@@ -223,7 +229,8 @@ def thread_recv_messages(n, addr):
                         code = generate_6_digit_code()
                         send_sing_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
-                        status, _ = handle_code_wait(n, code, logger, addr, "sign_up", email, username, password)
+                        time_now = datetime.datetime.now()
+                        status, _ = handle_code_wait(n, code, logger, addr, "sign_up", time_now, email, username, password)
                         if status == "lost_connection":
                             break
                     else:
@@ -238,7 +245,8 @@ def thread_recv_messages(n, addr):
                         code = generate_6_digit_code()
                         send_forget_password_code_to_email(code, email, username)
                         n.send_forget_password_info_valid()
-                        status, _ = handle_code_wait(n, code, logger, addr, "forget password", email, username, None)
+                        time_now = datetime.datetime.now()
+                        status, _ = handle_code_wait(n, code, logger, addr, "forget password", time_now, email, username, None)
                         if status == "lost_connection":
                             break
                     else:
@@ -270,7 +278,8 @@ def thread_recv_messages(n, addr):
                                 logger.info(f"{username} has 2fa On")
                                 code = generate_6_digit_code()
                                 send_login_code_to_client_email(code, user_mail, username)
-                                status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", user_mail, username)
+                                time_now = datetime.datetime.now()
+                                status, username_from_waiting = handle_code_wait(n, code, logger, addr, "2fa", time_now, user_mail, username)
                                 if status == "lost_connection":
                                     break
                                 elif status:
