@@ -3062,7 +3062,6 @@ class PageController:
 
     def try_reconnect_to_server(self):
         self.n.close()
-        self.n = ClientNet()
         is_connected = self.n.connect_tcp()
         if is_connected:
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())

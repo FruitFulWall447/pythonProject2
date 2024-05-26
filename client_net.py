@@ -169,6 +169,8 @@ class ClientNet:
 
     def connect_tcp(self):
         try:
+            self.client_tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.client_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.client_tcp_socket.connect(self.addr)
             self.logger.info("tcp socket connected to server")
             self.if_connected()
