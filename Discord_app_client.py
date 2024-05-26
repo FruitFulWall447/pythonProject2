@@ -3136,21 +3136,27 @@ class PageController:
         if self.current_page is not None:
             self.current_page.hide()
         if page_name == "main_page":
+            MainPage(self.n, self)
             self.main_page.showMaximized()
             self.current_page = self.main_page
         elif page_name == "sign_up_page":
+            self.sign_up_page = SignUpPage(self)
             self.sign_up_page.showMaximized()
             self.current_page = self.sign_up_page
         elif page_name == "change_password_page":
+            self.change_password_page = ChangePasswordPage
             self.change_password_page.showMaximized()
             self.current_page = self.change_password_page
         elif page_name == "verification_code_page":
+            self.verification_code_page = VerificationCodePage(self)
             self.verification_code_page.showMaximized()
             self.current_page = self.verification_code_page
         elif page_name == "login_page":
+            self.login_page = LoginPage(self)
             self.login_page.showMaximized()
             self.current_page = self.login_page
         elif page_name == "forget_password_page":
+            self.forget_password_page = ForgetPasswordPage(self)
             self.forget_password_page.showMaximized()
             self.current_page = self.forget_password_page
         elif page_name == "splash_page":
