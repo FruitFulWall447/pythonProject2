@@ -3182,39 +3182,42 @@ class PageController:
         self.change_page("server_is_down")
 
     def change_page(self, page_name):
-        if self.current_page is not None:
-            self.current_page.close()
-        if page_name == "main_page":
-            self.main_page.showMaximized()
-            self.current_page = self.main_page
-        elif page_name == "server_is_down":
-            self.server_is_down_page = ServerIsDownPage(self)
-            self.server_is_down_page.showMaximized()
-            self.current_page = self.server_is_down_page
-        elif page_name == "sign_up_page":
-            self.sign_up_page = SignUpPage(self)
-            self.sign_up_page.showMaximized()
-            self.current_page = self.sign_up_page
-        elif page_name == "change_password_page":
-            self.change_password_page = ChangePasswordPage(self)
-            self.change_password_page.showMaximized()
-            self.current_page = self.change_password_page
-        elif page_name == "verification_code_page":
-            self.verification_code_page = VerificationCodePage(self)
-            self.verification_code_page.showMaximized()
-            self.current_page = self.verification_code_page
-        elif page_name == "login_page":
-            self.login_page = LoginPage(self)
-            self.login_page.showMaximized()
-            self.current_page = self.login_page
-        elif page_name == "forget_password_page":
-            self.forget_password_page = ForgetPasswordPage(self)
-            self.forget_password_page.showMaximized()
-            self.current_page = self.forget_password_page
-        elif page_name == "splash_page":
-            self.splash_page = SplashScreen(self)
-            self.splash_page.showMaximized()
-            self.current_page = self.splash_page
+        try:
+            if self.current_page is not None:
+                self.current_page.close()
+            if page_name == "main_page":
+                self.main_page.showMaximized()
+                self.current_page = self.main_page
+            elif page_name == "server_is_down":
+                self.server_is_down_page = ServerIsDownPage(self)
+                self.server_is_down_page.showMaximized()
+                self.current_page = self.server_is_down_page
+            elif page_name == "sign_up_page":
+                self.sign_up_page = SignUpPage(self)
+                self.sign_up_page.showMaximized()
+                self.current_page = self.sign_up_page
+            elif page_name == "change_password_page":
+                self.change_password_page = ChangePasswordPage(self)
+                self.change_password_page.showMaximized()
+                self.current_page = self.change_password_page
+            elif page_name == "verification_code_page":
+                self.verification_code_page = VerificationCodePage(self)
+                self.verification_code_page.showMaximized()
+                self.current_page = self.verification_code_page
+            elif page_name == "login_page":
+                self.login_page = LoginPage(self)
+                self.login_page.showMaximized()
+                self.current_page = self.login_page
+            elif page_name == "forget_password_page":
+                self.forget_password_page = ForgetPasswordPage(self)
+                self.forget_password_page.showMaximized()
+                self.current_page = self.forget_password_page
+            elif page_name == "splash_page":
+                self.splash_page = SplashScreen(self)
+                self.splash_page.showMaximized()
+                self.current_page = self.splash_page
+        except Exception as e:
+            print(f"error in changing pages {e}")
 
     def thread_recv_messages(self):
         n = self.n
