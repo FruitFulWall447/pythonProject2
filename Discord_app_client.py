@@ -3065,6 +3065,9 @@ class PageController:
         self.n = ClientNet()
         is_connected = self.n.connect_tcp()
         if is_connected:
+            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+            self.is_logged_in = False
+            self.is_waiting_for_2fa_code = False
             self.change_to_login_page()
         else:
             print("tried reconnecting but server still offline")
