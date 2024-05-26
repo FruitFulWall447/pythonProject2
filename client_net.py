@@ -162,6 +162,10 @@ class ClientNet:
         self.connected = False
         self.sending_tcp_data_lock = threading.Lock()
 
+    def reset_vars(self):
+        self.mtu = None
+        self.aes_key = None
+
     def if_connected(self):
         self.connect_udp()
         self.initiate_rsa_protocol()
