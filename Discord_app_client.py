@@ -2646,6 +2646,24 @@ class VerificationCodePage(QWidget):
             }
         """)
 
+        self.label = QLabel("5:00", self)
+        self.label.move(0, 0)
+        self.label.setStyleSheet("font-size: 48px;")
+
+    def start_timer(self):
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_timer)
+        self.time_left = QTime(0, 5, 0)  # 5 minutes
+
+        self.timer.start(1000)  # Update every second
+
+    def update_timer(self):
+        self.time_left = self.time_left.addSecs(-1)
+        self.label.setText(self.time_left.toString("m:ss"))
+
+        if self.time_left == QTime(0, 0, 0):
+            self.timer.stop()
+
     def return_button_pressed(self):
         self.page_controller_object.change_to_login_page()
 
