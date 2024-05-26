@@ -2724,7 +2724,6 @@ class VerificationCodePage(QWidget):
         n = self.page_controller_object.n
         code = self.code.text()
         try:
-            print(self.time_left)
             if self.time_left != QTime(0, 0, 0):
                 if len(code) == 6:
                     if not self.page_controller_object.is_waiting_for_2fa_code:
@@ -3052,11 +3051,9 @@ class PageController:
             print("logging out")
             self.n.send_logout_message()
             self.main_page.close_all_threads()
+            self.current_page.close()
             self.current_page = None
             self.is_logged_in = False
-            self.close_all_pages()
-            self.clear_all_pages()
-            self.hide_all_pages()
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
             self.change_to_login_page()
@@ -3122,7 +3119,7 @@ class PageController:
 
     def change_page(self, page_name):
         if self.current_page is not None:
-            self.current_page.hide()
+            self.current_page.close()
         if page_name == "main_page":
             MainPage(self.n, self)
             self.main_page.showMaximized()
