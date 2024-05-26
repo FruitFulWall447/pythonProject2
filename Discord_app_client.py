@@ -2131,9 +2131,13 @@ class SignUpPage(QWidget):
 
 
 class LoginPage(QWidget):
+    lost_connection_with_server_signal = pyqtSignal()
+
     def __init__(self, page_controller_object):
         super().__init__()
         self.page_controller_object = page_controller_object
+        self.lost_connection_with_server_signal.connect(self.page_controller_object.lost_connection_with_server)
+
         self.init_ui()
         self.visibility_password_button = QPushButton(self)
         # Load an image and set it as the button's icon
