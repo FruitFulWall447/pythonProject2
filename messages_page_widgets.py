@@ -2710,16 +2710,16 @@ class ScrollAreaWidget(QScrollArea):
         # Set the geometry (position and size) of the scroll area
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
-        self.setStyleSheet("""
-            QScrollArea {
-                border: none;
-            }
-            QScrollBar:vertical {
-                border: none;
-            }
-            QScrollBar:horizontal {
-                border: none;
-            }
+        self.setStyleSheet(f"""
+            QScrollArea {{
+                border: 2px solid {self.parent.parent.standard_hover_color};
+            }}
+            QScrollBar:vertical {{
+                border: 2px solid {self.parent.parent.standard_hover_color};
+            }}
+            QScrollBar:horizontal {{
+                border: 2px solid {self.parent.parent.standard_hover_color};
+            }}
         """)
 
         # Create a container widget
