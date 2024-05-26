@@ -3045,6 +3045,7 @@ class PageController:
     def __init__(self):
         self.n = ClientNet(self)
         self.is_closing_app = False
+        self.is_changing_password = False
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
@@ -3113,7 +3114,7 @@ class PageController:
 
     def quit_application(self):
         try:
-            if self.is_logged_in:
+            if self.is_logged_in and not self.is_changing_password:
                 self.is_closing_app = True
                 print("closing app...")
                 self.is_logged_in = False
@@ -3122,6 +3123,8 @@ class PageController:
                 self.main_page.close_all_threads()
                 del self.app
                 sys.exit()
+            else:
+                self.is_changing_password = False
         except Exception as e:
             print(e)
 

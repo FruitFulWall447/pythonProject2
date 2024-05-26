@@ -943,6 +943,7 @@ class SettingsBox(QWidget):
         pass
 
     def change_password_function(self):
+        self.parent.page_controller_object.is_changing_password = True
         self.Network.ask_for_code_to_change_password_for_logged_user()
         self.parent.page_controller_object.change_to_verification_code_page()
         pass
