@@ -1242,6 +1242,7 @@ class ChatBox(QWidget):
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
                     else:
                         chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
                 except Exception as e:
                     print(f"error in showing chats list{e}")
 
