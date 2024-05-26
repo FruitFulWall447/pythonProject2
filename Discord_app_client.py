@@ -2621,6 +2621,11 @@ class VerificationCodePage(QWidget):
         image_button.move(code_label_x, code_label_y)
         image_button.clicked.connect(self.return_button_pressed)
 
+        self.setStyleSheet("""
+            QPushButton {
+                background-color: #141c4b;  /* Set your desired background color */
+        """)
+
         self.label = QLabel("5:00", self)
         self.label.move(0, 0)
         self.label.setStyleSheet("font-size: 48px;")
