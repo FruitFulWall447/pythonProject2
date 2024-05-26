@@ -1236,7 +1236,10 @@ class ChatBox(QWidget):
                 try:
                     friend_x = 250
                     if not self.parent.current_chat_box_search:
+                        x, y = 250, 170
+                        width, height = 300, 900
                         chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
+                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
                     else:
                         chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
                 except Exception as e:
@@ -1671,7 +1674,7 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"error in raising elements {e}")
 
-    def create_friend_button(self, label, position):
+    def create_friend_button(self, label, position, parent):
 
         px_padding_of_button_text = 55
         chat_name = label
@@ -1681,7 +1684,7 @@ class ChatBox(QWidget):
         button_text = text
 
         width, height = (35, 35)
-        profile_image_label = create_custom_circular_label(width, height, self)
+        profile_image_label = create_custom_circular_label(width, height, parent)
         profile_image_x, profile_image_y = (position[0] + (px_padding_of_button_text * 0.25), position[1] + ((self.friends_button_height - height) * 0.5))
 
         if id:
@@ -1699,7 +1702,7 @@ class ChatBox(QWidget):
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_x, profile_image_y)
 
-        button = QPushButton(self)
+        button = QPushButton(parent)
         button.setText(button_text)
         button.move(position[0], position[1])
         button.setFixedHeight(self.friends_button_height)
@@ -1708,13 +1711,13 @@ class ChatBox(QWidget):
         if not id:
             actions_list = ["remove_chat"]
             button.customContextMenuRequested.connect(
-                lambda pos, parent=self, button=button, actions_list=actions_list,
+                lambda pos, parent=parent, button=button, actions_list=actions_list,
                        chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
                                                                                 actions_list, chat_name))
         else:
             actions_list = ["exit_group"]
             button.customContextMenuRequested.connect(
-            lambda pos, parent=self, button=button, actions_list=actions_list,
+            lambda pos, parent=parent, button=button, actions_list=actions_list,
                    group_id=id: self.parent.right_click_object_func(pos, parent, button,
                                                                             actions_list, group_id=group_id))
 
@@ -1726,7 +1729,7 @@ class ChatBox(QWidget):
         '''
 
         if id:
-            members_label = QLabel(f"{len_group} Members", self)
+            members_label = QLabel(f"{len_group} Members", parent)
             members_label.setStyleSheet(style)
             memeber_x = position[0] + px_padding_of_button_text
             members_label.move(memeber_x, position[1] + 28)
@@ -2186,11 +2189,6 @@ class MessagesBox(QWidget):
 
             # Create a widget to contain labels and buttons
             inner_widget = QWidget()
-            spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-            len_message_list = len(self.parent.parent.list_messages)
-
-            # Set fixed width for inner widget to ensure proper layout
-            #inner_widget.setFixedWidth(380)
 
             # Create a layout for the inner widget
             self.layout = QVBoxLayout(inner_widget)
@@ -2692,14 +2690,36 @@ class FriendsChatListWidget(QWidget):
         self.draw_friends_buttons(chats_list)
 
     def draw_friends_buttons(self, friend_list):
-        friend_starter_y = 170 + (self.chat_box_object.parent.chat_box_chats_index * -50)
-        friend_x = 250
+        friend_starter_y = 0
+        friend_x = 0
         if friend_list is not None:
             for friend in friend_list:
                 try:
-                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y))
+                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self)
                     button.setGeometry(friend_x, friend_starter_y, 100, self.chat_box_object.friends_button_height)
                     friend_starter_y += self.chat_box_object.friends_button_height
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
+
+
+class ScrollAreaWidget(QScrollArea):
+    def __init__(self, parent, x, y, width, height, items_list):
+        super().__init__(parent)
+
+        # Set the geometry (position and size) of the scroll area
+        self.setGeometry(x, y, width, height)
+        self.setWidgetResizable(True)
+
+        # Create a container widget
+        self.scroll_area_widget_contents = QWidget()
+
+        # Create a layout for the container widget
+        self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
+
+        # Add the widgets from items_list to the layout
+        for item in items_list:
+            self.scroll_area_layout.addWidget(item)
+
+        # Set the container widget as the widget for the scroll area
+        self.setWidget(self.scroll_area_widget_contents)
 
