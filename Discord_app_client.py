@@ -3093,8 +3093,8 @@ class PageController:
             print("closing app...")
             self.is_logged_in = False
             self.n.close()
+            self.current_page.close()
             self.main_page.close_all_threads()
-            self.close_all_pages()
             del self.app
             sys.exit()
 
