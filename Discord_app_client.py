@@ -1906,9 +1906,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def closeEvent(self, event):
         # This function is called when the window is closed
-        self.stop_all_media_player()
-        self.close_all_threads()
-        self.page_controller_object.quit_application()
+        try:
+            self.stop_all_media_player()
+            self.close_all_threads()
+            self.page_controller_object.quit_application()
+        except Exception as e:
+            print(f"error in closing mainpage {e}")
 
 
 class SignUpPage(QWidget):
@@ -3023,6 +3026,7 @@ class ServerIsDownPage(QWidget):
 class PageController:
     def __init__(self):
         self.n = ClientNet()
+        self.is_closing_app = False
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
         self.app = QApplication(sys.argv)
@@ -3077,13 +3081,19 @@ class PageController:
             print(e)
 
     def lost_connection_with_server(self):
-        self.is_logged_in = False
-        self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-        self.is_waiting_for_2fa_code = False
-        self.current_page.close()
-        self.server_is_down_page = ServerIsDownPage(self)
-        self.current_page = self.server_is_down_page
-        self.server_is_down_page.showMaximized()
+        try:
+            print(1)
+            self.is_logged_in = False
+            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+            self.is_waiting_for_2fa_code = False
+            print(self.current_page)
+            self.current_page.close()
+            print(2)
+            self.server_is_down_page = ServerIsDownPage(self)
+            self.current_page = self.server_is_down_page
+            self.server_is_down_page.showMaximized()
+        except Exception as e:
+            print(f"error in lost connection {e}")
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
@@ -3091,6 +3101,7 @@ class PageController:
     def quit_application(self):
         try:
             if self.is_logged_in:
+                self.is_closing_app = True
                 print("closing app...")
                 self.is_logged_in = False
                 self.n.close()
@@ -3464,8 +3475,11 @@ class PageController:
                         elif status == "active":
                             self.main_page.friends_box.request_is_pending()
                 else:
-                    # self.lost_connection_with_server()
-                    print("lost connection with server")
+                    print(f"got data {data}")
+                    if not self.is_closing_app:
+                        print("lost connection with server")
+                        self.lost_connection_with_server()
+                        self.is_logged_in = False
             except Exception as e:
                 print(f"error in receiving thread {e}")
         print("thread receive messages ended")

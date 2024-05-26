@@ -717,7 +717,7 @@ class ClientNet:
                 return data
 
         except (socket.error, ValueError) as e:
-            print(f"error in recv_str:{e}")
+            print(f"error in recv_str:{e} , returning None")
             return None
 
     def recv_bytes(self):
