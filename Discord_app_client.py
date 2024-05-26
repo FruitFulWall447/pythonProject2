@@ -2544,8 +2544,12 @@ class ForgetPasswordPage(QWidget):
         """)
 
     def return_button_pressed(self):
-        self.page_controller_object.n.cancel_current_process()
-        self.page_controller_object.change_to_login_page()
+        if not self.page_controller_object.is_logged_in:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_login_page()
+        else:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_main_page()
 
     def submit_form(self):
         n = self.page_controller_object.n
@@ -2646,8 +2650,12 @@ class VerificationCodePage(QWidget):
             self.timer.stop()
 
     def return_button_pressed(self):
-        self.page_controller_object.n.cancel_current_process()
-        self.page_controller_object.change_to_login_page()
+        if not self.page_controller_object.is_logged_in:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_login_page()
+        else:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_main_page()
 
     def eventFilter(self, obj, event):
         try:
@@ -2862,8 +2870,12 @@ class ChangePasswordPage(QWidget):
             """)
 
     def return_button_pressed(self):
-        self.page_controller_object.n.cancel_current_process()
-        self.page_controller_object.change_to_login_page()
+        if not self.page_controller_object.is_logged_in:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_login_page()
+        else:
+            self.page_controller_object.n.cancel_current_process()
+            self.page_controller_object.change_to_main_page()
 
     def create_label(self, text, position):
         label = QLabel(text, self)
