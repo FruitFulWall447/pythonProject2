@@ -2755,12 +2755,14 @@ class VerificationCodePage(QWidget):
                     else:
                         n.send_login_2fa_code(code)
                     print("Sent verification code to server")
-                    data = n.recv_str()
-                    message_type = data.get("message_type")
-                    if message_type in expected_types_list:
-                        self.handle_data(data, n)
-                    else:
-                        self.page_controller_object.handle_tcp_data(data)
+                    while True:
+                        data = n.recv_str()
+                        message_type = data.get("message_type")
+                        if message_type in expected_types_list:
+                            self.handle_data(data, n)
+                            break
+                        else:
+                            self.page_controller_object.handle_tcp_data(data)
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
