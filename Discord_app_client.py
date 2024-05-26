@@ -3241,6 +3241,10 @@ class PageController:
                         QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
                                                  Qt.QueuedConnection)
                         print("Updated the messages list")
+                    elif message_type == "users_email":
+                        self.main_page.email = data.get("email")
+                        QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",
+                                                 Qt.QueuedConnection)
                     elif message_type == "settings_dict":
                         settings_dict = data.get("settings_dict")
                         self.main_page.update_settings_from_dict_signal.emit(settings_dict)

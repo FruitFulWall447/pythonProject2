@@ -599,6 +599,13 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def send_user_email(self, email):
+        try:
+            message = {"message_type": "users_email", "email": email}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def timeout_receive(self):
         try:
             message = {"message_type": "timeout_receive"}

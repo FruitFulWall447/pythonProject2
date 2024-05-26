@@ -551,6 +551,9 @@ class ServerHandler:
         self.send_profile_list_of_dicts_to_user(User)
         self.logger.info(f"Sent list of profile dicts list to user {User}")
 
+        email = database_func.get_email_by_username(User)
+        net.send_user_email(email)
+
         songs_list = database_func.get_songs_by_owner(User)
         net.playlist_songs_list(songs_list)
         self.logger.info(f"Sent list of songs dicts list to user {User}")
