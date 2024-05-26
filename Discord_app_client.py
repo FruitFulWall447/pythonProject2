@@ -3082,9 +3082,11 @@ class PageController:
 
     def lost_connection_with_server(self):
         try:
-            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-            self.is_waiting_for_2fa_code = False
-            self.change_to_server_is_down()
+            # self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+            # self.is_waiting_for_2fa_code = False
+            # self.change_to_server_is_down()
+            # self.main_page = MainPage(self.n, self)
+            x = 5
         except Exception as e:
             print(f"error in lost connection {e}")
 
@@ -3194,7 +3196,7 @@ class PageController:
             self.sign_up_page.showMaximized()
             self.current_page = self.sign_up_page
         elif page_name == "change_password_page":
-            self.change_password_page = ChangePasswordPage
+            self.change_password_page = ChangePasswordPage(self)
             self.change_password_page.showMaximized()
             self.current_page = self.change_password_page
         elif page_name == "verification_code_page":
@@ -3477,8 +3479,8 @@ class PageController:
                     print(f"got data {data}")
                     if not self.is_closing_app:
                         print("lost connection with server")
-                        self.lost_connection_with_server()
                         self.is_logged_in = False
+                        self.lost_connection_with_server()
             except Exception as e:
                 print(f"error in receiving thread {e}")
         print("thread receive messages ended")
