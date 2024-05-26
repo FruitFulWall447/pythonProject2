@@ -714,8 +714,6 @@ class ClientNet:
             try:
                 encrypted_data = data
                 if data is None:
-                    QMetaObject.invokeMethod(self.page_controller_object.main_page, "lost_connection_with_server_signal",
-                                             Qt.QueuedConnection)
                     return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
                 return pickle.loads(data)
@@ -724,6 +722,8 @@ class ClientNet:
                 return data
 
         except (socket.error, ValueError) as e:
+            QMetaObject.invokeMethod(self.page_controller_object.main_page, "lost_connection_with_server_signal",
+                                     Qt.QueuedConnection)
             print(f"error in recv_str:{e} , returning None")
             return None
 
