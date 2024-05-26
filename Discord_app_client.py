@@ -3024,7 +3024,10 @@ class ServerIsDownPage(QWidget):
 
 
 class PageController:
+    lost_connection_with_server_signal = pyqtSignal()
+
     def __init__(self):
+        self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
         self.n = ClientNet()
         self.is_closing_app = False
         is_connected = self.n.connect_tcp()
@@ -3082,11 +3085,10 @@ class PageController:
 
     def lost_connection_with_server(self):
         try:
-            # self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
-            # self.is_waiting_for_2fa_code = False
-            # self.change_to_server_is_down()
-            # self.main_page = MainPage(self.n, self)
-            x = 5
+            print(1)
+            self.server_is_down_page = ServerIsDownPage(self)
+            self.server_is_down_page.showMaximized()
+            print(2)
         except Exception as e:
             print(f"error in lost connection {e}")
 
@@ -3483,7 +3485,7 @@ class PageController:
                     if not self.is_closing_app:
                         print("lost connection with server")
                         self.is_logged_in = False
-                        self.lost_connection_with_server()
+                        self.main_page.lost_connection_with_server_signal.emit()
             except Exception as e:
                 print(f"error in receiving thread {e}")
         print("thread receive messages ended")
