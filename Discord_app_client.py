@@ -2998,6 +2998,8 @@ class ChangePasswordPage(QWidget):
             self.changed_password_label.show()
             self.status = True
             self.was_password_changed = True
+            if self.page_controller_object.is_tcp_receive_thread_paused:
+                self.page_controller_object.is_tcp_receive_thread_paused = False
         elif self.was_password_changed:
             self.password_already_changed.show()
         else:
