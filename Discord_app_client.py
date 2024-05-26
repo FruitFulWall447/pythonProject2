@@ -2652,9 +2652,8 @@ class VerificationCodePage(QWidget):
 
     def start_timer(self):
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_timer)
         self.time_left = QTime(0, 5, 0)  # 5 minutes
-
+        self.timer.timeout.connect(self.update_timer)
         self.timer.start(1000)  # Update every second
 
     def update_timer(self):
