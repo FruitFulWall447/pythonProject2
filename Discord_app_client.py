@@ -3079,6 +3079,7 @@ class PageController:
     def lost_connection_with_server(self):
         self.current_page.close()
         self.server_is_down_page = ServerIsDownPage(self)
+        self.current_page = self.server_is_down_page
         self.server_is_down_page.showMaximized()
 
     def start_receive_thread_after_login(self):
