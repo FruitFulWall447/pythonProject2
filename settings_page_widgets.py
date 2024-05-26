@@ -378,6 +378,11 @@ class SettingsBox(QWidget):
                                                                            self.forget_my_account, (
             starter_x_of_main_buttons, starter_y_of_main_buttons))
 
+            starter_y_of_main_buttons += delta_of_main_buttons
+
+            self.exit_app_button = self.create_settings_main_buttons("Exit app",
+                                                                           self.parent.page_controller_object.quit_application, (
+            starter_x_of_main_buttons, starter_y_of_main_buttons))
 
             background_color = self.parent.background_color_hex
             hover_color = self.parent.standard_hover_color
