@@ -3044,6 +3044,7 @@ class ServerIsDownPage(QWidget):
 class PageController:
     def __init__(self):
         self.n = ClientNet(self)
+        self.is_tcp_receive_thread_paused = False
         self.is_closing_app = False
         self.is_changing_password = False
         is_connected = self.n.connect_tcp()
@@ -3243,7 +3244,7 @@ class PageController:
     def thread_recv_messages(self):
         n = self.n
         print("receiving thread started running")
-        while self.is_logged_in:
+        while self.is_logged_in and not self.is_tcp_receive_thread_paused:
             data = n.recv_str()
             try:
                 if data is not None:
@@ -3270,6 +3271,12 @@ class PageController:
             QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
                                      Qt.QueuedConnection)
             print("Updated the messages list")
+        elif message_type == "tcp_thread":
+            action = data.get("action")
+            if action == "pause":
+                self.is_tcp_receive_thread_paused = True
+            elif action == "unpause":
+                self.is_tcp_receive_thread_paused = False
         elif message_type == "users_email":
             self.main_page.email = data.get("email")
             QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",

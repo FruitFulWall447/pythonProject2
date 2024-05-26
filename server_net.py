@@ -606,6 +606,20 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def pause_tcp_thread_for_user(self):
+        try:
+            message = {"message_type": "tcp_thread", "action": "pause"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def unpause_tcp_thread_for_user(self):
+        try:
+            message = {"message_type": "tcp_thread", "action": "unpause"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def timeout_receive(self):
         try:
             message = {"message_type": "timeout_receive"}
