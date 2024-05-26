@@ -2615,15 +2615,18 @@ class VerificationCodePage(QWidget):
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         image_button.setIconSize(scaled_size)
-        code_label_x, code_label_y = (
-        int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.2175))
+        image_button_x, image_button_y = (
+        int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.217))
 
-        image_button.move(code_label_x, code_label_y)
+        image_button.move(image_button_x, image_button_y)
         image_button.clicked.connect(self.return_button_pressed)
 
-        self.setStyleSheet("""
+        image_button.setStyleSheet("""
             QPushButton {
-                background-color: #141c4b;  /* Set your desired background color */
+                background-color: #141c4b;
+                border-color: black;
+                }  /* Set your desired background color */
+                
         """)
 
         self.label = QLabel("5:00", self)
