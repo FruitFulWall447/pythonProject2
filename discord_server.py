@@ -149,7 +149,7 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
                                 database_func.change_password(username, new_password)
                                 send_changed_password_to_email(email, username)
                                 logger.info(f"{username} changed password")
-                                break
+                                return False, False
                     elif code_type == "sign_up":
                         send_confirmation_to_client_email(email, username)
                         logger.info(f"Server sent Confirmed to ({addr})")
