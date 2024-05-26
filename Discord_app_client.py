@@ -2724,57 +2724,58 @@ class VerificationCodePage(QWidget):
         n = self.page_controller_object.n
         code = self.code.text()
         try:
-            if len(code) == 6:
-                if not self.page_controller_object.is_waiting_for_2fa_code:
-                    n.send_sign_up_verification_code(code)
-                else:
-                    n.send_login_2fa_code(code)
-                print("Sent verification code to server")
-                data = n.recv_str()
-                message_type = data.get("message_type")
-                if message_type == "sign_up":
-                    kind = data.get("action")
-                    if kind == "code":
-                        result = data.get("code_status")
-                        if result == "valid":
-                            print("Server got the code")
-                            self.successfully_signed_up.show()
-                            self.image_button.show()
-                        elif result == "invalid":
-                            pass
-                elif message_type == "forget_password":
-                    kind = data.get("action")
-                    result = data.get("code_status")
-                    if kind == "code":
-                        if result == "valid":
-                            self.page_controller_object.change_to_change_password_page()
-                        elif result == "invalid":
-                            pass
-                elif message_type == "2fa":
-                    try:
+            if self.time_left != QTime(0, 0, 0):
+                if len(code) == 6:
+                    if not self.page_controller_object.is_waiting_for_2fa_code:
+                        n.send_sign_up_verification_code(code)
+                    else:
+                        n.send_login_2fa_code(code)
+                    print("Sent verification code to server")
+                    data = n.recv_str()
+                    message_type = data.get("message_type")
+                    if message_type == "sign_up":
+                        kind = data.get("action")
+                        if kind == "code":
+                            result = data.get("code_status")
+                            if result == "valid":
+                                print("Server got the code")
+                                self.successfully_signed_up.show()
+                                self.image_button.show()
+                            elif result == "invalid":
+                                pass
+                    elif message_type == "forget_password":
                         kind = data.get("action")
                         result = data.get("code_status")
                         if kind == "code":
                             if result == "valid":
-                                print("logged in successfully")
-                                n.connect_between_udp_port_address_to_username()
-                                self.hide()
-                                if self.page_controller_object.login_page.remember_me_status:
-                                    n.ask_for_security_token()
-                                    print("You will be remembered")
-                                try:
-                                    self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
-                                    self.page_controller_object.main_page.update_values()
-                                    self.page_controller_object.is_logged_in = True
-                                    self.page_controller_object.start_receive_thread_after_login()
-                                    self.page_controller_object.main_page.start_listen_udp_thread()
-                                    self.page_controller_object.change_to_splash_page()
-                                except Exception as e:
-                                    print(f"error in 2fa {e}")
+                                self.page_controller_object.change_to_change_password_page()
                             elif result == "invalid":
                                 pass
-                    except Exception as e:
-                        print(f"error in 2fa {e}")
+                    elif message_type == "2fa":
+                        try:
+                            kind = data.get("action")
+                            result = data.get("code_status")
+                            if kind == "code":
+                                if result == "valid":
+                                    print("logged in successfully")
+                                    n.connect_between_udp_port_address_to_username()
+                                    self.hide()
+                                    if self.page_controller_object.login_page.remember_me_status:
+                                        n.ask_for_security_token()
+                                        print("You will be remembered")
+                                    try:
+                                        self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
+                                        self.page_controller_object.main_page.update_values()
+                                        self.page_controller_object.is_logged_in = True
+                                        self.page_controller_object.start_receive_thread_after_login()
+                                        self.page_controller_object.main_page.start_listen_udp_thread()
+                                        self.page_controller_object.change_to_splash_page()
+                                    except Exception as e:
+                                        print(f"error in 2fa {e}")
+                                elif result == "invalid":
+                                    pass
+                        except Exception as e:
+                            print(f"error in 2fa {e}")
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
