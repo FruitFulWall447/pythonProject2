@@ -2894,22 +2894,6 @@ class ChangePasswordPage(QWidget):
 
     def init_ui(self):
         self.too_short = QLabel("Password too short", self)
-
-        image_button = QPushButton(self)
-        # Load an image and set it as the button's icon
-        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
-        image_button.setIcon(icon)
-        width, height = int(self.page_controller_object.screen_width * 0.01), int(
-            self.page_controller_object.screen_height * 0.018)
-        icon_size = QSize(width, height)  # Set your desired size
-        icon_actual_size = icon.actualSize(icon.availableSizes()[0])
-        scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-        image_button.setIconSize(scaled_size)
-        image_button_x, image_button_y = (
-        int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.217))
-        image_button.move(image_button_x, image_button_y)
-        image_button.clicked.connect(self.return_button_pressed)
-
         self.was_password_changed = False
         too_short_x, too_short_y = (
         int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.315))
