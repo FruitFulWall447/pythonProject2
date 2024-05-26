@@ -341,6 +341,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     close_call_threads_signal = pyqtSignal()
     start_call_threads_signal = pyqtSignal()
     insert_playlist_to_table_signal = pyqtSignal()
+    lost_connection_with_server_signal = pyqtSignal()
 
     def __init__(self, Network, page_controller_object):
         super().__init__()
@@ -590,6 +591,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.insert_playlist_to_table_signal.connect(self.insert_playlist_to_table)
         self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
         self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
+        self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -1913,6 +1915,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in closing mainpage {e}")
 
+    def lost_connection_with_server(self):
+        self.page_controller_object.lost_connection_with_server()
+
 
 class SignUpPage(QWidget):
     def __init__(self, page_controller_object):
@@ -3024,10 +3029,7 @@ class ServerIsDownPage(QWidget):
 
 
 class PageController:
-    lost_connection_with_server_signal = pyqtSignal()
-
     def __init__(self):
-        self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
         self.n = ClientNet()
         self.is_closing_app = False
         is_connected = self.n.connect_tcp()
@@ -3086,11 +3088,20 @@ class PageController:
     def lost_connection_with_server(self):
         try:
             print(1)
-            self.server_is_down_page = ServerIsDownPage(self)
-            self.server_is_down_page.showMaximized()
+            self.show_server_is_down_page()
             print(2)
         except Exception as e:
             print(f"error in lost connection {e}")
+
+    def show_server_is_down_page(self):
+        try:
+            print("Instantiating ServerIsDownPage")
+            self.server_is_down_page = ServerIsDownPage(self)
+            print("Showing ServerIsDownPage")
+            self.server_is_down_page.showMaximized()
+            print("ServerIsDownPage should be visible now")
+        except Exception as e:
+            print(f"error in showing server is down page: {e}")
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
@@ -3485,7 +3496,9 @@ class PageController:
                     if not self.is_closing_app:
                         print("lost connection with server")
                         self.is_logged_in = False
-                        self.main_page.lost_connection_with_server_signal.emit()
+                        QMetaObject.invokeMethod(self.main_page, "lost_connection_with_server_signal",
+                                                 Qt.QueuedConnection)
+                        break
             except Exception as e:
                 print(f"error in receiving thread {e}")
         print("thread receive messages ended")
