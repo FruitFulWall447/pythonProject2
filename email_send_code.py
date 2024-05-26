@@ -84,7 +84,7 @@ def send_login_code_to_client_email(code, receiver_mail, account_name):
         smtp.sendmail(from_email, to_email, em.as_string())
 
 
-def send_sing_up_code_to_client_email(code, receiver_mail, account_name):
+def send_sign_up_code_to_client_email(code, receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name
     password = email_password

@@ -103,7 +103,7 @@ def generate_6_digit_code():
     return f"{random.randint(0, 999999):06d}"
 
 
-def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email= None, username=None, password=None):
+def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email=None, username=None, password=None):
     attempts_remaining = 3  # Set the maximum number of attempts
     time_to_get_the_code = 300  # Seconds
     expected_message_type = None
@@ -167,6 +167,15 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
                     elif code_type == "2fa":
                         n.send_2fa_code_invalid()
                     attempts_remaining -= 1
+        elif message_type == "cancel_process":
+            return False, False
+        elif message_type == "resend_code":
+            if code_type == "2fa":
+                send_login_code_to_client_email(code, email, username)
+            elif code_type == "sign_up":
+                send_sign_up_code_to_client_email(code, email, username)
+            elif code_type == "forget password":
+                send_forget_password_code_to_email(code, email, username)
     return False, False
 
 
@@ -227,7 +236,7 @@ def thread_recv_messages(n, addr):
                     if is_valid:
                         logger.info(f"Server sent code to email for ({addr})")
                         code = generate_6_digit_code()
-                        send_sing_up_code_to_client_email(code, email, username)
+                        send_sign_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
                         time_now = datetime.datetime.now()
                         status, _ = handle_code_wait(n, code, logger, addr, "sign_up", time_now, email, username, password)

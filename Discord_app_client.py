@@ -2572,7 +2572,7 @@ class VerificationCodePage(QWidget):
         self.info_label.setStyleSheet("background-color: #141c4b; border-radius: 25px;")
         self.info_label.setToolTip('A mail will be sent to your chosen email address')
         info_label_x, info_label_y = (
-        int(self.page_controller_object.screen_width * 0.468), int(self.page_controller_object.screen_height * 0.231))
+        int(self.page_controller_object.screen_width * 0.468), int(self.page_controller_object.screen_height * 0.245))
 
         self.info_label.move(info_label_x, info_label_y)
         self.info_label.setMouseTracking(True)
@@ -2615,8 +2615,8 @@ class VerificationCodePage(QWidget):
         image_button.clicked.connect(self.return_button_pressed)
 
         self.label = QLabel("5:00", self)
-        self.label.move(0, 0)
-        self.label.setStyleSheet("font-size: 48px;")
+        self.label.move(900, 200)
+        self.label.setStyleSheet("font-size: 20px;")
         self.start_timer()
 
     def start_timer(self):
@@ -2634,6 +2634,7 @@ class VerificationCodePage(QWidget):
             self.timer.stop()
 
     def return_button_pressed(self):
+        self.page_controller_object.n.cancel_current_process()
         self.page_controller_object.change_to_login_page()
 
     def eventFilter(self, obj, event):
@@ -2666,12 +2667,12 @@ class VerificationCodePage(QWidget):
         # Connect the linkActivated signal to a custom slot
         code_label.linkActivated.connect(self.resend_code_clicked)
         code_label_x, code_label_y = (
-        int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.3796))
+        int(self.page_controller_object.screen_width * 0.46), int(self.page_controller_object.screen_height * 0.3496))
 
         code_label.move(code_label_x, code_label_y)
 
         label_x, label_y = (
-        int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.166))
+        int(self.page_controller_object.screen_width * 0.438), int(self.page_controller_object.screen_height * 0.146))
 
         label.move(label_x, label_y)
 
@@ -2679,9 +2680,9 @@ class VerificationCodePage(QWidget):
         submit_button = QPushButton('Submit code', self)
         submit_button.clicked.connect(self.submit_form)
         submit_button_x, submit_button_y = (
-        int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.416))
+        int(self.page_controller_object.screen_width * 0.43), int(self.page_controller_object.screen_height * 0.376))
 
-        submit_button.move(submit_button_x, submit_button_y)
+        submit_button.setGeometry(submit_button_x, submit_button_y, 200, 60)
         # Set styles
         self.setStyleSheet("""
             QWidget {
@@ -2702,6 +2703,22 @@ class VerificationCodePage(QWidget):
                 margin-bottom: 10px;
             }
         """)
+
+        submit_button.setStyleSheet('''
+            QPushButton {
+                background-color: #6fa8b6;
+                color: #f0f1f1;
+                border: 1px solid #2980b9;
+                border-radius: 5px;
+                font-size: 16px;  /* Set your desired font size */
+                margin-top: 10px;  /* Adjust the margin-top to set the top margin of the button */
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:pressed {
+                background-color: #1f618d;
+        ''')
 
     def submit_form(self):
         n = self.page_controller_object.n
@@ -2763,7 +2780,8 @@ class VerificationCodePage(QWidget):
 
     def resend_code_clicked(self, link):
         if link == "resend":
-            print("resend code")
+            self.page_controller_object.n.ask_for_resend_code_to_email()
+            print("asked for a resend of the code")
 
 
 class ChangePasswordPage(QWidget):

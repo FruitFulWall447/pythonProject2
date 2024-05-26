@@ -636,6 +636,22 @@ class ClientNet:
         except socket.error as e:
             print(e)
 
+    def ask_for_resend_code_to_email(self):
+        try:
+            message = {"message_type": "resend_code"
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def cancel_current_process(self):
+        try:
+            message = {"message_type": "cancel_process"
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def send_sign_up_verification_code(self, code):
         try:
             message = {"message_type": "sign_up", "action": "verification_code", "code": code
