@@ -2986,7 +2986,7 @@ class ServerIsDownPage(QWidget):
 
             server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44),
                                                         int(self.page_controller_object.screen_height * 0.185))
-            self.server_is_offline = QLabel("Server is Offline...", self)
+            self.server_is_offline = QLabel("Couldn't connect to Server...", self)
 
             self.server_is_offline.move(server_is_offline_x, server_is_offline_y)
             self.server_is_offline.setStyleSheet("color: white; font-size:20px")
@@ -2995,6 +2995,27 @@ class ServerIsDownPage(QWidget):
                     background-color: #141c4b;  /* Set your desired background color */
                 }
             """)
+
+            reconnect_button_x, reconnect_button_y = (int(self.page_controller_object.screen_width * 0.44),
+                                                        int(self.page_controller_object.screen_height * 0.285))
+            reconnect_button = QPushButton("reconnect to server", self)
+            reconnect_button.clicked.connect(self.page_controller_object.try_reconnect_to_server)
+            reconnect_button.move(reconnect_button_x, reconnect_button_y)
+            reconnect_button.setStyleSheet('''
+                QPushButton {
+                    background-color: #6fa8b6;
+                    color: #f0f1f1;
+                    border: 1px solid #2980b9;
+                    border-radius: 5px;
+                    font-size: 16px;  /* Set your desired font size */
+                    margin-top: 10px;  /* Adjust the margin-top to set the top margin of the button */
+                }
+                QPushButton:hover {
+                    background-color: #2980b9;
+                }
+                QPushButton:pressed {
+                    background-color: #1f618d;
+            ''')
         except Exception as e:
             print("error in server id down page")
 
@@ -3038,6 +3059,16 @@ class PageController:
             self.server_is_down_page = ServerIsDownPage(self)
             self.server_is_down_page.showMaximized()
         self.app.exec_()
+
+    def try_reconnect_to_server(self):
+        is_connected = self.n.connect_tcp()
+        if is_connected:
+            self.change_to_login_page()
+
+    def lost_connection_with_server(self):
+        self.current_page.close()
+        self.server_is_down_page = ServerIsDownPage(self)
+        self.server_is_down_page.showMaximized()
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
