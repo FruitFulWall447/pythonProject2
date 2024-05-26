@@ -2616,7 +2616,9 @@ class VerificationCodePage(QWidget):
         image_button.clicked.connect(self.return_button_pressed)
 
         self.label = QLabel("5:00", self)
-        self.label.move(900, 200)
+        label_x, label_y = (
+        int(self.page_controller_object.screen_width * 0.46875), int(self.page_controller_object.screen_height * 0.1851))
+        self.label.move(label_x, label_y)
         self.label.setStyleSheet("font-size: 20px;")
         self.start_timer()
 
@@ -2683,7 +2685,10 @@ class VerificationCodePage(QWidget):
         submit_button_x, submit_button_y = (
         int(self.page_controller_object.screen_width * 0.43), int(self.page_controller_object.screen_height * 0.376))
 
-        submit_button.setGeometry(submit_button_x, submit_button_y, 200, 60)
+
+        width, height = (
+        int(self.page_controller_object.screen_width * 0.1041667), int(self.page_controller_object.screen_height * 0.05555))
+        submit_button.setGeometry(submit_button_x, submit_button_y, width, height)
         # Set styles
         self.setStyleSheet("""
             QWidget {
