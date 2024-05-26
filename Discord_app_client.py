@@ -2780,9 +2780,10 @@ class VerificationCodePage(QWidget):
             print(f"error in submit_form verification code {e}")
 
     def resend_code_clicked(self, link):
-        if link == "resend":
-            self.page_controller_object.n.ask_for_resend_code_to_email()
-            print("asked for a resend of the code")
+        if self.time_left != QTime(0, 0, 0):
+            if link == "resend":
+                self.page_controller_object.n.ask_for_resend_code_to_email()
+                print("asked for a resend of the code")
 
 
 class ChangePasswordPage(QWidget):
