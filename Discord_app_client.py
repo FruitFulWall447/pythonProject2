@@ -3087,21 +3087,12 @@ class PageController:
 
     def lost_connection_with_server(self):
         try:
-            print(1)
-            self.show_server_is_down_page()
-            print(2)
+            self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+            self.is_logged_in = False
+            self.is_waiting_for_2fa_code = False
+            self.change_to_server_is_down()
         except Exception as e:
             print(f"error in lost connection {e}")
-
-    def show_server_is_down_page(self):
-        try:
-            print("Instantiating ServerIsDownPage")
-            self.server_is_down_page = ServerIsDownPage(self)
-            print("Showing ServerIsDownPage")
-            self.server_is_down_page.showMaximized()
-            print("ServerIsDownPage should be visible now")
-        except Exception as e:
-            print(f"error in showing server is down page: {e}")
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
