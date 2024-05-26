@@ -2724,6 +2724,7 @@ class VerificationCodePage(QWidget):
         n = self.page_controller_object.n
         code = self.code.text()
         try:
+            print(self.time_left)
             if self.time_left != QTime(0, 0, 0):
                 if len(code) == 6:
                     if not self.page_controller_object.is_waiting_for_2fa_code:
