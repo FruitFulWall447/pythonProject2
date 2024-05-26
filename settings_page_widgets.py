@@ -499,6 +499,7 @@ class SettingsBox(QWidget):
                                                                       change_password_button_x,
                                                                       change_password_button_y, button_width,
                                                                       button_height, "Change Password")
+                change_password_button.clicked.connect(self.change_password_function)
                 delete_account_button_x, delete_account_button_y = change_password_button_x, change_password_button_y+100
                 delete_account_button = self.create_colored_button(red_hex, dark_red_hex, None,
                                                                       delete_account_button_x,
@@ -675,7 +676,6 @@ class SettingsBox(QWidget):
     def create_privacy_buttons(self, starter_x, starter_y, space_between, list_of_button_vars, var_names):
         off_icon_path = "discord_app_assets/off_button.png"
         on_icon_path = "discord_app_assets/on_button.png"
-        index = 0
         for index, (var, var_name) in enumerate(zip(list_of_button_vars, var_names)):
             button = QPushButton(self)
             make_q_object_clear(button)
@@ -943,7 +943,8 @@ class SettingsBox(QWidget):
         pass
 
     def change_password_function(self):
-        # Implement the function for changing the password
+        self.Network.ask_for_code_to_change_password_for_logged_user()
+        self.parent.page_controller_object.change_to_verification_code_page()
         pass
 
     def delete_account_function(self):

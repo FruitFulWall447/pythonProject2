@@ -681,6 +681,14 @@ class ClientNet:
         except socket.error as e:
             print(e)
 
+    def ask_for_code_to_change_password_for_logged_user(self):
+        try:
+            message = {"message_type": "change_settings", "change_value": "password"
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def receive_by_size(self, size, buffer_size=16384):
         received_data = bytearray()
 

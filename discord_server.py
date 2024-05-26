@@ -315,6 +315,20 @@ def thread_recv_messages(n, addr):
                 if ServerHandler.server_mtu is None:
                     ServerHandler.check_max_packet_size_udp(udp_address)
                 ServerHandler.create_and_add_udp_handler_object(User, udp_address, tcp_address)
+            elif message_type == "change_settings":
+                value_to_change = data.get("change_value")
+                if value_to_change == "password":
+                    logger.info(f"Server sent code to email for ({addr})")
+                    email = database_func.get_email_by_username(User)
+                    code = generate_6_digit_code()
+                    send_forget_password_code_to_email(code, email, User)
+                    n.send_forget_password_info_valid()
+                    time_now = datetime.datetime.now()
+                    status, _ = handle_code_wait(n, code, logger, addr, "forget password", time_now, email, User,
+                                                 None)
+                    if status == "lost_connection":
+                        ServerHandler.user_offline(User)
+                        break
             elif message_type == "logout":
                 logger.info(f"logged out {User}")
                 ServerHandler.user_offline(User)
