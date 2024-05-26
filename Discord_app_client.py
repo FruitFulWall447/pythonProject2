@@ -3087,6 +3087,7 @@ class PageController:
 
     def lost_connection_with_server(self):
         try:
+            self.n.reset_vars()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
             self.is_logged_in = False
             self.is_waiting_for_2fa_code = False
