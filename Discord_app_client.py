@@ -3030,7 +3030,7 @@ class ServerIsDownPage(QWidget):
 
 class PageController:
     def __init__(self):
-        self.n = ClientNet()
+        self.n = ClientNet(self)
         self.is_closing_app = False
         is_connected = self.n.connect_tcp()
         self.screen_width, self.screen_height = pyautogui.size()
@@ -3488,8 +3488,8 @@ class PageController:
                     if not self.is_closing_app:
                         print("lost connection with server")
                         self.is_logged_in = False
-                        QMetaObject.invokeMethod(self.main_page, "lost_connection_with_server_signal",
-                                                 Qt.QueuedConnection)
+                        # QMetaObject.invokeMethod(self.main_page, "lost_connection_with_server_signal",
+                        #                          Qt.QueuedConnection)
                         break
             except Exception as e:
                 print(f"error in receiving thread {e}")

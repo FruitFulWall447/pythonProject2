@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import padding as aes_padding
 import secrets
 import pickle
+from PyQt5.QtCore import QMetaObject, Qt
 vc_data_sequence = br'\vc_data'
 share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
@@ -139,7 +140,8 @@ def send_data_in_chunks(sock, data):
 
 
 class ClientNet:
-    def __init__(self):
+    def __init__(self, page_controller_object):
+        self.page_controller_object = page_controller_object
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
@@ -712,7 +714,8 @@ class ClientNet:
             try:
                 encrypted_data = data
                 if data is None:
-                    print("Received data is None")
+                    QMetaObject.invokeMethod(self.page_controller_object.main_page, "lost_connection_with_server_signal",
+                                             Qt.QueuedConnection)
                     return None
                 data = decrypt_with_aes(self.aes_key, encrypted_data)
                 return pickle.loads(data)
