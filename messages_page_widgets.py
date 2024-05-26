@@ -1235,9 +1235,9 @@ class ChatBox(QWidget):
 
                 try:
                     friend_x = 250
+                    x, y = 250, 170
+                    width, height = 350, 900
                     if not self.parent.current_chat_box_search:
-                        x, y = 250, 170
-                        width, height = 350, 900
                         chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
                     else:
@@ -2710,12 +2710,26 @@ class ScrollAreaWidget(QScrollArea):
         # Set the geometry (position and size) of the scroll area
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
+        self.setStyleSheet("""
+            QScrollArea {
+                border: none;
+            }
+            QScrollBar:vertical {
+                border: none;
+            }
+            QScrollBar:horizontal {
+                border: none;
+            }
+        """)
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
 
         # Create a layout for the container widget
         self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
+
+        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area_layout.setSpacing(0)
 
         # Add the widgets from items_list to the layout
         for item in items_list:
