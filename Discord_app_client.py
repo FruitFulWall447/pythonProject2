@@ -2758,13 +2758,13 @@ class VerificationCodePage(QWidget):
                     data = n.recv_str()
                     message_type = data.get("message_type")
                     if message_type in expected_types_list:
-                        self.handle_data(data)
+                        self.handle_data(data, n)
                     else:
                         self.page_controller_object.handle_tcp_data(data)
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
-    def handle_data(self, data):
+    def handle_data(self, data, n):
         message_type = data.get("message_type")
         if message_type == "sign_up":
             kind = data.get("action")
