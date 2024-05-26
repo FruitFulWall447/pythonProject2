@@ -155,7 +155,6 @@ class ClientNet:
         self.server_ip = "127.0.0.1"
         self.port = 5555
         self.addr = (self.server_ip, self.port)
-        self.logger.debug(f"trying to connect to addr: {self.addr}")
         self.size = 0000000
         self.original_len = 10
         self.mtu = None
@@ -183,7 +182,7 @@ class ClientNet:
             self.client_udp_socket.connect(self.addr)
             self.logger.info("udp socket connected to server")
             address = self.client_udp_socket.getsockname()
-            print("Socket address:", address)
+            self.logger.info("udp Socket address:", address)
         except:
             self.logger.info("couldn't connect udp socket to server")
             pass
@@ -749,10 +748,14 @@ class ClientNet:
 
     def close(self):
         try:
-            self.client_tcp_socket.close()
-            self.client_udp_socket.close()
+            if self.client_tcp_socket:
+                self.client_tcp_socket.close()
+                self.logger.info("Closed TCP socket connection.")
+            if self.client_udp_socket:
+                self.client_udp_socket.close()
+                self.logger.info("Closed UDP socket connection.")
         except socket.error as e:
-            print(e)
+            self.logger.error(f"Error closing socket: {e}")
 
     def initiate_rsa_protocol(self):
         # create 256 bytes key
