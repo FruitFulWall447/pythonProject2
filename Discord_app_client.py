@@ -2535,6 +2535,7 @@ class ForgetPasswordPage(QWidget):
         """)
 
     def return_button_pressed(self):
+        self.page_controller_object.n.cancel_current_process()
         self.page_controller_object.change_to_login_page()
 
     def submit_form(self):
@@ -2820,7 +2821,6 @@ class ChangePasswordPage(QWidget):
         self.image_button.move(image_button_x, image_button_y)
 
         self.image_button.clicked.connect(self.return_button_pressed)
-        self.image_button.hide()
         self.setStyleSheet("""
                 QWidget {
                     background-color: #141c4b;  /* Set your desired background color */
@@ -2848,6 +2848,7 @@ class ChangePasswordPage(QWidget):
             """)
 
     def return_button_pressed(self):
+        self.page_controller_object.n.cancel_current_process()
         self.page_controller_object.change_to_login_page()
 
     def create_label(self, text, position):
