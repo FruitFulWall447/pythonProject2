@@ -319,6 +319,7 @@ def thread_recv_messages(n, addr):
                 value_to_change = data.get("change_value")
                 if value_to_change == "password":
                     n.pause_tcp_thread_for_user()
+                    logger.info(f"paused tcp thread for {User}")
                     logger.info(f"Server sent code to email for ({addr})")
                     email = database_func.get_email_by_username(User)
                     code = generate_6_digit_code()
@@ -330,6 +331,7 @@ def thread_recv_messages(n, addr):
                         ServerHandler.user_offline(User)
                         break
                     else:
+                        logger.info(f"unpaused tcp thread for {User}")
                         n.unpause_tcp_thread_for_user()
             elif message_type == "logout":
                 logger.info(f"logged out {User}")
