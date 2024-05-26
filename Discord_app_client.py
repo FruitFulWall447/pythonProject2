@@ -3089,14 +3089,17 @@ class PageController:
         self.receive_thread_after_login.start()
 
     def quit_application(self):
-        if self.is_logged_in:
-            print("closing app...")
-            self.is_logged_in = False
-            self.n.close()
-            self.current_page.close()
-            self.main_page.close_all_threads()
-            del self.app
-            sys.exit()
+        try:
+            if self.is_logged_in:
+                print("closing app...")
+                self.is_logged_in = False
+                self.n.close()
+                self.current_page.close()
+                self.main_page.close_all_threads()
+                del self.app
+                sys.exit()
+        except Exception as e:
+            print(e)
 
     def log_out(self):
         try:
@@ -3461,7 +3464,7 @@ class PageController:
                         elif status == "active":
                             self.main_page.friends_box.request_is_pending()
                 else:
-                    self.lost_connection_with_server()
+                    # self.lost_connection_with_server()
                     print("lost connection with server")
             except Exception as e:
                 print(f"error in receiving thread {e}")
