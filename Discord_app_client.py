@@ -2604,10 +2604,6 @@ class VerificationCodePage(QWidget):
                                                         (successfully_signed_up_x, successfully_signed_up_y))
         self.successfully_signed_up.hide()
 
-
-        width, height = int(self.page_controller_object.screen_width * 0.01), int(
-            self.page_controller_object.screen_height * 0.018)
-
         image_button = QPushButton(self)
         # Load an image and set it as the button's icon
         icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
@@ -2619,36 +2615,11 @@ class VerificationCodePage(QWidget):
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
         image_button.setIconSize(scaled_size)
-        image_button_x, image_button_y = (
+        code_label_x, code_label_y = (
         int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.2175))
 
-        image_button.move(image_button_x, image_button_y)
+        image_button.move(code_label_x, code_label_y)
         image_button.clicked.connect(self.return_button_pressed)
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #141c4b;  /* Set your desired background color */
-            }
-            QLabel {
-                color: #f0f1f1;
-                font-size: 20px;
-                margin-bottom: 20px;
-            }
-            QLineEdit {
-                background-color: #6fa8b6;
-                color: #f0f1f1;
-                padding: 10px;
-                border: 1px solid #2980b9;
-                border-radius: 5px;
-                font-size: 16px;
-                margin-bottom: 10px;
-            }
-            QPushButton:hover {
-                background-color: #2980b9;
-            }
-            QPushButton:pressed {
-                background-color: #1f618d;
-            }
-        """)
 
         self.label = QLabel("5:00", self)
         self.label.move(0, 0)
