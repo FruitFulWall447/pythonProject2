@@ -2920,7 +2920,7 @@ class ChangePasswordPage(QWidget):
         submit_button = QPushButton('Submit info', self)
         submit_button.clicked.connect(self.submit_form)
         submit_button_x, submit_button_y = (
-        int(self.page_controller_object.screen_width * 0.44), int(self.page_controller_object.screen_height * 0.415))
+        int(self.page_controller_object.screen_width * 0.42), int(self.page_controller_object.screen_height * 0.315))
         submit_button.move(submit_button_x, submit_button_y)
         submit_button.setStyleSheet('''
             QPushButton {
