@@ -2604,22 +2604,26 @@ class VerificationCodePage(QWidget):
                                                         (successfully_signed_up_x, successfully_signed_up_y))
         self.successfully_signed_up.hide()
 
-        self.image_button = QPushButton(self)
-        # Load an image and set it as the button's icon
-        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
-        self.image_button.setIcon(icon)
+
         width, height = int(self.page_controller_object.screen_width * 0.01), int(
             self.page_controller_object.screen_height * 0.018)
+
+        image_button = QPushButton(self)
+        # Load an image and set it as the button's icon
+        icon = QIcon("discord_app_assets/right-arrow-icon-27.png")
+        image_button.setIcon(icon)
+        width, height = int(self.page_controller_object.screen_width * 0.01), int(
+            self.page_controller_object.screen_height * 0.018)
+
         icon_size = QSize(width, height)  # Set your desired size
         icon_actual_size = icon.actualSize(icon.availableSizes()[0])
         scaled_size = icon_actual_size.scaled(icon_size, Qt.KeepAspectRatio)
-        self.image_button.setIconSize(scaled_size)
-
+        image_button.setIconSize(scaled_size)
         image_button_x, image_button_y = (
-        int(self.page_controller_object.screen_width * 0.445), int(self.page_controller_object.screen_height * 0.19))
-        self.image_button.move(image_button_x, image_button_y)
-        self.image_button.hide()
-        self.image_button.clicked.connect(self.return_button_pressed)
+        int(self.page_controller_object.screen_width * 0.471), int(self.page_controller_object.screen_height * 0.2175))
+
+        image_button.move(image_button_x, image_button_y)
+        image_button.clicked.connect(self.return_button_pressed)
         self.setStyleSheet("""
             QWidget {
                 background-color: #141c4b;  /* Set your desired background color */
@@ -2649,11 +2653,13 @@ class VerificationCodePage(QWidget):
         self.label = QLabel("5:00", self)
         self.label.move(0, 0)
         self.label.setStyleSheet("font-size: 48px;")
+        self.start_timer()
 
     def start_timer(self):
         self.timer = QTimer(self)
-        self.time_left = QTime(0, 5, 0)  # 5 minutes
         self.timer.timeout.connect(self.update_timer)
+        self.time_left = QTime(0, 5, 0)  # 5 minutes
+
         self.timer.start(1000)  # Update every second
 
     def update_timer(self):
