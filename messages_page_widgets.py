@@ -1237,7 +1237,7 @@ class ChatBox(QWidget):
                     friend_x = 250
                     if not self.parent.current_chat_box_search:
                         x, y = 250, 170
-                        width, height = 300, 900
+                        width, height = 350, 900
                         chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
                     else:
