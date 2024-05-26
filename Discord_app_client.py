@@ -3064,6 +3064,8 @@ class PageController:
         is_connected = self.n.connect_tcp()
         if is_connected:
             self.change_to_login_page()
+        else:
+            print("tried reconnecting but server still offline")
 
     def lost_connection_with_server(self):
         self.current_page.close()
