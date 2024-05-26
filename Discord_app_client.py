@@ -3457,6 +3457,9 @@ class PageController:
                             self.main_page.friends_box.request_was_sent()
                         elif status == "active":
                             self.main_page.friends_box.request_is_pending()
+                else:
+                    self.lost_connection_with_server()
+                    print("lost connection with server")
             except Exception as e:
                 print(f"error in receiving thread {e}")
         print("thread receive messages ended")
