@@ -3000,6 +3000,8 @@ class ChangePasswordPage(QWidget):
             self.was_password_changed = True
             if self.page_controller_object.is_tcp_receive_thread_paused:
                 self.page_controller_object.is_tcp_receive_thread_paused = False
+                self.page_controller_object.update_receive_thread_after_login()
+                self.page_controller_object.start_receive_thread_after_login()
         elif self.was_password_changed:
             self.password_already_changed.show()
         else:
@@ -3119,6 +3121,9 @@ class PageController:
             self.change_to_server_is_down()
         except Exception as e:
             print(f"error in lost connection {e}")
+
+    def update_receive_thread_after_login(self):
+        self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
 
     def start_receive_thread_after_login(self):
         self.receive_thread_after_login.start()
