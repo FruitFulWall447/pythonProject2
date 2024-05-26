@@ -2744,6 +2744,7 @@ class VerificationCodePage(QWidget):
         ''')
 
     def submit_form(self):
+        expected_types_list = ["sign_up", "forget_password", "2fa"]
         n = self.page_controller_object.n
         code = self.code.text()
         try:
@@ -2756,51 +2757,58 @@ class VerificationCodePage(QWidget):
                     print("Sent verification code to server")
                     data = n.recv_str()
                     message_type = data.get("message_type")
-                    if message_type == "sign_up":
-                        kind = data.get("action")
-                        if kind == "code":
-                            result = data.get("code_status")
-                            if result == "valid":
-                                print("Server got the code")
-                                self.successfully_signed_up.show()
-                                self.image_button.show()
-                            elif result == "invalid":
-                                pass
-                    elif message_type == "forget_password":
-                        kind = data.get("action")
-                        result = data.get("code_status")
-                        if kind == "code":
-                            if result == "valid":
-                                self.page_controller_object.change_to_change_password_page()
-                            elif result == "invalid":
-                                pass
-                    elif message_type == "2fa":
-                        try:
-                            kind = data.get("action")
-                            result = data.get("code_status")
-                            if kind == "code":
-                                if result == "valid":
-                                    print("logged in successfully")
-                                    n.connect_between_udp_port_address_to_username()
-                                    self.hide()
-                                    if self.page_controller_object.login_page.remember_me_status:
-                                        n.ask_for_security_token()
-                                        print("You will be remembered")
-                                    try:
-                                        self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
-                                        self.page_controller_object.main_page.update_values()
-                                        self.page_controller_object.is_logged_in = True
-                                        self.page_controller_object.start_receive_thread_after_login()
-                                        self.page_controller_object.main_page.start_listen_udp_thread()
-                                        self.page_controller_object.change_to_splash_page()
-                                    except Exception as e:
-                                        print(f"error in 2fa {e}")
-                                elif result == "invalid":
-                                    pass
-                        except Exception as e:
-                            print(f"error in 2fa {e}")
+                    if message_type in expected_types_list:
+                        self.handle_data(data)
+                    else:
+                        self.page_controller_object.handle_tcp_data(data)
         except Exception as e:
             print(f"error in submit_form verification code {e}")
+
+    def handle_data(self, data):
+        message_type = data.get("message_type")
+        if message_type == "sign_up":
+            kind = data.get("action")
+            if kind == "code":
+                result = data.get("code_status")
+                if result == "valid":
+                    print("Server got the code")
+                    self.successfully_signed_up.show()
+                    self.image_button.show()
+                elif result == "invalid":
+                    pass
+        elif message_type == "forget_password":
+            kind = data.get("action")
+            result = data.get("code_status")
+            if kind == "code":
+                if result == "valid":
+                    self.page_controller_object.change_to_change_password_page()
+                elif result == "invalid":
+                    pass
+        elif message_type == "2fa":
+            try:
+                kind = data.get("action")
+                result = data.get("code_status")
+                if kind == "code":
+                    if result == "valid":
+                        print("logged in successfully")
+                        n.connect_between_udp_port_address_to_username()
+                        self.hide()
+                        if self.page_controller_object.login_page.remember_me_status:
+                            n.ask_for_security_token()
+                            print("You will be remembered")
+                        try:
+                            self.page_controller_object.main_page.username = self.page_controller_object.login_page.username_entry.text()
+                            self.page_controller_object.main_page.update_values()
+                            self.page_controller_object.is_logged_in = True
+                            self.page_controller_object.start_receive_thread_after_login()
+                            self.page_controller_object.main_page.start_listen_udp_thread()
+                            self.page_controller_object.change_to_splash_page()
+                        except Exception as e:
+                            print(f"error in 2fa {e}")
+                    elif result == "invalid":
+                        pass
+            except Exception as e:
+                print(f"error in 2fa {e}")
 
     def resend_code_clicked(self, link):
         if self.time_left != QTime(0, 0, 0):
@@ -2984,7 +2992,7 @@ class ChangePasswordPage(QWidget):
         self.too_short.hide()
         self.password_already_changed.hide()
         self.changed_password_label.hide()
-        if len(self.new_password.text()) >= 8 and not self.was_password_changed:
+        if len(self.new_password.text()) >= 8 and not self.was_password_changed and is_valid_password(self.new_password.text()):
             n.send_new_password(self.new_password.text())
             print("Password changed")
             self.changed_password_label.show()
