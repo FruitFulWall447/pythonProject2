@@ -2708,17 +2708,19 @@ class ScrollAreaWidget(QScrollArea):
         super().__init__(parent)
 
         # Set the geometry (position and size) of the scroll area
+        self.parent_widget = parent
+
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
         self.setStyleSheet(f"""
             QScrollArea {{
-                border: 2px solid {self.parent.parent.standard_hover_color};
+                border: 2px solid {self.parent_widget.parent.standard_hover_color};
             }}
             QScrollBar:vertical {{
-                border: 2px solid {self.parent.parent.standard_hover_color};
+                border: 2px solid {self.parent_widget.parent.standard_hover_color};
             }}
             QScrollBar:horizontal {{
-                border: 2px solid {self.parent.parent.standard_hover_color};
+                border: 2px solid {self.parent_widget.parent.standard_hover_color};
             }}
         """)
 
