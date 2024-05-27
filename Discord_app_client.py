@@ -1816,20 +1816,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.updated_settings_page()
 
     def wheelEvent(self, event):
-        # Handle the wheel event (scrolling)
-        if self.chat_clicked_var:
-            delta = event.angleDelta().y() / 120  # Normalize the delta
-            mouse_pos = event.pos()
-            if delta > 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos) and (
-                    self.chat_box_chats_index < 0):  # or something
-                # Scrolling up
-
-                self.chat_box_chats_index += 1
-                self.update_chat_page_without_messages()
-            elif delta < 0 and self.chat_box.is_mouse_on_chats_list(mouse_pos):
-                # Scrolling down, but prevent scrolling beyond the first message
-                self.chat_box_chats_index -= 1
-                self.update_chat_page_without_messages()
         if self.social_clicked_var:
             try:
                 delta = event.angleDelta().y() / 120  # Normalize the delta
