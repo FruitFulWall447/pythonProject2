@@ -518,6 +518,7 @@ def thread_recv_messages(n, addr):
                         n.sent_friend_request_status("active")
                     elif not database_func.username_exists(friend_user):
                         n.sent_friend_request_status("not exist")
+                        logger.info(f"friend request wasn't valid because {friend_user} not exists")
                     else:
                         n.sent_friend_request_status("already friends")
             elif message_type == "friend_request_status":
