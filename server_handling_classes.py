@@ -973,6 +973,12 @@ class ServerHandler:
         else:
             return False
 
+    def time_left_for_reset(self, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.another_request()
+            return user_handler.time_left_for_reset()
+
 
 request_per_min = 100
 
@@ -993,6 +999,10 @@ class UserHandler:
         self.blocked_users = database_func.get_blocked_users(username)
         self.server_handler_object = server_handler_object
         self.friends_list = database_func.get_user_friends(username)
+
+    def time_left_for_reset(self):
+        current_time = date.datetime.now()
+        return 60 - (current_time - self.last_request_time).seconds
 
     def another_request(self):
         current_time = date.datetime.now()

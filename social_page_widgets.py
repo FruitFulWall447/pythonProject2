@@ -719,7 +719,7 @@ class FriendsBox(QWidget):
             self.remove_friend_label.raise_()
             self.chat_label.raise_()
         except Exception as e:
-            x = 4
+            print(e)
         for element in self.raised_elements:
             element.raise_()
 

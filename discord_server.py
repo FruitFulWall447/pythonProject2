@@ -180,6 +180,7 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
 
 
 not_requests_types = ["vc_data", "share_screen_data", "share_camera_data"]
+max_delay_time = 5
 
 
 def thread_recv_messages(n, addr):
@@ -315,7 +316,11 @@ def thread_recv_messages(n, addr):
             if message_type not in not_requests_types:
                 ServerHandler.pass_request(User)
             if not ServerHandler.is_request_valid(User):
-                continue
+                time_left = ServerHandler.time_left_for_reset(User)
+                if time_left <= max_delay_time:
+                    time.sleep(time_left)
+                else:
+                    continue
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
                 tcp_address = data.get("tcp_address")
