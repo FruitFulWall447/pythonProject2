@@ -70,7 +70,8 @@ def get_list_of_needed_profile_dict(user, server_handler):
             is_private_account = (database_func.get_user_settings(name)).get("private_account")
         if is_private_account:
             name_friends = database_func.get_user_friends(name)
-            if user not in name_friends:
+            name_blocked_list = database_func.get_blocked_users(name)
+            if user not in name_friends or user in name_blocked_list:
                 continue
         profile_pic_bytes = database_func.get_profile_pic_by_name(name)
         current_dict = create_profile_pic_dict(name, profile_pic_bytes, is_private_account, listens_to)
