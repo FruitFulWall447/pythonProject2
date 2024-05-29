@@ -961,6 +961,18 @@ class ServerHandler:
         if user_handler:
             user_handler.remove_friend(friend_to_remove)
 
+    def pass_request(self, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.another_request()
+
+    def is_request_valid(self, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            return user_handler.is_request_valid()
+        else:
+            return False
+
 
 request_per_min = 100
 
@@ -984,7 +996,7 @@ class UserHandler:
 
     def another_request(self):
         current_time = date.datetime.now()
-        if (current_time - self.last_request_time).total_seconds() > 60:
+        if (current_time - self.last_request_time).seconds > 60:
             self.last_request_time = current_time
             self.number_of_requests = 1
         else:
