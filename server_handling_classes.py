@@ -985,7 +985,7 @@ class UserHandler:
     def another_request(self):
         current_time = date.datetime.now()
         if (current_time - self.last_request_time).total_seconds() > 60:
-            self.last_request_time = current_minute_start
+            self.last_request_time = current_time
             self.number_of_requests = 1
         else:
             self.number_of_requests += 1
