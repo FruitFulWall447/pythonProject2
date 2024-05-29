@@ -1,4 +1,5 @@
 from datetime import datetime
+import datetime as date
 import time
 import uuid
 import database_func
@@ -9,7 +10,6 @@ import pickle
 from server_net import decrypt_with_aes, encrypt_with_aes, slice_up_data
 import zlib
 import socket
-import datetime as date
 import logging
 
 
@@ -965,6 +965,8 @@ class ServerHandler:
 class UserHandler:
     def __init__(self, username, user_net, server_handler_object):
         self.user_net = user_net
+        self.number_of_requests = 0
+        self.last_request_time = date.datetime.now()
         self.username = username
         self.chat_max_index = 20
         self.current_chat = None
