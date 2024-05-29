@@ -180,6 +180,8 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
 
 
 not_requests_types = ["vc_data", "share_screen_data", "share_camera_data"]
+
+
 def thread_recv_messages(n, addr):
     User = ""
     is_logged_in = False
