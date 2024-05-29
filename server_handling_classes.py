@@ -239,13 +239,31 @@ class Call:
         self.data_collection.append((user, vc_data))
 
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
-        for name, net in self.call_nets.items():
-            name_handler_object = self.parent.get_user_handler_object_of_user(name)
-            if name != user and net is not None and name not in self.deafened and name in self.participants:
+        # Get the handler object for the current user
+        user_handler = self.parent.get_user_handler_object_of_user(user)
+        user_blocked_list = user_handler.blocked_users
+        user_is_private = user_handler.is_private_account
+        user_friends_list = user_handler.friends_list if user_is_private else []
 
-                compressed_vc_data = zlib.compress(vc_data)
+        compressed_vc_data = zlib.compress(vc_data)
+
+        for name, net in self.call_nets.items():
+            if name == user or net is None:
+                continue
+
+            if name in user_blocked_list or (user_is_private and name not in user_friends_list):
+                continue
+
+            name_handler = self.parent.get_user_handler_object_of_user(name)
+            name_blocked_list = name_handler.blocked_users
+            name_is_private = name_handler.is_private_account
+            name_friends_list = name_handler.friends_list if name_is_private else []
+
+            if user in name_blocked_list or (name_is_private and user not in name_friends_list):
+                continue
+
+            if name not in self.deafened and name in self.participants:
                 self.parent.send_large_udp_data(user, name, compressed_vc_data, "vc_data", None)
-                # self.logger.debug(f"Sent voice chat data to {name}")
 
     def is_a_group_a_call(self):
         return self.is_group_call
@@ -1047,17 +1065,37 @@ class VideoStream:
         self.logger.info(f"stopped thread of video stream of id {self.stream_id}")
 
     def send_share_screen_data_to_everyone_but_user(self, share_screen_data, user, share_screen_frame_shape_bytes):
+        # Get the handler object for the current user
+        user_handler = self.comms_parent.get_user_handler_object_of_user(user)
+        user_blocked_list = user_handler.blocked_users
+        user_is_private = user_handler.is_private_account
+        user_friends_list = user_handler.friends_list if user_is_private else []
+
+        # Compress share screen data once
+        compressed_share_screen_data = zlib.compress(share_screen_data)
+
         for name, net in self.call_parent.call_nets.items():
-            if name != user and net is not None and name in self.spectators:
-                if self.stream_type == "CameraStream":
-                    # net.send_share_camera_data(share_screen_data, user, share_screen_frame_shape_bytes)
-                    compressed_share_screen_data = zlib.compress(share_screen_data)
-                    self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data, "share_camera_data", share_screen_frame_shape_bytes)
-                else:
-                    # net.send_share_screen_data(share_screen_data, user, share_screen_frame_shape_bytes)
-                    compressed_share_screen_data = zlib.compress(share_screen_data)
-                    self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data,
-                                                          "share_screen_data", share_screen_frame_shape_bytes)
+            if name == user or net is None or name not in self.spectators:
+                continue
+
+            if name in user_blocked_list or (user_is_private and name not in user_friends_list):
+                continue
+
+            name_handler = self.comms_parent.get_user_handler_object_of_user(name)
+            name_blocked_list = name_handler.blocked_users
+            name_is_private = name_handler.is_private_account
+            name_friends_list = name_handler.friends_list if name_is_private else []
+
+            if user in name_blocked_list or (name_is_private and user not in name_friends_list):
+                continue
+
+            # Send the data based on the stream type
+            if self.stream_type == "CameraStream":
+                self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data, "share_camera_data",
+                                                      share_screen_frame_shape_bytes)
+            else:
+                self.comms_parent.send_large_udp_data(user, name, compressed_share_screen_data, "share_screen_data",
+                                                      share_screen_frame_shape_bytes)
 
     def end_stream(self):
         if len(self.spectators) > 0:
