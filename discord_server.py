@@ -459,7 +459,6 @@ def thread_recv_messages(n, addr):
                 type_of_message = data.get("type")
                 file_name = data.get("file_name")
                 database_func.add_message(sender, receiver, content, type_of_message, file_name)
-                # fix it...
                 if not receiver.startswith("("):
                     ServerHandler.update_message_for_users([receiver], data, User)
                 else:

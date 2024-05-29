@@ -492,8 +492,14 @@ class ServerHandler:
             net.send_friends_list(friends_list)
             self.logger.info(f"Sent friend list ({friends_list}) to user {name}")
 
-    def update_message_for_users(self, users, message, chat_name=None):
+    def update_message_for_users(self, users, message, chat_name):
+        chat_name_handler = self.get_user_handler_object_of_user(chat_name)
+        chat_name_blocked_list = chat_name_handler.blocked_users
+        chat_name_is_private = chat_name_handler.is_private_account
+        chat_name_friends_list = chat_name_handler.friends_list if chat_name_is_private else []
         for user in users:
+            if user in chat_name_blocked_list or (chat_name_is_private and user not in chat_name_friends_list):
+                continue
             if self.is_user_online(user):
                 message_type = message.get("message_type")
                 sender = message.get("sender")
