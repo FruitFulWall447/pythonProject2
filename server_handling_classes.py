@@ -962,6 +962,9 @@ class ServerHandler:
             user_handler.remove_friend(friend_to_remove)
 
 
+request_per_min = 100
+
+
 class UserHandler:
     def __init__(self, username, user_net, server_handler_object):
         self.user_net = user_net
@@ -978,6 +981,17 @@ class UserHandler:
         self.blocked_users = database_func.get_blocked_users(username)
         self.server_handler_object = server_handler_object
         self.friends_list = database_func.get_user_friends(username)
+
+    def another_request(self):
+        current_time = date.datetime.now()
+        if (current_time - self.last_request_time).total_seconds() > 60:
+            self.last_request_time = current_minute_start
+            self.number_of_requests = 1
+        else:
+            self.number_of_requests += 1
+
+    def is_request_valid(self):
+        return request_per_min > self.number_of_requests
 
     def remove_friend(self, user):
         self.friends_list.remove(user)

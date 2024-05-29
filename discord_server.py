@@ -179,6 +179,7 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
     return False, False
 
 
+not_requests_types = ["vc_data", "share_screen_data", "share_camera_data"]
 def thread_recv_messages(n, addr):
     User = ""
     is_logged_in = False
@@ -309,6 +310,8 @@ def thread_recv_messages(n, addr):
                 ServerHandler.user_offline(User)
                 break
             message_type = data.get("message_type")
+            if message_type not in not_requests_types:
+                ServerHandler.
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
                 tcp_address = data.get("tcp_address")
