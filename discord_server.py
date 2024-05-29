@@ -312,7 +312,8 @@ def thread_recv_messages(n, addr):
             message_type = data.get("message_type")
             if message_type not in not_requests_types:
                 ServerHandler.pass_request(User)
-
+            if not ServerHandler.is_request_valid(User):
+                continue
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
                 tcp_address = data.get("tcp_address")
