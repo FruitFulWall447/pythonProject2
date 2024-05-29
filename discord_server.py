@@ -1,6 +1,6 @@
 import socket
 import threading
-from server_net import ServerNet
+from server_net import ServerNet, generate_rsa_key_pair
 from email_send_code import *
 from server_handling_classes import ServerHandler
 import database_func
@@ -600,11 +600,11 @@ def tcp_server():
 
     tcp_server_socket.listen(20)
     logger.info("Waiting for a connection , Server started")
-
+    server_public_key, server_private_key = generate_rsa_key_pair()
     while True:
         conn, addr = tcp_server_socket.accept()
         logger.info(f"connect to: {addr}")
-        n = ServerNet(conn, addr)
+        n = ServerNet(conn, addr, server_public_key, server_private_key)
         threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 

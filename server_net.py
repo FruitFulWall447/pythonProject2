@@ -138,8 +138,10 @@ def send_data_in_chunks(sock, data):
 
 
 class ServerNet:
-    def __init__(self, s, addr):
+    def __init__(self, s, addr, server_public_key, server_private_key):
         self.client_tcp_socket_address = addr
+        self.server_public_key = server_public_key
+        self.server_private_key = server_private_key
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)
 
@@ -681,10 +683,8 @@ class ServerNet:
             print(e)
 
     def initiate_rsa_protocol(self):
-        server_public_key, server_private_key = generate_rsa_key_pair()
-
         # send the server_public_key to the client
-        serialized_server_public_key = server_public_key.public_bytes(
+        serialized_server_public_key = self.server_public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
@@ -701,7 +701,7 @@ class ServerNet:
             self.logger.critical("did not expect this kind of message")
             return
         if received_encrypted_symmetric_key_bytes is not None:
-            decrypted_symmetric_key = decrypt_with_rsa(server_private_key, received_encrypted_symmetric_key_bytes)
+            decrypted_symmetric_key = decrypt_with_rsa(self.server_private_key, received_encrypted_symmetric_key_bytes)
             aes_key = generate_aes_key()
             self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with AES key {aes_key}")
             try:
