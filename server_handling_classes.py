@@ -799,11 +799,11 @@ class ServerHandler:
     def create_ring(self, ringer, ringing_to):
         if ringing_to.startswith("("):
             group_id = get_id_from_format(ringing_to)
-            ring = Ring(Parent=self, ringer=ringer, nets=self.nets_dict, group_id=group_id)
+            ring = Ring(parent=self, ringer=ringer, nets=self.nets_dict, group_id=group_id)
             self.add_ring(ring)
         else:
             temp_list = [ringing_to]
-            ring = Ring(Parent=self, ringer=ringer, nets=self.nets_dict, ringing_to=temp_list)
+            ring = Ring(parent=self, ringer=ringer, nets=self.nets_dict, ringing_to=temp_list)
             self.add_ring(ring)
 
     def is_group_call_exist_by_id(self, group_id):
