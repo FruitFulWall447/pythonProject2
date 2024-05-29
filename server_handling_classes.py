@@ -240,7 +240,9 @@ class Call:
 
     def send_vc_data_to_everyone_but_user(self, vc_data, user):
         for name, net in self.call_nets.items():
+            name_handler_object = self.parent.get_user_handler_object_of_user(name)
             if name != user and net is not None and name not in self.deafened and name in self.participants:
+
                 compressed_vc_data = zlib.compress(vc_data)
                 self.parent.send_large_udp_data(user, name, compressed_vc_data, "vc_data", None)
                 # self.logger.debug(f"Sent voice chat data to {name}")
@@ -683,6 +685,16 @@ class ServerHandler:
         if user_handle is not None:
             user_handle.toggle_type()
 
+    def unblock_user_cache(self, username, unblock_user):
+        user_handle = self.get_user_handler_object_of_user(username)
+        if user_handle is not None:
+            user_handle.unblock_user(unblock_user)
+
+    def block_user_cache(self, username, block_user):
+        user_handle = self.get_user_handler_object_of_user(username)
+        if user_handle is not None:
+            user_handle.block_user(block_user)
+
     def update_private_account(self, user_settings, user):
         user_handle = self.get_user_handler_object_of_user(user)
         if user_handle is not None:
@@ -905,6 +917,16 @@ class ServerHandler:
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
 
+    def cache_add_friend(self, user, friend_to_add):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.add_friend(friend_to_add)
+
+    def cache_remove_friend(self, user, friend_to_remove):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.remove_friend(friend_to_remove)
+
 
 class UserHandler:
     def __init__(self, username, user_net, server_handler_object):
@@ -917,7 +939,21 @@ class UserHandler:
         user_settings = database_func.get_user_settings(username)
         is_private = user_settings.get("private_account")
         self.is_private_account = is_private
+        self.blocked_users = database_func.get_blocked_users(username)
         self.server_handler_object = server_handler_object
+        self.friends_list = database_func.get_user_friends(username)
+
+    def remove_friend(self, user):
+        self.friends_list.remove(user)
+
+    def add_friend(self, user):
+        self.friends_list.append(user)
+
+    def unblock_user(self, user):
+        self.blocked_users.remove(user)
+
+    def block_user(self, user):
+        self.blocked_users.append(user)
 
     def is_private_account_changed(self, user_settings):
         is_private = user_settings.get("private_account")

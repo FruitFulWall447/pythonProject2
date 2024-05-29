@@ -532,6 +532,8 @@ def thread_recv_messages(n, addr):
                     ServerHandler.send_friend_request(accepted_or_rejected_user)
                     ServerHandler.send_friends_list(User)
                     ServerHandler.send_friends_list(accepted_or_rejected_user)
+                    ServerHandler.cache_add_friend(User, accepted_or_rejected_user)
+                    ServerHandler.cache_add_friend(accepted_or_rejected_user, User)
                 else:
                     accepted_or_rejected_user = data.get("rejected_user")
                     database_func.handle_friend_request(User, accepted_or_rejected_user, False)
@@ -544,6 +546,7 @@ def thread_recv_messages(n, addr):
                 if friends_to_remove in ServerHandler.online_users:
                     ServerHandler.send_friends_list(friends_to_remove)
                 logger.info(f"{User} removed {friends_to_remove} as friend")
+                ServerHandler.cache_remove_friend(User, friends_to_remove)
             elif message_type == "block":
                 user_to_block = data.get("user_to_block")
                 database_func.block_user(User, user_to_block)
@@ -551,10 +554,12 @@ def thread_recv_messages(n, addr):
                 user_friends = database_func.get_user_friends(User)
                 if user_to_block in user_friends:
                     database_func.remove_friend(User, user_to_block)
+                ServerHandler.block_user_cache(User, user_to_block)
             elif message_type == "unblock":
                 user_to_unblock = data.get("user_to_unblock")
                 database_func.unblock_user(User, user_to_unblock)
                 logger.info(f"{User} unblocked {user_to_unblock}")
+                ServerHandler.unblock_user_cache(User, user_to_unblock)
             elif message_type == "group":
                 action = data.get("action")
                 if action == "create":
