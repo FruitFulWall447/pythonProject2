@@ -496,23 +496,6 @@ def thread_recv_messages(n, addr):
                 elif action == "update":
                     database_func.update_security_token(User)
                     logger.info(f"Updated security token of - {User}")
-            elif message_type == "vc_data":
-                compressed_vc_data = data.get("compressed_vc_data")
-                if compressed_vc_data is not None:
-                    vc_data = zlib.decompress(compressed_vc_data)
-                    ServerHandler.send_vc_data_to_call(vc_data, User)
-            elif message_type == "share_screen_data":
-                compressed_share_screen_data = data.get("compressed_share_screen_data")
-                shape_of_frame = data.get("shape_of_frame")
-                if compressed_share_screen_data is not None:
-                    share_screen_data = zlib.decompress(compressed_share_screen_data)
-                    ServerHandler.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "ScreenStream")
-            elif message_type == "share_camera_data":
-                compressed_share_camera_data = data.get("compressed_share_camera_data")
-                shape_of_frame = data.get("shape_of_frame")
-                if compressed_share_camera_data is not None:
-                    share_screen_data = zlib.decompress(compressed_share_camera_data)
-                    ServerHandler.send_share_screen_data_to_call(share_screen_data, shape_of_frame, User, "CameraStream")
             elif message_type == "friend_request":
                 username_for_request = data.get("username_for_request")
                 user = User
