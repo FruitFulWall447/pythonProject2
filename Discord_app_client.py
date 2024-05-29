@@ -3119,11 +3119,11 @@ class PageController:
     def log_out(self):
         try:
             print("logging out")
+            self.is_logged_in = False
             self.n.send_logout_message()
             self.main_page.close_all_threads()
             self.current_page.close()
             self.current_page = None
-            self.is_logged_in = False
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
             self.change_to_login_page()
