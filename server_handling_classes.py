@@ -650,6 +650,9 @@ class ServerHandler:
 
     def update_profiles_list_for_everyone_by_user(self, user_of_profile, b64_encoded_profile_pic):
         relevant_users = relevant_users_for_user(user_of_profile)
+        blocked_users = database_func.get_blocked_users(user_of_profile)
+        for blocked_user in blocked_users:
+            relevant_users.remove(blocked_user)
         if user_of_profile in self.online_users:
             user_handle = self.get_user_handler_object_of_user(user_of_profile)
             listens_to = user_handle.listens_to
@@ -657,6 +660,8 @@ class ServerHandler:
         else:
             listens_to = None
             is_private_account = (database_func.get_user_settings(user_of_profile)).get("private_account")
+        if is_private_account:
+            relevant_users = database_func.get_user_friends(user_of_profile)
         if b64_encoded_profile_pic is None:
             b64_encoded_profile_pic = base64.b64encode(database_func.get_profile_pic_by_name(user_of_profile)).decode('utf-8')
         profile_dict = create_profile_pic_dict(user_of_profile, b64_encoded_profile_pic, is_private_account, listens_to)
