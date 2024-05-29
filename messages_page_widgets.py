@@ -2166,7 +2166,7 @@ class MessagesBox(QWidget):
         self.parent = parent
         self.width = width
         self.height = height
-        self.main_page_object = self.parent.parent
+        self.main_page_object = parent.parent
         self.x = x
         self.y = y
         self.init_ui()
@@ -2253,8 +2253,10 @@ class MessagesBox(QWidget):
         file_name = i.get("file_name")
         if not message_content or message_type == "string":
             if self.main_page_object.censor_data_from_strangers:
-                if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
+                if (message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username):
                     message_content = replace_non_space_with_star(message_content)
+            if message_sender in self.main_page_object.blocked_list:
+                message_content = replace_non_space_with_star(message_content)
             content_label = self.parent.create_temp_message_label(message_content)
 
             # second part = Name + timestamp
@@ -2283,7 +2285,8 @@ class MessagesBox(QWidget):
                 if self.main_page_object.censor_data_from_strangers:
                     if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                         image_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
-
+                if message_sender in self.main_page_object.blocked_list:
+                    image_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
                 image_label.setContextMenuPolicy(Qt.CustomContextMenu)
                 image_label.customContextMenuRequested.connect(
                     lambda pos, file_bytes=image_bytes, button=image_label, type=message_type,
@@ -2316,6 +2319,8 @@ class MessagesBox(QWidget):
                 if self.main_page_object.censor_data_from_strangers:
                     if message_sender not in self.main_page_object.friends_list and message_sender != self.main_page_object.username:
                         video_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
+                if message_sender in self.main_page_object.blocked_list:
+                    video_label.setGraphicsEffect(QGraphicsBlurEffect(self.main_page_object.blur_effect))
 
                 video_label.clicked.connect(
                     lambda _, video_bytes=video_bytes: self.parent.parent.start_watching_video(video_bytes))
