@@ -57,16 +57,17 @@ def relevant_users_for_user(user):
     return total_needed_profile_names
 
 
-def get_list_of_needed_profile_dict(user, user_handler_object):
+def get_list_of_needed_profile_dict(user, server_handler):
     list_needed_profile_dicts = []
     total_needed_profile_names = relevant_users_for_user(user)
     for name in total_needed_profile_names:
+        user_handler_object = server_handler.get_user_handler_object_of_user(name)
         if user_handler_object is not None:
             listens_to = user_handler_object.listens_to
             is_private_account = user_handler_object.is_private_account
         else:
             listens_to = None
-            is_private_account = (database_func.get_user_settings(user)).get("private_account")
+            is_private_account = (database_func.get_user_settings(name)).get("private_account")
         profile_pic_bytes = database_func.get_profile_pic_by_name(name)
         current_dict = create_profile_pic_dict(name, profile_pic_bytes, is_private_account, listens_to)
         list_needed_profile_dicts.append(current_dict)
@@ -666,8 +667,7 @@ class ServerHandler:
     def send_profile_list_of_dicts_to_user(self, user):
         net = self.get_net_by_name(user)
         if net is not None:
-            user_handler = self.get_user_handler_object_of_user(user)
-            list_profile_dicts = get_list_of_needed_profile_dict(user, user_handler)
+            list_profile_dicts = get_list_of_needed_profile_dict(user, self)
             net.send_profile_list_of_dicts(list_profile_dicts)
             self.logger.info(f"Sent list of profile dicts list to user {user}")
 
