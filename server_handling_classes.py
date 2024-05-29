@@ -25,13 +25,15 @@ def find_common_elements(list1, list2):
     return common_elements
 
 
-def create_profile_pic_dict(username, image_bytes_encoded):
+def create_profile_pic_dict(username, image_bytes_encoded, is_private_account, listening_to):
     if isinstance(image_bytes_encoded, bytes):
         image_bytes_encoded = base64.b64encode(image_bytes_encoded).decode('utf-8')
 
     current_dict = {
         "username": username,
         "encoded_image_bytes": image_bytes_encoded,
+        "is_private_account": is_private_account,
+        "listening_to": listening_to,
     }
     return current_dict
 
@@ -55,12 +57,18 @@ def relevant_users_for_user(user):
     return total_needed_profile_names
 
 
-def get_list_of_needed_profile_dict(user):
+def get_list_of_needed_profile_dict(user, user_handler_object):
     list_needed_profile_dicts = []
     total_needed_profile_names = relevant_users_for_user(user)
     for name in total_needed_profile_names:
+        if user_handler_object is not None:
+            listens_to = user_handler_object.listens_to
+            is_private_account = user_handler_object.is_private_account
+        else:
+            listens_to = None
+            is_private_account = (database_func.get_user_settings(user)).get("private_account")
         profile_pic_bytes = database_func.get_profile_pic_by_name(name)
-        current_dict = create_profile_pic_dict(name, profile_pic_bytes)
+        current_dict = create_profile_pic_dict(name, profile_pic_bytes, is_private_account, listens_to)
         list_needed_profile_dicts.append(current_dict)
     return list_needed_profile_dicts
 
@@ -273,9 +281,9 @@ class Call:
 
 
 class Ring:
-    def __init__(self, Parent, ringer, nets, ringing_to=None, group_id=None):
+    def __init__(self, parent, ringer, nets, ringing_to=None, group_id=None):
         self.logger = logging.getLogger(__name__)
-        self.parent = Parent
+        self.parent = parent
         self.ring_time = 25
         self.nets_dict = nets
         self.ringer = ringer
@@ -357,18 +365,38 @@ class Ring:
             format = f"({self.group_id}){group_name}({self.ringer})"
             for name, net in self.ringers_nets.items():
                 if net is not None:
-                    net.send_user_that_calling(format)
-                    self.ringed_to.append(name)
-                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
-                    self.already_ringed_to.append(name)
+                    name_settings = database_func.get_user_settings(name)
+                    is_private_account = name_settings.get("private_account")
+                    if is_private_account:
+                        name_friends = database_func.get_user_friends(name)
+                        if self.ringer in name_friends:
+                            net.send_user_that_calling(format)
+                            self.ringed_to.append(name)
+                            self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                            self.already_ringed_to.append(name)
+                    else:
+                        net.send_user_that_calling(format)
+                        self.ringed_to.append(name)
+                        self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                        self.already_ringed_to.append(name)
         else:
             self.logger.info(f"Created 1 on 1 ring (id={self.ring_id}) [{self.ringing_to[0]}, ringer is:{self.ringer}]")
             for name, net in self.ringers_nets.items():
                 if net is not None:
-                    net.send_user_that_calling(self.ringer)
-                    self.ringed_to.append(name)
-                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
-                    self.already_ringed_to.append(name)
+                    name_settings = database_func.get_user_settings(name)
+                    is_private_account = name_settings.get("private_account")
+                    if is_private_account:
+                        name_friends = database_func.get_user_friends(name)
+                        if self.ringer in name_friends:
+                            net.send_user_that_calling(self.ringer)
+                            self.ringed_to.append(name)
+                            self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                            self.already_ringed_to.append(name)
+                    else:
+                        net.send_user_that_calling(self.ringer)
+                        self.ringed_to.append(name)
+                        self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                        self.already_ringed_to.append(name)
 
     def update_ring_nets(self, nets):
         self.nets_dict = nets
@@ -381,17 +409,37 @@ class Ring:
             format = f"({self.group_id}){group_name}({self.ringer})"
             for name, net in self.ringers_nets.items():
                 if name not in self.already_ringed_to and net is not None:
-                    net.send_user_that_calling(format)
-                    self.ringed_to.append(name)
-                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
-                    self.already_ringed_to.append(name)
+                    name_settings = database_func.get_user_settings(name)
+                    is_private_account = name_settings.get("private_account")
+                    if is_private_account:
+                        name_friends = database_func.get_user_friends(name)
+                        if self.ringer in name_friends:
+                            net.send_user_that_calling(format)
+                            self.ringed_to.append(name)
+                            self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                            self.already_ringed_to.append(name)
+                    else:
+                        net.send_user_that_calling(format)
+                        self.ringed_to.append(name)
+                        self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                        self.already_ringed_to.append(name)
         else:
             for name, net in self.ringers_nets.items():
                 if name not in self.already_ringed_to and net is not None:
-                    net.send_user_that_calling(self.ringer)
-                    self.ringed_to.append(name)
-                    self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
-                    self.already_ringed_to.append(name)
+                    name_settings = database_func.get_user_settings(name)
+                    is_private_account = name_settings.get("private_account")
+                    if is_private_account:
+                        name_friends = database_func.get_user_friends(name)
+                        if self.ringer in name_friends:
+                            net.send_user_that_calling(self.ringer)
+                            self.ringed_to.append(name)
+                            self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                            self.already_ringed_to.append(name)
+                    else:
+                        net.send_user_that_calling(self.ringer)
+                        self.ringed_to.append(name)
+                        self.logger.info(f"Sent ring of id {self.ring_id} to {name}")
+                        self.already_ringed_to.append(name)
 
     def is_ring_by_ringer(self, ringer):
         return self.ringer == ringer
@@ -568,22 +616,32 @@ class ServerHandler:
         net.send_all_data_received()
         self.logger.info(f"All needed data sent to {User}")
 
-    def update_profiles_list_for_everyone_by_user(self, user, b64_encoded_profile_pic):
-        relevant_users = relevant_users_for_user(user)
+    def update_profiles_list_for_everyone_by_user(self, user_of_profile, b64_encoded_profile_pic):
+        relevant_users = relevant_users_for_user(user_of_profile)
+        if user_of_profile in self.online_users:
+            user_handle = self.get_user_handler_object_of_user(user_of_profile)
+            listens_to = user_handle.listens_to
+            is_private_account = user_handle.is_private_account
+        else:
+            listens_to = None
+            is_private_account = (database_func.get_user_settings(user_of_profile)).get("private_account")
+        if b64_encoded_profile_pic is None:
+            b64_encoded_profile_pic = base64.b64encode(database_func.get_profile_pic_by_name(user_of_profile)).decode('utf-8')
+        profile_dict = create_profile_pic_dict(user_of_profile, b64_encoded_profile_pic, is_private_account, listens_to)
         for relevant_user in relevant_users:
-            self.send_new_profile_of_user(relevant_user, b64_encoded_profile_pic, user)
+            self.send_new_profile_of_user(relevant_user, profile_dict, user_of_profile)
 
-    def send_new_profile_of_user(self, user, b64_encoded_profile_pic, user_of_profile):
+    def send_new_profile_of_user(self, user, profile_dict, user_of_profile):
         net = self.get_net_by_name(user)
         if net is not None:
-            profile_dict = create_profile_pic_dict(user_of_profile, b64_encoded_profile_pic)
             net.send_profile_dict_of_user(profile_dict, user_of_profile)
             self.logger.info(f"Sent list new profile dict of user {user_of_profile} to user {user}")
 
     def send_profile_list_of_dicts_to_user(self, user):
         net = self.get_net_by_name(user)
         if net is not None:
-            list_profile_dicts = get_list_of_needed_profile_dict(user)
+            user_handler = self.get_user_handler_object_of_user(user)
+            list_profile_dicts = get_list_of_needed_profile_dict(user, user_handler)
             net.send_profile_list_of_dicts(list_profile_dicts)
             self.logger.info(f"Sent list of profile dicts list to user {user}")
 
@@ -624,6 +682,11 @@ class ServerHandler:
         user_handle = self.get_user_handler_object_of_user(username)
         if user_handle is not None:
             user_handle.toggle_type()
+
+    def update_private_account(self, user_settings, user):
+        user_handle = self.get_user_handler_object_of_user(user)
+        if user_handle is not None:
+            user_handle.is_private_account_changed(user_settings)
 
     def get_user_handler_object_of_user(self, user):
         return self.user_handlers_dict.get(user)
@@ -843,9 +906,6 @@ class ServerHandler:
         return user_net.get_aes_key()
 
 
-messages_list_max_index = 20
-
-
 class UserHandler:
     def __init__(self, username, user_net, server_handler_object):
         self.user_net = user_net
@@ -854,7 +914,14 @@ class UserHandler:
         self.current_chat = None
         self.it_typing = False
         self.listens_to = None
+        user_settings = database_func.get_user_settings(username)
+        is_private = user_settings.get("private_account")
+        self.is_private_account = is_private
         self.server_handler_object = server_handler_object
+
+    def is_private_account_changed(self, user_settings):
+        is_private = user_settings.get("private_account")
+        self.is_private_account = is_private
 
     def reset_vars(self):
         self.chat_max_index = 20

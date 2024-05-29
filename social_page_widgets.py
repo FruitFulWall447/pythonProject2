@@ -799,7 +799,10 @@ class FriendsBox(QWidget):
     def block_friend(self, friend):
         # Implement the logic to start a chat with the selected friend
         self.Network.block_user(friend)
+        self.parent.blocked_list.append(friend)
+        self.parent.friends_list.remove(friend)
         print(f"blocking {friend}")
+        self.parent.updated_social_page()
 
     def unblock_friend(self, friend):
         # Implement the logic to start a chat with the selected friend

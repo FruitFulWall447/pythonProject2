@@ -366,6 +366,7 @@ def thread_recv_messages(n, addr):
                 settings_dict = data.get("settings_dict")
                 database_func.update_settings_by_dict(User, settings_dict)
                 logger.info(f"updated {User} settings")
+                ServerHandler.update_private_account(settings_dict, User)
             elif message_type == "current_chat":
                 user_current_chat = data.get("current_chat")
                 ServerHandler.update_chat_for_user(User, user_current_chat)
@@ -547,6 +548,9 @@ def thread_recv_messages(n, addr):
                 user_to_block = data.get("user_to_block")
                 database_func.block_user(User, user_to_block)
                 logger.info(f"{User} blocked {user_to_block}")
+                user_friends = database_func.get_user_friends(User)
+                if user_to_block in user_friends:
+                    database_func.remove_friend(User, user_to_block)
             elif message_type == "unblock":
                 user_to_unblock = data.get("user_to_unblock")
                 database_func.unblock_user(User, user_to_unblock)

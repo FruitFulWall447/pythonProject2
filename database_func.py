@@ -1252,7 +1252,7 @@ def remove_friend(username, friend_username):
     cursor = connection.cursor()
 
     # Check if the friendship exists
-    query = f"SELECT id FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_username_id = '{username_id}') AND friendship_status = 'accepted'"
+    query = f"SELECT id FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_user_id = '{username_id}') AND friendship_status = 'accepted'"
     cursor.execute(query)
     friendship_id = cursor.fetchone()
 
@@ -1767,8 +1767,9 @@ def create_group(group_name, group_manager, group_members_list=None):
 
         # Insert the group into the 'my_groups' table
         timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
+        group_manager_id = get_id_from_username(group_manager)
         cursor.execute("INSERT INTO my_groups (group_name, group_manager, group_members_list, creation_date) VALUES (?, ?, ?, ?)",
-                       (group_name, group_manager, group_members_json, timestamp))
+                       (group_name, group_manager_id, group_members_json, timestamp))
 
         # Get the last inserted row id (equivalent to LAST_INSERT_ID() in MySQL)
         group_id = cursor.lastrowid
@@ -1806,8 +1807,9 @@ def change_group_manager(group_id, new_manager):
         # Create a cursor object to interact with the database
         cursor = connection.cursor()
 
+        new_manager_id = get_id_from_username(new_manager)
         # Update the manager for the specified group
-        cursor.execute("UPDATE my_groups SET group_manager = ? WHERE group_id = ?", (new_manager, group_id))
+        cursor.execute("UPDATE my_groups SET group_manager = ? WHERE group_id = ?", (new_manager_id, group_id))
 
         # Commit the changes
         connection.commit()
@@ -2020,12 +2022,13 @@ def get_user_groups(username):
             if row[4]:
                 timestamp_datetime = datetime.fromisoformat(row[4])
 
+            group_manager = get_username_from_id(row[3])
             if username in group_members_list or username == row[3]:
                 user_groups.append({
                     "group_id": row[0],
                     "group_name": row[1],
                     "group_members": group_members_list,
-                    "group_manager": row[3],
+                    "group_manager": group_manager,
                     "creation_date": timestamp_datetime.strftime("%Y-%m-%d") if row[4] else None,  # Format the date if not None
                     "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
                         "utf-8") if group_image_bytes else None
@@ -2068,11 +2071,12 @@ def get_group_by_id(group_id):
             group_image_bytes = file_to_bytes(group_data[5]) if group_data[5] else None
             timestamp_datetime = datetime.fromisoformat(group_data[4])
 
+            group_manager = get_username_from_id(group_data[3])
             group_info = {
                 "group_id": group_data[0],
                 "group_name": group_data[1],
                 "group_members": group_members_list,
-                "group_manager": group_data[3],
+                "group_manager": group_manager,
                 "creation_date": timestamp_datetime.strftime("%Y-%m-%d") if group_data[4] else None,
                 "group_b64_encoded_image": base64.b64encode(group_image_bytes).decode(
                     "utf-8") if group_image_bytes else None

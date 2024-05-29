@@ -983,6 +983,7 @@ class ChatBox(QWidget):
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
                         group_manager = self.parent.get_group_manager_by_group_id(self.current_group_id)
+                        print(f"group_manager is {group_manager}")
                         for member in group_members:
                             pos = (starter_x_of_group_members, starter_y_of_group_members)
                             if member == group_manager:

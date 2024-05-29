@@ -8,6 +8,7 @@ import ssl
 email_password = os.environ.get('email_password')
 from_email = "appmails742@gmail.com"
 
+
 def send_confirmation_to_client_email(receiver_mail, account_name):
     logo_path = 'discord_app_assets/connectify_icon.png'
     connectify_account = account_name

@@ -322,6 +322,7 @@ class VideoPlayer(QWidget):
                 # Set the media content to the media player and play
                 self.media_player.setMedia(media_content)
                 self.media_player.play()
+                print(f"playing video from old tempfile - {file_path}")
             else:
                 temp_file = QTemporaryFile()
                 if temp_file.open():
@@ -337,6 +338,7 @@ class VideoPlayer(QWidget):
                     # Set the media content to the media player and play
                     self.media_player.setMedia(media_content)
                     self.media_player.play()
+                    print(f"playing video from old tempfile - {temp_file.fileName()}")
         except Exception as e:
             print(f"play_video error :{e}")
 
