@@ -1014,7 +1014,6 @@ class UserHandler:
         return 60 - (current_time - self.last_request_time).seconds
 
     def another_request(self):
-        print(self.number_of_requests)
         current_time = date.datetime.now()
         if (current_time - self.last_request_time).seconds > 60:
             if self.number_of_requests > 80:
@@ -1027,6 +1026,7 @@ class UserHandler:
             self.number_of_requests = 1
         else:
             self.number_of_requests += 1
+        print(self.number_of_requests)
 
     def is_request_valid(self):
         return request_per_min > self.number_of_requests
