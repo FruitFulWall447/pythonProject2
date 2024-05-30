@@ -988,7 +988,7 @@ class ServerHandler:
     def warn_user(self, user):
         user_handler = self.get_user_handler_object_of_user(user)
         if user_handler:
-            user_handler.was_warned = True
+            user_handler.warn_user()
 
 
 request_per_min = 60
@@ -1012,6 +1012,10 @@ class UserHandler:
         self.blocked_users = database_func.get_blocked_users(username)
         self.server_handler_object = server_handler_object
         self.friends_list = database_func.get_user_friends(username)
+
+    def warn_user(self):
+        self.was_warned = True
+
 
     def time_left_for_reset(self):
         current_time = date.datetime.now()
