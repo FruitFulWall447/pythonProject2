@@ -933,7 +933,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if chat_name is not None:
                 listens_to = self.get_listened_song_by_user(chat_name)
                 if listens_to is not None:
-                    str_for_listen = f"listens to {listens_to}"
+                    str_for_listen = f"listen to {listens_to}"
                     action = menu.addAction(str_for_listen)
                     action.triggered.connect(lambda: self.ask_for_listen_by_name(listens_to))
 
