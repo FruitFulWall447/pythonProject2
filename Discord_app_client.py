@@ -59,6 +59,10 @@ def is_valid_password(password):
     return True
 
 
+def too_many_request(self, status):
+    slow_down = SlowDown(status)
+
+
 def is_valid_username(username):
     # Check if the username is non-empty
     if len(username) == 0 or len(username) > 15:
@@ -318,7 +322,7 @@ class SplashScreen(QWidget):
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
-    too_many_request_signal = pyqtSignal()
+    too_many_request_signal = pyqtSignal(str)
     update_chat_page_without_messages_signal = pyqtSignal()
     updated_social_page_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
@@ -653,9 +657,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.main_layout.addWidget(self.stacked_widget)
 
         self.setLayout(self.main_layout)
-
-    def too_many_request(self):
-        slow_down = SlowDown()
 
     def close_all_threads(self):
         # turns every thread flag to False
@@ -3030,8 +3031,9 @@ class ServerIsDownPage(QWidget):
 
 
 class SlowDown(QWidget):
-    def __init__(self):
+    def __init__(self, status):
         super().__init__()
+        self.status = status
         self.initUI()
 
     def initUI(self):
@@ -3040,8 +3042,12 @@ class SlowDown(QWidget):
         self.show_slow_down()
 
     def show_slow_down(self):
-        QMessageBox.information(self, 'Slow Down Your Requests',
-                                "Your requests are being delayed. Press OK to continue.", QMessageBox.Ok)
+        if self.status == "invalid":
+            QMessageBox.information(self, 'Slow Down Your Requests',
+                                    "Your requests are being delayed. Press OK to continue.", QMessageBox.Ok)
+        else:
+            QMessageBox.information(self, 'Warned By Server',
+                                    "By keeping overflowing the server you will be kicked", QMessageBox.OK)
 
 
 class PageController:
@@ -3509,10 +3515,11 @@ class PageController:
         elif message_type == "requests_rate":
             status = data.get("status")
             if status == "invalid":
-                QMetaObject.invokeMethod(self.main_page,
-                                         "too_many_request_signal",
-                                         Qt.QueuedConnection)
+                self.main_page.too_many_request_signal.emit(status)
                 print(f'got "too many requests per min" from server')
+            elif status == "warned":
+                self.main_page.too_many_request_signal.emit(status)
+                print(f'got "warned" from server')
         elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
             self.main_page.update_group_lists_by_group.emit(group_dict)

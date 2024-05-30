@@ -1015,7 +1015,7 @@ class UserHandler:
 
     def warn_user(self):
         self.was_warned = True
-        self.user_net.
+        self.user_net.warn_user()
 
     def time_left_for_reset(self):
         current_time = date.datetime.now()
