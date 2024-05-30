@@ -652,14 +652,14 @@ class ServerNet:
 
     def echo_offline_user(self, offline_user):
         try:
-            message = {"message_type": "user_offline", "offline_user": offline_user}
+            message = {"message_type": "status_changed", "user": offline_user, "status": "offline"}
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
 
     def echo_online_user(self, online_user):
         try:
-            message = {"message_type": "user_online", "online_user": online_user}
+            message = {"message_type": "status_changed", "user": online_user, "status": "online"}
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
