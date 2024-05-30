@@ -766,6 +766,20 @@ class ServerHandler:
         if self.is_user_in_a_call(user):
             self.remove_user_from_call(user)
 
+    def echo_online_user(self, user):
+        user_friends = database_func.get_user_friends(user)
+        for friend in user_friends:
+            friend_net = self.get_net_by_name(friend)
+            if friend_net:
+                friend_net.echo_online_user(user)
+
+    def echo_offline_user(self, user):
+        user_friends = database_func.get_user_friends(user)
+        for friend in user_friends:
+            friend_net = self.get_net_by_name(friend)
+            if friend_net:
+                friend_net.echo_offline_user(user)
+
     def add_net(self, name, obj):
         self.nets_dict[name] = obj
         self.update_nets_for_child_class()

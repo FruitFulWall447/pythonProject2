@@ -650,6 +650,20 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def echo_offline_user(self, offline_user):
+        try:
+            message = {"message_type": "user_offline", "offline_user": offline_user}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def echo_online_user(self, online_user):
+        try:
+            message = {"message_type": "user_online", "online_user": online_user}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def recv_str(self):
         try:
             # Receive the size as binary data and convert it to an integer
