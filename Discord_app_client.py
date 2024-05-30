@@ -325,6 +325,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     too_many_request_signal = pyqtSignal(str)
     update_chat_page_without_messages_signal = pyqtSignal()
     updated_social_page_signal = pyqtSignal()
+    quit_application_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
     stop_sound_signal = pyqtSignal()
     initiating_call_signal = pyqtSignal()
@@ -598,6 +599,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
         self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
         self.too_many_request_signal.connect(self.too_many_request)
+        self.quit_application_signal.connect(self.page_controller_object.quit_application())
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -3520,6 +3522,8 @@ class PageController:
             elif status == "warned":
                 self.main_page.too_many_request_signal.emit(status)
                 print(f'got "warned" from server')
+            elif status == "kicked":
+                self.main_page.quit_application_signal.emit()
         elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
             self.main_page.update_group_lists_by_group.emit(group_dict)
