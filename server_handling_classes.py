@@ -985,6 +985,11 @@ class ServerHandler:
         else:
             return 0
 
+    def warn_user(self, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.was_warned = True
+
 
 request_per_min = 60
 
@@ -994,6 +999,7 @@ class UserHandler:
         self.user_net = user_net
         self.delay_between_requests = 0
         self.number_of_requests = 0
+        self.was_warned = False
         self.last_request_time = date.datetime.now()
         self.username = username
         self.chat_max_index = 20
@@ -1027,6 +1033,8 @@ class UserHandler:
 
     def is_request_valid(self):
         return request_per_min > self.number_of_requests
+
+    def
 
     def remove_friend(self, user):
         self.friends_list.remove(user)
