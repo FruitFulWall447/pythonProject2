@@ -988,7 +988,7 @@ class ServerHandler:
             return 0
 
 
-request_per_min = 100
+request_per_min = 60
 
 
 class UserHandler:
