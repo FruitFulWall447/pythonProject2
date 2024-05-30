@@ -3024,6 +3024,21 @@ class ServerIsDownPage(QWidget):
             print("error in server id down page")
 
 
+class SlowDown(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setGeometry(300, 300, 300, 200)
+        self.setWindowTitle('Popup Example')
+        self.show_slow_down()
+
+    def show_slow_down(self):
+        QMessageBox.information(self, 'Slow Down Your Requests',
+                                "Your requests are being delayed. Press OK to continue.", QMessageBox.Ok)
+
+
 class PageController:
     def __init__(self):
         self.n = ClientNet(self)
