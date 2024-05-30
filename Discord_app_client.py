@@ -3523,6 +3523,7 @@ class PageController:
                 self.main_page.too_many_request_signal.emit(status)
                 print(f'got "warned" from server')
             elif status == "kicked":
+                print("got kicked from server")
                 self.main_page.quit_application_signal.emit()
         elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
