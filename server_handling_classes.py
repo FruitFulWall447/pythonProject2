@@ -1041,7 +1041,7 @@ class UserHandler:
                 self.delay_between_requests = 0.5
                 self.user_net.slow_down_requests_rate()
                 self.is_slowed = True
-            elif self.number_of_requests > 30 and self.is_slowed:
+            elif self.number_of_requests > 40 and self.is_slowed:
                 self.delay_between_requests = 1
                 self.warn_user()
             elif self.number_of_requests > request_per_min and self.is_slowed and self.was_warned:
