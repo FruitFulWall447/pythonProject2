@@ -60,7 +60,7 @@ def is_valid_password(password):
 
 
 def too_many_request(status):
-    slow_down = SlowDown(status)
+    SlowDown(status)
 
 
 def is_valid_username(username):
