@@ -179,7 +179,7 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
     return False, False
 
 
-not_requests_types = ["vc_data", "share_screen_data", "share_camera_data", "add_message"]
+not_requests_types = ["add_message"]
 max_delay_time = 5
 
 
