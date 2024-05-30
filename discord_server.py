@@ -320,7 +320,6 @@ def thread_recv_messages(n, addr):
                 if time_left <= max_delay_time:
                     time.sleep(time_left)
                 else:
-                    n.slow_down_requests_rate()
                     logger.info(f"send slow down requests rate to {User}")
                     continue
             if message_type == "connect_udp_port":
