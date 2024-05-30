@@ -3535,6 +3535,13 @@ class PageController:
             self.main_page.updating_profile_dict_signal.emit(name_of_profile_dict,
                                                              profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
+        elif message_type == "status_changed":
+            status = data.get("status")
+            user = data.get("user")
+            if status == "online":
+                self.main_page.online_users_list.append(user)
+            else:
+                self.main_page.online_users_list.remove(user)
         elif message_type == "requests_rate":
             try:
                 status = data.get("status")
