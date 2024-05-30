@@ -1044,7 +1044,7 @@ class UserHandler:
             elif self.number_of_requests > 30 and self.is_slowed:
                 self.delay_between_requests = 1
                 self.warn_user()
-            elif self.number_of_requests > 60 and self.is_slowed and self.was_warned:
+            elif self.number_of_requests > request_per_min and self.is_slowed and self.was_warned:
                 self.user_net.kick_user()
             else:
                 self.delay_between_requests = 0
