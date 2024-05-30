@@ -243,8 +243,8 @@ class ServerNet:
                    }
         self.send_message_dict_tcp(message)
 
-    def send_searched_song_info(self, searched_song_dict):
-        message = {"message_type": "searched_song_result", "searched_song_dict": searched_song_dict
+    def send_searched_song_info(self, searched_song_dict, is_play):
+        message = {"message_type": "searched_song_result", "searched_song_dict": searched_song_dict, "is_play": is_play
                    }
         self.send_message_dict_tcp(message)
 

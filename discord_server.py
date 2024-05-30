@@ -366,7 +366,7 @@ def thread_recv_messages(n, addr):
                     song_dict = create_song_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
                 else:
                     del song_dict["timestamp"]
-                n.send_searched_song_info(song_dict)
+                n.send_searched_song_info(song_dict, True)
             elif message_type == "listens_to":
                 listens_to = data.get("listens_to")
                 ServerHandler.new_listen_for_user(User, listens_to)
@@ -401,7 +401,7 @@ def thread_recv_messages(n, addr):
                 try:
                     audio_bytes, video_title, thumbnail_bytes, duration_min_sec = extract_audio_bytes(search_str)
                     info_dict = create_song_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
-                    n.send_searched_song_info(info_dict)
+                    n.send_searched_song_info(info_dict, False)
                 except Exception as e:
                     logger.error(f"error with search engine: {e}")
             elif message_type == "remove_song":

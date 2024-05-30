@@ -344,7 +344,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     insert_messages_into_message_box_signal = pyqtSignal(list)
     insert_new_message_in_chat_signal = pyqtSignal(dict)
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
-    insert_search_result_signal = pyqtSignal(dict)
+    insert_search_result_signal = pyqtSignal(dict, bool)
     update_settings_from_dict_signal = pyqtSignal(dict)
     update_message_box_signal = pyqtSignal()
     close_call_threads_signal = pyqtSignal()
@@ -984,11 +984,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.music_clicked = True
         self.stacked_widget.setCurrentIndex(3)
 
-    def insert_search_result(self, result_dict):
+    def insert_search_result(self, result_dict, is_play):
         self.play_ding_sound_effect()
         self.current_search_song_dict = result_dict
         self.music_box.insert_search_data(result_dict)
-        self.play_search_result()
+        if is_play:
+            self.play_search_result()
 
     def play_search_result(self):
         if self.current_search_song_dict is not None:
@@ -3327,7 +3328,8 @@ class PageController:
             print(f"got song {title} bytes from server")
         elif message_type == "searched_song_result":
             info_dict = data.get("searched_song_dict")
-            self.main_page.insert_search_result_signal.emit(info_dict)
+            is_play = data.get("is_play")
+            self.main_page.insert_search_result_signal.emit(info_dict, is_play)
             print("got song search info")
         elif message_type == "playlist_songs":
             playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
