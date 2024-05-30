@@ -663,7 +663,11 @@ class ServerHandler:
         if is_private_account:
             relevant_users = database_func.get_user_friends(user_of_profile)
         if b64_encoded_profile_pic is None:
-            b64_encoded_profile_pic = base64.b64encode(database_func.get_profile_pic_by_name(user_of_profile)).decode('utf-8')
+            profile_pic_bytes = database_func.get_profile_pic_by_name(user_of_profile)
+            if profile_pic_bytes is not None:
+                b64_encoded_profile_pic = base64.b64encode(profile_pic_bytes).decode('utf-8')
+            else:
+                b64_encoded_profile_pic = None
         profile_dict = create_profile_pic_dict(user_of_profile, b64_encoded_profile_pic, is_private_account, listens_to)
         for relevant_user in relevant_users:
             self.send_new_profile_of_user(relevant_user, profile_dict, user_of_profile)
@@ -1100,6 +1104,7 @@ class UserHandler:
     def new_listen(self, name_of_song):
         self.listens_to = name_of_song
         self.server_handler_object.logger.info(f"{self.username} listens to {self.listens_to}")
+        self.server_handler_object.update_profiles_list_for_everyone_by_user(self.username, None)
 
     def toggle_type(self):
         if self.it_typing:

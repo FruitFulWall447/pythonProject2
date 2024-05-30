@@ -930,6 +930,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     action.triggered.connect(lambda: self.chat_box.selected_chat_changed(chat_name))
                 elif "mute" in item1:
                     action.triggered.connect(lambda: self.toggle_mute_of_user(chat_name))
+            if group_id is None:
+                listens_to = self.get_listened_song_by_user(chat_name)
+                if listens_to is not None:
+                    str_for_listen = f"listen to {listens_to}"
+                    action = menu.addAction(str_for_listen)
+                    action.triggered.connect(lambda: self.ask_for_listen_by_name(listens_to))
 
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
@@ -938,6 +944,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             menu.exec_(global_pos)
         except Exception as e:
             print(f"error in right click func {e}")
+
+    def ask_for_listen_by_name(self, title):
+        self.Network.ask_for_song_by_title(title)
+        print(f"asked song bytes of {title}")
 
     def update_slider_position(self, new_position):
         self.music_box.playlist_duration_slider.setValue(new_position)
@@ -1310,6 +1320,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"updated the profile pic in dictionary list of username {name}")
                 self.update_circular_photo_of_user(name, new_image_bytes, circular_pic_bytes)
                 break
+
+    def get_listened_song_by_user(self, name):
+        for profile_dict in self.list_user_profile_dicts:
+            if profile_dict.get("username") == name:
+                return profile_dict.get("listening_to")
 
     def update_circular_photo_of_user(self, username, new_photo, circular_pic_bytes=None):
         if new_photo is None:

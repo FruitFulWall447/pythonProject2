@@ -357,6 +357,14 @@ def thread_recv_messages(n, addr):
                 audio_bytes = song_dict.get('audio_bytes')
                 title = song_dict.get('title')
                 n.send_played_song_bytes(audio_bytes, title)
+                ServerHandler.new_listen_for_user(User, title)
+            elif message_type == "playlist_song_bytes_by_title":
+                title = data.get("title")
+                song_dict = database_func.get_song_by_user_and_title(User, title)
+                audio_bytes = song_dict.get('audio_bytes')
+                title = song_dict.get('title')
+                n.send_played_song_bytes(audio_bytes, title)
+                ServerHandler.new_listen_for_user(User, title)
             elif message_type == "exit_group":
                 group_to_exit_id = data.get("group_to_exit_id")
                 database_func.remove_group_member(group_to_exit_id, User)

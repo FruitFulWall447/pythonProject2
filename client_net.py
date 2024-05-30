@@ -308,6 +308,13 @@ class ClientNet:
         except socket.error as e:
             print(e)
 
+    def ask_for_song_by_title(self, title):
+        try:
+            message = {"message_type": "playlist_song_bytes_by_title", "title": title}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
             message = {"message_type": "current_chat", "current_chat": current_chat}
