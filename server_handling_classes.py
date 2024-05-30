@@ -1016,6 +1016,10 @@ class UserHandler:
     def another_request(self):
         current_time = date.datetime.now()
         if (current_time - self.last_request_time).seconds > 60:
+            if self.number_of_requests > 80:
+                self.delay_between_requests = 1
+            elif self.number_of_requests > 60:
+
             self.last_request_time = current_time
             self.number_of_requests = 1
         else:
