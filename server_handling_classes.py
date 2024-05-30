@@ -1033,6 +1033,11 @@ class UserHandler:
             self.last_request_time = current_time
             self.number_of_requests = 1
         else:
+            if self.number_of_requests > 30:
+                self.delay_between_requests = 0.5
+                self.user_net.slow_down_requests_rate()
+            else:
+                self.delay_between_requests = 0
             self.number_of_requests += 1
 
     def is_request_valid(self):
