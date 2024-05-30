@@ -1046,9 +1046,6 @@ class UserHandler:
                 self.warn_user()
             elif self.number_of_requests > request_per_min and self.is_slowed and self.was_warned:
                 self.user_net.kick_user()
-            else:
-                self.delay_between_requests = 0
-                self.is_slowed = False
             self.number_of_requests += 1
 
     def is_request_valid(self):
