@@ -3515,16 +3515,19 @@ class PageController:
                                                              profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
         elif message_type == "requests_rate":
-            status = data.get("status")
-            if status == "invalid":
-                self.main_page.too_many_request_signal.emit(status)
-                print(f'got "too many requests per min" from server')
-            elif status == "warned":
-                self.main_page.too_many_request_signal.emit(status)
-                print(f'got "warned" from server')
-            elif status == "kicked":
-                print("got kicked from server")
-                self.main_page.quit_application_signal.emit()
+            try:
+                status = data.get("status")
+                if status == "invalid":
+                    self.main_page.too_many_request_signal.emit(status)
+                    print(f'got "too many requests per min" from server')
+                elif status == "warned":
+                    self.main_page.too_many_request_signal.emit(status)
+                    print(f'got "warned" from server')
+                elif status == "kicked":
+                    print("got kicked from server")
+                    self.main_page.quit_application_signal.emit()
+            except Exception as e:
+                print(e)
         elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
             self.main_page.update_group_lists_by_group.emit(group_dict)
