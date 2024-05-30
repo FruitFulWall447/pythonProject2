@@ -1019,7 +1019,9 @@ class UserHandler:
             if self.number_of_requests > 80:
                 self.delay_between_requests = 1
             elif self.number_of_requests > 60:
-
+                self.delay_between_requests = 0.5
+            else:
+                self.delay_between_requests = 0
             self.last_request_time = current_time
             self.number_of_requests = 1
         else:
