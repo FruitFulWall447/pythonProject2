@@ -1015,7 +1015,7 @@ class UserHandler:
 
     def warn_user(self):
         self.was_warned = True
-
+        self.user_net.
 
     def time_left_for_reset(self):
         current_time = date.datetime.now()
@@ -1037,8 +1037,6 @@ class UserHandler:
 
     def is_request_valid(self):
         return request_per_min > self.number_of_requests
-
-    def
 
     def remove_friend(self, user):
         self.friends_list.remove(user)
