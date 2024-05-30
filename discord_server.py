@@ -315,7 +315,6 @@ def thread_recv_messages(n, addr):
             message_type = data.get("message_type")
             if message_type not in not_requests_types:
                 ServerHandler.pass_request(User)
-                print("here")
             if not ServerHandler.is_request_valid(User):
                 time_left = ServerHandler.time_left_for_reset(User)
                 if time_left <= max_delay_time:
