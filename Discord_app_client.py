@@ -3544,6 +3544,8 @@ class PageController:
                 self.main_page.online_users_list.append(user)
             else:
                 self.main_page.online_users_list.remove(user)
+            QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
+                                     Qt.QueuedConnection)
         elif message_type == "requests_rate":
             try:
                 status = data.get("status")
