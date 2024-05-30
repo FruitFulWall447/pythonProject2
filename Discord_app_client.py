@@ -60,7 +60,10 @@ def is_valid_password(password):
 
 
 def too_many_request(status):
-    SlowDown(status)
+    try:
+        SlowDown(status)
+    except Exception as e:
+        print(e)
 
 
 def is_valid_username(username):
