@@ -3051,8 +3051,8 @@ class SlowDown(QWidget):
             QMessageBox.information(self, 'Slow Down Your Requests',
                                     "Your requests are being delayed. Press OK to continue.", QMessageBox.Ok)
         else:
-            QMessageBox.information(self, 'Warned By Server',
-                                    "By keeping overflowing the server you will be kicked", QMessageBox.OK)
+            QMessageBox.warning(self, 'Warned By Server',
+                                    "By keeping overflowing the server you will be kicked", QMessageBox.Ok)
 
 
 class PageController:
