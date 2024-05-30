@@ -979,6 +979,14 @@ class ServerHandler:
             user_handler.another_request()
             return user_handler.time_left_for_reset()
 
+    def get_delay_between_requests(self, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            user_handler.another_request()
+            return user_handler.delay_between_requests
+        else:
+            return 0
+
 
 request_per_min = 100
 
@@ -986,6 +994,7 @@ request_per_min = 100
 class UserHandler:
     def __init__(self, username, user_net, server_handler_object):
         self.user_net = user_net
+        self.delay_between_requests = 0
         self.number_of_requests = 0
         self.last_request_time = date.datetime.now()
         self.username = username
