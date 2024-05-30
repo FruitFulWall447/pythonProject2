@@ -360,11 +360,16 @@ def thread_recv_messages(n, addr):
                 ServerHandler.new_listen_for_user(User, title)
             elif message_type == "playlist_song_bytes_by_title":
                 title = data.get("title")
-                song_dict = database_func.get_song_by_user_and_title(User, title)
-                audio_bytes = song_dict.get('audio_bytes')
-                title = song_dict.get('title')
-                n.send_played_song_bytes(audio_bytes, title)
-                ServerHandler.new_listen_for_user(User, title)
+                song_dict = database_func.get_song_by_title(title)
+                if song_dict is None:
+                    audio_bytes, video_title, thumbnail_bytes, duration_min_sec = extract_audio_bytes(title)
+                    song_dict = create_song_info_dict(audio_bytes, video_title, thumbnail_bytes, duration_min_sec)
+                else:
+                    del song_dict["timestamp"]
+                n.send_searched_song_info(song_dict)
+            elif message_type == "listens_to":
+                listens_to = data.get("listens_to")
+                ServerHandler.new_listen_for_user(User, listens_to)
             elif message_type == "exit_group":
                 group_to_exit_id = data.get("group_to_exit_id")
                 database_func.remove_group_member(group_to_exit_id, User)

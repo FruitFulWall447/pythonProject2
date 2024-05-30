@@ -315,6 +315,13 @@ class ClientNet:
         except socket.error as e:
             print(e)
 
+    def new_listen(self, title):
+        try:
+            message = {"message_type": "listens_to", "listens_to": title}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def updated_current_chat(self, current_chat):
         try:
             message = {"message_type": "current_chat", "current_chat": current_chat}

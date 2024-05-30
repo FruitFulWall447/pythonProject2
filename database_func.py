@@ -292,21 +292,20 @@ def get_song_by_index_and_owner(owner, index):
         return None
 
 
-def get_song_by_user_and_title(owner, title):
+def get_song_by_title(title):
     try:
         # Connect to your MySQL database
-        owner_id = get_id_from_username(owner)
         connection = connect_to_kevindb()
         cursor = connection.cursor()
 
         select_query = """
             SELECT title, mp3_file_path, duration, timestamp, thumbnail_path
             FROM songs
-            WHERE owner_id = %s AND title = %s
+            WHERE title = ?
         """
 
         # Execute the SQL query with the owner_id and title parameters
-        cursor.execute(select_query, (owner_id, title))
+        cursor.execute(select_query, (title,))
 
         # Fetch the row
         song_data = cursor.fetchone()

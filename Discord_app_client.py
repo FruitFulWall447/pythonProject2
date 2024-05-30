@@ -998,6 +998,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             total_duration = duration_to_milliseconds(duration_str)
             self.music_box.playlist_duration_slider.setMaximum(total_duration)
             play_mp3_from_bytes(current_search_audio_bytes, self.playlist_media_player)
+            current_search_title = self.current_search_song_dict.get("title")
+            self.Network.new_listen(current_search_title)
 
     def save_searched_song_to_playlist(self):
         try:
