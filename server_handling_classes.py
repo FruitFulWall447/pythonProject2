@@ -1000,6 +1000,7 @@ class UserHandler:
         self.delay_between_requests = 0
         self.number_of_requests = 0
         self.was_warned = False
+        self.is_slowed = False
         self.last_request_time = date.datetime.now()
         self.username = username
         self.chat_max_index = 20
@@ -1026,18 +1027,23 @@ class UserHandler:
         if (current_time - self.last_request_time).seconds > 60:
             if self.number_of_requests > 80:
                 self.delay_between_requests = 1
+                self.is_slowed = True
             elif self.number_of_requests > 60:
                 self.delay_between_requests = 0.5
+                self.is_slowed = True
             else:
                 self.delay_between_requests = 0
+                self.is_slowed = False
             self.last_request_time = current_time
             self.number_of_requests = 1
         else:
-            if self.number_of_requests > 30:
+            if self.number_of_requests > 30 and not self.is_slowed:
                 self.delay_between_requests = 0.5
                 self.user_net.slow_down_requests_rate()
+                self.is_slowed = True
             else:
                 self.delay_between_requests = 0
+                self.is_slowed = False
             self.number_of_requests += 1
 
     def is_request_valid(self):
