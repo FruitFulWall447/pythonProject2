@@ -1048,6 +1048,8 @@ class UserHandler:
                     self.warn_user()
             elif self.number_of_requests > request_per_min and self.is_slowed and self.was_warned:
                 self.user_net.kick_user()
+                self.server_handler_object.logger.info(f"{self.username} was kicked to do overflowing server")
+                self.server_handler_object.user_offline(self.username)
             self.number_of_requests += 1
 
     def is_request_valid(self):
