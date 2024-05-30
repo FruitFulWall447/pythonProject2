@@ -318,6 +318,7 @@ class SplashScreen(QWidget):
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
     updated_chat_signal = pyqtSignal()
+    too_many_request_signal = pyqtSignal()
     update_chat_page_without_messages_signal = pyqtSignal()
     updated_social_page_signal = pyqtSignal()
     getting_call_signal = pyqtSignal()
@@ -592,6 +593,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
         self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
         self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
+        self.too_many_request_signal.connect(self.too_many_request)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -651,6 +653,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.main_layout.addWidget(self.stacked_widget)
 
         self.setLayout(self.main_layout)
+
+    def too_many_request(self):
+        slow_down = SlowDown()
 
     def close_all_threads(self):
         # turns every thread flag to False
@@ -3501,6 +3506,13 @@ class PageController:
             self.main_page.updating_profile_dict_signal.emit(name_of_profile_dict,
                                                              profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
+        elif message_type == "updated_profile_dict":
+            status = data.get("status")
+            if status == "invalid":
+                QMetaObject.invokeMethod(self.main_page,
+                                         "too_many_request_signal",
+                                         Qt.QueuedConnection)
+                print(f'got "too many requests per min" from server')
         elif message_type == "update_group_dict":
             group_dict = json.loads(data.get("group_dict"))
             self.main_page.update_group_lists_by_group.emit(group_dict)
