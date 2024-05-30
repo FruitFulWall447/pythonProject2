@@ -1024,7 +1024,6 @@ class UserHandler:
             self.number_of_requests = 1
         else:
             self.number_of_requests += 1
-        print(self.number_of_requests)
 
     def is_request_valid(self):
         return request_per_min > self.number_of_requests
