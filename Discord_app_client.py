@@ -59,7 +59,7 @@ def is_valid_password(password):
     return True
 
 
-def too_many_request(self, status):
+def too_many_request(status):
     slow_down = SlowDown(status)
 
 
@@ -598,8 +598,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.update_settings_from_dict_signal.connect(self.update_settings_from_dict)
         self.update_chat_page_without_messages_signal.connect(self.update_chat_page_without_messages)
         self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
-        self.too_many_request_signal.connect(self.too_many_request)
-        self.quit_application_signal.connect(self.page_controller_object.quit_application())
+        self.too_many_request_signal.connect(too_many_request)
+        self.quit_application_signal.connect(self.page_controller_object.quit_application)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
