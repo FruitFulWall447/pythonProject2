@@ -3506,7 +3506,7 @@ class PageController:
             self.main_page.updating_profile_dict_signal.emit(name_of_profile_dict,
                                                              profile_dict)
             print(f"got updated profile dictionary of {name_of_profile_dict}")
-        elif message_type == "updated_profile_dict":
+        elif message_type == "requests_rate":
             status = data.get("status")
             if status == "invalid":
                 QMetaObject.invokeMethod(self.main_page,
