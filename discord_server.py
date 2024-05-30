@@ -581,6 +581,7 @@ def thread_recv_messages(n, addr):
                     else:
                         logger.critical(f"{User} tried to add user to group where he has no permissions")
                     ServerHandler.update_group_dict_for_members(group_id)
+
             time.sleep(ServerHandler.get_delay_between_requests(User))
 
 
