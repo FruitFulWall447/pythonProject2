@@ -976,13 +976,11 @@ class ServerHandler:
     def time_left_for_reset(self, user):
         user_handler = self.get_user_handler_object_of_user(user)
         if user_handler:
-            user_handler.another_request()
             return user_handler.time_left_for_reset()
 
     def get_delay_between_requests(self, user):
         user_handler = self.get_user_handler_object_of_user(user)
         if user_handler:
-            user_handler.another_request()
             return user_handler.delay_between_requests
         else:
             return 0
