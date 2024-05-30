@@ -629,6 +629,13 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def slow_down_requests_rate(self):
+        try:
+            message = {"message_type": "requests_rate", "status": "invalid"}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def recv_str(self):
         try:
             # Receive the size as binary data and convert it to an integer
