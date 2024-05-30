@@ -321,6 +321,7 @@ def thread_recv_messages(n, addr):
                     time.sleep(time_left)
                 else:
                     n.slow_down_requests_rate()
+                    logger.info(f"send slow down requests rate to {User}")
                     continue
             if message_type == "connect_udp_port":
                 udp_address = data.get("udp_address")
