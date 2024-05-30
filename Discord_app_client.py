@@ -988,6 +988,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.play_ding_sound_effect()
         self.current_search_song_dict = result_dict
         self.music_box.insert_search_data(result_dict)
+        self.play_search_result()
 
     def play_search_result(self):
         if self.current_search_song_dict is not None:
