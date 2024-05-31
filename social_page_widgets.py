@@ -231,7 +231,6 @@ class FriendsBox(QWidget):
             self.search_box_color = "black"
 
         if self.parent.friends_box_page == "online":
-
             friends_box_list = []
             try:
                 if self.parent.current_friends_box_search:
@@ -241,100 +240,9 @@ class FriendsBox(QWidget):
             except Exception as e:
                 print(f"error in friends_box{e}")
 
-            self.social_label = QLabel(f"ONLINE — {len(friends_box_list)}", self)
-            self.social_label.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
-
-            # Adjust the position and size of the label as needed
-            self.social_label.move(search_x, search_y + 60)
-            self.social_label.adjustSize()  # Adjust the size to fit the content
-
-            self.online_button.setStyleSheet(selecting_button_pressed_stylesheet)
-
-            self.search = QLineEdit(self)
-            self.search.setPlaceholderText("Search")
-            self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
-            self.search.setGeometry(search_x, search_y, search_width, search_height)
-            self.search.textChanged.connect(self.on_text_changed_in_contact_search)
-
-            self.default_starting_y = 200
-            self.friend_labels = []
-            friend_starter_y = 200 + (self.parent.friends_box_index * -50)
-            self.parent.friends_box_index_y_start = friend_starter_y
-
-            friends_label_x = search_x
-            for friend in friends_box_list:
-                friend_label = QLabel(friend, self)
-                friend_label.setStyleSheet(style_sheet)
-                friend_label.move(friends_label_x + 25, friend_starter_y)
-                friend_label.setFixedHeight(self.font_size)  # Increase height
-                friend_label.adjustSize()  # Ensure the label size is adjusted to its content
-
-                line = QFrame(self)
-                line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
-                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
-
-                chat_button = QPushButton(self)
-                chat_button_x = 1235
-                self.chat_label = QLabel("Message", self)
-                self.raised_elements.append(self.chat_label)
-                self.connect_button_label_pair(
-                    chat_button,
-                    self.chat_label,
-                    "Message",
-                    "discord_app_assets/press_chat_icon.png",
-                    self.chat_label,
-                    chat_button_x,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                remove_friend_button = QPushButton(self)
-                remove_friend_button_x = chat_button_x - 60
-                self.remove_friend_label = QLabel("Remove", self)
-                self.raised_elements.append(self.remove_friend_label)
-                self.connect_button_label_pair(
-                    remove_friend_button,
-                    self.remove_friend_label,
-                    "Remove",
-                    "discord_app_assets/remove_friend_icon.png",
-                    self.remove_friend_label,
-                    remove_friend_button_x,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                block_friend_button = QPushButton(self)
-                self.block_friend_label = QLabel("Block", self)
-                self.raised_elements.append(self.block_friend_label)
-                self.connect_button_label_pair(
-                    block_friend_button,
-                    self.block_friend_label,
-                    "Block",
-                    "discord_app_assets/block_icon.png",
-                    self.block_friend,
-                    remove_friend_button_x - 60,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                circle_label = QLabel(self)
-                circle_label.setGeometry(friends_label_x, friend_starter_y + 20, 20, 20)
-                if friend in self.parent.online_users_list:
-                    self.draw_circle(circle_label, "green")
-                else:
-                    self.draw_circle(circle_label, "gray")
-                if friend_starter_y > self.parent.height():
-                    self.parent.is_friends_box_full = True
-                    print("smaller then 0")
-                    break
-
-                friend_starter_y += 70
-                self.friend_labels.append(friend_label)
-                self.raise_all_element()
-            if friend_starter_y < self.parent.height():
-                self.parent.is_friends_box_full = False
-
+            self.setup_friends_box(friends_box_list, self.online_button, selecting_button_pressed_stylesheet,
+                                   f"ONLINE — {len(friends_box_list)}", search_x, search_y, search_width, search_height,
+                                   friend_x, border2_width)
         if self.parent.friends_box_page == "all":
             friends_box_list = []
             try:
@@ -344,102 +252,9 @@ class FriendsBox(QWidget):
                     friends_box_list = self.parent.friends_list
             except Exception as e:
                 print(f"error in friends_box{e}")
-            # Friends Label
-            self.all_button.setStyleSheet(selecting_button_pressed_stylesheet)
-
-            self.social_label = QLabel(f"ALL FRIENDS — {len(friends_box_list)}", self)
-            self.social_label.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
-
-            # Adjust the position and size of the label as needed
-            self.social_label.move(search_x, search_y + 60)
-            self.social_label.adjustSize()  # Adjust the size to fit the content
-
-            self.search = QLineEdit(self)
-            self.search.setPlaceholderText("Search")
-            self.search.setStyleSheet(
-                f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
-            self.search.setGeometry(search_x, search_y, search_width, search_height)
-            self.search.textChanged.connect(self.on_text_changed_in_contact_search)
-
-            self.default_starting_y = 200
-            self.friend_labels = []
-            friend_starter_y = 200 + (self.parent.friends_box_index * -50)
-            self.parent.friends_box_index_y_start = friend_starter_y
-
-            friends_label_x = search_x
-            for friend in friends_box_list:
-                friend_label = QLabel(friend, self)
-                friend_label.setStyleSheet(style_sheet)
-                friend_label.move(friends_label_x + 25, friend_starter_y)
-                friend_label.setFixedHeight(self.font_size)  # Increase height
-                friend_label.adjustSize()  # Ensure the label size is adjusted to its content
-
-                line = QFrame(self)
-                line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
-                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
-
-                chat_button = QPushButton(self)
-                chat_button_x = 1235
-                self.chat_label = QLabel("Message", self)
-                self.raised_elements.append(self.chat_label)
-                self.connect_button_label_pair(
-                    chat_button,
-                    self.chat_label,
-                    "Message",
-                    "discord_app_assets/press_chat_icon.png",
-                    self.open_chat,
-                    chat_button_x,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                remove_friend_button = QPushButton(self)
-                remove_friend_button_x = chat_button_x - 60
-                self.remove_friend_label = QLabel("Remove", self)
-                self.raised_elements.append(self.remove_friend_label)
-                self.connect_button_label_pair(
-                    remove_friend_button,
-                    self.remove_friend_label,
-                    "Remove",
-                    "discord_app_assets/remove_friend_icon.png",
-                    self.remove_friend,
-                    remove_friend_button_x,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                block_friend_button = QPushButton(self)
-
-                self.block_friend_label = QLabel("Block", self)
-                self.raised_elements.append(self.block_friend_label)
-                self.connect_button_label_pair(
-                    block_friend_button,
-                    self.block_friend_label,
-                    "Block",
-                    "discord_app_assets/block_icon.png",
-                    self.block_friend,
-                    remove_friend_button_x - 60,
-                    friend_starter_y + 10,
-                    friend  # Pass the friend parameter here
-                )
-
-                circle_label = QLabel(self)
-                circle_label.setGeometry(friends_label_x, friend_starter_y + 20, 20, 20)
-                if friend in self.parent.online_users_list:
-                    self.draw_circle(circle_label, "green")
-                else:
-                    self.draw_circle(circle_label, "gray")
-                if friend_starter_y > self.parent.height():
-                    self.parent.is_friends_box_full = True
-                    print("smaller then 0")
-                    break
-
-                friend_starter_y += 70
-                self.friend_labels.append(friend_label)
-                self.raise_all_element()
-            if friend_starter_y < self.parent.height():
-                self.parent.is_friends_box_full = False
-
+            self.setup_friends_box(friends_box_list, self.all_button, selecting_button_pressed_stylesheet,
+                                   f"ALL FRIENDS — {len(friends_box_list)}", search_x, search_y, search_width,
+                                   search_height, friend_x, border2_width)
         if self.parent.friends_box_page == "pending":
             try:
                 friends_box_list = []
@@ -643,6 +458,117 @@ class FriendsBox(QWidget):
         self.already_sent_request.move(search_x, search_y + 100 + search_height)
         self.already_sent_request.hide()
         self.already_sent_request.setStyleSheet('''color: gray;''')
+
+    def setup_social_label(self, text, y_offset, search_x, search_y):
+        self.social_label = QLabel(text, self)
+        self.social_label.setStyleSheet("color: white; font-size: 12px; font-weight: bold;")
+        self.social_label.move(search_x, search_y + y_offset)
+        self.social_label.adjustSize()
+
+    def setup_search_input(self, search_x, search_y, search_width, search_height):
+        self.search = QLineEdit(self)
+        self.search.setPlaceholderText("Search")
+        self.search.setStyleSheet(
+            f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
+        self.search.setGeometry(search_x, search_y, search_width, search_height)
+        self.search.textChanged.connect(self.on_text_changed_in_contact_search)
+
+    def setup_friend_ui(self, friend, y_position, label_x, chat_button_x, friends_label_x, friend_x, border2_width):
+        style_sheet = '''
+            color: white;
+            font-size: 40px;
+            margin-bottom: 10px;
+        '''
+        friend_label = QLabel(friend, self)
+        friend_label.setStyleSheet(style_sheet)
+        friend_label.move(label_x + 25, y_position)
+        friend_label.setFixedHeight(self.font_size)
+        friend_label.adjustSize()
+
+        line = QFrame(self)
+        line.setGeometry(friend_x - 40, y_position + self.font_size + 5, border2_width, 2)
+        line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")
+
+        chat_button = QPushButton(self)
+        self.chat_label = QLabel("Message", self)
+        self.raised_elements.append(self.chat_label)
+        self.connect_button_label_pair(
+            chat_button,
+            self.chat_label,
+            "Message",
+            "discord_app_assets/press_chat_icon.png",
+            self.open_chat,
+            chat_button_x,
+            y_position + 10,
+            friend
+        )
+
+        remove_friend_button = QPushButton(self)
+        remove_friend_button_x = chat_button_x - 60
+        self.remove_friend_label = QLabel("Remove", self)
+        self.raised_elements.append(self.remove_friend_label)
+        self.connect_button_label_pair(
+            remove_friend_button,
+            self.remove_friend_label,
+            "Remove",
+            "discord_app_assets/remove_friend_icon.png",
+            self.remove_friend,
+            remove_friend_button_x,
+            y_position + 10,
+            friend
+        )
+
+        block_friend_button = QPushButton(self)
+        self.block_friend_label = QLabel("Block", self)
+        self.raised_elements.append(self.block_friend_label)
+        self.connect_button_label_pair(
+            block_friend_button,
+            self.block_friend_label,
+            "Block",
+            "discord_app_assets/block_icon.png",
+            self.block_friend,
+            remove_friend_button_x - 60,
+            y_position + 10,
+            friend
+        )
+
+        circle_label = QLabel(self)
+        circle_label.setGeometry(friends_label_x, y_position + 20, 20, 20)
+        if friend in self.parent.online_users_list:
+            self.draw_circle(circle_label, "green")
+        else:
+            self.draw_circle(circle_label, "gray")
+
+        return friend_label
+
+    def setup_friends_box(self, friends_box_list, button, button_stylesheet, label_text, search_x, search_y,
+                          search_width, search_height, friend_x, border2_width):
+
+        friends_label_x = search_x
+        friend_starter_y = 200 + (self.parent.friends_box_index * -50)
+        self.parent.friends_box_index_y_start = friend_starter_y
+
+        button.setStyleSheet(button_stylesheet)
+        self.setup_social_label(label_text, 60, search_x, search_y)
+        self.setup_search_input(search_x, search_y, search_width, search_height)
+
+        self.friend_labels = []
+
+        for friend in friends_box_list:
+            friend_label = self.setup_friend_ui(friend, friend_starter_y, friends_label_x, 1235, friends_label_x,
+                                                friend_x, border2_width)
+            self.friend_labels.append(friend_label)
+
+            if friend_starter_y > self.parent.height():
+                self.parent.is_friends_box_full = True
+                print("smaller than 0")
+                break
+
+            friend_starter_y += 70
+            self.raise_all_element()
+
+        if friend_starter_y < self.parent.height():
+            self.parent.is_friends_box_full = False
 
     def connect_button_label_pair(self, button, label, label_text, icon_path, click_callback, x, y, friend):
         button.setFixedSize(40, 40)
