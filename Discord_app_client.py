@@ -978,11 +978,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"Couldn't remove song {e}")
 
     def music_button_clicked(self):
-        self.chat_clicked_var = False
-        self.social_clicked_var = False
-        self.setting_clicked = False
-        self.music_clicked = True
-        self.stacked_widget.setCurrentIndex(3)
+        if not self.music_clicked:
+            self.current_friends_box_search = False
+            self.current_chat_box_search = False
+            self.temp_search_list = []
+            self.stacked_widget.setCurrentIndex(3)
+            self.chat_clicked_var = False
+            self.setting_clicked = False
+            self.social_clicked_var = False
+            self.music_clicked = True
 
     def insert_search_result(self, result_dict, is_play):
         self.play_ding_sound_effect()
@@ -1387,6 +1391,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.stacked_widget.setCurrentIndex(2)
         elif self.setting_clicked:
             self.stacked_widget.setCurrentIndex(1)
+        elif self.music_clicked:
+            self.stacked_widget.setCurrentIndex(3)
 
     def stop_watching_video(self):
         try:
@@ -1555,24 +1561,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"end_current_call error: {e}")
 
-    def parse_group_caller_format(self, input_format):
-        # Define a regular expression pattern to capture the information
-        pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
-
-        # Use the pattern to match the input_format
-        match = pattern.match(input_format)
-
-        if match:
-            # Extract the matched groups
-            group_id = int(match.group(1))
-            group_name = match.group(2).strip()
-            group_caller = match.group(3).strip()
-
-            return group_id, group_name, group_caller
-        else:
-            # Return None if no match is found
-            return None
-
     def initiate_call(self):
         self.is_in_a_call = True
         self.is_calling = False
@@ -1591,7 +1579,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.calling_to = ""
             elif self.getting_called_by != "":
                 if "(" in self.getting_called_by:
-                    group_id, group_name, group_caller = self.parse_group_caller_format(self.getting_called_by)
+                    group_id, group_name, group_caller = parse_group_caller_format(self.getting_called_by)
                     self.in_call_with = "(" + str(group_id) + ")" + group_name
                     print(f"in call with {self.in_call_with}")
                     self.getting_called_by = ""
@@ -1665,6 +1653,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.update_settings_dict()
             self.setting_clicked = False
             self.social_clicked_var = False
+            self.music_clicked = False
 
     def settings_clicked(self):
         try:
@@ -1675,6 +1664,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.chat_clicked_var = False
                 self.setting_clicked = True
                 self.social_clicked_var = False
+                self.music_clicked = False
         except Exception as e:
             print(e)
 
@@ -1687,6 +1677,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.chat_clicked_var = False
             self.setting_clicked = False
             self.social_clicked_var = True
+            self.music_clicked = False
 
     def updated_social_page(self):
         try:
@@ -1830,8 +1821,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 print(f"expection in key press event:{e}")
         elif event.key() == Qt.Key_Escape:
             if not self.chat_clicked_var:
-                self.chat_clicked()
-                self.updated_chat()
+                if not self.music_clicked:
+                    self.chat_clicked()
+                    self.updated_chat()
+                else:
+                    self.chat_clicked()
+                    self.update_chat_page_without_messages()
             else:
                 if self.is_create_group_pressed:
                     self.is_create_group_pressed = False
