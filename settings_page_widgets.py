@@ -52,7 +52,6 @@ def create_slider(parent, min_value, max_value, value, connected_function, x, y,
     return volume_slider
 
 
-
 def file_to_bytes(file_path):
     with open(file_path, "rb") as file:
         image_bytes = file.read()
