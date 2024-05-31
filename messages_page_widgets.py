@@ -2196,7 +2196,7 @@ class MessagesBox(QWidget):
 
             # Create a layout for the inner widget
             self.layout = QVBoxLayout(inner_widget)
-            self.space_between_widgets = 10
+            self.space_between_widgets = int(self.parent.screen_height * 0.00925925925)
             self.layout.setSpacing(self.space_between_widgets)  # Adjust this value as needed
             self.layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # Align widgets to the left and top
 
@@ -2376,10 +2376,10 @@ class MessagesBox(QWidget):
                 audio_label = QPushButton(f"{file_name}", self)
                 audio_label.setStyleSheet(
                     f"background-color: {self.main_page_object.standard_hover_color}; border: none; color: white; font-size: {self.main_page_object.font_size}px; padding-left: 10%; margin: 0;")
-                audio_label.setFixedHeight(30)
+                audio_label.setFixedHeight(int(self.parent.screen_height * 0.02777777777))
                 play_button = QPushButton(audio_label)
                 play_button_icon_path = "discord_app_assets/play_video_icon.png"
-                play_button_size = (25, 25)
+                play_button_size = (int(self.parent.screen_height * 0.02314814814), int(self.parent.screen_height * 0.02314814814))
                 set_button_icon(play_button, play_button_icon_path, play_button_size[0], play_button_size[1])
                 play_button.clicked.connect(
                     lambda _, audio_bytes=audio_bytes: play_mp3_from_bytes(audio_bytes,
@@ -2540,7 +2540,7 @@ class CreateGroupBox(QWidget):
 
             label = QLabel(f"Select friends", self.parent)
             label.setStyleSheet("""color: white;font-size: 20px;""")
-            label.move(starter_x + int(self.parent.screen_width * 0.0104), starter_y_of_border + 10)
+            label.move(starter_x + int(self.parent.screen_width * 0.0104), starter_y_of_border + int(self.parent.screen_height * 0.00925925925))
             Page = 0
             if len(self.friends_list) > 0:
                 Page = self.create_group_index + 1
@@ -2559,11 +2559,11 @@ class CreateGroupBox(QWidget):
                 page_plus_selected_text = f"Page({Page}/{calculate_division_value(len(self.friends_list))}) Selected({len(self.selected_group_members)})"
             self.page_plus_selected_label = QLabel(page_plus_selected_label_text, self.parent)
             self.page_plus_selected_label.setStyleSheet("""color: white;font-size: 14px;""")
-            self.page_plus_selected_label.move(starter_x + int(self.parent.screen_width * 0.0104), starter_y_of_border + 45)
+            self.page_plus_selected_label.move(starter_x + int(self.parent.screen_width * 0.0104), starter_y_of_border + int(self.parent.screen_height * 0.04166666666))
 
             self.amount_of_people_to_add_text_label = QLabel(page_plus_selected_text, self.parent)
             self.amount_of_people_to_add_text_label.setStyleSheet("""color: white;font-size: 12px;""")
-            self.amount_of_people_to_add_text_label.move(starter_x + 40, starter_y_of_border + 75)
+            self.amount_of_people_to_add_text_label.move(starter_x + int(self.parent.screen_width * 0.02083333333), starter_y_of_border + int(self.parent.screen_height * 0.06944444444))
 
             style_sheet = f"""
             QPushButton {{
@@ -2578,19 +2578,19 @@ class CreateGroupBox(QWidget):
                 }}
             """
             scroll_up_button = QPushButton("↑", self.parent)
-            scroll_up_button.move(starter_x + int(self.parent.screen_width * 0.12), starter_y_of_border + 25)
+            scroll_up_button.move(starter_x + int(self.parent.screen_width * 0.12), starter_y_of_border + int(self.parent.screen_height * 0.02314814814))
             scroll_up_button.setFixedWidth(int(self.parent.screen_width * 0.02604))
             scroll_up_button.setStyleSheet(style_sheet)
             scroll_up_button.clicked.connect(partial(self.parent.handle_create_group_index, "up"))
 
             scroll_down_button = QPushButton("↓", self.parent)
-            scroll_down_button.move(starter_x + int(self.parent.screen_width * 0.12), starter_y_of_border + 55)
+            scroll_down_button.move(starter_x + int(self.parent.screen_width * 0.12), starter_y_of_border + int(self.parent.screen_height * 0.05092592592))
             scroll_down_button.setFixedWidth(int(self.parent.screen_width * 0.02604))
             scroll_down_button.setStyleSheet(style_sheet)
             scroll_down_button.clicked.connect(partial(self.parent.handle_create_group_index, "down"))
 
             starter_x = self.x
-            starter_y = self.y + 150
+            starter_y = self.y + int(self.parent.screen_height * 0.13888888888)
             i = 0
             for friend in self.friends_list:
                 if self.create_group_index * 5 <= i < (self.create_group_index + 1) * 5:
@@ -2631,16 +2631,16 @@ class CreateGroupBox(QWidget):
                         friend_checkbox.setChecked(True)
                     friend_checkbox.friend_name = friend  # Store friend's name as an attribute
                     friend_checkbox.stateChanged.connect(self.parent.friend_checkbox_changed)
-                    height = friend_label.height() + 30
-                    friend_label.setGeometry(starter_x + 10, starter_y, adding_border_width - int(self.parent.screen_width * 0.0104), height)
-                    friend_checkbox.move(starter_x + 260, starter_y + int(self.parent.screen_height * 0.01388))
-                    starter_y += friend_label.height() - 20
+                    height = friend_label.height() + int(self.parent.screen_height * 0.02777777777)
+                    friend_label.setGeometry(starter_x + int(self.parent.screen_width * 0.00520833333), starter_y, adding_border_width - int(self.parent.screen_width * 0.0104), height)
+                    friend_checkbox.move(starter_x + int(self.parent.screen_width * 0.13541666666), starter_y + int(self.parent.screen_height * 0.01388))
+                    starter_y += friend_label.height() - int(self.parent.screen_height * 0.01851851851)
                     friend_label.raise_()
                     friend_checkbox.raise_()
                 i += 1
 
             button = QPushButton(submit_button_text, self.parent)
-            button.move(starter_x + int(self.parent.screen_height * 0.01388), starter_y_of_border + adding_border_height - 80)
+            button.move(starter_x + int(self.parent.screen_height * 0.01388), starter_y_of_border + adding_border_height - int(self.parent.screen_height * 0.07407407407))
             button.setFixedHeight(self.parent.friends_button_height)
             if self.box_format == "create":
                 button.clicked.connect(self.parent.create_dm_pressed)
@@ -2671,7 +2671,7 @@ class CreateGroupBox(QWidget):
             """)
 
             button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            button.setFixedWidth(adding_border_width - 30)
+            button.setFixedWidth(adding_border_width - int(self.parent.screen_width * 0.015625))
         except Exception as e:
             print(f"error in creating group box {e}")
 
