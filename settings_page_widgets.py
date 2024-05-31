@@ -854,7 +854,7 @@ class SettingsBox(QWidget):
     def create_input_mode_select_button(self, starter_y, buttons_x):
         regular_blue = "#192549"
         brighter_blue = self.parent.standard_hover_color
-        width_buttons = 620
+        width_buttons = int(self.screen_width * 0.32291)
         height_buttons = 50
         selected_path = "discord_app_assets/select_circle.png"
         not_selected_path = "discord_app_assets/not_select_circle.png"
