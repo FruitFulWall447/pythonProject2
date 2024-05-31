@@ -1086,7 +1086,7 @@ class ChatBox(QWidget):
                     # Set a fixed width for the label
                     self.chat_name_label.setFixedWidth(int(self.screen_width * 0.1041))
                     chat_name_label_x = int(self.screen_width * 0.3229)
-                    self.chat_name_label.move(chat_name_label_x, 3)
+                    self.chat_name_label.move(chat_name_label_x, int(self.screen_height * 0.00277778))
                     self.messages_list = messages_list
                     self.message_labels = []
 
@@ -1144,9 +1144,10 @@ class ChatBox(QWidget):
                             padding: 5px;
                             margin-bottom: 2px;
                         ''')
-                        friend_starter_y = 170
-                        friend_x = 250
-                        self.chats_label.move(friend_x + 15, friend_starter_y - 28)
+
+                        friend_starter_y = int(self.screen_height * 0.1574)
+                        friend_x = int(self.screen_width * 0.13)
+                        self.chats_label.move(friend_x + int(self.screen_width * 0.0078), friend_starter_y - 28)
                         friends_button_y = 90
                         friends_button_height = self.friends_button_height
                         border_height = 912
@@ -1170,7 +1171,7 @@ class ChatBox(QWidget):
                                             border-left: 2px solid {self.parent.standard_hover_color}; /* Left border */
                                             border-right: 2px solid {self.parent.standard_hover_color}; /* Right border */
                                         ''')
-                        self.border_label2.setGeometry(friend_x, 0, border_width, 170)
+                        self.border_label2.setGeometry(friend_x, 0, border_width, int(self.screen_height * 0.1574))
                         self.border_label2.lower()
 
                         find_contact_pos = (260, 20)
@@ -1221,7 +1222,7 @@ class ChatBox(QWidget):
                         self.friends_button.setIcon(icon)
 
                         # Set the position and size of the button
-                        self.friends_button.setGeometry(friend_x + 5, friends_button_y - 10, border_width - 15,
+                        self.friends_button.setGeometry(friend_x + 5, friends_button_y - 10, border_width - int(self.screen_width * 0.0078),
                                                         friends_button_height)  # Adjust size as needed
 
                         # Set the text alignment to show both the icon and text
@@ -1235,15 +1236,15 @@ class ChatBox(QWidget):
                     print(f"error in creating direct mesages button and friends_button {e}")
 
                 try:
-                    friend_x = 250
-                    x, y = 250, 170
+                    friend_x = int(self.screen_width * 0.13)
+                    x, y = int(self.screen_width * 0.13), int(self.screen_height * 0.1574)
                     width, height = 350, 900
                     if not self.parent.current_chat_box_search:
                         chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
-                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
+                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                     else:
                         chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
-                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget])
+                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                 except Exception as e:
                     print(f"error in showing chats list{e}")
 
@@ -2632,14 +2633,14 @@ class CreateGroupBox(QWidget):
                     friend_checkbox.stateChanged.connect(self.parent.friend_checkbox_changed)
                     height = friend_label.height() + 30
                     friend_label.setGeometry(starter_x + 10, starter_y, adding_border_width - 20, height)
-                    friend_checkbox.move(starter_x + 260, starter_y + 15)
+                    friend_checkbox.move(starter_x + 260, starter_y + int(self.parent.screen_height * 0.01388))
                     starter_y += friend_label.height() - 20
                     friend_label.raise_()
                     friend_checkbox.raise_()
                 i += 1
 
             button = QPushButton(submit_button_text, self.parent)
-            button.move(starter_x + 15, starter_y_of_border + adding_border_height - 80)
+            button.move(starter_x + int(self.parent.screen_height * 0.01388), starter_y_of_border + adding_border_height - 80)
             button.setFixedHeight(self.parent.friends_button_height)
             if self.box_format == "create":
                 button.clicked.connect(self.parent.create_dm_pressed)
@@ -2708,14 +2709,14 @@ class FriendsChatListWidget(QWidget):
             for friend in friend_list:
                 try:
                     button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self)
-                    button.setGeometry(friend_x, friend_starter_y, 100, self.chat_box_object.friends_button_height)
+                    button.setGeometry(friend_x, friend_starter_y, int(self.chat_box_object.screen_width * 0.052), self.chat_box_object.friends_button_height)
                     friend_starter_y += self.chat_box_object.friends_button_height
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
 
 
 class ScrollAreaWidget(QScrollArea):
-    def __init__(self, parent, x, y, width, height, items_list):
+    def __init__(self, parent, x, y, width, height, items_list, is_vertical):
         super().__init__(parent)
 
         # Set the geometry (position and size) of the scroll area
@@ -2739,7 +2740,10 @@ class ScrollAreaWidget(QScrollArea):
         self.scroll_area_widget_contents = QWidget()
 
         # Create a layout for the container widget
-        self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
+        if is_vertical:
+            self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
+        else:
+            self.scroll_area_layout = QHBoxLayout(self.scroll_area_widget_contents)
 
         self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area_layout.setSpacing(0)
