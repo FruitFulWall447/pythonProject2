@@ -249,12 +249,12 @@ class VideoPlayer(QWidget):
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
 
         exit_watch_button = QPushButton(self)
-        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + 20, slider_y + int(screen_height * 0.005))
+        exit_watch_button_x, exit_watch_button_y = (slider_x + slider_width + int(screen_width*0.01), slider_y + int(screen_height * 0.005))
         make_q_object_clear(exit_watch_button)
         exit_watch_button.clicked.connect(self.stop_watching)
 
         icon_path = "discord_app_assets/exit_button.png"
-        button_size = (30, 30)
+        button_size = (int(screen_width*0.015625), int(screen_width*0.015625))
         set_button_icon(exit_watch_button, icon_path, button_size[0], button_size[1])
         exit_watch_button.setGeometry(exit_watch_button_x, exit_watch_button_y, button_size[0], button_size[1])
 
@@ -415,7 +415,7 @@ class PlaylistWidget(QWidget):
                            }}
                                    """
             self.last_selected_row = None
-            table_x, table_y = 0, 70
+            table_x, table_y = 0, int(self.parent.screen_height * 0.0648)
             table_width, table_height = int(self.parent.screen_width * 0.99), int(self.parent.screen_height * 0.075)
             self.search_table = self.create_table_widget(table_width, table_height, table_x, table_y, "")
             self.search_table.insertRow(0)
@@ -428,7 +428,7 @@ class PlaylistWidget(QWidget):
 
             self.search_song_entry = QLineEdit(self)
             search_song_entry_x, search_song_entry_y = int(self.parent.screen_width * 0.35), 0
-            width, height = 450, 40
+            width, height = int(self.parent.screen_width * 0.234375), int(self.parent.screen_height * 0.037)
             self.search_song_entry.setGeometry(search_song_entry_x, search_song_entry_y, width, height)
             self.search_song_entry.setPlaceholderText("🔍 What do you want to play?")
 
@@ -461,7 +461,7 @@ class PlaylistWidget(QWidget):
             make_q_object_clear(self.playlist_duration_slider_duration_label)
             playlist_duration_slide_x, playlist_duration_slide_y = int(self.parent.screen_width * 0.265), int(
                 self.parent.screen_height * 0.15)
-            playlist_slider_width, playlist_slider_height = 750, 25
+            playlist_slider_width, playlist_slider_height = int(self.parent.screen_width * 0.390625), int(self.parent.screen_height * 0.0231)
 
             self.playlist_duration_slider = create_slider(self, 0, 0, 0, None
                                                           , playlist_duration_slide_x
@@ -494,7 +494,7 @@ class PlaylistWidget(QWidget):
             buttons_y = int(self.parent.screen_height * 0.842)
             playlist_volume_slider_x, playlist_volume_slider_y = int(buttons_width * 1.2), int(
                 self.parent.screen_height * 0.854)
-            playlist_volume_slider_width, playlist_volume_slider_height = 500, 25
+            playlist_volume_slider_width, playlist_volume_slider_height = int(self.parent.screen_width * 0.260), int(self.parent.screen_height*0.02314)
             self.playlist_volume_slider_label = QLabel(self)
             make_q_object_clear(self.playlist_volume_slider_label)
             self.playlist_volume_slider = create_slider(self, 0, 100, self.parent.volume
