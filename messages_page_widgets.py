@@ -1713,6 +1713,7 @@ class ChatBox(QWidget):
                 circular_pic_bytes = self.parent.get_circular_image_bytes_by_name(chat_name)
             set_icon_from_bytes_to_label(profile_image_label, circular_pic_bytes)
         profile_image_label.move(profile_image_x, profile_image_y)
+        profile_image_label.setAlignment(Qt.AlignCenter)
 
         button = QPushButton(parent)
         button.setText(button_text)
@@ -1780,6 +1781,17 @@ class ChatBox(QWidget):
         profile_image_label.raise_()
         if id:
             members_label.raise_()
+            members_label.setAlignment(Qt.AlignCenter)
+
+            # Create a layout for the button and add the labels
+            button_layout = QVBoxLayout(button)
+            button_layout.addWidget(profile_image_label)
+            button_layout.addWidget(members_label)
+            button.setLayout(button_layout)
+        else:
+            button_layout = QVBoxLayout(button)
+            button_layout.addWidget(profile_image_label)
+            button.setLayout(button_layout)
 
         return button
 
@@ -2713,9 +2725,7 @@ class FriendsChatListWidget(QWidget):
         self.layout.setSpacing(0)
         self.chat_box_object = chat_box_object
         self.friends_button_height = int(self.chat_box_object.screen_height * 0.0463)
-        self.container_widget = QWidget(self)  # Container widget for manually positioned buttons
         self.draw_friends_buttons(chats_list)
-        self.layout.addWidget(self.container_widget)  # Add the container widget to the layout
         self.adjustSize()
 
     def draw_friends_buttons(self, friend_list):
@@ -2724,9 +2734,10 @@ class FriendsChatListWidget(QWidget):
         if friend_list is not None:
             for friend in friend_list:
                 try:
-                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self.container_widget)
+                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self)
                     button.move(friend_x, friend_starter_y)  # Use move to set the position within the container widget
                     friend_starter_y += self.chat_box_object.friends_button_height
+                    self.layout.addWidget(button)
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
 
@@ -2775,9 +2786,8 @@ class ScrollAreaWidget(QWidget):
         self.layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
+        self.layout.setAlignment(Qt.AlignTop)
 
-        # Add the scroll area to the layout and set size policy for expanding
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         for item in items_list:
             self.layout.addWidget(item)
         self.scroll_area.setWidget(self.scroll_area_widget_contents)
