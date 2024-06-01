@@ -926,7 +926,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             """)
             for item1 in actions_list:
                 if item1 == "remove_chat":
-                    action_text = f"remove {chat_name}"
+                    action_text = f"remove {chat_name} from chats"
                     action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.remove_chat(chat_name))
                 elif item1 == "exit_group":
