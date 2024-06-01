@@ -905,9 +905,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.update_chat_page_without_messages()
 
     def remove_chat(self, chat_to_remove):
-        self.chats_list.remove(chat_to_remove)
-        self.update_chat_page_without_messages()
-        self.Network.send_remove_chat(chat_to_remove)
+        try:
+            self.chats_list.remove(chat_to_remove)
+            self.update_chat_page_without_messages()
+            self.Network.send_remove_chat(chat_to_remove)
+        except Exception as e:
+            print(e)
 
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
