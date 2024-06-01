@@ -904,6 +904,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.muted_users.append(user)
             self.update_chat_page_without_messages()
 
+    def remove_chat(self, chat_to_remove):
+        self.chats_list.remove(chat_to_remove)
+        self.update_chat_page_without_messages()
+
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
             menu = QMenu(parent)
@@ -919,7 +923,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             for item1 in actions_list:
                 action = menu.addAction(item1.replace("_", " "))
                 if item1 == "remove_chat":
-                    action.triggered.connect(lambda: self.remove_friend(chat_name))
+                    action.triggered.connect(lambda: self.remove_chat(chat_name))
                 elif item1 == "exit_group":
                     action.triggered.connect(lambda: self.exit_group(group_id))
                 elif item1 == "add_friend":

@@ -2708,6 +2708,9 @@ class FriendsChatListWidget(QWidget):
     def __init__(self, chat_box_object, chats_list):
         super().__init__()
         self.setParent(chat_box_object)
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.chat_box_object = chat_box_object
         self.friends_button_height = int(self.chat_box_object.screen_height * 0.0463)
         self.draw_friends_buttons(chats_list)
@@ -2722,57 +2725,37 @@ class FriendsChatListWidget(QWidget):
                     button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self)
                     button.setGeometry(friend_x, friend_starter_y, int(self.chat_box_object.screen_width * 0.052), self.chat_box_object.friends_button_height)
                     friend_starter_y += self.chat_box_object.friends_button_height
+                    self.layout.addWidget(button)
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
 
 
-class ScrollAreaWidget(QScrollArea):
+class ScrollAreaWidget(QWidget):
     def __init__(self, parent, x, y, width, height, items_list, is_vertical):
         super().__init__(parent)
 
-        # Set the geometry (position and size) of the scroll area
-        self.setParent(parent)
-        self.parent_widget = parent
+        # Create the internal scroll area widget
         self.setGeometry(x, y, width, height)
-        self.setWidgetResizable(True)
 
-        # Create a widget to contain labels and buttons
+        self.parent = parent
+        self.scroll_area = QScrollArea(self.parent)
+        self.scroll_area.setGeometry(x, y, width, height)
+
+        self.scroll_area.setWidgetResizable(True)
+
         self.scroll_area_widget_contents = QWidget()
+        self.scroll_area_widget_contents.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
-        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_area_layout.setSpacing(0)
+        # Set the layout for this widget
+        self.layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
-        if not is_vertical:
-            self.setStyleSheet("""
-                QScrollArea {
-                    border: transparent;
-                }
-                QScrollBar:vertical {
-                    border: transparent;
-                }
-                QScrollBar:horizontal {
-                    border: transparent;
-                }
-            """)
-        else:
-            self.setStyleSheet(f"""
-                 QScrollArea {{
-                     border: 2px solid {self.parent_widget.parent.standard_hover_color};
-                }}
-                 QScrollBar:vertical {{
-                     border: 2px solid {self.parent_widget.parent.standard_hover_color};
-                }}
-             QScrollBar:horizontal {{
-                    border: 2px solid {self.parent_widget.parent.standard_hover_color};
-                }}
-             """)
-
-
-        # Add the widgets from items_list to the layout
+        # Add the scroll area to the layout and set size policy for expanding
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         for item in items_list:
-            self.scroll_area_layout.addWidget(item)
-        self.setWidget(self.scroll_area_widget_contents)
+            self.layout.addWidget(item)
+        self.scroll_area.setWidget(self.scroll_area_widget_contents)
 
 
 class CallIconsWidget(QWidget):
