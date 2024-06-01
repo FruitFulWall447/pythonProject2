@@ -2739,6 +2739,30 @@ class ScrollAreaWidget(QWidget):
 
         self.parent = parent
         self.scroll_area = QScrollArea(self.parent)
+        if not is_vertical:
+            self.scroll_area.setStyleSheet("""
+                QScrollArea {
+                    border: transparent;
+                }
+                QScrollBar:vertical {
+                    border: transparent;
+                }
+                QScrollBar:horizontal {
+                    border: transparent;
+                }
+            """)
+        else:
+            self.scroll_area.setStyleSheet(f"""
+                 QScrollArea {{
+                     border: 2px solid {self.parent.parent.standard_hover_color};
+                }}
+                 QScrollBar:vertical {{
+                     border: 2px solid {self.parent.parent.standard_hover_color};
+                }}
+             QScrollBar:horizontal {{
+                    border: 2px solid {self.parent.parent.standard_hover_color};
+                }}
+             """)
         self.scroll_area.setGeometry(x, y, width, height)
 
         self.scroll_area.setWidgetResizable(True)
