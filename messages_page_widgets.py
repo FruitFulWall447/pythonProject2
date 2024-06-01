@@ -1781,7 +1781,7 @@ class ChatBox(QWidget):
         profile_image_label.raise_()
         if id:
             members_label.raise_()
-            members_label.setAlignment(Qt.AlignCenter)
+            members_label.setAlignment(Qt.AlignLeft | Qt.AlignCenter)
 
             # Create a layout for the button and add the labels
             button_layout = QVBoxLayout(button)
