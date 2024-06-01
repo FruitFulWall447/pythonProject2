@@ -2730,6 +2730,7 @@ class ScrollAreaWidget(QScrollArea):
         super().__init__(parent)
 
         # Set the geometry (position and size) of the scroll area
+
         self.parent_widget = parent
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
@@ -2760,8 +2761,8 @@ class ScrollAreaWidget(QScrollArea):
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
-        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.scroll_area_widget_contents.setSizePolicy(size_policy)
+        # size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self.scroll_area_widget_contents.setSizePolicy(size_policy)
 
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
@@ -2777,7 +2778,6 @@ class ScrollAreaWidget(QScrollArea):
 
         # Set the container widget as the widget for the scroll area
         self.setWidget(self.scroll_area_widget_contents)
-        self.updateGeometry()
 
 
 class CallIconsWidget(QWidget):
