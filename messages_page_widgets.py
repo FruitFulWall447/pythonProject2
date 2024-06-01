@@ -2733,22 +2733,41 @@ class ScrollAreaWidget(QScrollArea):
 
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
-        # self.setStyleSheet(f"""
-        #     QScrollArea {{
-        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
-        #     }}
-        #     QScrollBar:vertical {{
-        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
-        #     }}
-        #     QScrollBar:horizontal {{
-        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
-        #     }}
-        # """)
+        if not is_vertical:
+            self.setStyleSheet(f"""
+                QScrollArea {{
+                    border: transparent;
+                }}
+                QScrollBar:vertical {{
+                    border: transparent;
+                }}
+                QScrollBar:horizontal {{
+                    border: transparent;
+                }}
+            """)
+        else:
+            self.setStyleSheet(f"""
+                 QScrollArea {{
+                     border: 2px solid {self.parent_widget.parent.standard_hover_color};
+                }}
+                 QScrollBar:vertical {{
+                     border: 2px solid {self.parent_widget.parent.standard_hover_color};
+                }}
+             QScrollBar:horizontal {{
+                    border: 2px solid {self.parent_widget.parent.standard_hover_color};
+                }}
+             """)
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
 
         # Create a layout for the container widget
+        if not is_vertical:
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        else:
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
         else:
