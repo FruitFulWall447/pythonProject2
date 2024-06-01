@@ -1098,13 +1098,13 @@ class UserHandler:
             self.current_chat = new_chat
             self.reset_vars()
             self.server_handler_object.logger.info(f"{self.username} current chat is {new_chat}")
+            list_dict_of_messages = database_func.get_last_amount_of_messages(self.username, self.current_chat, 0
+                                                                              , self.chat_max_index)
+            self.user_net.send_messages_list(list_dict_of_messages)
             if self.current_chat not in database_func.get_user_chats(self.username):
                 database_func.add_chat_to_user(self.username, self.current_chat)
                 self.user_net.add_new_chat(self.current_chat)
                 self.server_handler_object.logger.info(f"added new chat to {self.username}")
-            list_dict_of_messages = database_func.get_last_amount_of_messages(self.username, self.current_chat, 0
-                                                                              , self.chat_max_index)
-            self.user_net.send_messages_list(list_dict_of_messages)
 
     def more_messages(self):
         list_dict_of_messages = database_func.get_last_amount_of_messages(self.username, self.current_chat,
