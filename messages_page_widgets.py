@@ -935,7 +935,7 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, call_icons_widget.height(), [call_icons_widget], False)
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 120, [call_icons_widget], False)
                         except Exception as e:
                             print(f"error in incall func {e}")
                 except Exception as e:
@@ -2733,17 +2733,17 @@ class ScrollAreaWidget(QScrollArea):
 
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
-        self.setStyleSheet(f"""
-            QScrollArea {{
-                border: 2px solid {self.parent_widget.parent.standard_hover_color};
-            }}
-            QScrollBar:vertical {{
-                border: 2px solid {self.parent_widget.parent.standard_hover_color};
-            }}
-            QScrollBar:horizontal {{
-                border: 2px solid {self.parent_widget.parent.standard_hover_color};
-            }}
-        """)
+        # self.setStyleSheet(f"""
+        #     QScrollArea {{
+        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
+        #     }}
+        #     QScrollBar:vertical {{
+        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
+        #     }}
+        #     QScrollBar:horizontal {{
+        #         border: 2px solid {self.parent_widget.parent.standard_hover_color};
+        #     }}
+        # """)
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
