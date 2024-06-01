@@ -2767,6 +2767,7 @@ class CallIconsWidget(QWidget):
         self.parent = parent
         self.main_page_object = self.parent.parent
         self.current_group_id = current_group_id
+        self.put_call_icons_on_the_screen()
 
     def put_call_icons_on_the_screen(self):
         try:
