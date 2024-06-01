@@ -2775,9 +2775,11 @@ class ScrollAreaWidget(QScrollArea):
         # Add the widgets from items_list to the layout
         for item in items_list:
             self.scroll_area_layout.addWidget(item)
+            print(item.height())
 
         # Set the container widget as the widget for the scroll area
         self.setWidget(self.scroll_area_widget_contents)
+        self.updateGeometry()
 
 
 class CallIconsWidget(QWidget):
