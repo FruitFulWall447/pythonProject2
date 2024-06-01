@@ -930,7 +930,12 @@ class ChatBox(QWidget):
                             self.end_call_button.move(end_call_button_x,
                                                       share_screen_y-int(self.screen_height * 0.013888))
                             self.end_call_button.clicked.connect(self.end_current_call)
-                            self.put_call_icons_on_the_screen()
+
+                            call_icons_widget = CallIconsWidget(self, self.current_group_id)
+                            starts_x = 900
+                            y_of_profiles = 95
+                            call_icons_widget.move(starts_x, y_of_profiles)
+                            # self.put_call_icons_on_the_screen()
                         except Exception as e:
                             print(f"error in incall func {e}")
                 except Exception as e:
