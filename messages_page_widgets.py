@@ -2786,7 +2786,10 @@ class ScrollAreaWidget(QWidget):
         self.layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        self.layout.setAlignment(Qt.AlignTop)
+        if is_vertical:
+            self.layout.setAlignment(Qt.AlignTop)
+        else:
+            self.layout.setAlignment(Qt.AlignLeft)
 
         for item in items_list:
             self.layout.addWidget(item)
