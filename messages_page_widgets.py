@@ -933,7 +933,7 @@ class ChatBox(QWidget):
 
                             call_icons_widget = CallIconsWidget(self, self.current_group_id)
                             starts_x = 900
-                            y_of_profiles = 95
+                            y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
                             # self.put_call_icons_on_the_screen()
                         except Exception as e:
@@ -983,7 +983,10 @@ class ChatBox(QWidget):
                             self.join_call_button = self.create_custom_in_call_button(join_button_width_or_height, join_button_width_or_height,
                                                                                       join_button_x, join_button_y,  self.join_call)
                             set_button_icon(self.join_call_button, icon, icon_size, icon_size)
-                            self.put_call_icons_on_the_screen()
+                            call_icons_widget = CallIconsWidget(self, self.current_group_id)
+                            starts_x = 900
+                            y_of_profiles = 60
+                            call_icons_widget.move(starts_x, y_of_profiles)
                     try:
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
