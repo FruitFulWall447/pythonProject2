@@ -2762,6 +2762,9 @@ class CallIconsWidget(QWidget):
     def __init__(self, parent, current_group_id=None):
         super().__init__(parent)
         self.parent = parent
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
         self.main_page_object = self.parent.parent
         self.current_group_id = current_group_id
         self.put_call_icons_on_the_screen()
@@ -2779,7 +2782,8 @@ class CallIconsWidget(QWidget):
                 names = current_call_dict.get("participants")
                 if self.main_page_object.username in names:
                     for name in names:
-                        self.parent.create_profile_button(starts_x, y_of_profiles, name, current_call_dict, self)
+                        profile_button = self.parent.create_profile_button(starts_x, y_of_profiles, name, current_call_dict, self)
+                        self.layout.addWidget(profile_button)
                         if name in current_call_dict.get("screen_streamers") and name != self.main_page_object.username:
                             stream_type = "ScreenStream"
                             self.parent.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
