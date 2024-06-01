@@ -3178,6 +3178,7 @@ class PageController:
             self.current_page = None
             self.receive_thread_after_login.join()
             self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
+            self.main_page = MainPage(self.n, self)
             self.change_to_login_page()
         except Exception as e:
             print(f"error in log out {e}")
