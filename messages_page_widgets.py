@@ -987,6 +987,7 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, call_icons_widget.height(), [call_icons_widget], False)
                     try:
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
