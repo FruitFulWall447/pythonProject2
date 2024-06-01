@@ -1247,7 +1247,7 @@ class ChatBox(QWidget):
                 try:
                     friend_x = int(self.screen_width * 0.13)
                     x, y = int(self.screen_width * 0.13), int(self.screen_height * 0.1574)
-                    width, height = 350, 900
+                    width, height = 350, 700
                     if not self.parent.current_chat_box_search:
                         chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
@@ -2710,6 +2710,7 @@ class FriendsChatListWidget(QWidget):
         self.chat_box_object = chat_box_object
         self.friends_button_height = int(self.chat_box_object.screen_height * 0.0463)
         self.draw_friends_buttons(chats_list)
+        self.adjustSize()
 
     def draw_friends_buttons(self, friend_list):
         friend_starter_y = 0
@@ -2730,7 +2731,6 @@ class ScrollAreaWidget(QScrollArea):
 
         # Set the geometry (position and size) of the scroll area
         self.parent_widget = parent
-
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
         if not is_vertical:
@@ -2760,6 +2760,8 @@ class ScrollAreaWidget(QScrollArea):
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
+        size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.scroll_area_widget_contents.setSizePolicy(size_policy)
 
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
@@ -2775,6 +2777,7 @@ class ScrollAreaWidget(QScrollArea):
 
         # Set the container widget as the widget for the scroll area
         self.setWidget(self.scroll_area_widget_contents)
+        self.updateGeometry()
 
 
 class CallIconsWidget(QWidget):
