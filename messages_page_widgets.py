@@ -2707,6 +2707,7 @@ class CreateGroupBox(QWidget):
 class FriendsChatListWidget(QWidget):
     def __init__(self, chat_box_object, chats_list):
         super().__init__()
+        self.setParent(chat_box_object)
         self.chat_box_object = chat_box_object
         self.friends_button_height = int(self.chat_box_object.screen_height * 0.0463)
         self.draw_friends_buttons(chats_list)
@@ -2743,8 +2744,6 @@ class ScrollAreaWidget(QScrollArea):
         self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area_layout.setSpacing(0)
 
-        self.setWidget(self.scroll_area_widget_contents)
-
         if not is_vertical:
             self.setStyleSheet("""
                 QScrollArea {
@@ -2774,6 +2773,8 @@ class ScrollAreaWidget(QScrollArea):
         # Add the widgets from items_list to the layout
         for item in items_list:
             self.scroll_area_layout.addWidget(item)
+        self.setWidget(self.scroll_area_widget_contents)
+
 
 
 class CallIconsWidget(QWidget):
