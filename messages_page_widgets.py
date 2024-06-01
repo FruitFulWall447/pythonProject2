@@ -935,7 +935,7 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 120, [call_icons_widget], False)
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 130, [call_icons_widget], False)
                         except Exception as e:
                             print(f"error in incall func {e}")
                 except Exception as e:
@@ -987,7 +987,7 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, call_icons_widget.height(), [call_icons_widget], False)
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 130, [call_icons_widget], False)
                     try:
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
@@ -2768,7 +2768,7 @@ class ScrollAreaWidget(QScrollArea):
             self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         else:
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
         else:
