@@ -1,0 +1,9 @@
+cryptography
+pyaudio
+opencv-python
+pyqt5
+youtube-search
+pytube
+pillow
+moviepy
+pyautogui
