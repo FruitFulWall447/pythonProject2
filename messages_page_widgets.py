@@ -2730,21 +2730,32 @@ class ScrollAreaWidget(QScrollArea):
         super().__init__(parent)
 
         # Set the geometry (position and size) of the scroll area
-
+        self.setParent(parent)
         self.parent_widget = parent
         self.setGeometry(x, y, width, height)
         self.setWidgetResizable(True)
+
+        # Create a widget to contain labels and buttons
+        self.scroll_area_widget_contents = QWidget()
+
+
+        self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
+        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area_layout.setSpacing(0)
+
+        self.setWidget(self.scroll_area_widget_contents)
+
         if not is_vertical:
-            self.setStyleSheet(f"""
-                QScrollArea {{
+            self.setStyleSheet("""
+                QScrollArea {
                     border: transparent;
-                }}
-                QScrollBar:vertical {{
+                }
+                QScrollBar:vertical {
                     border: transparent;
-                }}
-                QScrollBar:horizontal {{
+                }
+                QScrollBar:horizontal {
                     border: transparent;
-                }}
+                }
             """)
         else:
             self.setStyleSheet(f"""
@@ -2759,27 +2770,10 @@ class ScrollAreaWidget(QScrollArea):
                 }}
              """)
 
-        # Create a container widget
-        self.scroll_area_widget_contents = QWidget()
-        # size_policy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        # self.scroll_area_widget_contents.setSizePolicy(size_policy)
-
-        if is_vertical:
-            self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
-        else:
-            self.scroll_area_layout = QHBoxLayout(self.scroll_area_widget_contents)
-
-        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
-        self.scroll_area_layout.setSpacing(0)
 
         # Add the widgets from items_list to the layout
         for item in items_list:
             self.scroll_area_layout.addWidget(item)
-            print(item.height())
-
-        # Set the container widget as the widget for the scroll area
-        self.setWidget(self.scroll_area_widget_contents)
-        self.updateGeometry()
 
 
 class CallIconsWidget(QWidget):
