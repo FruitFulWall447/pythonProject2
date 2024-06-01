@@ -2739,7 +2739,6 @@ class ScrollAreaWidget(QScrollArea):
         # Create a widget to contain labels and buttons
         self.scroll_area_widget_contents = QWidget()
 
-
         self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
         self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area_layout.setSpacing(0)
@@ -2774,7 +2773,6 @@ class ScrollAreaWidget(QScrollArea):
         for item in items_list:
             self.scroll_area_layout.addWidget(item)
         self.setWidget(self.scroll_area_widget_contents)
-
 
 
 class CallIconsWidget(QWidget):
