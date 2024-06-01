@@ -2760,15 +2760,7 @@ class ScrollAreaWidget(QScrollArea):
 
         # Create a container widget
         self.scroll_area_widget_contents = QWidget()
-        self.scroll_area_widget_contents.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # Create a layout for the container widget
-        if is_vertical:
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        else:
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
         else:
