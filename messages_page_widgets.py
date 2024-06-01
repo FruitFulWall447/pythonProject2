@@ -1492,9 +1492,11 @@ class ChatBox(QWidget):
             self.call_profiles_list.append(button)
             self.call_profiles_list.append(status_button)
             if name in self.parent.muted_users:
-                actions_list = ["ummute_user"]
+                text = f"unmute {name}"
+                actions_list = [text]
             else:
-                actions_list = ["mute_user"]
+                text = f"mute {name}"
+                actions_list = [text]
             chat_name = name
             if name != self.parent.username:
                 button.setContextMenuPolicy(Qt.CustomContextMenu)

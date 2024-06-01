@@ -925,18 +925,29 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 }}
             """)
             for item1 in actions_list:
-                action = menu.addAction(item1.replace("_", " "))
                 if item1 == "remove_chat":
+                    action_text = f"remove {chat_name}"
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.remove_chat(chat_name))
                 elif item1 == "exit_group":
+                    action_text = f"exit {self.get_group_name_by_id(group_id)}"
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.exit_group(group_id))
                 elif item1 == "add_friend":
+                    action_text = f"add {chat_name} as friend"
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.send_friend_request_for_user(chat_name))
                 elif item1 == "remove_user_from_group":
+                    action_text = f"remove {chat_name} from {self.get_group_name_by_id(group_id)}"
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.remove_user_from_group(chat_name, group_id))
                 elif item1 == "message_user":
+                    action_text = f"message {chat_name}"
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.chat_box.selected_chat_changed(chat_name))
                 elif "mute" in item1:
+                    action_text = item1
+                    action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.toggle_mute_of_user(chat_name))
             if chat_name is not None:
                 listens_to = self.get_listened_song_by_user(chat_name)
