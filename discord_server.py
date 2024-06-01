@@ -433,13 +433,14 @@ def thread_recv_messages(n, addr):
                         ServerHandler.remove_spectator_from_call_stream(User)
                 if call_action_type == "in_call_action":
                     action = data.get("action")
-                    if action == "join":
+                    if action == "join_call":
                         group_id = data.get("group_id")
                         if ServerHandler.is_user_in_a_call(User):
                             ServerHandler.remove_user_from_call(User)
                             ServerHandler.add_user_to_group_call_by_id(User, group_id)
                         else:
                             ServerHandler.add_user_to_group_call_by_id(User, group_id)
+                        logger.info(f"{User} tried to join call of group id {group_id}")
                     if action == "mute_myself":
                         ServerHandler.mute_or_unmute_self_user(User)
                     if action == "deafen_myself":

@@ -935,7 +935,7 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            # self.put_call_icons_on_the_screen()
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, call_icons_widget.height(), [call_icons_widget], False)
                         except Exception as e:
                             print(f"error in incall func {e}")
                 except Exception as e:

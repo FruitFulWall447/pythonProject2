@@ -890,11 +890,13 @@ class ServerHandler:
                     if video_stream.streamer == User and video_stream.stream_type == stream_type:
                         video_stream.adding_share_screen_data_to_user_call_thread_queue(User, share_screen_data, shape_bytes_of_frame)
 
-    def add_user_to_group_call_by_id(self, User, id):
+    def add_user_to_group_call_by_id(self, User, group_id):
         for call in self.calls:
             if call.is_a_group_a_call:
-                if call.group_id == id:
+                if call.group_id == group_id:
                     call.add_user_to_call(User)
+                    return
+        self.logger.error(f"tried to add {User}, to group call but could't")
 
     def reject_ring_by_ringer(self, ringer, User):
         for ring in self.rings:
