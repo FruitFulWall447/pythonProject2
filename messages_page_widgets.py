@@ -1390,28 +1390,28 @@ class ChatBox(QWidget):
                 names = current_call_dict.get("participants")
                 if self.parent.username in names:
                     for name in names:
-                        self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict)
+                        self.create_profile_button(starts_x, y_of_profiles, name, current_call_dict, self)
                         if name in current_call_dict.get("screen_streamers") and name != self.parent.username:
                             stream_type = "ScreenStream"
-                            self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
+                            self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
                         if name in current_call_dict.get("camera_streamers") and name != self.parent.username:
                             stream_type = "CameraStream"
-                            self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type)
+                            self.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
                         starts_x += 105
         except Exception as e:
             print(f"error is {e} in icon management")
 
-    def create_watch_stream_button(self, x, y, name, stream_type):
+    def create_watch_stream_button(self, x, y, name, stream_type, widgets_parent):
         width, height = (70, 30)
         if stream_type == "ScreenStream":
-            button = QPushButton(self)
+            button = QPushButton(widgets_parent)
             button_size = QSize(width, height)
             button.setFixedSize(button_size)
             image_icon = f"discord_app_assets/monitor_icon.png"
             set_button_icon(button, image_icon, width, height)  # Corrected function call
         else:
             y -= int(self.screen_height * 0.0463)
-            button = QPushButton(self)
+            button = QPushButton(widgets_parent)
             button_size = QSize(width, height)
             button.setFixedSize(button_size)
             image_icon = "discord_app_assets/camera_watch_icon.png"
@@ -1448,12 +1448,12 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"Problem with watch button, error {e}")
 
-    def create_profile_button(self, x, y, name, dict):
+    def create_profile_button(self, x, y, name, dict, widgets_parent):
         try:
             width, height = (90, 90)
-            button = create_custom_circular_label(width, height, self)
+            button = create_custom_circular_label(width, height, widgets_parent)
 
-            status_button = QPushButton(self)
+            status_button = QPushButton(widgets_parent)
             make_q_object_clear(status_button)
             width, height = (30, 30)
             button_size = QSize(width, height)
@@ -1490,7 +1490,7 @@ class ChatBox(QWidget):
             if name != self.parent.username:
                 button.setContextMenuPolicy(Qt.CustomContextMenu)
                 button.customContextMenuRequested.connect(
-                    lambda pos, parent=self, button=button, actions_list=actions_list,
+                    lambda pos, parent=widgets_parent, button=button, actions_list=actions_list,
                            chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
                                                                                     actions_list, chat_name))
             return button
@@ -2754,4 +2754,36 @@ class ScrollAreaWidget(QScrollArea):
 
         # Set the container widget as the widget for the scroll area
         self.setWidget(self.scroll_area_widget_contents)
+
+
+class CallIconsWidget(QWidget):
+    def __init__(self, parent, current_group_id=None):
+        super().__init__(parent)
+        self.parent = parent
+        self.main_page_object = self.parent.parent
+        self.current_group_id = current_group_id
+
+    def put_call_icons_on_the_screen(self):
+        try:
+            if self.current_group_id:
+                current_call_dict = self.main_page_object.get_call_dict_by_group_id(self.current_group_id)
+            else:
+                current_call_dict = self.main_page_object.get_call_dict_by_user(self.main_page_object.username)
+            starts_x = 0
+            y_of_profiles = 35
+
+            if current_call_dict is not None:
+                names = current_call_dict.get("participants")
+                if self.main_page_object.username in names:
+                    for name in names:
+                        self.parent.create_profile_button(starts_x, y_of_profiles, name, current_call_dict, self)
+                        if name in current_call_dict.get("screen_streamers") and name != self.main_page_object.username:
+                            stream_type = "ScreenStream"
+                            self.parent.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
+                        if name in current_call_dict.get("camera_streamers") and name != self.main_page_object.username:
+                            stream_type = "CameraStream"
+                            self.parent.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
+                        starts_x += 105
+        except Exception as e:
+            print(f"error is {e} in icon management")
 
