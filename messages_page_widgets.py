@@ -2713,7 +2713,9 @@ class FriendsChatListWidget(QWidget):
         self.layout.setSpacing(0)
         self.chat_box_object = chat_box_object
         self.friends_button_height = int(self.chat_box_object.screen_height * 0.0463)
+        self.container_widget = QWidget(self)  # Container widget for manually positioned buttons
         self.draw_friends_buttons(chats_list)
+        self.layout.addWidget(self.container_widget)  # Add the container widget to the layout
         self.adjustSize()
 
     def draw_friends_buttons(self, friend_list):
@@ -2722,10 +2724,9 @@ class FriendsChatListWidget(QWidget):
         if friend_list is not None:
             for friend in friend_list:
                 try:
-                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self)
-                    button.setGeometry(friend_x, friend_starter_y, int(self.chat_box_object.screen_width * 0.052), self.chat_box_object.friends_button_height)
+                    button = self.chat_box_object.create_friend_button(friend, (friend_x, friend_starter_y), self.container_widget)
+                    button.move(friend_x, friend_starter_y)  # Use move to set the position within the container widget
                     friend_starter_y += self.chat_box_object.friends_button_height
-                    self.layout.addWidget(button)
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
 
