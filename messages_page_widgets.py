@@ -2768,7 +2768,7 @@ class ScrollAreaWidget(QScrollArea):
             self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         else:
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         if is_vertical:
             self.scroll_area_layout = QVBoxLayout(self.scroll_area_widget_contents)
         else:
