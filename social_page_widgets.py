@@ -331,8 +331,8 @@ class FriendsBox(QWidget):
                     self.requests_items.append(reject_button)
 
                     container = QWidget(self)
-                    container_layout = QHBoxLayout()
-                    container_layout.addWidget(request)
+                    container_layout = QHBoxLayout(container)
+                    container_layout.addWidget(request_label)
                     container_layout.addWidget(accept_button)
                     container_layout.addWidget(reject_button)
                     temp_list.append(container)
