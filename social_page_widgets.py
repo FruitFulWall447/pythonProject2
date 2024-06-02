@@ -430,6 +430,12 @@ class FriendsBox(QWidget):
 
                 container = QWidget(self)
                 container_layout = QHBoxLayout(container)
+                container_layout.setSpacing(0)
+
+                # Set contents margins to 0
+                container_layout.setContentsMargins(0, 0, 0, 0)
+                container_layout.setAlignment(Qt.AlignLeft)
+
                 container_layout.addWidget(friend_label)
                 container_layout.addWidget(unblock_friend_button)
                 temp_list.append(container)
