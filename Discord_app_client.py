@@ -1859,23 +1859,23 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.is_editing_push_to_talk_button = False
                 self.updated_settings_page()
 
-    def wheelEvent(self, event):
-        if self.social_clicked_var:
-            try:
-                delta = event.angleDelta().y() / 120  # Normalize the delta
-                mouse_pos = event.pos()
-                if delta > 0 and self.friends_box.is_mouse_on_friends_box(
-                        mouse_pos) and self.friends_box_index_y_start > self.friends_box.default_starting_y:
-                    # Scrolling up
-
-                    self.friends_box_index += 1
-                    self.updated_social_page()
-                elif delta < 0 and self.friends_box.is_mouse_on_friends_box(mouse_pos) and self.is_friends_box_full:
-                    # Scrolling down, but prevent scrolling beyond the first message
-                    self.friends_box_index -= 1
-                    self.updated_social_page()
-            except Exception as e:
-                print(f"error in social_clicked scrolling error:{e}")
+    # def wheelEvent(self, event):
+    #     if self.social_clicked_var:
+    #         try:
+    #             delta = event.angleDelta().y() / 120  # Normalize the delta
+    #             mouse_pos = event.pos()
+    #             if delta > 0 and self.friends_box.is_mouse_on_friends_box(
+    #                     mouse_pos) and self.friends_box_index_y_start > self.friends_box.default_starting_y:
+    #                 # Scrolling up
+    #
+    #                 self.friends_box_index += 1
+    #                 self.updated_social_page()
+    #             elif delta < 0 and self.friends_box.is_mouse_on_friends_box(mouse_pos) and self.is_friends_box_full:
+    #                 # Scrolling down, but prevent scrolling beyond the first message
+    #                 self.friends_box_index -= 1
+    #                 self.updated_social_page()
+    #         except Exception as e:
+    #             print(f"error in social_clicked scrolling error:{e}")
 
     def hide_chat(self):
         self.main_layout.addSpacerItem(self.spacer)

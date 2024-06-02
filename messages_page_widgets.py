@@ -2746,56 +2746,60 @@ class FriendsChatListWidget(QWidget):
 
 class ScrollAreaWidget(QWidget):
     def __init__(self, parent, x, y, width, height, items_list, is_vertical):
-        super().__init__(parent)
+        try:
+            super().__init__(parent)
 
-        # Create the internal scroll area widget
-        self.setGeometry(x, y, width, height)
+            # Create the internal scroll area widget
+            self.setGeometry(x, y, width, height)
 
-        self.parent = parent
-        self.scroll_area = QScrollArea(self.parent)
-        if not is_vertical:
-            self.scroll_area.setStyleSheet("""
-                QScrollArea {
-                    border: transparent;
-                }
-                QScrollBar:vertical {
-                    border: transparent;
-                }
-                QScrollBar:horizontal {
-                    border: transparent;
-                }
-            """)
-        else:
-            self.scroll_area.setStyleSheet(f"""
-                 QScrollArea {{
-                     border: 2px solid {self.parent.parent.standard_hover_color};
-                }}
-                 QScrollBar:vertical {{
-                     border: 2px solid {self.parent.parent.standard_hover_color};
-                }}
-             QScrollBar:horizontal {{
-                    border: 2px solid {self.parent.parent.standard_hover_color};
-                }}
-             """)
-        self.scroll_area.setGeometry(x, y, width, height)
+            self.parent = parent
+            self.scroll_area = QScrollArea(self.parent)
+            if not is_vertical:
+                self.scroll_area.setStyleSheet("""
+                    QScrollArea {
+                        border: transparent;
+                    }
+                    QScrollBar:vertical {
+                        border: transparent;
+                    }
+                    QScrollBar:horizontal {
+                        border: transparent;
+                    }
+                """)
+            else:
+                self.scroll_area.setStyleSheet(f"""
+                     QScrollArea {{
+                         border: 2px solid {self.parent.parent.standard_hover_color};
+                    }}
+                     QScrollBar:vertical {{
+                         border: 2px solid {self.parent.parent.standard_hover_color};
+                    }}
+                 QScrollBar:horizontal {{
+                        border: 2px solid {self.parent.parent.standard_hover_color};
+                    }}
+                 """)
+            self.scroll_area.setGeometry(x, y, width, height)
 
-        self.scroll_area.setWidgetResizable(True)
+            self.scroll_area.setWidgetResizable(True)
 
-        self.scroll_area_widget_contents = QWidget()
-        self.scroll_area_widget_contents.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            self.scroll_area_widget_contents = QWidget()
+            self.scroll_area_widget_contents.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # Set the layout for this widget
-        self.layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
-        if is_vertical:
-            self.layout.setAlignment(Qt.AlignTop)
-        else:
-            self.layout.setAlignment(Qt.AlignLeft)
+            # Set the layout for this widget
+            self.layout = QVBoxLayout(self.scroll_area_widget_contents) if is_vertical else QHBoxLayout(self.scroll_area_widget_contents)
+            self.layout.setContentsMargins(0, 0, 0, 0)
+            self.layout.setSpacing(0)
+            if is_vertical:
+                self.layout.setAlignment(Qt.AlignTop)
+            else:
+                self.layout.setAlignment(Qt.AlignLeft)
 
-        for item in items_list:
-            self.layout.addWidget(item)
-        self.scroll_area.setWidget(self.scroll_area_widget_contents)
+            for item in items_list:
+                self.layout.addWidget(item)
+            self.scroll_area.setWidget(self.scroll_area_widget_contents)
+        except Exception as e:
+            print(f"error in scrooable widget {e}")
+            print(items_list)
 
 
 class CallIconsWidget(QWidget):

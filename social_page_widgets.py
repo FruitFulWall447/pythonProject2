@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap
+from messages_page_widgets import ScrollAreaWidget
 
 
 def filter_and_sort_chats(search_str, chat_list):
@@ -417,7 +418,7 @@ class FriendsBox(QWidget):
 
                 self.block_friend_label = QLabel("Block", self)
                 self.raised_elements.append(self.block_friend_label)
-                self.connect_button_label_pair(
+                self.set_up_button_with_icon(
                     unblock_friend_button,
                     self.block_friend_label,
                     "Unblock",
@@ -485,16 +486,9 @@ class FriendsBox(QWidget):
         friend_label.setFixedHeight(self.font_size)
         friend_label.adjustSize()
 
-        line = QFrame(self)
-        line.setGeometry(friend_x - 40, y_position + self.font_size + 5, border2_width, 2)
-        line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")
-
         chat_button = QPushButton(self)
-        self.chat_label = QLabel("Message", self)
-        self.raised_elements.append(self.chat_label)
-        self.connect_button_label_pair(
+        self.set_up_button_with_icon(
             chat_button,
-            self.chat_label,
             "Message",
             "discord_app_assets/press_chat_icon.png",
             self.open_chat,
@@ -505,11 +499,8 @@ class FriendsBox(QWidget):
 
         remove_friend_button = QPushButton(self)
         remove_friend_button_x = chat_button_x - 60
-        self.remove_friend_label = QLabel("Remove", self)
-        self.raised_elements.append(self.remove_friend_label)
-        self.connect_button_label_pair(
+        self.set_up_button_with_icon(
             remove_friend_button,
-            self.remove_friend_label,
             "Remove",
             "discord_app_assets/remove_friend_icon.png",
             self.remove_friend,
@@ -519,11 +510,8 @@ class FriendsBox(QWidget):
         )
 
         block_friend_button = QPushButton(self)
-        self.block_friend_label = QLabel("Block", self)
-        self.raised_elements.append(self.block_friend_label)
-        self.connect_button_label_pair(
+        self.set_up_button_with_icon(
             block_friend_button,
-            self.block_friend_label,
             "Block",
             "discord_app_assets/block_icon.png",
             self.block_friend,
@@ -539,7 +527,23 @@ class FriendsBox(QWidget):
         else:
             self.draw_circle(circle_label, "gray")
 
-        return friend_label
+        container = QWidget(self)
+        container_layout = QHBoxLayout(container)
+        container_layout.addWidget(circle_label)
+        friend_label.setAlignment(Qt.AlignLeft)
+        container_layout.addWidget(friend_label, alignment=Qt.AlignLeft)  # Ensure label aligns to the left
+        container_layout.addStretch()  # Add a stretchable space to push other widgets to the right
+        container_layout.addWidget(block_friend_button)
+        container_layout.addWidget(remove_friend_button)
+        container_layout.addWidget(chat_button)
+        container.setLayout(container_layout)
+
+        # Position the container widget
+        container.move(label_x, y_position)
+        container.show()
+
+        # Return the container if needed
+        return container
 
     def setup_friends_box(self, friends_box_list, button, button_stylesheet, label_text, search_x, search_y,
                           search_width, search_height, friend_x, border2_width):
@@ -554,23 +558,18 @@ class FriendsBox(QWidget):
 
         self.friend_labels = []
 
+        temp_list = []
         for friend in friends_box_list:
             friend_label = self.setup_friend_ui(friend, friend_starter_y, friends_label_x, 1235, friends_label_x,
                                                 friend_x, border2_width)
+            temp_list.append(friend_label)
             self.friend_labels.append(friend_label)
-
-            if friend_starter_y > self.parent.height():
-                self.parent.is_friends_box_full = True
-                print("smaller than 0")
-                break
-
             friend_starter_y += 70
-            self.raise_all_element()
 
-        if friend_starter_y < self.parent.height():
-            self.parent.is_friends_box_full = False
+        friends_label_x = friends_label_x - 27
+        chats_list_scroll_area = ScrollAreaWidget(self, friends_label_x, 200, 710, 760, temp_list, True)
 
-    def connect_button_label_pair(self, button, label, label_text, icon_path, click_callback, x, y, friend):
+    def set_up_button_with_icon(self, button, label_text, icon_path, click_callback, x, y, friend):
         button.setFixedSize(40, 40)
         button_icon = QIcon(QPixmap(icon_path))
         button.setIcon(button_icon)
@@ -592,15 +591,6 @@ class FriendsBox(QWidget):
 
         button.clicked.connect(lambda checked: click_callback(friend))
         button.move(x, y)
-
-        label.setText(label_text)
-        label.hide()
-        label.setStyleSheet("color: white; font-size: 12px;")
-        label.move(x, y - 20)
-
-        # Connect the label to show on hover
-        button.enterEvent = lambda event: label.show()
-        button.leaveEvent = lambda event: label.hide()
 
     def on_text_changed_in_contact_search(self):
         # This function will be called when the text inside QLineEdit changes
@@ -643,7 +633,7 @@ class FriendsBox(QWidget):
         try:
             self.block_friend_label.raise_()
             self.remove_friend_label.raise_()
-            self.chat_label.raise_()
+            # self.chat_label.raise_()
         except Exception as e:
             print(e)
         for element in self.raised_elements:
