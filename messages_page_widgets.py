@@ -1736,11 +1736,12 @@ class ChatBox(QWidget):
                    group_id=id: self.parent.right_click_object_func(pos, parent, button,
                                                                             actions_list, group_id=group_id))
 
-        style = '''
+        style = f'''
             color: white;
             font-size: 10px;
             margin-bottom: 2px;
             background-color: rgba(0,0,0,0);
+            padding-left: {px_padding_of_button_text}px;
         '''
 
         if id:
@@ -1748,8 +1749,7 @@ class ChatBox(QWidget):
             members_label.setStyleSheet(style)
             memeber_x = position[0] + px_padding_of_button_text
             members_label.move(memeber_x, position[1] + 28)
-            padding_style = f"padding-left: {px_padding_of_button_text}px;"
-            members_label.setStyleSheet(padding_style)
+
 
         padding_top = "padding-top: -7px;" if label.startswith("(") else ""  # Adjust the padding value as needed
 
