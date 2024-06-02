@@ -290,7 +290,7 @@ class FriendsBox(QWidget):
                     f"background-color: {self.parent.standard_hover_color}; color: {self.search_box_color}; padding: 10px; border: 1px solid {self.parent.standard_hover_color}; border-radius: 5px; font-size: 14px;")
                 self.search.setGeometry(search_x, search_y, search_width, search_height)
                 self.search.textChanged.connect(self.on_text_changed_in_contact_search)
-
+                temp_list = []
                 for request in requests_list:
                     request_label = QLabel(request, self)
                     request_label.setStyleSheet(style_sheet)
@@ -329,12 +329,13 @@ class FriendsBox(QWidget):
                     self.requests_items.append(request_label)
                     self.requests_items.append(accept_button)
                     self.requests_items.append(reject_button)
-                    if request_starter_y > self.parent.height():
-                        self.parent.is_friends_box_full = True
-                        print("smaller then 0")
-                        break
-                if request_starter_y < self.parent.height():
-                    self.parent.is_friends_box_full = False
+
+                    container = QWidget(self)
+                    container_layout = QHBoxLayout()
+                    container_layout.addWidget(request)
+                    container_layout.addWidget(accept_button)
+                    container_layout.addWidget(reject_button)
+                    temp_list.append(container)
 
                 for i in range(0, len(self.requests_items), 3):
                     accept_button = self.requests_items[i + 1]
@@ -344,7 +345,10 @@ class FriendsBox(QWidget):
                         lambda checked, index=i: self.handle_friend_request(index, accept=True))
                     reject_button.clicked.connect(
                         lambda checked, index=i: self.handle_friend_request(index, accept=False))
-                self.raise_all_element()
+
+                x = request_x - 27
+                request_list_widget = ScrollAreaWidget(self, x, 200, 710, 760, temp_list, True)
+                # self.raise_all_element()
             except Exception as e:
                 print(f"error pending page {e}")
 
