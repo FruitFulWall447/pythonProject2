@@ -1748,6 +1748,8 @@ class ChatBox(QWidget):
             members_label.setStyleSheet(style)
             memeber_x = position[0] + px_padding_of_button_text
             members_label.move(memeber_x, position[1] + 28)
+            padding_style = f"padding-left: {px_padding_of_button_text}px;"
+            members_label.setStyleSheet(padding_style)
 
         padding_top = "padding-top: -7px;" if label.startswith("(") else ""  # Adjust the padding value as needed
 
@@ -1783,7 +1785,7 @@ class ChatBox(QWidget):
         profile_image_label.raise_()
         if id:
             members_label.raise_()
-            members_label.setAlignment(Qt.AlignLeft | Qt.AlignCenter)
+            members_label.setAlignment(Qt.AlignLeft)
 
             # Create a layout for the button and add the labels
             button_layout = QVBoxLayout(button)
