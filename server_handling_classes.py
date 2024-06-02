@@ -484,6 +484,15 @@ class ServerHandler:
         self.udp_socket = None
         self.UDPClientHandler_list = []
         self.server_mtu = None
+        self.emails_addresses_in_progress = []
+
+    def add_email_address_in_progress(self, address):
+        if address not in self.emails_addresses_in_progress:
+            self.emails_addresses_in_progress.append(address)
+
+    def remove_email_address_in_progress(self, address):
+        if address in self.emails_addresses_in_progress:
+            self.emails_addresses_in_progress.remove(address)
 
     def send_friend_request(self, name):
         net = self.get_net_by_name(name)
