@@ -404,6 +404,7 @@ class FriendsBox(QWidget):
             self.search.textChanged.connect(self.on_text_changed_in_contact_search)
 
             friends_label_x = search_x
+            temp_list = []
             for friend in friends_box_list:
                 friend_label = QLabel(friend, self)
                 friend_label.setStyleSheet(style_sheet)
@@ -411,20 +412,11 @@ class FriendsBox(QWidget):
                 friend_label.setFixedHeight(self.font_size)  # Increase height
                 friend_label.adjustSize()  # Ensure the label size is adjusted to its content
 
-                line = QFrame(self)
-                line.setGeometry(friend_x - 40, friend_starter_y + self.font_size + 5, border2_width, 2)
-                line.setStyleSheet(f"background-color: {self.parent.standard_hover_color};")  # Set line color
-
-
                 unblock_friend_button_x = 1235
-
                 unblock_friend_button = QPushButton(self)
 
-                self.block_friend_label = QLabel("Block", self)
-                self.raised_elements.append(self.block_friend_label)
                 self.set_up_button_with_icon(
                     unblock_friend_button,
-                    self.block_friend_label,
                     "Unblock",
                     "discord_app_assets/block_icon.png",
                     self.unblock_friend,
@@ -433,16 +425,16 @@ class FriendsBox(QWidget):
                     friend  # Pass the friend parameter here
                 )
 
-                if friend_starter_y > self.parent.height():
-                    self.parent.is_friends_box_full = True
-                    print("smaller then 0")
-                    break
-
                 friend_starter_y += 70
                 self.friend_labels.append(friend_label)
-                self.raise_all_element()
-            if friend_starter_y < self.parent.height():
-                self.parent.is_friends_box_full = False
+
+                container = QWidget(self)
+                container_layout = QHBoxLayout(container)
+                container_layout.addWidget(friend_label)
+                container_layout.addWidget(unblock_friend_button)
+                temp_list.append(container)
+            x = search_x - 27
+            blocked_list_widget = ScrollAreaWidget(self, x, 200, 710, 760, temp_list, True)
 
         self.error_friend = QLabel("couldn't find user", self)
         self.error_friend.move(search_x, search_y + 100 + search_height)
