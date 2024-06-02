@@ -238,13 +238,15 @@ def thread_recv_messages(n, addr):
                     password = data.get("password")
                     email = data.get("email")
                     is_valid = not database_func.username_exists(username)
-                    if is_valid:
+                    if is_valid and not ServerHandler.is_email_in_progress(email):
+                        ServerHandler.add_email_address_in_progress(email)
                         logger.info(f"Server sent code to email for ({addr})")
                         code = generate_6_digit_code()
                         send_sign_up_code_to_client_email(code, email, username)
                         n.sent_code_to_mail()
                         time_now = datetime.datetime.now()
                         status, _ = handle_code_wait(n, code, logger, addr, "sign_up", time_now, email, username, password)
+                        ServerHandler.remove_email_address_in_progress(email)
                         if status == "lost_connection":
                             break
                     else:

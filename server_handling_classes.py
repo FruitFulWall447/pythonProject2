@@ -494,6 +494,9 @@ class ServerHandler:
         if address in self.emails_addresses_in_progress:
             self.emails_addresses_in_progress.remove(address)
 
+    def is_email_in_progress(self, email):
+        return email in self.emails_addresses_in_progress
+
     def send_friend_request(self, name):
         net = self.get_net_by_name(name)
         if net:
