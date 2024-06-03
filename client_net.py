@@ -812,10 +812,6 @@ class ClientNet:
             )
 
             encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
-
-            # Use send_bytes to send the encrypted key as bytes
-            # symmetric_key_byte_sequence = br'\server:symmetric-key'
-            # self.send_bytes(symmetric_key_byte_sequence + encrypted_symmetric_key.encode("utf-8"))
             self.send_encrypted_symmetric_key(encrypted_symmetric_key)
 
             data = self.recv_str()
