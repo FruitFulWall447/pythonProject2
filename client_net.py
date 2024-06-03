@@ -737,7 +737,8 @@ class ClientNet:
                 encrypted_data = data
                 if data is None:
                     return None
-                data = decrypt_with_aes(self.aes_key, encrypted_data)
+                if self.aes_key
+                    data = decrypt_with_aes(self.aes_key, encrypted_data)
                 return pickle.loads(data)
             except Exception as e:
                 print(f"error in receiving data: {e}")
