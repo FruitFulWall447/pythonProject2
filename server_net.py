@@ -755,11 +755,7 @@ class ServerNet:
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        # public_key_byte_sequence = br'\server:public-key'
-        # self.send_bytes(public_key_byte_sequence + serialized_server_public_key)
         self.send_public_key_to_client(serialized_server_public_key)
-
-        # symmetric_key_byte_sequence = br'\server:symmetric-key'
 
         received_encrypted_symmetric_key_bytes = self.recv_str()
         message_type = received_encrypted_symmetric_key_bytes.get("message_type")
