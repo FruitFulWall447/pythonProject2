@@ -17,6 +17,12 @@ share_screen_sequence = br'\share_screen_data'
 share_camera_sequence = br'\share_camera_data'
 
 
+def is_valid_aes_key(key):
+    if isinstance(key, bytes) and len(key) == 32:
+        return True
+    return False
+
+
 def slice_up_data(data, mtu):
     sliced_data = []
     for start_index in range(0, len(data), mtu):
@@ -717,6 +723,30 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def send_public_key_to_client(self, public_key):
+        try:
+            message = {"message_type": "servers_public_key", "public_key": public_key
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def send_aes_key_valid(self):
+        try:
+            message = {"message_type": "aes_key", "status": "valid"
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
+    def send_aes_key_not_valid_with_encrypted_key(self, encrypted_key):
+        try:
+            message = {"message_type": "aes_key", "status": "not valid", "encrypted_key": encrypted_key
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def initiate_rsa_protocol(self):
         # send the server_public_key to the client
         serialized_server_public_key = self.server_public_key.public_bytes(
@@ -724,26 +754,34 @@ class ServerNet:
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        public_key_byte_sequence = br'\server:public-key'
-        self.send_bytes(public_key_byte_sequence + serialized_server_public_key)
+        # public_key_byte_sequence = br'\server:public-key'
+        # self.send_bytes(public_key_byte_sequence + serialized_server_public_key)
+        self.send_public_key_to_client(serialized_server_public_key)
 
-        symmetric_key_byte_sequence = br'\server:symmetric-key'
+        # symmetric_key_byte_sequence = br'\server:symmetric-key'
 
-        received_encrypted_symmetric_key_bytes = self.recv_bytes()
-        if received_encrypted_symmetric_key_bytes.startswith(symmetric_key_byte_sequence):
-            received_encrypted_symmetric_key_bytes = received_encrypted_symmetric_key_bytes[len(symmetric_key_byte_sequence):]
-        else:
-            self.logger.critical("did not expect this kind of message")
-            return
-        if received_encrypted_symmetric_key_bytes is not None:
-            decrypted_symmetric_key = decrypt_with_rsa(self.server_private_key, received_encrypted_symmetric_key_bytes)
-            aes_key = generate_aes_key()
-            self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with AES key {aes_key}")
-            try:
-                encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
-                self.send_bytes(symmetric_key_byte_sequence + encrypted_aes_key)
-                self.aes_key = aes_key
-            except Exception as e:
-                print(e)
+        received_encrypted_symmetric_key_bytes = self.recv_str()
+        message_type = received_encrypted_symmetric_key_bytes.get("message_type")
+        if message_type == "encrypted_symmetric_key":
+            encrypted_symmetric_key = received_encrypted_symmetric_key_bytes.get("encrypted_symmetric_key")
+
+            if encrypted_symmetric_key is not None:
+                decrypted_symmetric_key = decrypt_with_rsa(self.server_private_key, encrypted_symmetric_key)
+                is_key_valid = is_valid_aes_key(decrypted_symmetric_key)
+                if is_key_valid:
+                    aes_key = is_key_valid
+                    self.send_aes_key_valid()
+                    self.logger.info(
+                        f"Started to communicate with client {self.client_tcp_socket_address}, with client's AES key {aes_key}")
+                    self.aes_key = aes_key
+                else:
+                    aes_key = generate_aes_key()
+                    self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with server's AES key {aes_key}")
+                    try:
+                        encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
+                        self.send_aes_key_not_valid_with_encrypted_key(encrypted_aes_key)
+                        self.aes_key = aes_key
+                    except Exception as e:
+                        print(e)
         else:
             print("Error receiving the symmetric key.")

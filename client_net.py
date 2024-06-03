@@ -786,34 +786,47 @@ class ClientNet:
         except socket.error as e:
             self.logger.error(f"Error closing socket: {e}")
 
+    def send_encrypted_symmetric_key(self, symmetric_key):
+        try:
+            message = {"message_type": "encrypted_symmetric_key", "encrypted_symmetric_key": symmetric_key
+                       }
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def initiate_rsa_protocol(self):
         # create 256 bytes key
         client_symmetric_key = generate_aes_key()
-        public_key_byte_sequence = br'\server:public-key'
+        # public_key_byte_sequence = br'\server:public-key'
 
         # the client receives the server Rsa public key
-        received_serialized_server_public_key_bytes = self.recv_bytes()
-        if received_serialized_server_public_key_bytes.startswith(public_key_byte_sequence):
-            received_serialized_server_public_key_bytes = received_serialized_server_public_key_bytes[len(public_key_byte_sequence):]
-        else:
-            print("did not expect message")
-            return
+        received_serialized_server_public_key_bytes = self.recv_str()
+        message_type = received_serialized_server_public_key_bytes.get("message_type")
+        if message_type == "servers_public_key":
+            serialized_server_public_key = received_serialized_server_public_key_bytes.get("public_key")
 
-        # Deserialize the received public key
-        server_public_key = serialization.load_pem_public_key(
-            received_serialized_server_public_key_bytes,
-            backend=default_backend()
-        )
+            server_public_key = serialization.load_pem_public_key(
+                serialized_server_public_key,
+                backend=default_backend()
+            )
 
-        encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
+            encrypted_symmetric_key = encrypt_with_rsa(server_public_key, client_symmetric_key)
 
-        # Use send_bytes to send the encrypted key as bytes
-        symmetric_key_byte_sequence = br'\server:symmetric-key'
-        self.send_bytes(symmetric_key_byte_sequence + encrypted_symmetric_key.encode("utf-8"))
+            # Use send_bytes to send the encrypted key as bytes
+            # symmetric_key_byte_sequence = br'\server:symmetric-key'
+            # self.send_bytes(symmetric_key_byte_sequence + encrypted_symmetric_key.encode("utf-8"))
+            self.send_encrypted_symmetric_key(encrypted_symmetric_key)
 
-        encrypt_aes_key = self.recv_bytes()
-        if encrypt_aes_key.startswith(symmetric_key_byte_sequence):
-            encrypt_aes_key = encrypt_aes_key[len(symmetric_key_byte_sequence):]
-        aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
-        self.aes_key = aes_key
-        self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
+            data = self.recv_str()
+            message_type = data.get("message_type")
+            if message_type == "aes_key":
+                status = data.get("status")
+                if status == "valid":
+                    aes_key = client_symmetric_key
+                    self.aes_key = aes_key
+                    self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
+                else:
+                    encrypt_aes_key = data.get("encrypted_key")
+                    aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
+                    self.aes_key = aes_key
+                    self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
