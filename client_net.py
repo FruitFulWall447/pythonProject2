@@ -737,7 +737,7 @@ class ClientNet:
                 encrypted_data = data
                 if data is None:
                     return None
-                if self.aes_key
+                if self.aes_key:
                     data = decrypt_with_aes(self.aes_key, encrypted_data)
                 return pickle.loads(data)
             except Exception as e:

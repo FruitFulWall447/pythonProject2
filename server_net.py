@@ -685,7 +685,8 @@ class ServerNet:
                 if data is None:
                     print("Received data is None")
                     return None
-                data = decrypt_with_aes(self.aes_key, encrypted_data)
+                if self.aes_key:
+                    data = decrypt_with_aes(self.aes_key, encrypted_data)
                 return pickle.loads(data)
             except Exception as e:
                 # If decoding as UTF-8 fails, treat it as binary data
@@ -769,7 +770,7 @@ class ServerNet:
                 decrypted_symmetric_key = decrypt_with_rsa(self.server_private_key, encrypted_symmetric_key)
                 is_key_valid = is_valid_aes_key(decrypted_symmetric_key)
                 if is_key_valid:
-                    aes_key = is_key_valid
+                    aes_key = decrypted_symmetric_key
                     self.send_aes_key_valid()
                     self.logger.info(
                         f"Started to communicate with client {self.client_tcp_socket_address}, with client's AES key {aes_key}")
