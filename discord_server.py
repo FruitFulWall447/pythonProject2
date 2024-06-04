@@ -629,7 +629,8 @@ def listen_udp():
     ServerHandler.udp_socket = udp_server_socket
     while True:
         try:
-            fragment_data, address = udp_server_socket.recvfrom(100000)
+            buffer_size = ServerHandler.server_mtu if ServerHandler.server_mtu else 100000
+            fragment_data, address = udp_server_socket.recvfrom(buffer_size)
             ServerHandler.handle_udp_fragment(fragment_data, address)
         except OSError as os_err:
             print(f"OS error: {os_err}")
