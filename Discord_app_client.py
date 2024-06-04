@@ -960,7 +960,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 group_manager = self.get_group_manager_by_group_id(group_id)
                 if group_manager == self.username:
                     action = menu.addAction("Remove group icon")
-                    action.triggered.connect(lambda: self.update)
+                    action.triggered.connect(lambda: self.update_group_image(group_id, None))
 
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
