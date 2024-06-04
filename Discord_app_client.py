@@ -956,6 +956,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     str_for_listen = f"listen to {listens_to}"
                     action = menu.addAction(str_for_listen)
                     action.triggered.connect(lambda: self.ask_for_listen_by_name(listens_to))
+            elif chat_name is None and group_id is not None:
+                group_manager = self.get_group_manager_by_group_id(group_id)
+                if group_manager == self.username:
+                    action = menu.addAction("Remove group icon")
+                    action.triggered.connect(lambda: self.update)
 
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
@@ -964,6 +969,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             menu.exec_(global_pos)
         except Exception as e:
             print(f"error in right click func {e}")
+
+    def update_group_image(self, group_id, image_bytes):
+        self.Network.send_new_group_image_to_server(image_bytes, group_id)
 
     def ask_for_listen_by_name(self, title):
         self.Network.ask_for_song_by_title(title)

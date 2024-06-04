@@ -1704,7 +1704,6 @@ class ChatBox(QWidget):
             print(f"error in raising elements {e}")
 
     def create_friend_button(self, label, position, parent):
-
         px_padding_of_button_text = 55
         chat_name = label
         text, id = gets_group_attributes_from_format(chat_name)
