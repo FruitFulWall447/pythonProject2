@@ -457,7 +457,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.reversed_keys_mapping = {value: key for key, value in self.special_keys_mapping.items()}
 
 
-
         self.standard_hover_color = "#2980b9"
         self.background_color_hex = "#141c4b"
         self.font_options = ["Ariel", "Times New Roman", "Helvetica"]
@@ -540,7 +539,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.is_watching_video = False
         # the scroll widget that contain all of the messages
         self.messages_content_saver = None
-        self.chats_list_widget = None
         self.is_messages_need_update = True
 
         self.online_users_list = []
@@ -558,6 +556,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.friends_box_index = 0
         self.friends_box_index_y_start = 100
         self.current_friends_box_search = False
+
+        self.chat_index = None
 
         self.selected_group_members = []
         self.create_group_index = 0

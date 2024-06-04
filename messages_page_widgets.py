@@ -1259,16 +1259,11 @@ class ChatBox(QWidget):
                     friend_x = int(self.screen_width * 0.13)
                     x, y = int(self.screen_width * 0.13), int(self.screen_height * 0.1574)
                     width, height = int(self.screen_width * 0.1823), int(self.screen_height * 0.68512)
-                    if self.parent.chats_list_widget is None:
-                        if not self.parent.current_chat_box_search:
-                            chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
-                            chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
-                        else:
-                            chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
-                            chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
+                    if not self.parent.current_chat_box_search:
+                        chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
+                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                     else:
-                        chats_widget = self.parent.chats_list_widget
-                        chats_widget.update_parent(self)
+                        chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                 except Exception as e:
                     print(f"error in showing chats list{e}")
@@ -2198,6 +2193,7 @@ class ChatBox(QWidget):
             self.image_too_big.hide()
             self.parent.size_error_label = False
             self.parent.file_to_send = None
+            self.parent.change_chat_index = None
             self.parent.is_create_group_inside_chat_pressed = False
             self.parent.file_name = ""
             self.messages_list = []
@@ -2206,6 +2202,9 @@ class ChatBox(QWidget):
     def is_mouse_on_chat_box(self, mouse_pos):
         box_geometry = self.square_label.geometry()
         return box_geometry.contains(mouse_pos)
+
+    def change_chat_index(self, index):
+        self.parent.chat_index = index
 
 
 class MessagesBox(QWidget):
@@ -2770,13 +2769,13 @@ class FriendsChatListWidget(QWidget):
 
 
 class ScrollAreaWidget(QWidget):
-    def __init__(self, parent, x, y, width, height, items_list, is_vertical):
+    def __init__(self, parent, x, y, width, height, items_list, is_vertical, variable_to_change=None):
         try:
             super().__init__(parent)
 
             # Create the internal scroll area widget
             self.setGeometry(x, y, width, height)
-
+            self.variable_to_change = variable_to_change
             self.parent = parent
             self.scroll_area = QScrollArea(self.parent)
             if not is_vertical:
@@ -2822,9 +2821,21 @@ class ScrollAreaWidget(QWidget):
             for item in items_list:
                 self.layout.addWidget(item)
             self.scroll_area.setWidget(self.scroll_area_widget_contents)
+            self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
+            if self.variable_to_change == "chat_index":
+                if self.parent.parent.chat_index is not None:
+                    try:
+                        self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_index)
+                    except Exception as e:
+                        pass
         except Exception as e:
-            print(f"error in scrooable widget {e}")
+            print(f"error in scrollable widget {e}")
             print(items_list)
+
+    def scroll_value_changed(self, value):
+        if self.variable_to_change is not None:
+            if self.variable_to_change == "chat_index":
+                self.parent.change_chat_index(value)
 
 
 class CallIconsWidget(QWidget):
