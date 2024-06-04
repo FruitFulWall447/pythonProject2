@@ -576,6 +576,14 @@ class ChatBox(QWidget):
             self.file_dialog.setFileMode(QFileDialog.ExistingFile)
             filter_str = "All files (*)"
             self.file_dialog.setNameFilter(filter_str)
+
+            self.image_file_dialog = QFileDialog(self)
+            self.image_file_dialog.setFileMode(QFileDialog.ExistingFile)
+
+            # Filter for PNG and JPEG files
+            filter_str = "Images (*.png *.jpg *.jpeg)"  # Include all common JPEG extensions
+            self.image_file_dialog.setNameFilter(filter_str)
+
             self.file_name = ""
             self.image_height = int(self.screen_height * 0.277)
             self.image_width = int(self.screen_width * 0.1197)
@@ -1880,8 +1888,8 @@ class ChatBox(QWidget):
         self.around_name.raise_()
 
     def open_file_dialog_for_changing_group_image(self):
-        if self.file_dialog.exec_():
-            selected_files = self.file_dialog.selectedFiles()
+        if self.image_file_dialog.exec_():
+            selected_files = self.image_file_dialog.selectedFiles()
             file_types = [os.path.splitext(file)[1][1:].lower() for file in selected_files]
             file_path = selected_files[0]  # Get the file path
             file_size = os.path.getsize(file_path)  # Get the file size in bytes
