@@ -510,11 +510,16 @@ class ServerHandler:
             net.send_friends_list(friends_list)
             self.logger.info(f"Sent friend list ({friends_list}) to user {name}")
 
-    def update_message_for_users(self, users, message, chat_name):
-        chat_name_handler = self.get_user_handler_object_of_user(chat_name)
-        chat_name_blocked_list = chat_name_handler.blocked_users
-        chat_name_is_private = chat_name_handler.is_private_account
-        chat_name_friends_list = chat_name_handler.friends_list if chat_name_is_private else []
+    def update_message_for_users(self, users, message, user_that_send, group_name=None):
+        if group_name is None:
+            chat_name_blocked_list = []
+            chat_name_is_private = False
+            chat_name_friends_list = [users]
+        else:
+            chat_name_handler = self.get_user_handler_object_of_user(user_that_send)
+            chat_name_blocked_list = chat_name_handler.blocked_users
+            chat_name_is_private = chat_name_handler.is_private_account
+            chat_name_friends_list = chat_name_handler.friends_list if chat_name_is_private else []
         for user in users:
             if user in chat_name_blocked_list or (chat_name_is_private and user not in chat_name_friends_list):
                 continue
@@ -535,8 +540,12 @@ class ServerHandler:
                         "file_name": file_name
                     }
                     n = self.get_net_by_name(user)
-                    n.send_new_message_content(chat_name, formatted_message)
-                    self.logger.info(f"send new message to {user} in chat {chat_name}")
+                    if group_name is None:
+                        n.send_new_message_content(user_that_send, formatted_message)
+                        self.logger.info(f"send new message to {user} in chat {user_that_send}")
+                    else:
+                        n.send_new_message_content(group_name, formatted_message)
+                        self.logger.info(f"send new message to {user} in chat {group_name}")
 
     def is_user_online(self, user):
         return user in self.online_users
