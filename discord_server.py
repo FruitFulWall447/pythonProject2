@@ -581,10 +581,15 @@ def thread_recv_messages(n, addr):
                     logger.info(f"{User} created a new group")
                 elif action == "update_image":
                     group_id = data.get("group_id")
-                    encoded_b64_image = data.get("encoded_b64_image")
-                    image_bytes = base64.b64decode(encoded_b64_image)
-                    database_func.update_group_image(int(group_id), image_bytes)
-                    ServerHandler.update_group_dict_for_members(group_id)
+                    group_dict = database_func.get_group_by_id(group_id)
+                    group_manager = group_dict.get("group_manager")
+                    if group_manager == User:
+                        encoded_b64_image = data.get("encoded_b64_image")
+                        image_bytes = base64.b64decode(encoded_b64_image)
+                        database_func.update_group_image(int(group_id), image_bytes)
+                        ServerHandler.update_group_dict_for_members(group_id)
+                    else:
+                        logger.critical(f"{User} tried to do act without permission (potentially spoofing)")
                 elif action == "add_user":
                     group_id = data.get("group_id")
                     users_to_add = json.loads(data.get("users_to_add"))
