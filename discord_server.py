@@ -378,6 +378,13 @@ def thread_recv_messages(n, addr):
                 group_name = database_func.get_group_name_by_id(group_to_exit_id)
                 group_name_plus_id = f"({group_to_exit_id}){group_name}"
                 database_func.remove_chat_from_user(User, group_name_plus_id)
+                group_dict = database_func.get_group_by_id(group_to_exit_id)
+                group_manager = group_dict.get("group_manager")
+                if group_manager == User:
+                    group_members = group_dict.get("group_members")
+                    new_manager = random.choice(group_members)
+                    database_func.change_group_manager(group_to_exit_id, new_manager)
+                ServerHandler.update_group_dict_for_members(group_to_exit_id)
             elif message_type == "remove_user_from_group":
                 user_to_remove = data.get("user_to_remove")
                 group_id = data.get("group_id")
@@ -599,9 +606,9 @@ def thread_recv_messages(n, addr):
                         for user in users_to_add:
                             database_func.append_group_member(group_id, user)
                         logger.info(f"Added {users_to_add} to group of id {group_id} by {User}")
+                        ServerHandler.update_group_dict_for_members(group_id)
                     else:
                         logger.critical(f"{User} tried to add user to group where he has no permissions")
-                    ServerHandler.update_group_dict_for_members(group_id)
             if message_type not in not_requests_types:
                 time.sleep(ServerHandler.get_delay_between_requests(User))
 
