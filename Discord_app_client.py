@@ -540,6 +540,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.is_watching_video = False
         # the scroll widget that contain all of the messages
         self.messages_content_saver = None
+        self.chats_list_widget = None
         self.is_messages_need_update = True
 
         self.online_users_list = []

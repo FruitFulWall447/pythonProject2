@@ -1259,11 +1259,16 @@ class ChatBox(QWidget):
                     friend_x = int(self.screen_width * 0.13)
                     x, y = int(self.screen_width * 0.13), int(self.screen_height * 0.1574)
                     width, height = int(self.screen_width * 0.1823), int(self.screen_height * 0.68512)
-                    if not self.parent.current_chat_box_search:
-                        chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
-                        chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
+                    if self.parent.chats_list_widget is None:
+                        if not self.parent.current_chat_box_search:
+                            chats_widget = FriendsChatListWidget(self, self.parent.chats_list)
+                            chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
+                        else:
+                            chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                            chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                     else:
-                        chats_widget = FriendsChatListWidget(self, self.parent.temp_search_list)
+                        chats_widget = self.parent.chats_list_widget
+                        chats_widget.update_parent(self)
                         chats_list_scroll_area = ScrollAreaWidget(self, x, y, width, height, [chats_widget], True)
                 except Exception as e:
                     print(f"error in showing chats list{e}")
@@ -2759,6 +2764,9 @@ class FriendsChatListWidget(QWidget):
                     self.layout.addWidget(button)
                 except Exception as e:
                     print(f"Error in drawing friends button: {e}")
+
+    def update_parent(self, new_parent):
+        self.setParent(new_parent)
 
 
 class ScrollAreaWidget(QWidget):
