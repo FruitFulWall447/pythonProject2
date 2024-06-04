@@ -935,7 +935,9 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 130, [call_icons_widget], False)
+                            scroll_area_widget_width = 400
+
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, scroll_area_widget_width, 130, [call_icons_widget], False)
                         except Exception as e:
                             print(f"error in incall func {e}")
                 except Exception as e:
@@ -987,7 +989,8 @@ class ChatBox(QWidget):
                             starts_x = 900
                             y_of_profiles = 60
                             call_icons_widget.move(starts_x, y_of_profiles)
-                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, 300, 130, [call_icons_widget], False)
+                            scroll_area_widget_width = 400
+                            call_icon_scroll_area = ScrollAreaWidget(self, starts_x, y_of_profiles, scroll_area_widget_width, 130, [call_icons_widget], False)
                     try:
                         starter_x_of_group_members, starter_y_of_group_members = temp_widget_x + self.width_of_chat_box, around_name_y
                         group_members = self.parent.get_group_members_by_group_id(self.current_group_id)
@@ -1439,6 +1442,7 @@ class ChatBox(QWidget):
 
         button.clicked.connect(lambda: self.watch_stream_button_pressed(name, stream_type))
         self.call_profiles_list.append(button)
+        return button
 
     def watch_stream_button_pressed(self, name, stream_type):
         try:
@@ -1504,6 +1508,9 @@ class ChatBox(QWidget):
                     lambda pos, parent=widgets_parent, button=button, actions_list=actions_list,
                            chat_name=chat_name: self.parent.right_click_object_func(pos, parent, button,
                                                                                     actions_list, chat_name))
+            button_layout = QVBoxLayout(button)  # Create a layout for the button
+            button_layout.setAlignment(Qt.AlignBottom | Qt.AlignRight)
+            button_layout.addWidget(status_button)
             return button
         except Exception as e:
             print(f"error in creating call icons {e}")
@@ -2828,14 +2835,33 @@ class CallIconsWidget(QWidget):
                 names = current_call_dict.get("participants")
                 if self.main_page_object.username in names:
                     for name in names:
-                        profile_button = self.parent.create_profile_button(starts_x, y_of_profiles, name, current_call_dict, self)
-                        self.layout.addWidget(profile_button)
+                        is_cam_on = False
+
+                        # Create a vertical layout for each participant
+                        participant_layout = QVBoxLayout()
+
                         if name in current_call_dict.get("screen_streamers") and name != self.main_page_object.username:
                             stream_type = "ScreenStream"
-                            self.parent.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
+                            stream_button1 = self.parent.create_watch_stream_button(starts_x + 10, y_of_profiles - 35,
+                                                                                    name, stream_type, self)
+                            participant_layout.addWidget(stream_button1)
+                            is_cam_on = True
+
                         if name in current_call_dict.get("camera_streamers") and name != self.main_page_object.username:
                             stream_type = "CameraStream"
-                            self.parent.create_watch_stream_button(starts_x+10, y_of_profiles-35, name, stream_type, self)
+                            stream_button2 = self.parent.create_watch_stream_button(starts_x + 10, y_of_profiles - 35,
+                                                                                    name, stream_type, self)
+                            participant_layout.addWidget(stream_button2)
+                            is_cam_on = True
+
+                        profile_button = self.parent.create_profile_button(starts_x, y_of_profiles, name,
+                                                                           current_call_dict, self)
+                        participant_layout.addWidget(profile_button)
+
+                        # Add the participant layout to the main layout
+                        self.layout.addLayout(participant_layout)
+                        self.layout.addSpacing(10)  # Adjust the value to set the desired spacing
+
                         starts_x += 105
         except Exception as e:
             print(f"error is {e} in icon management")
