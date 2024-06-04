@@ -429,6 +429,11 @@ class ClientNet:
                    "group_id": group_id, "users_to_add": json.dumps(users_list)}
         self.send_message_dict_tcp(message)
 
+    def rename_group_by_id(self, new_name, group_id):
+        message = {"message_type": "group", "action": "rename_group",
+                   "group_id": group_id, "new_name": new_name}
+        self.send_message_dict_tcp(message)
+
     def send_calling_user(self, user_that_is_called):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",

@@ -1207,6 +1207,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
     def rename_group_pressed(self):
+        group_id_to_change = self.chat_box.current_group_id
         title = 'Input Dialog'
         label = 'Enter the name of the group:'
         dialog = QInputDialog(self)
@@ -1222,6 +1223,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         text = dialog.textValue()
 
         if ok and text:
+            self.Network.rename_group_by_id(text, group_id_to_change)
             print(f"changed group name to {text}")
         else:
             print("No group name entered")

@@ -586,6 +586,17 @@ def thread_recv_messages(n, addr):
                     ServerHandler.send_new_group_to_members(new_group_id)
                     n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
+                elif action == "rename_group":
+                    group_id = data.get("group_id")
+                    new_name = data.get("new_name")
+                    group_dict = database_func.get_group_by_id(group_id)
+                    group_manager = group_dict.get("group_manager")
+                    if group_manager == User:
+                        database_func.rename_group(group_id, new_name)
+                        logger.info(f"{User} renamed group of id {group_id} from {group_dict.get('group_name')} to {new_name}")
+                        ServerHandler.update_group_dict_for_members(group_id)
+                    else:
+                        logger.critical(f"{User} tried to do act without permission (potentially spoofing)")
                 elif action == "update_image":
                     group_id = data.get("group_id")
                     group_dict = database_func.get_group_by_id(group_id)
