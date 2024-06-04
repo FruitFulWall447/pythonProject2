@@ -1206,6 +1206,26 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.send_vc_data_thread.join()
         self.send_vc_data_thread = threading.Thread(target=self.thread_send_voice_chat_data, args=())
 
+    def rename_group_pressed(self):
+        title = 'Input Dialog'
+        label = 'Enter the name of the group:'
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setLabelText(label)
+        dialog.setTextEchoMode(QLineEdit.Normal)
+
+        # Apply the stylesheet to set the text color to white
+        dialog.setStyleSheet("QLabel { color : white; }")
+
+        # Execute the dialog and get the result
+        ok = dialog.exec_()
+        text = dialog.textValue()
+
+        if ok and text:
+            print(f"changed group name to {text}")
+        else:
+            print("No group name entered")
+
     def start_listen_thread(self):
         self.vc_play_flag = True
         self.play_vc_data_thread.start()

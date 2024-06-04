@@ -971,6 +971,7 @@ class ChatBox(QWidget):
                         rename_group_x = self.add_user_x - int(self.screen_width * 0.026)
                         rename_group_y = call_button_y
                         self.rename_group = self.create_top_page_button(rename_group_x, rename_group_y, icon)
+                        self.rename_group.clicked.connect(self.parent.rename_group_pressed)
                         icon = QIcon("discord_app_assets/edit_image_icon.png")
                         edit_group_image_x = rename_group_x - int(self.screen_width * 0.026)
                         edit_group_image_y = rename_group_y
