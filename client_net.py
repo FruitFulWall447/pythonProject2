@@ -410,7 +410,10 @@ class ClientNet:
             print(e)
 
     def send_new_group_image_to_server(self, image_bytes, group_id):
-        encoded_b64_image = base64.b64encode(image_bytes).decode('utf-8')
+        if image_bytes is not None:
+            encoded_b64_image = base64.b64encode(image_bytes).decode('utf-8')
+        else:
+            encoded_b64_image = None
         message = {"message_type": "group",
                    "action": "update_image", "group_id": group_id, "encoded_b64_image": encoded_b64_image}
         self.send_message_dict_tcp(message)

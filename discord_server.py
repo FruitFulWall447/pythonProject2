@@ -592,7 +592,10 @@ def thread_recv_messages(n, addr):
                     group_manager = group_dict.get("group_manager")
                     if group_manager == User:
                         encoded_b64_image = data.get("encoded_b64_image")
-                        image_bytes = base64.b64decode(encoded_b64_image)
+                        if encoded_b64_image is not None:
+                            image_bytes = base64.b64decode(encoded_b64_image)
+                        else:
+                            image_bytes = None
                         database_func.update_group_image(int(group_id), image_bytes)
                         ServerHandler.update_group_dict_for_members(group_id)
                     else:

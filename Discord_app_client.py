@@ -973,7 +973,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"error in right click func {e}")
 
     def update_group_image(self, image_bytes, group_id):
-        self.Network.send_new_group_image_to_server(image_bytes, group_id)
+        try:
+            self.Network.send_new_group_image_to_server(image_bytes, group_id)
+        except Exception as e:
+            print(e)
 
     def ask_for_listen_by_name(self, title):
         self.Network.ask_for_song_by_title(title)
