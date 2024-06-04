@@ -962,7 +962,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     group_image = self.get_circular_image_bytes_by_group_id(group_id)
                     if group_image is not None:
                         action = menu.addAction("Remove group icon")
-                        action.triggered.connect(lambda: self.update_group_image(group_id, None))
+                        action.triggered.connect(lambda: self.update_group_image(None, group_id))
 
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
@@ -972,7 +972,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in right click func {e}")
 
-    def update_group_image(self, group_id, image_bytes):
+    def update_group_image(self, image_bytes, group_id):
         self.Network.send_new_group_image_to_server(image_bytes, group_id)
 
     def ask_for_listen_by_name(self, title):
@@ -1290,10 +1290,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         return None
 
     def get_circular_image_bytes_by_group_id(self, group_id):
-        for circular_image_dictionary in self.circular_images_dicts_list_of_groups:
-            current_group_id = circular_image_dictionary.get("group_id")
-            if current_group_id == group_id:
-                return circular_image_dictionary.get("circular_image_bytes")
+        try:
+            for circular_image_dictionary in self.circular_images_dicts_list_of_groups:
+                current_group_id = circular_image_dictionary.get("group_id")
+                if current_group_id == group_id:
+                    return circular_image_dictionary.get("circular_image_bytes")
+        except Exception as e:
+            print(e)
 
     def caching_circular_images_of_users(self):
         self.circular_images_dicts_list_of_users = []
