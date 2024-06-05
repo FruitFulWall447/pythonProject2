@@ -526,10 +526,24 @@ def thread_recv_messages(n, addr):
                 if not database_func.are_friends(user, friend_user) and database_func.username_exists(
                         friend_user) and not friend_user == user and not database_func.is_active_request(user,
                                                                                                          friend_user):
-                    database_func.send_friend_request(user, friend_user)
-                    logger.info(f"{user} sent friend request to {friend_user}")
-                    ServerHandler.send_user_to_update_from_list(user, "requests_list", friend_user, False)
-                    n.sent_friend_request_status("worked")
+                    if not database_func.is_active_request(friend_user, user):
+                        database_func.send_friend_request(user, friend_user)
+                        logger.info(f"{user} sent friend request to {friend_user}")
+                        ServerHandler.send_user_to_update_from_list(user, "requests_list", friend_user, False)
+                        n.sent_friend_request_status("worked")
+                    else:
+                        # means the other user already asked for friendship
+                        database_func.handle_friend_request(User, friend_user, True)
+                        ServerHandler.send_user_to_update_from_list(friend_user, "requests_list", User,
+                                                                    True)
+                        ServerHandler.send_user_to_update_from_list(User, "requests_list", friend_user,
+                                                                    True)
+                        ServerHandler.send_user_to_update_from_list(friend_user, "friends_list", User,
+                                                                    False)
+                        ServerHandler.send_user_to_update_from_list(User, "friends_list", friend_user,
+                                                                    False)
+                        ServerHandler.cache_add_friend(User, friend_user)
+                        ServerHandler.cache_add_friend(friend_user, User)
                 else:
                     if database_func.is_active_request(user, friend_user):
                         logger.info("friend request is active")
