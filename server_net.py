@@ -12,15 +12,17 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import padding as aes_padding
 import secrets
 import pickle
-vc_data_sequence = br'\vc_data'
-share_screen_sequence = br'\share_screen_data'
-share_camera_sequence = br'\share_camera_data'
 
 
-def is_valid_aes_key(key):
+def is_aes_key_match_standard(key):
     if isinstance(key, bytes) and len(key) == 32:
         return True
     return False
+
+
+def is_aes_key_valid_length(symmetric_key: bytes) -> bool:
+    valid_lengths = [16, 24, 32]  # Valid lengths in bytes (128, 192, 256 bits)
+    return len(symmetric_key) in valid_lengths
 
 
 def slice_up_data(data, mtu):
@@ -764,7 +766,7 @@ class ServerNet:
 
             if encrypted_symmetric_key is not None:
                 decrypted_symmetric_key = decrypt_with_rsa(self.server_private_key, encrypted_symmetric_key)
-                is_key_valid = is_valid_aes_key(decrypted_symmetric_key)
+                is_key_valid = is_aes_key_match_standard(decrypted_symmetric_key)
                 if is_key_valid:
                     aes_key = decrypted_symmetric_key
                     self.send_aes_key_valid()
@@ -772,13 +774,17 @@ class ServerNet:
                         f"Started to communicate with client {self.client_tcp_socket_address}, with client's AES key {aes_key}")
                     self.aes_key = aes_key
                 else:
-                    aes_key = generate_aes_key()
-                    self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with server's AES key {aes_key}")
-                    try:
-                        encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
-                        self.send_aes_key_not_valid_with_encrypted_key(encrypted_aes_key)
-                        self.aes_key = aes_key
-                    except Exception as e:
-                        print(e)
+                    if is_aes_key_valid_length(decrypted_symmetric_key):
+                        aes_key = generate_aes_key()
+                        self.logger.info(f"Started to communicate with client {self.client_tcp_socket_address}, with server's AES key {aes_key}")
+                        try:
+                            encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
+                            self.send_aes_key_not_valid_with_encrypted_key(encrypted_aes_key)
+                            self.aes_key = aes_key
+                        except Exception as e:
+                            print(e)
+                    else:
+                        self.logger.error(f'faild the key exchange with client {self.client_tcp_socket_address}')
+                        return
         else:
             print("Error receiving the symmetric key.")
