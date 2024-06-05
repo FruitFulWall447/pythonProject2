@@ -1521,7 +1521,9 @@ def get_user_chats(username):
             if isinstance(chat, int):
                 chat_list_names.append(get_username_from_id(chat))
             else:
-                chat_list_names.append(chat)
+                _, group_id = gets_group_attributes_from_format(chat)
+                group_name = get_group_name_by_id(group_id)
+                chat_list_names.append(group_name)
 
         sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
