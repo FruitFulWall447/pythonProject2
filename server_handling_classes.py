@@ -510,12 +510,12 @@ class ServerHandler:
             net.send_friends_list(friends_list)
             self.logger.info(f"Sent friend list ({friends_list}) to user {name}")
 
-    def send_remove_user_from_list(self, user_to_remove_from_list, list_type, user_to_send_to):
+    def send_user_to_update_from_list(self, user_to_remove_from_list, list_type, user_to_send_to, is_remove):
         # list_type = friends_list, requests_list...
         net = self.get_net_by_name(user_to_send_to)
         if net:
-            net.send_user_to_remove_from_list(user_to_remove_from_list, list_type)
-            self.logger.info(f"updated list of type {list_type} for user_to_send_to")
+            net.send_user_to_remove_from_list(user_to_remove_from_list, list_type, is_remove)
+            self.logger.info(f"updated list of type {list_type} for {user_to_send_to}")
 
     def update_message_for_users(self, users, message, user_that_send, group_name=None):
         chat_name_handler = self.get_user_handler_object_of_user(user_that_send)

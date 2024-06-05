@@ -545,9 +545,9 @@ def thread_recv_messages(n, addr):
                     accepted_or_rejected_user = data.get("accepted_user")
                     database_func.handle_friend_request(User, accepted_or_rejected_user, True)
                     logger.info(f"{User} accepted {accepted_or_rejected_user} friend request")
-                    ServerHandler.send_friend_request(User)
-                    ServerHandler.send_friends_list(User)
-                    ServerHandler.send_friends_list(accepted_or_rejected_user)
+                    ServerHandler.send_user_to_update_from_list(accepted_or_rejected_user, "requests_list", User, True)
+                    ServerHandler.send_user_to_update_from_list(accepted_or_rejected_user, "friends_list", User, False)
+                    ServerHandler.send_user_to_update_from_list(User, "friends_list", accepted_or_rejected_user, False)
                     ServerHandler.cache_add_friend(User, accepted_or_rejected_user)
                     ServerHandler.cache_add_friend(accepted_or_rejected_user, User)
                 else:
