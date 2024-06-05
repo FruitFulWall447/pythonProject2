@@ -414,6 +414,14 @@ class ServerNet:
                    }
         self.send_message_dict_tcp(message)
 
+    def send_user_to_remove_from_list(self, user_to_remove, list_type):
+        try:
+            message = {"message_type": "remove_user_from_list", "list_type": list_type,
+                       "user_to_remove": user_to_remove}
+            self.send_message_dict_tcp(message)
+        except socket.error as e:
+            print(e)
+
     def send_user_that_calling(self, user_that_is_calling):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",
