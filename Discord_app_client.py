@@ -1272,23 +1272,24 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 else:
                     new_image = None
                 self.update_circular_photo_of_group(updated_group_dict.get('group_id'), new_image)
-                self.update_chat_page_without_messages()
                 if group_dict.get("group_name") != updated_group_dict.get("group_name"):
                     print("names are not equal")
                     for index, chat in enumerate(self.chats_list):
-                        temp = f"({updated_group_dict.get('group_id')}){updated_group_dict.get('group_name')}"
-                        if chat == temp:
-                            self.chats_list[index] = temp
-                            print(f"changed name to {temp}")
+                        new_group_full_name = f"({updated_group_dict.get('group_id')}){updated_group_dict.get('group_name')}"
+                        chat_first_half = chat.split(")")
+                        if chat_first_half == f"({updated_group_dict.get('group_id')}":
+                            self.chats_list[index] = new_group_full_name
+                            print(f"changed name to {new_group_full_name}")
                             if self.in_call_with == chat:
-                                self.in_call_with = temp
+                                self.in_call_with = new_group_full_name
                             elif self.calling_to == chat:
-                                self.calling_to = temp
+                                self.calling_to = new_group_full_name
                             elif self.getting_called_by == chat:
-                                self.getting_called_by = temp
+                                self.getting_called_by = new_group_full_name
                             elif self.selected_chat == chat:
-                                self.selected_chat == temp
+                                self.selected_chat = new_group_full_name
                             break
+                self.update_chat_page_without_messages()
                 return
             index += 1
 
