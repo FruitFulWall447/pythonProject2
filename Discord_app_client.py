@@ -3097,8 +3097,6 @@ class ChangePasswordPage(QWidget):
         else:
             self.too_short.show()
 
-    def resend_code_clicked(self):
-        print(4)
 
 
 class ServerIsDownPage(QWidget):
@@ -3109,7 +3107,7 @@ class ServerIsDownPage(QWidget):
 
             server_is_offline_x, server_is_offline_y = (int(self.page_controller_object.screen_width * 0.44),
                                                         int(self.page_controller_object.screen_height * 0.185))
-            self.server_is_offline = QLabel("Couldn't connect to Server...", self)
+            self.server_is_offline = QLabel("Failed to connect Server...", self)
 
             self.server_is_offline.move(server_is_offline_x, server_is_offline_y)
             self.server_is_offline.setStyleSheet("color: white; font-size:20px")
