@@ -544,6 +544,7 @@ def thread_recv_messages(n, addr):
                                                                     False)
                         ServerHandler.cache_add_friend(User, friend_user)
                         ServerHandler.cache_add_friend(friend_user, User)
+                        logger.info(f"{user} sent friend request to {friend_user} and was accepted")
                 else:
                     if database_func.is_active_request(user, friend_user):
                         logger.info("friend request is active")
