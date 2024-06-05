@@ -3409,6 +3409,19 @@ class PageController:
             settings_dict = data.get("settings_dict")
             self.main_page.update_settings_from_dict_signal.emit(settings_dict)
             print("got settings")
+        elif message_type == "remove_user_from_list":
+            list_type = data.get("list_type")
+            user_to_remove = data.get("user_to_remove")
+            if list_type == "friends_list":
+                self.main_page.friends_list.remove(user_to_remove)
+            elif list_type == "requests_list":
+                self.main_page.request_list.remove(user_to_remove)
+            elif list_type == "blocked_list":
+                self.main_page.blocked_list.remove(user_to_remove)
+            QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
+                                     Qt.QueuedConnection)
+            QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
+                                     Qt.QueuedConnection)
         elif message_type == "playlist_current_song_bytes":
             audio_bytes = data.get("audio_bytes")
             title = data.get("title")
