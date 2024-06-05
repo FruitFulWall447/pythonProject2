@@ -2021,10 +2021,9 @@ def rename_group(group_id, new_group_name):
 
         # Create a cursor object to interact with the database
         cursor = connection.cursor()
-        new_group_name_format = f"({str(group_id)}){new_group_name}"
         # Update the group_name for the specified group_id
         cursor.execute("UPDATE my_groups SET group_name = ? WHERE group_id = ?",
-                       (new_group_name_format, group_id))
+                       (new_group_name, group_id))
 
         # Commit the changes
         connection.commit()
