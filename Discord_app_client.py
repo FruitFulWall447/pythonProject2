@@ -1209,14 +1209,18 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def rename_group_pressed(self):
         group_id_to_change = self.chat_box.current_group_id
         title = 'Input Dialog'
-        label = 'Enter the name of the group:'
+        label = 'Selected new name for this group'
         dialog = QInputDialog(self)
         dialog.setWindowTitle(title)
         dialog.setLabelText(label)
         dialog.setTextEchoMode(QLineEdit.Normal)
 
         # Apply the stylesheet to set the text color to white
-        dialog.setStyleSheet("QLabel { color : white; }")
+        dialog.setStyleSheet("""
+            QLabel { color: white; }
+            QLineEdit { color: white; }
+            QPushButton { color: white; }
+        """)
 
         # Execute the dialog and get the result
         ok = dialog.exec_()
