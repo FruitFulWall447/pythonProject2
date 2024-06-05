@@ -806,9 +806,6 @@ class ClientNet:
     def initiate_rsa_protocol(self):
         # create 256 bytes key
         client_symmetric_key = generate_aes_key()
-        # public_key_byte_sequence = br'\server:public-key'
-
-        # the client receives the server Rsa public key
         received_serialized_server_public_key_bytes = self.recv_str()
         message_type = received_serialized_server_public_key_bytes.get("message_type")
         if message_type == "servers_public_key":
