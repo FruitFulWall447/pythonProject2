@@ -3098,7 +3098,6 @@ class ChangePasswordPage(QWidget):
             self.too_short.show()
 
 
-
 class ServerIsDownPage(QWidget):
     def __init__(self, page_controller_object):
         try:
@@ -3211,6 +3210,7 @@ class PageController:
             self.n.close()
             is_connected = self.n.connect_tcp()
             if is_connected:
+                self.main_page = MainPage(self.n, self)
                 self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
                 self.is_logged_in = False
                 self.is_waiting_for_2fa_code = False
