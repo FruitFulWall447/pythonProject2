@@ -1274,9 +1274,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.update_circular_photo_of_group(updated_group_dict.get('group_id'), new_image)
                 self.update_chat_page_without_messages()
                 if group_dict.get("group_name") != updated_group_dict.get("group_name"):
+                    print("names are not equal")
                     for index, chat in enumerate(self.chats_list):
-                        if chat == group_dict.get("group_name"):
-                            self.chats_list[index] = updated_group_dict.get("group_name")
+                        temp = f"({group_dict.get('group_id')}){group_dict.get('group_name')}"
+                        if chat == temp:
+                            self.chats_list[index] = temp
                 return
             index += 1
 
