@@ -644,7 +644,9 @@ def tcp_server():
         conn, addr = tcp_server_socket.accept()
         logger.info(f"connect to: {addr}")
         n = ServerNet(conn, addr, server_public_key, server_private_key)
-        threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
+        key_exchange_confirm = n.initiate_rsa_protocol()
+        if key_exchange_confirm:
+            threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 
 def handle_udp_message(data, address):

@@ -162,7 +162,6 @@ class ServerNet:
         self.original_len = 10
         self.aes_key = None
         self.sending_tcp_data_lock = threading.Lock()
-        self.initiate_rsa_protocol()
 
     def get_aes_key(self):
         return self.aes_key
@@ -773,6 +772,7 @@ class ServerNet:
                     self.logger.info(
                         f"Started to communicate with client {self.client_tcp_socket_address}, with client's AES key {aes_key}")
                     self.aes_key = aes_key
+                    return True
                 else:
                     if is_aes_key_valid_length(decrypted_symmetric_key):
                         aes_key = generate_aes_key()
@@ -781,10 +781,13 @@ class ServerNet:
                             encrypted_aes_key = encrypt_with_aes(decrypted_symmetric_key, aes_key)
                             self.send_aes_key_not_valid_with_encrypted_key(encrypted_aes_key)
                             self.aes_key = aes_key
+                            return True
                         except Exception as e:
                             print(e)
+                            return False
                     else:
                         self.logger.error(f'faild the key exchange with client {self.client_tcp_socket_address}')
-                        return
+                        return False
         else:
-            print("Error receiving the symmetric key.")
+            self.logger.error("Error receiving the symmetric key.")
+            return False
