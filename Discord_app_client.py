@@ -1228,8 +1228,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         if ok and text:
             if len(text) < 20:
-            self.Network.rename_group_by_id(text, group_id_to_change)
-            print(f"changed group name to {text}")
+                self.Network.rename_group_by_id(text, group_id_to_change)
+                print(f"changed group name to {text}")
         else:
             print("No group name entered")
 
