@@ -2054,7 +2054,7 @@ class SignUpPage(QWidget):
                                                                  (x, confirm_password_required_field_y))
         self.invalid_email = self.create_label("Invalid Email", (x, invalid_email_y))
         self.password_too_short = self.create_label("Password too short", (x, password_too_short_y))
-        self.username_already_used = self.create_label("Username is taken", (x, username_already_used_y))
+        self.username_already_used = self.create_label("Username is taken/invalid", (x, username_already_used_y))
         self.hide_every_error_label()
 
     def hide_every_error_label(self):
