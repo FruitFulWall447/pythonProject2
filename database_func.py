@@ -1221,7 +1221,7 @@ def is_active_request(username, friend_username):
     cursor = connection.cursor()
 
     # Check if the users are already friends
-    query = f"SELECT friendship_status FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_user_id = '{username_id}')"
+    query = f"SELECT friendship_status FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}')"
     cursor.execute(query)
     result = cursor.fetchone()
 
