@@ -1312,6 +1312,31 @@ def remove_friend(username, friend_username):
     connection.close()
 
 
+def remove_friend_request(username, friend_username):
+    username_id = get_id_from_username(username)
+    friend_username_id = get_id_from_username(friend_username)
+    connection = connect_to_kevindb()
+
+    cursor = connection.cursor()
+
+    # Check if the friendship exists
+    query = f"SELECT id FROM friends WHERE (user_id = '{username_id}' AND friend_user_id = '{friend_username_id}') OR (user_id = '{friend_username_id}' AND friend_user_id = '{username_id}')"
+    cursor.execute(query)
+    friendship_id = cursor.fetchone()
+
+    if friendship_id:
+        # Delete the row corresponding to the friendship
+        delete_query = f"DELETE FROM friends WHERE id = {friendship_id[0]}"
+        cursor.execute(delete_query)
+        connection.commit()
+        print("Friend removed successfully.")
+    else:
+        print("Friendship not found.")
+
+    cursor.close()
+    connection.close()
+
+
 def get_friend_requests(username):
     # Assuming you have a MySQL database connection
     # Replace 'your_database', 'your_user', 'your_password' with your actual database credentials
