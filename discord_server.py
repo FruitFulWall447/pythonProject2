@@ -528,7 +528,7 @@ def thread_recv_messages(n, addr):
                                                                                                          friend_user):
                     database_func.send_friend_request(user, friend_user)
                     logger.info(f"{user} sent friend request to {friend_user}")
-                    ServerHandler.send_friend_request(friend_user)
+                    ServerHandler.send_user_to_update_from_list(user, "requests_list", friend_user, False)
                     n.sent_friend_request_status("worked")
                 else:
                     if database_func.is_active_request(user, friend_user):
