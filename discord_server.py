@@ -559,9 +559,10 @@ def thread_recv_messages(n, addr):
                 friends_to_remove = data.get("username_to_remove")
                 database_func.remove_friend(User, friends_to_remove)
                 if friends_to_remove in ServerHandler.online_users:
-                    ServerHandler.send_friends_list(friends_to_remove)
+                    ServerHandler.send_user_to_update_from_list(User, "friends_list", friends_to_remove, True)
                 logger.info(f"{User} removed {friends_to_remove} as friend")
                 ServerHandler.cache_remove_friend(User, friends_to_remove)
+                ServerHandler.cache_remove_friend(friends_to_remove, User)
             elif message_type == "block":
                 user_to_block = data.get("user_to_block")
                 database_func.block_user(User, user_to_block)
@@ -569,7 +570,11 @@ def thread_recv_messages(n, addr):
                 user_friends = database_func.get_user_friends(User)
                 if user_to_block in user_friends:
                     database_func.remove_friend(User, user_to_block)
+                ServerHandler.send_user_to_update_from_list(User, "friends_list", user_to_block, True)
+
                 ServerHandler.block_user_cache(User, user_to_block)
+                ServerHandler.cache_remove_friend(User, user_to_block)
+                ServerHandler.cache_remove_friend(user_to_block, User)
             elif message_type == "unblock":
                 user_to_unblock = data.get("user_to_unblock")
                 database_func.unblock_user(User, user_to_unblock)
