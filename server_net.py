@@ -414,10 +414,10 @@ class ServerNet:
                    }
         self.send_message_dict_tcp(message)
 
-    def send_user_to_remove_from_list(self, user_to_remove, list_type):
+    def send_user_to_remove_from_list(self, user_to_remove, list_type, is_remove):
         try:
-            message = {"message_type": "remove_user_from_list", "list_type": list_type,
-                       "user_to_remove": user_to_remove}
+            message = {"message_type": "update_user_in_list", "list_type": list_type,
+                       "is_remove": is_remove, "user_to_update": user_to_remove}
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)

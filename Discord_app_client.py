@@ -3409,15 +3409,25 @@ class PageController:
             settings_dict = data.get("settings_dict")
             self.main_page.update_settings_from_dict_signal.emit(settings_dict)
             print("got settings")
-        elif message_type == "remove_user_from_list":
+        elif message_type == "update_user_in_list":
             list_type = data.get("list_type")
-            user_to_remove = data.get("user_to_remove")
+            user_to_update = data.get("user_to_update")
+            is_remove = data.get("is_remove")
             if list_type == "friends_list":
-                self.main_page.friends_list.remove(user_to_remove)
+                if is_remove:
+                    self.main_page.friends_list.remove(user_to_update)
+                else:
+                    self.main_page.friends_list.append(user_to_update)
             elif list_type == "requests_list":
-                self.main_page.request_list.remove(user_to_remove)
+                if is_remove:
+                    self.main_page.request_list.remove(user_to_update)
+                else:
+                    self.main_page.request_list.append(user_to_update)
             elif list_type == "blocked_list":
-                self.main_page.blocked_list.remove(user_to_remove)
+                if is_remove:
+                    self.main_page.blocked_list.remove(user_to_update)
+                else:
+                    self.main_page.blocked_list.append(user_to_update)
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
