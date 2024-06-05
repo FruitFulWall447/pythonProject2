@@ -546,7 +546,6 @@ def thread_recv_messages(n, addr):
                     database_func.handle_friend_request(User, accepted_or_rejected_user, True)
                     logger.info(f"{User} accepted {accepted_or_rejected_user} friend request")
                     ServerHandler.send_friend_request(User)
-                    ServerHandler.send_friend_request(accepted_or_rejected_user)
                     ServerHandler.send_friends_list(User)
                     ServerHandler.send_friends_list(accepted_or_rejected_user)
                     ServerHandler.cache_add_friend(User, accepted_or_rejected_user)
@@ -556,7 +555,6 @@ def thread_recv_messages(n, addr):
                     database_func.handle_friend_request(User, accepted_or_rejected_user, False)
                     logger.info(f"{User} rejected {accepted_or_rejected_user} friend request")
                     ServerHandler.send_friend_request(User)
-                    ServerHandler.send_friend_request(accepted_or_rejected_user)
             elif message_type == "friend_remove":
                 friends_to_remove = data.get("username_to_remove")
                 database_func.remove_friend(User, friends_to_remove)
