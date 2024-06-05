@@ -3417,17 +3417,20 @@ class PageController:
                 if is_remove:
                     self.main_page.friends_list.remove(user_to_update)
                 else:
-                    self.main_page.friends_list.append(user_to_update)
+                    if user_to_update not in self.main_page.friends_list:
+                        self.main_page.friends_list.append(user_to_update)
             elif list_type == "requests_list":
                 if is_remove:
                     self.main_page.request_list.remove(user_to_update)
                 else:
-                    self.main_page.request_list.append(user_to_update)
+                    if user_to_update not in self.main_page.request_list:
+                        self.main_page.request_list.append(user_to_update)
             elif list_type == "blocked_list":
                 if is_remove:
                     self.main_page.blocked_list.remove(user_to_update)
                 else:
-                    self.main_page.blocked_list.append(user_to_update)
+                    if user_to_update not in self.main_page.blocked_list:
+                        self.main_page.blocked_list.append(user_to_update)
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
