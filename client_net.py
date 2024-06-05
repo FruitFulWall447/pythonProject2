@@ -170,8 +170,12 @@ class ClientNet:
 
     def if_connected(self):
         self.connect_udp()
-        self.initiate_rsa_protocol()
-        self.check_max_packet_size_udp()
+        key_exchange_confirmation = self.initiate_rsa_protocol()
+        if key_exchange_confirmation:
+            self.check_max_packet_size_udp()
+            return True
+        else:
+            return False
 
     def connect_tcp(self):
         try:
@@ -179,8 +183,11 @@ class ClientNet:
             self.client_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.client_tcp_socket.connect(self.addr)
             self.logger.info("tcp socket connected to server")
-            self.if_connected()
-            return True
+            is_valid = self.if_connected()
+            if is_valid:
+                return True
+            else:
+                return False
         except Exception as e:
             self.logger.info(f"couldn't connect tcp socket to server {e}")
             return False
@@ -189,8 +196,8 @@ class ClientNet:
         try:
             self.client_udp_socket.connect(self.addr)
             self.logger.info("udp socket connected to server")
-        except:
-            self.logger.info("couldn't connect udp socket to server")
+        except Exception as e:
+            self.logger.info(f"couldn't connect udp socket to server {e}")
             pass
 
     def send_bytes(self, data):
@@ -827,8 +834,16 @@ class ClientNet:
                     aes_key = client_symmetric_key
                     self.aes_key = aes_key
                     self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
+                    return True
                 else:
                     encrypt_aes_key = data.get("encrypted_key")
                     aes_key = decrypt_with_aes(client_symmetric_key, encrypt_aes_key)
                     self.aes_key = aes_key
                     self.logger.info(f"Started to communicate with the server , with AES key {self.aes_key}")
+                    return True
+            else:
+                self.logger.error(f"failed key exchange")
+                return False
+        else:
+            self.logger.error(f"failed key exchange")
+            return False

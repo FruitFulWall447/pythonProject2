@@ -644,8 +644,8 @@ def tcp_server():
         conn, addr = tcp_server_socket.accept()
         logger.info(f"connect to: {addr}")
         n = ServerNet(conn, addr, server_public_key, server_private_key)
-        key_exchange_confirm = n.initiate_rsa_protocol()
-        if key_exchange_confirm:
+        key_exchange_confirmation = n.initiate_rsa_protocol()
+        if key_exchange_confirmation:
             threading.Thread(target=thread_recv_messages, args=(n, addr)).start()
 
 
