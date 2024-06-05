@@ -585,8 +585,8 @@ def thread_recv_messages(n, addr):
                 user_friends = database_func.get_user_friends(User)
                 if user_to_block in user_friends:
                     database_func.remove_friend(User, user_to_block)
+                    database_func.remove_friend_request(User, user_to_block)
                 ServerHandler.send_user_to_update_from_list(User, "friends_list", user_to_block, True)
-
                 ServerHandler.block_user_cache(User, user_to_block)
                 ServerHandler.cache_remove_friend(User, user_to_block)
                 ServerHandler.cache_remove_friend(user_to_block, User)
