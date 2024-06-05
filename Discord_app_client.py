@@ -1276,7 +1276,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     print("names are not equal")
                     for index, chat in enumerate(self.chats_list):
                         new_group_full_name = f"({updated_group_dict.get('group_id')}){updated_group_dict.get('group_name')}"
-                        chat_first_half = chat.split(")")
+                        chat_first_half = chat.split(")")[0]
                         if chat_first_half == f"({updated_group_dict.get('group_id')}":
                             self.chats_list[index] = new_group_full_name
                             print(f"changed name to {new_group_full_name}")
