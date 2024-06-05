@@ -553,8 +553,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.chat_box_chats_index = 0
         self.chat_box_index_y_start = 100
 
-        self.friends_box_index = 0
-        self.friends_box_index_y_start = 100
+        self.friends_box_index = None
         self.current_friends_box_search = False
 
         self.chat_index = None
@@ -913,6 +912,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(e)
 
+    def call_user_from_right_click(self, chat_name):
+        if not self.is_in_a_call and not self.is_getting_called and not self.is_calling:
+            self.chat_box.selected_chat_changed(chat_name)
+            self.chat_box.call_user()
+
     def right_click_object_func(self, pos, parent, button, actions_list, chat_name=None, group_id=None):
         try:
             menu = QMenu(parent)
@@ -934,10 +938,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     action_text = f"exit {self.get_group_name_by_id(group_id)}"
                     action = menu.addAction(action_text)
                     action.triggered.connect(lambda: self.exit_group(group_id))
-                elif item1 == "add_friend":
-                    action_text = f"add {chat_name} as friend"
-                    action = menu.addAction(action_text)
-                    action.triggered.connect(lambda: self.send_friend_request_for_user(chat_name))
                 elif item1 == "remove_user_from_group":
                     action_text = f"remove {chat_name} from {self.get_group_name_by_id(group_id)}"
                     action = menu.addAction(action_text)
@@ -956,6 +956,13 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     str_for_listen = f"listen to {listens_to}"
                     action = menu.addAction(str_for_listen)
                     action.triggered.connect(lambda: self.ask_for_listen_by_name(listens_to))
+                if chat_name not in self.friends_list:
+                    action_text = f"add {chat_name} as friend"
+                    action = menu.addAction(action_text)
+                    action.triggered.connect(lambda: self.send_friend_request_for_user(chat_name))
+                action_text = f"call {chat_name}"
+                action = menu.addAction(action_text)
+                action.triggered.connect(lambda: self.call_user_from_right_click(chat_name))
             elif chat_name is None and group_id is not None:
                 group_manager = self.get_group_manager_by_group_id(group_id)
                 if group_manager == self.username:

@@ -279,8 +279,7 @@ class FriendsBox(QWidget):
 
                 self.default_starting_y = 200
                 self.friend_labels = []
-                request_starter_y = 200 + (self.parent.friends_box_index * -50)
-                self.parent.friends_box_index_y_start = request_starter_y
+                request_starter_y = 200 + (0 * -50)
 
                 request_x = search_x
 
@@ -377,7 +376,7 @@ class FriendsBox(QWidget):
 
         if self.parent.friends_box_page == "blocked":
             self.friend_labels = []
-            friend_starter_y = 200 + (self.parent.friends_box_index * -50)
+            friend_starter_y = 200 + (0 * -50)
             friends_box_list = []
             try:
                 if self.parent.current_friends_box_search:
@@ -551,8 +550,7 @@ class FriendsBox(QWidget):
                           search_width, search_height, friend_x, border2_width):
 
         friends_label_x = search_x
-        friend_starter_y = 200 + (self.parent.friends_box_index * -50)
-        self.parent.friends_box_index_y_start = friend_starter_y
+        friend_starter_y = 200 + (0 * -50)
 
         button.setStyleSheet(button_stylesheet)
         self.setup_social_label(label_text, 60, search_x, search_y)
@@ -651,7 +649,6 @@ class FriendsBox(QWidget):
                 self.search.clear()
             self.parent.current_friends_box_search = False
             self.parent.temp_search_list = []
-            self.parent.friends_box_index = 0
             self.parent.friends_box_page = "online"
             self.parent.updated_social_page()
 
@@ -661,7 +658,6 @@ class FriendsBox(QWidget):
                 self.search.clear()
             self.parent.current_friends_box_search = False
             self.parent.temp_search_list = []
-            self.parent.friends_box_index = 0
             self.parent.friends_box_page = "all"
             self.parent.updated_social_page()
 
@@ -672,7 +668,6 @@ class FriendsBox(QWidget):
                     self.search.clear()
                 self.parent.current_friends_box_search = False
                 self.parent.temp_search_list = []
-                self.parent.friends_box_index = 0
                 self.parent.friends_box_page = "pending"
                 self.parent.updated_social_page()
         except Exception as e:
@@ -684,7 +679,6 @@ class FriendsBox(QWidget):
                 self.search.clear()
             self.parent.current_friends_box_search = False
             self.parent.temp_search_list = []
-            self.parent.friends_box_index = 0
             self.parent.friends_box_page = "blocked"
             self.parent.updated_social_page()
 
@@ -695,7 +689,6 @@ class FriendsBox(QWidget):
                     self.search.clear()
                 self.parent.current_friends_box_search = False
                 self.parent.temp_search_list = []
-                self.parent.friends_box_index = 0
                 self.parent.friends_box_page = "add friend"
                 self.parent.updated_social_page()
         except Exception as e:

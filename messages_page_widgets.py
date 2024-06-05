@@ -2829,6 +2829,12 @@ class ScrollAreaWidget(QWidget):
                         self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_index)
                     except Exception as e:
                         pass
+            elif self.variable_to_change == "friends_box_index":
+                if self.parent.parent.friends_box_index is not None:
+                    try:
+                        self.scroll_area.verticalScrollBar().setValue(self.parent.parent.friends_box_index)
+                    except Exception as e:
+                        pass
         except Exception as e:
             print(f"error in scrollable widget {e}")
             print(items_list)
@@ -2837,6 +2843,8 @@ class ScrollAreaWidget(QWidget):
         if self.variable_to_change is not None:
             if self.variable_to_change == "chat_index":
                 self.parent.change_chat_index(value)
+            elif self.variable_to_change == "friends_box_index":
+                self.parent.parent.friends_box_index = value
 
 
 class CallIconsWidget(QWidget):
