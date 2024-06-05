@@ -1523,7 +1523,7 @@ def get_user_chats(username):
             else:
                 _, group_id = gets_group_attributes_from_format(chat)
                 group_name = get_group_name_by_id(group_id)
-                chat_list_names.append(group_name)
+                chat_list_names.append(f"({group_id}){group_name}")
 
         sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
