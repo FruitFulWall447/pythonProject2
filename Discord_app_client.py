@@ -1209,7 +1209,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def rename_group_pressed(self):
         group_id_to_change = self.chat_box.current_group_id
         title = 'Input Dialog'
-        label = 'Selected new name for this group'
+        label = 'Select a new name for this group'
         dialog = QInputDialog(self)
         dialog.setWindowTitle(title)
         dialog.setLabelText(label)
@@ -1230,6 +1230,34 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if len(text) < 20:
                 self.Network.rename_group_by_id(text, group_id_to_change)
                 print(f"changed group name to {text}")
+        else:
+            print("No group name entered")
+
+    def rename_user_pressed(self):
+        group_id_to_change = self.chat_box.current_group_id
+        title = 'Input Dialog'
+        label = 'Select a new name for your account'
+        dialog = QInputDialog(self)
+        dialog.setWindowTitle(title)
+        dialog.setLabelText(label)
+        dialog.setTextEchoMode(QLineEdit.Normal)
+
+        # Apply the stylesheet to set the text color to white
+        dialog.setStyleSheet("""
+            QLabel { color: white; }
+            QLineEdit { color: white; }
+            QPushButton { color: white; }
+        """)
+
+        # Execute the dialog and get the result
+        ok = dialog.exec_()
+        text = dialog.textValue()
+
+        if ok and text:
+            if is_valid_username(text):
+                self.Network.rename_group_by_id(text, group_id_to_change)
+                print(f"changed username to {text}")
+                self.username = text
         else:
             print("No group name entered")
 

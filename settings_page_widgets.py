@@ -487,12 +487,6 @@ class SettingsBox(QWidget):
                     text = "None"
                 self.create_my_account_labels(account_label_x, y, self.default_labels_font_size+2,
                                               "EMAIL", text)
-                y = y + 80
-                text = self.parent.phone_number
-                if text is None:
-                    text = "None"
-                self.create_my_account_labels(account_label_x, y, self.default_labels_font_size+2,
-                                              "PHONE NUMBER", text)
                 change_password_button_x, change_password_button_y = account_label_x-30, y+120
                 change_password_button = self.create_colored_button(dark_green, other_green, None,
                                                                       change_password_button_x,
