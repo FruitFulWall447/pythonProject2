@@ -2050,6 +2050,7 @@ class ChatBox(QWidget):
     def accept_call(self):
         # Add your logic when the call is accepted
         self.Network.send_accept_call_with(self.parent.getting_called_by)
+        self.selected_chat_changed(self.parent.getting_called_by)
 
     def reject_call(self):
         # Add your logic when the call is rejected
