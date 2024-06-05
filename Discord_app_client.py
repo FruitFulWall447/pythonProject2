@@ -1273,6 +1273,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     new_image = None
                 self.update_circular_photo_of_group(updated_group_dict.get('group_id'), new_image)
                 self.update_chat_page_without_messages()
+                if group_dict.get("group_name") != updated_group_dict.get("group_name"):
+                    for index, chat in enumerate(self.chats_list):
+                        if chat == group_dict.get("group_name"):
+                            self.chats_list[index] = updated_group_dict.get("group_name")
                 return
             index += 1
 
