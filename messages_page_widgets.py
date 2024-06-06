@@ -18,6 +18,26 @@ import string
 import pyaudio
 import cv2
 import hashlib
+import re
+
+
+def parse_group_caller_format(input_format):
+    # Define a regular expression pattern to capture the information
+    pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
+
+    # Use the pattern to match the input_format
+    match = pattern.match(input_format)
+
+    if match:
+        # Extract the matched groups
+        group_id = int(match.group(1))
+        group_name = match.group(2).strip()
+        group_caller = match.group(3).strip()
+
+        return group_id, group_name, group_caller
+    else:
+        # Return None if no match is found
+        return None
 
 
 def is_base64_encoded(s):
@@ -2052,6 +2072,10 @@ class ChatBox(QWidget):
         self.Network.send_accept_call_with(self.parent.getting_called_by)
         if not self.parent.getting_called_by.startswith("("):
             self.selected_chat_changed(self.parent.getting_called_by)
+        else:
+            group_id, group_name, group_caller = parse_group_caller_format(self.parent.getting_called_by)
+            group_full_name = f"{group_id}{group_name}"
+            self.selected_chat_changed(group_full_name
 
     def reject_call(self):
         # Add your logic when the call is rejected
