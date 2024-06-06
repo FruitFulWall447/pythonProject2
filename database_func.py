@@ -1063,8 +1063,6 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
 
         # Commit changes to the database
         connection.commit()
-
-
     except Exception as e:
         print("Error in adding message:", e)
 
