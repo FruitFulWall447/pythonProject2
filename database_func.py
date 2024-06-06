@@ -1657,7 +1657,7 @@ def remove_chat_from_user(username, chat_to_remove):
                 # means chat is group
                 group_to_remove_id = int(chat_to_remove.split(")")[0][1:])
                 for chat in current_chats_list:
-                    if chat.startswith("("):
+                    if isinstance(chat, str):
                         group_id = int(chat.split(")")[0][1:])
                         if group_id == group_to_remove_id:
                             current_chats_list.remove(chat)
