@@ -2074,7 +2074,7 @@ class ChatBox(QWidget):
             self.selected_chat_changed(self.parent.getting_called_by)
         else:
             group_id, group_name, group_caller = parse_group_caller_format(self.parent.getting_called_by)
-            group_full_name = f"{group_id}{group_name}"
+            group_full_name = f"({group_id}){group_name}"
             self.selected_chat_changed(group_full_name)
 
     def reject_call(self):
