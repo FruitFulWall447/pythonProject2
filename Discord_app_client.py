@@ -970,6 +970,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     if group_image is not None:
                         action = menu.addAction("Remove group icon")
                         action.triggered.connect(lambda: self.update_group_image(None, group_id))
+                full_group_name = f"({group_id}){self.get_group_name_by_id(group_id)}"
+                action_text = f"call {full_group_name}"
+                action = menu.addAction(action_text)
+                action.triggered.connect(lambda: self.call_user_from_right_click(full_group_name))
 
             # Use the position of the button as the reference for menu placement
             global_pos = button.mapToGlobal(pos)
