@@ -2430,6 +2430,7 @@ def connect_to_kevindb():
         print(f"Error connecting to database: {error}")
         return None
 
+
 create_database()
 create_tables()
 
