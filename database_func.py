@@ -1570,8 +1570,9 @@ def update_group_image(group_id, image_bytes):
         cursor.execute(update_query, (group_pic_path, group_id))
         connection.commit()
 
-        if image_path and not check_path_exists_in_db(image_path):
-            os.remove(image_path)
+        if result:
+            if image_path and not check_path_exists_in_db(image_path):
+                os.remove(image_path)
 
         print(f"Group image updated successfully for group ID: {group_id}")
 
