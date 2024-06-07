@@ -3440,6 +3440,12 @@ class PageController:
                 else:
                     if user_to_update not in self.main_page.blocked_list:
                         self.main_page.blocked_list.append(user_to_update)
+            elif list_type == "chats_list":
+                if is_remove:
+                    self.main_page.chats_list.remove(user_to_update)
+                else:
+                    if user_to_update not in self.main_page.chats_list:
+                        self.main_page.chats_list.append(user_to_update)
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
