@@ -267,8 +267,6 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
         if mp3_file_exists_path is None:
             mp3_file_name = generate_random_filename(24)
             mp3_file_path = os.path.join(folder_path, mp3_file_name)
-
-
             # Save files
             save_bytes_to_file(mp3_file_bytes, mp3_file_path)
         else:
