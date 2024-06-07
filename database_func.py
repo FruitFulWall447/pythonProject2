@@ -209,6 +209,42 @@ def check_path_exists_in_db(path):
         conn.close()
 
 
+def get_path_by_hash(file_hash):
+    # List of tables and columns to check
+    tables_columns = [
+        ('sign_up_table', 'profile_pic_path', 'profile_pic_hash'),
+        ('songs', 'mp3_file_path', 'mp3_file_hash'),
+        ('messages', 'message_content_path', 'message_content_hash'),
+        ('songs', 'thumbnail_path', 'thumbnail_hash'),
+        ('my_groups', 'group_image_path', 'group_image_hash')
+    ]
+
+    try:
+        # Connect to the database
+        conn = connect_to_kevindb()
+        cursor = conn.cursor()
+
+        # Iterate over each table and column to find the file hash
+        for table, path_column, hash_column in tables_columns:
+            query = f"SELECT {path_column} FROM {table} WHERE {hash_column} = ?"
+            cursor.execute(query, (file_hash,))
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+
+        # If no match is found, return None
+        return None
+
+    except sqlite3.Error as e:
+        print("Error checking file hash in database:", e)
+        return None
+
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+
+
 def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_bytes):
     try:
         # Connect to your MySQL database
