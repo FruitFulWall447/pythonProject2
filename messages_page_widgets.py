@@ -2311,6 +2311,7 @@ class MessagesBox(QWidget):
             print(f"Error in creating messages box {e}")
 
     def scroll_maximum(self):
+        self.scroll_area.widget().layout().activate()
         maximum = self.scroll_area.verticalScrollBar().maximum()
         self.scroll_area.verticalScrollBar().setValue(maximum)
 
