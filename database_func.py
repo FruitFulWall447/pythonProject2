@@ -1022,7 +1022,6 @@ def update_profile_pic(username, profile_pic_encoded):
 
         # Commit the changes to the database
         connection.commit()
-        print("updated profile pic")
 
         if file_path is not None and not check_path_exists_in_db(file_path):
             try:
