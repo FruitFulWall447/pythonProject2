@@ -2367,8 +2367,8 @@ class MessagesBox(QWidget):
                 self.layout.insertWidget(0, title_label)
         elif message_type == "image":
             try:
-                decoded_compressed_image_bytes = base64.b64decode(message_content)
-                image_bytes = zlib.decompress(decoded_compressed_image_bytes)
+                decoded_image_bytes = base64.b64decode(message_content)
+                image_bytes = decoded_image_bytes
 
                 image_label = QPushButton(self)
                 image_label.setStyleSheet("background-color: transparent; border: none;")
@@ -2404,8 +2404,8 @@ class MessagesBox(QWidget):
                 print(f"error in show messages is:{e}")
         elif message_type == "video":
             try:
-                decoded_compressed_video_bytes = base64.b64decode(message_content)
-                video_bytes = zlib.decompress(decoded_compressed_video_bytes)
+                decoded_video_bytes = base64.b64decode(message_content)
+                video_bytes = decoded_video_bytes
 
                 video_label = QPushButton(self)
                 video_label.setStyleSheet("background-color: transparent; border: none;")
@@ -2460,8 +2460,8 @@ class MessagesBox(QWidget):
                 print(f"error in show messages is:{e}")
         elif message_type == "audio":
             try:
-                decoded_compressed_audio_bytes = base64.b64decode(message_content)
-                audio_bytes = zlib.decompress(decoded_compressed_audio_bytes)
+                decoded_audio_bytes = base64.b64decode(message_content)
+                audio_bytes = decoded_audio_bytes
 
                 audio_label = QPushButton(f"{file_name}", self)
                 audio_label.setStyleSheet(
@@ -2508,8 +2508,8 @@ class MessagesBox(QWidget):
                 print("error in audio file")
         elif message_type in basic_files_types:
             try:
-                decoded_compressed_file_bytes = base64.b64decode(message_content)
-                file_bytes = zlib.decompress(decoded_compressed_file_bytes)
+                decoded_file_bytes = base64.b64decode(message_content)
+                file_bytes = decoded_file_bytes
 
                 link_label = QPushButton(f"{file_name}", self)
                 link_label.setStyleSheet(

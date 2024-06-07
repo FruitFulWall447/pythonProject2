@@ -1891,9 +1891,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     # Compresses the byte representation of an image using zlib,
                     # encodes the compressed data as base64, and then decodes
                     # it into a UTF-8 string for transmission or storage.
-                    compressed_byte_file = zlib.compress(self.file_to_send)
-                    compressed_base64_file = base64.b64encode(compressed_byte_file).decode()
-                    # print(len(compressed_base64_image))
+                    base64_file = base64.b64encode(self.file_to_send).decode()
                     current_time = datetime.datetime.now()
                     formatted_time = current_time.strftime('%Y-%m-%d %H:%M')
                     file_type = ""
@@ -1915,12 +1913,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         file_type = "py"
                     elif self.file_name.endswith("xlsx"):
                         file_type = "xlsx"
-                    message_dict = create_message_dict(compressed_base64_file, self.username,
+                    message_dict = create_message_dict(base64_file, self.username,
                                                        str(formatted_time), file_type, self.file_name)
                     self.list_messages.insert(0, message_dict)
                     # add here that the type of the message is sent as well
                     try:
-                        n.send_message(self.username, self.selected_chat, compressed_base64_file, file_type,
+                        n.send_message(self.username, self.selected_chat, base64_file, file_type,
                                        self.file_name)
                     except Exception as e:
                         print(f"error in sending message")
