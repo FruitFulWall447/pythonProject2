@@ -244,7 +244,9 @@ class VideoPlayer(QWidget):
         self.video_widget.setGeometry(0, 0, screen_width, int(screen_height*0.83))
 
         self.slider = QSlider(Qt.Horizontal, self)
-        self.slider.sliderReleased.connect(self.set_position)
+        self.slider.sliderMoved.connect(self.set_position)
+        self.slider.sliderPressed.connect(self.slider_pressed)
+        self.slider.sliderReleased.connect(self.slider_released)
         slider_x, slider_y, slider_width, slider_height = int(screen_width*0.1), int(screen_height*0.85), int(screen_width*0.8), int(screen_height*0.05)
         self.slider.setGeometry(slider_x, slider_y, slider_width, slider_height)
 
@@ -275,6 +277,22 @@ class VideoPlayer(QWidget):
 
         # Start the position update timer with a short interval (e.g., 1 milliseconds)
         self.position_timer.start(1)
+        self.was_playing = False
+
+    def slider_pressed(self):
+        if self.media_player.state() == QMediaPlayer.PlayingState:
+            self.media_player.pause()
+            self.position_timer.stop()
+            self.was_playing = True
+        else:
+            self.was_playing = False
+        self.set_position()
+
+    def slider_released(self):
+        if not self.media_player.state() == QMediaPlayer.PlayingState:
+            if self.was_playing:
+                self.media_player.play()
+                self.position_timer.start()
 
     def mousePressEvent(self, event):
         # Call the toggle play/pause method when the widget is clicked
@@ -282,6 +300,13 @@ class VideoPlayer(QWidget):
             mouse_pos = event.pos()
             if self.video_widget.geometry().contains(mouse_pos):
                 self.toggle_play_pause()
+            if self.slider.geometry().contains(mouse_pos):
+                position_ratio = (mouse_pos.x() - self.slider.x()) / self.slider.width()
+                # Convert the position ratio to the corresponding value within the slider range
+                position = self.slider.minimum() + (self.slider.maximum() - self.slider.minimum()) * position_ratio
+                # Set the slider position
+                self.slider.setValue(position)
+                self.set_position()
         except Exception as e:
             print(e)
 

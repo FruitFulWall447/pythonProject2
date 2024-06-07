@@ -836,8 +836,28 @@ class ChatBox(QWidget):
                         self.caller_label.move(start_point, y_of_label - int(self.screen_height * 0.02777))
 
                         self.pop_up_label = QLabel(self)
-                        custom_color = QColor("#053d76")
-                        self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
+                        custom_color = self.parent.standard_hover_color
+                        custom_color = QColor(custom_color)
+
+                        red = custom_color.red()
+                        green = custom_color.green()
+                        blue = custom_color.blue()
+
+                        # Define the percentage by which to darken the color
+                        darken_percentage = 0.8  # You can adjust this value to achieve the desired darkness
+
+                        # Darken each RGB component by the specified percentage
+                        darkened_red = int(red * darken_percentage)
+                        darkened_green = int(green * darken_percentage)
+                        darkened_blue = int(blue * darken_percentage)
+
+                        # Construct the darker color using the darkened RGB components
+                        darker_color = QColor(darkened_red, darkened_green, darkened_blue)
+
+                        # Apply the darker color to the style sheet of the pop-up label
+                        self.pop_up_label.setStyleSheet(f"background-color: {darker_color.name()};")
+
+                        # self.pop_up_label.setStyleSheet(f"background-color: {custom_color.name()};")
                         self.pop_up_label.setGeometry(pop_up_x, pop_up_y, pop_up_width, pop_up_height)
 
                         self.accept_button = QPushButton(self)
@@ -1125,7 +1145,7 @@ class ChatBox(QWidget):
                     self.chat_name_label = QLabel(self.current_chat.replace("/", ""), self)
                     self.chat_name_label.setStyleSheet("color: white; font-size: 20px; margin: 10px;")
                     # Set a fixed width for the label
-                    self.chat_name_label.setFixedWidth(int(self.screen_width * 0.1041))
+                    # self.chat_name_label.setFixedWidth(int(self.screen_width * 0.1041))
                     chat_name_label_x = int(self.screen_width * 0.3229)
                     self.chat_name_label.move(chat_name_label_x, int(self.screen_height * 0.00277778))
                     self.messages_list = messages_list

@@ -159,6 +159,42 @@ def remove_song(title, owner_username):
         print("Error while removing song from the table:", error)
 
 
+def check_path_exists_in_db(path):
+    try:
+        # Connect to the database
+        conn = connect_to_kevindb()
+        cursor = conn.cursor()
+
+        # Define the tables and columns to check
+        tables_columns = [
+            ('sign_up_table', 'profile_pic_path'),
+            ('songs', 'mp3_file_path'),
+            ('messages', 'message_content_path')
+        ]
+
+        # Iterate over each table and column
+        for table, column in tables_columns:
+            # Execute a SQL query to check if the path exists in the specified column
+            cursor.execute(f"SELECT COUNT(*) FROM {table} WHERE {column} = ?", (path,))
+            count = cursor.fetchone()[0]
+            if count > 0:
+                print(f"Path '{path}' exists in table '{table}' column '{column}'")
+                return True
+
+        # If the path does not exist in any column of any table
+        print(f"Path '{path}' does not exist in any table column")
+        return False
+
+    except sqlite3.Error as e:
+        print("Error checking path in database:", e)
+        return None
+
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+
+
 def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_bytes):
     try:
         # Connect to your MySQL database
@@ -2336,8 +2372,8 @@ def create_sign_up_table():
                 salt VARCHAR(255),
                 security_token VARCHAR(255),
                 chats_list TEXT,
-                profile_pic_path VARCHAR(255),
-                blocked_list TEXT
+                blocked_list TEXT,
+                profile_pic_path VARCHAR(255)
             )
         """
         cursor.execute(create_table_query)
