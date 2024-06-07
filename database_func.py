@@ -1960,7 +1960,7 @@ def create_group(group_name, group_manager, group_members_list=None):
 
         # Get the last inserted row id (equivalent to LAST_INSERT_ID() in MySQL)
         group_id = cursor.lastrowid
-        new_chat_name = f"({group_id}){group_name}"
+        new_chat_name = f"({group_id})"
 
         # Commit the changes
         connection.commit()
