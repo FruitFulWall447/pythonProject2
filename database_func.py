@@ -54,6 +54,18 @@ def save_bytes_to_file(data_bytes, file_path):
         file.write(data_bytes)
 
 
+def hash_sha2_bytes(bytes_data):
+    # Create a new SHA-256 hash object
+    sha256_hash = hashlib.sha256()
+
+    sha256_hash.update(bytes_data)
+
+    # Get the hexadecimal representation of the hash
+    hashed_string = sha256_hash.hexdigest()
+
+    return hashed_string
+
+
 def file_to_bytes(file_path):
     """Read file bytes from the given file path."""
     try:
@@ -966,13 +978,15 @@ def update_profile_pic(username, profile_pic_encoded):
             file_name = generate_random_filename(24)
             profile_pic_path = os.path.join(folder_path, file_name)
             save_bytes_to_file(profile_pic, profile_pic_path)
-            update_query = f"UPDATE {table_name} SET profile_pic_path = ? WHERE username = ?"
+            profile_pic_hash = hash_sha2_bytes(profile_pic)
+            update_query = f"UPDATE {table_name} SET profile_pic_path = ?, profile_pic_hash = ? WHERE username = ?"
         else:
             profile_pic_path = None
-            update_query = f"UPDATE {table_name} SET profile_pic_path = ? WHERE username = ?"
+            profile_pic_hash = None
+            update_query = f"UPDATE {table_name} SET profile_pic_path = ?, profile_pic_hash = ? WHERE username = ?"
 
         # Execute the INSERT statement with parameterized values
-        cursor.execute(update_query, (profile_pic_path, username))
+        cursor.execute(update_query, (profile_pic_path, username, profile_pic_hash))
 
         # Commit the changes to the database
         connection.commit()
@@ -2373,7 +2387,8 @@ def create_sign_up_table():
                 security_token VARCHAR(255),
                 chats_list TEXT,
                 blocked_list TEXT,
-                profile_pic_path VARCHAR(255)
+                profile_pic_path VARCHAR(255),
+                profile_pic_hash TEXT
             )
         """
         cursor.execute(create_table_query)
