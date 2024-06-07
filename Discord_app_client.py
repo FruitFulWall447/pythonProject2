@@ -1292,7 +1292,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def insert_message_that_client_send(self, message_dict):
         self.insert_new_message_in_chat(message_dict)
-        self.scroll_back_to_index_before_update(len(self.list_messages))
+        self.scroll_maximum_down()
 
     def scroll_maximum_down(self):
         self.messages_content_saver.scroll_maximum()
