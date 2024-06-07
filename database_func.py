@@ -181,7 +181,9 @@ def check_path_exists_in_db(path):
         tables_columns = [
             ('sign_up_table', 'profile_pic_path'),
             ('songs', 'mp3_file_path'),
-            ('messages', 'message_content_path')
+            ('messages', 'message_content_path'),
+            ('songs', 'thumbnail_path'),
+            ('my_groups', 'group_image_path')
         ]
 
         # Iterate over each table and column
