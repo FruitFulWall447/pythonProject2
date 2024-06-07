@@ -1562,12 +1562,16 @@ def update_group_image(group_id, image_bytes):
             group_pic_path = None
             group_pic_hash = None
         else:
-            folder_path = files_folder_path
-            file_name = generate_random_filename(24)
-            group_pic_path = os.path.join(folder_path, file_name)
-            save_bytes_to_file(image_bytes, group_pic_path)
             group_pic_hash = hash_sha2_bytes(image_bytes)
-            print("saved bytes to image")
+            group_pic_exits_path = get_path_by_hash(group_pic_hash)
+            if group_pic_exits_path is None:
+                folder_path = files_folder_path
+                file_name = generate_random_filename(24)
+                group_pic_path = os.path.join(folder_path, file_name)
+                save_bytes_to_file(image_bytes, group_pic_path)
+                print("saved bytes to image")
+            else:
+                group_pic_path = group_pic_exits_path
 
         # Prepare the UPDATE query
         update_query = """
