@@ -56,14 +56,17 @@ def save_bytes_to_file(data_bytes, file_path):
 
 def hash_sha2_bytes(bytes_data):
     # Create a new SHA-256 hash object
-    sha256_hash = hashlib.sha256()
+    try:
+        sha256_hash = hashlib.sha256()
 
-    sha256_hash.update(bytes_data)
+        sha256_hash.update(bytes_data)
 
-    # Get the hexadecimal representation of the hash
-    hashed_string = sha256_hash.hexdigest()
+        # Get the hexadecimal representation of the hash
+        hashed_string = sha256_hash.hexdigest()
 
-    return hashed_string
+        return hashed_string
+    except:
+        return None
 
 
 def file_to_bytes(file_path):
@@ -259,18 +262,27 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
 
         # Generate unique filenames
         folder_path = files_folder_path
-        mp3_file_name = generate_random_filename(24)
-        mp3_file_path = os.path.join(folder_path, mp3_file_name)
+        mp3_file_hash = hash_sha2_bytes(mp3_file_bytes)
+        mp3_file_exists_path = get_path_by_hash(mp3_file_hash)
+        if mp3_file_exists_path is None:
+            mp3_file_name = generate_random_filename(24)
+            mp3_file_path = os.path.join(folder_path, mp3_file_name)
+
+
+            # Save files
+            save_bytes_to_file(mp3_file_bytes, mp3_file_path)
+        else:
+            mp3_file_path = mp3_file_exists_path
 
         thumbnail_photo_name = generate_random_filename(24)
         thumbnail_photo_path = os.path.join(folder_path, thumbnail_photo_name)
-
-        # Save files
-        save_bytes_to_file(mp3_file_bytes, mp3_file_path)
-        mp3_file_hash = hash_sha2_bytes(mp3_file_bytes)
         if thumbnail_photo_bytes is not None:
-            save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
             thumbnail_photo_hash = hash_sha2_bytes(thumbnail_photo_bytes)
+            thumbnail_exists_path = get_path_by_hash(thumbnail_photo_hash)
+            if thumbnail_exists_path is None:
+                save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
+            else:
+                thumbnail_photo_path = thumbnail_exists_path
         else:
             thumbnail_photo_path = None
             thumbnail_photo_hash = None
