@@ -499,7 +499,8 @@ def thread_recv_messages(n, addr):
                 else:
                     group_name, group_id = gets_group_attributes_from_format(receiver)
                     group_members = database_func.get_group_members(group_id)
-                    group_members.remove(User)
+                    if User in group_members:
+                        group_members.remove(User)
                     ServerHandler.update_message_for_users(group_members, data, User, receiver)
                 logger.info(f"added new message from {User} to {receiver}")
             elif message_type == "update_profile_pic":
