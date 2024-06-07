@@ -1553,22 +1553,24 @@ def update_group_image(group_id, image_bytes):
 
         if image_bytes is None:
             group_pic_path = None
+            group_pic_hash = None
         else:
             folder_path = files_folder_path
             file_name = generate_random_filename(24)
             group_pic_path = os.path.join(folder_path, file_name)
             save_bytes_to_file(image_bytes, group_pic_path)
+            group_pic_hash = hash_sha2_bytes(image_bytes)
             print("saved bytes to image")
 
         # Prepare the UPDATE query
         update_query = """
             UPDATE my_groups
-            SET group_image_path = ?
+            SET group_image_path = ?, group_image_hash = ?
             WHERE group_id = ?
         """
 
         # Execute the query
-        cursor.execute(update_query, (group_pic_path, group_id))
+        cursor.execute(update_query, (group_pic_path, group_pic_hash, group_id))
         connection.commit()
 
         if result:
