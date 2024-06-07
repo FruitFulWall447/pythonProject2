@@ -393,7 +393,7 @@ def thread_recv_messages(n, addr):
                 group_id_plus_name = f"({group_id}){database_func.get_group_name_by_id(group_id)}"
                 database_func.remove_chat_from_user(user_to_remove, group_id_as_str)
                 ServerHandler.update_group_dict_for_members(group_id)
-                ServerHandler.send_user_to_update_from_list(group_id_plus_name, "chats_list", User,
+                ServerHandler.send_user_to_update_from_list(group_id_plus_name, "chats_list", user_to_remove,
                                                             True)
             elif message_type == "remove_chat":
                 chat_to_remove = data.get("chat_to_remove")
