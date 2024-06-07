@@ -253,8 +253,8 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
         cursor = connection.cursor()
 
         insert_query = """
-            INSERT INTO songs (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_path)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO songs (title, mp3_file_path, mp3_file_hash, owner_id, duration, timestamp, thumbnail_path, thumbnail_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
 
         # Generate unique filenames
@@ -267,14 +267,17 @@ def add_song(title, mp3_file_bytes, owner_username, duration, thumbnail_photo_by
 
         # Save files
         save_bytes_to_file(mp3_file_bytes, mp3_file_path)
+        mp3_file_hash = hash_sha2_bytes(mp3_file_bytes)
         if thumbnail_photo_bytes is not None:
             save_bytes_to_file(thumbnail_photo_bytes, thumbnail_photo_path)
+            thumbnail_photo_hash = hash_sha2_bytes(thumbnail_photo_bytes)
         else:
             thumbnail_photo_path = None
+            thumbnail_photo_hash = None
 
         # Execute the SQL query with the song data
         timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
-        cursor.execute(insert_query, (title, mp3_file_path, owner_id, duration, timestamp, thumbnail_photo_path))
+        cursor.execute(insert_query, (title, mp3_file_path, mp3_file_hash, owner_id, duration, timestamp, thumbnail_photo_path, thumbnail_photo_hash))
 
         # Commit the transaction
         connection.commit()
