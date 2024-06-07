@@ -1138,16 +1138,20 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
             folder_path = files_folder_path
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
-            file_name = generate_random_filename(24)
-            file_path = os.path.join(folder_path, file_name)
-            if os.path.exists(file_path):
-                while os.path.exists(file_path):
-                    file_name = generate_random_filename(24)
-                    file_path = os.path.join(folder_path, file_name)
-            save_file(message_content, file_path)
+            file_hash = hash_sha2_bytes(message_content)
+            file_exists_path = get_path_by_hash(file_hash)
+            if file_exists_path is None:
+                file_name = generate_random_filename(24)
+                file_path = os.path.join(folder_path, file_name)
+                if os.path.exists(file_path):
+                    while os.path.exists(file_path):
+                        file_name = generate_random_filename(24)
+                        file_path = os.path.join(folder_path, file_name)
+                save_file(message_content, file_path)
+            else:
+                file_path = file_exists_path
             sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, message_content_hash, type, file_name, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
             timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
-            file_hash = hash_sha2_bytes(message_content)
             data = (sender_id, receiver_id, file_path, file_hash, message_type, file_original_name, timestamp)
         else:
             sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type, timestamp) VALUES (?, ?, ?, ?, ?)"
