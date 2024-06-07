@@ -2282,6 +2282,7 @@ def create_messages_table():
                 receiver_id INTEGER,
                 message_content TEXT,
                 message_content_path TEXT,
+                message_content_hash TEXT,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 type TEXT,
                 file_name TEXT
@@ -2350,7 +2351,8 @@ def create_groups_table():
                 group_manager VARCHAR(255),
                 creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 group_members_list TEXT,
-                group_image_path VARCHAR(255)
+                group_image_path VARCHAR(255),
+                group_image_hash TEXT,
             )
         """
         cursor.execute(create_table_query)
@@ -2458,7 +2460,9 @@ def create_songs_table():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title VARCHAR(255) NOT NULL,
                 mp3_file_path VARCHAR(255) NOT NULL,
+                mp3_file_hash TEXT,
                 thumbnail_path VARCHAR(255),
+                thumbnail_hash TEXT,
                 owner_id INTEGER,
                 duration VARCHAR(255) NOT NULL,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
