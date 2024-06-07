@@ -1413,7 +1413,8 @@ def add_chat_to_user(username, new_chat_name):
             current_chats_list = json.loads(current_chats_list_json) if current_chats_list_json else []
             if not new_chat_name.startswith("("):
                 new_chat_name_id = get_id_from_username(new_chat_name)
-                current_chats_list.append(new_chat_name_id)
+                if new_chat_name_id not in current_chats_list:
+                    current_chats_list.append(new_chat_name_id)
             else:
                 current_chats_list.append(new_chat_name)
 
@@ -1541,6 +1542,7 @@ def get_user_chats(username):
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
         print(current_chats_list)
+        print(len(current_chats_list))
         chat_list_names = []
         for chat in current_chats_list:
             if isinstance(chat, int):
@@ -1550,6 +1552,7 @@ def get_user_chats(username):
                 group_name = get_group_name_by_id(int(group_id))
                 chat_list_names.append(f"({group_id}){group_name}")
         print(chat_list_names)
+        print(len(chat_list_names))
         sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
 
