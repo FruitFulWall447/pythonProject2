@@ -2358,7 +2358,7 @@ def create_groups_table():
                 creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 group_members_list TEXT,
                 group_image_path VARCHAR(255),
-                group_image_hash TEXT,
+                group_image_hash TEXT
             )
         """
         cursor.execute(create_table_query)
