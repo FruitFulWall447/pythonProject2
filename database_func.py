@@ -1077,7 +1077,7 @@ def gets_group_attributes_from_format(group_format):
         return group_format, None
     else:
         parts = group_format.split(")")
-        id = parts[0][1]
+        id = parts[0][1:]
         name = parts[1]
         return name, id
 
@@ -1540,15 +1540,16 @@ def get_user_chats(username):
 
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
+        print(current_chats_list)
         chat_list_names = []
         for chat in current_chats_list:
             if isinstance(chat, int):
                 chat_list_names.append(get_username_from_id(chat))
             else:
                 _, group_id = gets_group_attributes_from_format(chat)
-                group_name = get_group_name_by_id(group_id)
+                group_name = get_group_name_by_id(int(group_id))
                 chat_list_names.append(f"({group_id}){group_name}")
-
+        print(chat_list_names)
         sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
 

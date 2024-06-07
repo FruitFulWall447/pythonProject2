@@ -572,7 +572,7 @@ def gets_group_attributes_from_format(group_format):
         return group_format, None
     else:
         parts = group_format.split(")")
-        id = parts[0][1]
+        id = parts[0][1:]
         name = parts[1]
         return name, int(id)
 
