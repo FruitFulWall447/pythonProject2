@@ -1138,9 +1138,10 @@ def add_message(sender_name, receiver_name, message_content, message_type, file_
                     file_name = generate_random_filename(24)
                     file_path = os.path.join(folder_path, file_name)
             save_file(message_content, file_path)
-            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, type, file_name, timestamp) VALUES (?, ?, ?, ?, ?, ?)"
+            sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content_path, message_content_hash, type, file_name, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)"
             timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
-            data = (sender_id, receiver_id, file_path, message_type, file_original_name, timestamp)
+            file_hash = hash_sha2_bytes(message_content)
+            data = (sender_id, receiver_id, file_path, file_hash, message_type, file_original_name, timestamp)
         else:
             sql_query = "INSERT INTO messages (sender_id, receiver_id, message_content, type, timestamp) VALUES (?, ?, ?, ?, ?)"
             timestamp = str(datetime.now().strftime('%Y-%m-%d %H:%M'))
