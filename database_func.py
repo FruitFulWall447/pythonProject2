@@ -1009,9 +1009,7 @@ def update_profile_pic(username, profile_pic_encoded):
             folder_path = files_folder_path
             file_name = generate_random_filename(24)
             profile_pic_path = os.path.join(folder_path, file_name)
-            print("10")
             save_bytes_to_file(profile_pic, profile_pic_path)
-            print("11")
             profile_pic_hash = hash_sha2_bytes(profile_pic)
             update_query = f"UPDATE {table_name} SET profile_pic_path = ?, profile_pic_hash = ? WHERE username = ?"
         else:
@@ -1020,7 +1018,6 @@ def update_profile_pic(username, profile_pic_encoded):
             update_query = f"UPDATE {table_name} SET profile_pic_path = ?, profile_pic_hash = ? WHERE username = ?"
 
         # Execute the INSERT statement with parameterized values
-        print("hello")
         cursor.execute(update_query, (profile_pic_path, profile_pic_hash, username))
 
         # Commit the changes to the database
