@@ -1541,8 +1541,6 @@ def get_user_chats(username):
 
         # Convert the chats_list JSON to a Python list
         current_chats_list = json.loads(result[0])
-        print(current_chats_list)
-        print(len(current_chats_list))
         chat_list_names = []
         for chat in current_chats_list:
             if isinstance(chat, int):
@@ -1551,8 +1549,6 @@ def get_user_chats(username):
                 _, group_id = gets_group_attributes_from_format(chat)
                 group_name = get_group_name_by_id(int(group_id))
                 chat_list_names.append(f"({group_id}){group_name}")
-        print(chat_list_names)
-        print(len(chat_list_names))
         sorted_chats_list = sort_chat_list(chat_list_names, username)
         return sorted_chats_list
 
