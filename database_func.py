@@ -158,10 +158,10 @@ def remove_song(title, owner_username):
             print("Song removed successfully!")
 
             # Delete the associated song files
-            if mp3_file_path:
+            if mp3_file_path and not check_path_exists_in_db(mp3_file_path):
                 os.remove(mp3_file_path)
                 print("Song file deleted successfully.")
-            if thumbnail_path:
+            if thumbnail_path and not check_path_exists_in_db(thumbnail_path):
                 os.remove(thumbnail_path)
                 print("Thumbnail file deleted successfully.")
         else:
@@ -1003,12 +1003,6 @@ def update_profile_pic(username, profile_pic_encoded):
 
         file_path = result[0]  # Extract the file path from the tuple
 
-        if file_path is not None:
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                print("couldn't find file path")
-
         table_name = "sign_up_table"
 
         if profile_pic is not None:
@@ -1028,6 +1022,12 @@ def update_profile_pic(username, profile_pic_encoded):
 
         # Commit the changes to the database
         connection.commit()
+
+        if file_path is not None and not check_path_exists_in_db(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                print(f"couldn't find file path {e}")
 
         # Close the cursor and connection when done
         cursor.close()
@@ -1549,8 +1549,6 @@ def update_group_image(group_id, image_bytes):
 
         if result:
             image_path = result[0]  # Extract the file path from the tuple
-            if image_path:
-                os.remove(image_path)
 
         if image_bytes is None:
             group_pic_path = None
@@ -1571,6 +1569,9 @@ def update_group_image(group_id, image_bytes):
         # Execute the query
         cursor.execute(update_query, (group_pic_path, group_id))
         connection.commit()
+
+        if image_path and not check_path_exists_in_db(image_path):
+            os.remove(image_path)
 
         print(f"Group image updated successfully for group ID: {group_id}")
 
