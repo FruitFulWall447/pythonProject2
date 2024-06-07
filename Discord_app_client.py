@@ -3443,6 +3443,8 @@ class PageController:
             elif list_type == "chats_list":
                 if is_remove:
                     self.main_page.chats_list.remove(user_to_update)
+                    if self.main_page.selected_chat == user_to_update:
+                        self.main_page.selected_chat = ""
                 else:
                     if user_to_update not in self.main_page.chats_list:
                         self.main_page.chats_list.append(user_to_update)
