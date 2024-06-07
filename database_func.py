@@ -1018,7 +1018,7 @@ def update_profile_pic(username, profile_pic_encoded):
             update_query = f"UPDATE {table_name} SET profile_pic_path = ?, profile_pic_hash = ? WHERE username = ?"
 
         # Execute the INSERT statement with parameterized values
-        cursor.execute(update_query, (profile_pic_path, username, profile_pic_hash))
+        cursor.execute(update_query, (profile_pic_path, profile_pic_hash, username))
 
         # Commit the changes to the database
         connection.commit()
