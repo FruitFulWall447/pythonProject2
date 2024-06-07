@@ -319,8 +319,9 @@ class Ring:
             self.is_group_ring = True
             group_members = database_func.get_group_members(group_id)
             self.ringing_to = group_members
-            self.ringing_to.remove(ringer)
-            self.group_id = group_id
+            if ringer in self.ringing_to:
+                self.ringing_to.remove(ringer)
+                self.group_id = group_id
         else:
             self.is_group_ring = False
             self.ringing_to = ringing_to
