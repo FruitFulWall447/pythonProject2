@@ -1922,6 +1922,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                         print(f"error in sending message")
                     self.file_to_send = None
                     self.file_name = ""
+                    self.chat_box.hide_message_is_loaded()
                     if self.selected_chat != self.chats_list[0]:
                         self.chats_list.remove(self.selected_chat)
                         self.chats_list.insert(0, self.selected_chat)

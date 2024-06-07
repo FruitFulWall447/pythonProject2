@@ -1400,6 +1400,10 @@ class ChatBox(QWidget):
         except Exception as e:
             print(f"error in creating chat box {e}")
 
+    def hide_message_is_loaded(self):
+        self.filename_label.hide()
+        self.garbage_button.hide()
+
     def add_user_to_group_pressed(self):
         if self.parent.is_create_group_inside_chat_pressed:
             self.parent.is_create_group_inside_chat_pressed = False
@@ -2227,6 +2231,7 @@ class ChatBox(QWidget):
                 print("chat is a private chat")
             print(f"chat changed to {name}")
             self.chat_name_label.setText(text)
+            self.chat_name_label.adjustSize()
             place_holder_text = "Message" + " " + text
             try:
                 if self.text_entry:
@@ -2291,7 +2296,7 @@ class MessagesBox(QWidget):
             self.layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # Align widgets to the left and top
 
             # Add labels and buttons to the layout
-            self.load_all_message_func(reversed(self.parent.parent.list_messages))
+            self.load_all_message_func((self.parent.parent.list_messages))
 
             # Set the inner widget as the scroll area's widget
             self.scroll_area.setWidget(inner_widget)
@@ -2322,7 +2327,7 @@ class MessagesBox(QWidget):
 
     def load_all_message_func(self, message_list):
         for i in message_list:
-            self.add_message_to_layout(i)
+            self.insert_message_to_layout(i)
 
     def add_message_to_layout(self, message):
         self.add_or_insert_message_to_layout(message, False)
