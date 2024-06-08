@@ -717,6 +717,7 @@ class SettingsBox(QWidget):
             self.parent.updated_settings_page()
         except Exception as e:
             print(f"error in resetting profile pic {e}")
+        self.activateWindow()
         self.setFocus()
 
     def edit_profile_pic_pressed(self):
@@ -737,6 +738,7 @@ class SettingsBox(QWidget):
                     if circular_pic is not None:
                         set_icon_from_bytes_to_label(self.profile_image_label, circular_pic)
                         self.parent.update_profile_pic_dicts_list(self.parent.username, image_bytes, circular_pic)
+        self.activateWindow()
         self.setFocus()
 
     def font_size_changed(self, font_size):
