@@ -3651,7 +3651,6 @@ class PageController:
                     self.main_page.remove_call_dict_by_id(id_to_remove)
         elif message_type == "profile_dicts_list":
             profile_dicts_list = (data.get("profile_dicts_list"))
-            print(profile_dicts_list)
             self.main_page.list_user_profile_dicts = profile_dicts_list
             QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",
                                      Qt.QueuedConnection)
