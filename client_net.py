@@ -230,7 +230,7 @@ class ClientNet:
             self.sending_tcp_data_lock.release()
 
     def send_large_udp_data(self, data, data_type, shape_of_frame=None):
-        if len(data) > self.mtu:
+        if len(data) > int(self.mtu * 0.8):
             sliced_data = slice_up_data(data, int(self.mtu * 0.8))
         else:
             sliced_data = [data]
