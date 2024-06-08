@@ -2318,6 +2318,7 @@ class MessagesBox(QWidget):
     def scroll_maximum(self):
         self.scroll_area.widget().layout().activate()
         maximum = self.scroll_area.verticalScrollBar().maximum()
+        self.scroll_area.verticalScrollBar().setFocus()
         self.scroll_area.verticalScrollBar().setValue(maximum)
 
     def update_scroll_area_parent(self, new_parent):
