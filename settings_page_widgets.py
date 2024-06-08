@@ -717,6 +717,7 @@ class SettingsBox(QWidget):
             self.parent.updated_settings_page()
         except Exception as e:
             print(f"error in resetting profile pic {e}")
+        self.setFocus()
 
     def edit_profile_pic_pressed(self):
         self.open_file_dialog()
@@ -726,7 +727,7 @@ class SettingsBox(QWidget):
             selected_files = self.file_dialog.selectedFiles()
             if selected_files:
                 file_path = selected_files[0]
-                image_bytes = file_to_bytes(selected_files[0])
+                image_bytes = file_to_bytes(file_path)
                 if is_valid_image(image_bytes):
                     self.parent.profile_pic = image_bytes
                     self.Network.send_profile_pic(image_bytes)
