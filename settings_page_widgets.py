@@ -736,6 +736,8 @@ class SettingsBox(QWidget):
                     if circular_pic is not None:
                         set_icon_from_bytes_to_label(self.profile_image_label, circular_pic)
                         self.parent.update_profile_pic_dicts_list(self.parent.username, image_bytes, circular_pic)
+            else:
+                self.setFocus()
 
     def font_size_changed(self, font_size):
         try:
