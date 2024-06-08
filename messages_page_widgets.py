@@ -1381,6 +1381,7 @@ class ChatBox(QWidget):
         
                 ''')
                 music_page_button.clicked.connect(self.parent.music_button_clicked)
+                self.raise_needed_elements()
                 try:
                     if self.parent.is_create_group_pressed:
                        create_group_box = CreateGroupBox(self, self.create_group_open_x, self.create_group_open_y, "create")
@@ -1392,7 +1393,6 @@ class ChatBox(QWidget):
                             create_group_box = CreateGroupBox(self, self.add_user_x, self.add_user_y, "create")
                         create_group_box.raise_()
                     chats_widget.raise_()
-                    self.raise_needed_elements()
                 except Exception as e:
                     print(f"error in creaing CreateGroupBox in chatbox {e}")
             except Exception as e:
