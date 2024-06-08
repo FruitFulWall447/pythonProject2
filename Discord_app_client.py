@@ -3481,7 +3481,7 @@ class PageController:
                 self.main_page.insert_new_message_in_chat_signal.emit(message_dict)
                 self.main_page.chats_list.remove(chat)
                 self.main_page.chats_list.insert(0, chat)
-                print("got new message from current chat from {}")
+                print("got new message from current chat")
             else:
                 QMetaObject.invokeMethod(self.main_page, "new_message_play_audio_signal",
                                          Qt.QueuedConnection)
