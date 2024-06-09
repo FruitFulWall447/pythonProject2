@@ -278,11 +278,6 @@ class SplashScreen(QWidget):
     def update_loading_dots(self):
         n = self.page_controller_object.n
         wait_time_sec = 5
-        # self.dot_count = (self.dot_count + 1) % 5
-        # loading_label = self.findChild(QLabel, 'loading_label')
-        # loading_label.setText('Loading' + '.' * self.dot_count)
-        # loading_label.adjustSize()
-
         # Increment elapsed time
         self.elapsed_time += 500  # Timer interval is 500 milliseconds
 
