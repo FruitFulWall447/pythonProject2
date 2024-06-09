@@ -179,7 +179,7 @@ def handle_code_wait(n, code, logger, addr, code_type, time_code_was_sent, email
     return False, False
 
 
-not_requests_types = ["add_message", "more_messages"]
+non_requests_types = ["add_message", "more_messages"]
 max_delay_time = 5
 
 
@@ -315,7 +315,7 @@ def thread_recv_messages(n, addr):
                 ServerHandler.user_offline(User)
                 break
             message_type = data.get("message_type")
-            if message_type not in not_requests_types:
+            if message_type not in non_requests_types:
                 ServerHandler.pass_request(User)
             if not ServerHandler.is_request_valid(User):
                 time_left = ServerHandler.time_left_for_reset(User)
@@ -646,7 +646,7 @@ def thread_recv_messages(n, addr):
                         ServerHandler.update_group_dict_for_members(group_id)
                     else:
                         logger.critical(f"{User} tried to add user to group where he has no permissions")
-            if message_type not in not_requests_types:
+            if message_type not in non_requests_types:
                 time.sleep(ServerHandler.get_delay_between_requests(User))
 
 
