@@ -249,6 +249,7 @@ class SplashScreen(QWidget):
         # Create timer to update loading dots
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.update_loading_dots)
+        self.loading_timer.timeout.connect(self.update_loading_animation)
 
         # Set up elapsed time variable
         self.elapsed_time = 0
@@ -268,13 +269,19 @@ class SplashScreen(QWidget):
         except Exception as e:
             print(e)
 
-    def update_loading_dots(self):
-        n = self.page_controller_object.n
-        wait_time_sec = 5
+    def update_loading_animation(self):
         self.dot_count = (self.dot_count + 1) % 5
         loading_label = self.findChild(QLabel, 'loading_label')
         loading_label.setText('Loading' + '.' * self.dot_count)
         loading_label.adjustSize()
+
+    def update_loading_dots(self):
+        n = self.page_controller_object.n
+        wait_time_sec = 5
+        # self.dot_count = (self.dot_count + 1) % 5
+        # loading_label = self.findChild(QLabel, 'loading_label')
+        # loading_label.setText('Loading' + '.' * self.dot_count)
+        # loading_label.adjustSize()
 
         # Increment elapsed time
         self.elapsed_time += 500  # Timer interval is 500 milliseconds
