@@ -406,7 +406,8 @@ def set_icon_from_bytes_to_label(label, image_bytes):
         label.setPixmap(scaled_pixmap)
         label.setAlignment(Qt.AlignCenter)
     except Exception as e:
-        print(f"error in loading image from bytes {e}")
+        if image_bytes is not None:
+            print(f"error in loading image from bytes {e}")
 
 
 def set_icon_from_path_to_label(label, image_path):
@@ -465,7 +466,8 @@ def set_icon_from_bytes_to_button(button, image_bytes):
         button.setIconSize(button_size)
         button.setStyleSheet("border: 0;")  # Optional: remove border
     except Exception as e:
-        print(f"Error in loading image from bytes: {e}")
+        if image_bytes is not None:
+            print(f"Error in loading image from bytes: {e}")
 
 
 def set_icon_to_circular_label(label, icon_path, width=None, height=None):

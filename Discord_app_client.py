@@ -279,14 +279,14 @@ class SplashScreen(QWidget):
         # Increment elapsed time
         self.elapsed_time += 500  # Timer interval is 500 milliseconds
 
-        if self.elapsed_time >= wait_time_sec * 1000:  # 5 seconds
+        if self.elapsed_time >= wait_time_sec * 1000 and not self.page_controller_object.is_logged_in:  # 5 seconds
             # Transition to the login page after 5 seconds
             if self.page_controller_object.main_page.username == "":
                 if not are_token_saved():
                     self.loading_timer.stop()
                     self.page_controller_object.change_to_login_page()
                     self.close()
-                else:
+                elif not self.page_controller_object.is_logged_in:
                     security_token = get_saved_token()
                     n.send_security_token(security_token)
                     data = n.recv_str()
