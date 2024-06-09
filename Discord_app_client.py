@@ -304,9 +304,6 @@ class SplashScreen(QWidget):
                                     self.loading_timer.stop()
                                     print("logged in successfully")
                                     try:
-                                        # self.page_controller_object.change_to_main_page()
-                                        # self.page_controller_object.is_logged_in = True
-                                        # self.page_controller_object.start_receive_thread_after_login()
                                         self.page_controller_object.main_page.username = username
                                         self.page_controller_object.main_page.update_values()
                                         self.page_controller_object.is_logged_in = True
