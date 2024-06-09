@@ -1945,7 +1945,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.updated_chat()
                 else:
                     self.chat_clicked()
-                    self.update_chat_page_without_messages()
             else:
                 if self.is_create_group_pressed:
                     self.is_create_group_pressed = False
