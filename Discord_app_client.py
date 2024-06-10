@@ -1525,9 +1525,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def stop_watching_video(self):
         try:
             self.is_watching_video = False
-            widget_to_remove = self.stacked_widget.currentWidget()  # Get the currently displayed widget
-            self.stacked_widget.removeWidget(widget_to_remove)
-            self.set_page_index_by_clicked()
+            self.video_player.close()
             print("exited video")
             self.setFocus()
         except Exception as e:
@@ -1536,11 +1534,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def start_watching_video(self, video_bytes):
         try:
             self.is_watching_video = True
-            video_player = VideoPlayer(video_bytes, self)
-            number_of_widgets = self.stacked_widget.count()
-            self.stacked_widget.addWidget(video_player)
-            self.stacked_widget.setCurrentIndex(number_of_widgets)
-            video_player.play_video()
+            self.video_player = VideoPlayer(video_bytes, self)
+            self.video_player.play_video()
+            self.video_player.show()
         except Exception as e:
             print(f"had error trying to show video: {e}")
 
