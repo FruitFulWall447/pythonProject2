@@ -2543,6 +2543,9 @@ class VideoClient(QMainWindow):
             self.main_page.watching_type = None
             self.close()
 
+    def closeEvent(self, event):
+        self.main_page.stop_watching_video_stream()
+
 
 class ForgetPasswordPage(QWidget):
     def __init__(self, page_controller_object):
