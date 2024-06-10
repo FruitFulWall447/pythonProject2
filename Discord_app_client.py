@@ -2502,6 +2502,7 @@ class VideoClient(QMainWindow):
     def __init__(self, main_page):
         super().__init__()
         self.main_page = main_page
+        self.setMinimumSize(200, 200)
         self.init_ui()
         self.frame = None
 
@@ -2518,7 +2519,8 @@ class VideoClient(QMainWindow):
         x, y = (int(self.main_page.screen_width * 0.052), int(self.main_page.screen_height * 0.092))
         width, height = (int(self.main_page.screen_width * 0.416), int(self.main_page.screen_height * 0.555))
         self.setGeometry(x, y, width, height)
-        self.setWindowTitle('Video Client')
+        text = f"{self.main_page.watching_user} video stream"
+        self.setWindowTitle(text)
         self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def display_frame(self, frame):
