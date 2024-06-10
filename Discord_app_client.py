@@ -2521,7 +2521,6 @@ class VideoClient(QMainWindow):
         self.setWindowTitle('Video Client')
         self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-
     def display_frame(self, frame):
         self.frame = frame
         self.update_image()
