@@ -1579,6 +1579,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def start_watching_video_stream(self):
         self.stream_screen = VideoClient(self)
+        self.stream_screen.setParent(self)
+        self.stream_screen.setWindowFlags(Qt.Tool)
         # self.hide()
         self.stream_screen.show()
 
@@ -2517,6 +2519,8 @@ class VideoClient(QMainWindow):
         width, height = (int(self.main_page.screen_width * 0.416), int(self.main_page.screen_height * 0.555))
         self.setGeometry(x, y, width, height)
         self.setWindowTitle('Video Client')
+        self.image_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
 
     def display_frame(self, frame):
         self.frame = frame
