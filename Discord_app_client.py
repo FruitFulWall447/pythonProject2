@@ -2501,6 +2501,7 @@ class VideoClient(QMainWindow):
         super().__init__()
         self.main_page = main_page
         self.init_ui()
+        self.frame = None
 
     def init_ui(self):
         self.central_widget = QWidget(self)
@@ -2518,20 +2519,20 @@ class VideoClient(QMainWindow):
         self.setWindowTitle('Video Client')
 
     def display_frame(self, frame):
-        height, width, channel = frame.shape
-        bytes_per_line = 3 * width
-        screen_size = QApplication.primaryScreen().size()
-        screen_width = screen_size.width()
-        screen_height = screen_size.height()
+        self.frame = frame
+        self.update_image()
 
-        q_image = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-        pixmap = QPixmap.fromImage(q_image).scaled(screen_width, screen_height)
+    def update_image(self):
+        if self.frame is not None:
+            height, width, channel = self.frame.shape
+            bytes_per_line = 3 * width
+            q_image = QImage(self.frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+            pixmap = QPixmap.fromImage(q_image).scaled(self.image_label.size(), aspectRatioMode=True)
+            self.image_label.setPixmap(pixmap)
 
-        # Clear the existing pixmap
-        self.image_label.clear()
-
-        # Set the new pixmap
-        self.image_label.setPixmap(pixmap)
+    def resizeEvent(self, event):
+        self.update_image()
+        super().resizeEvent(event)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
