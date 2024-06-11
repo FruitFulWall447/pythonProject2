@@ -2261,6 +2261,7 @@ class ChatBox(QWidget):
             self.parent.is_create_group_inside_chat_pressed = False
             self.parent.file_name = ""
             self.messages_list = []
+            self.parent.messages_content_saver.clear_layout()
             self.parent.update_chat_page_without_messages()
 
     def is_mouse_on_chat_box(self, mouse_pos):
