@@ -888,7 +888,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 self.selected_chat = ""
                 self.list_messages = []
             self.Network.send_exit_group(group_id)
-            self.updated_chat()
+            self.update_chat_page_without_messages()
         except Exception as e:
             print(f"error in existing group {e}")
 
