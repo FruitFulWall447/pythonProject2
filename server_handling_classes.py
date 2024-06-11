@@ -1318,6 +1318,7 @@ class UDPClientHandler:
         # Wait for the threads to join (i.e., finish execution)
         self.cleanup_thread.join()
         self.processing_thread.join()
+        self.logger.info(f"stopped udp threads for {self.client_username}")
 
     def start_threads_again(self):
         self.running = True
@@ -1329,6 +1330,7 @@ class UDPClientHandler:
         self.processing_thread = threading.Thread(target=self.process_completed_packets)
         self.processing_thread.daemon = True
         self.processing_thread.start()
+        self.logger.info(f"started udp threads for {self.client_username}")
 
     def decrypt_data(self, data):
         return decrypt_with_aes(self.aes_key, data)
