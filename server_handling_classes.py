@@ -526,7 +526,8 @@ class ServerHandler:
         for user in users:
             if user in chat_name_blocked_list or (chat_name_is_private and user not in chat_name_friends_list):
                 continue
-            if self.is_user_online(user):
+            n = self.get_net_by_name(user)
+            if n is not None:
                 message_type = message.get("message_type")
                 sender = message.get("sender")
                 if message_type == "add_message":
@@ -542,7 +543,6 @@ class ServerHandler:
                         "message_type": type_of_message,
                         "file_name": file_name
                     }
-                    n = self.get_net_by_name(user)
                     if group_name is None:
                         n.send_new_message_content(user_that_send, formatted_message)
                         self.logger.info(f"send new message to {user} in chat {user_that_send}")
