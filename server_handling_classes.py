@@ -91,6 +91,10 @@ class Call:
         else:
             self.is_group_call = False
         self.participants = participants
+        for user in self.participants:
+            user_udp_handler = self.parent.get_udp_handler_of_user(user)
+            if user_udp_handler:
+                user_udp_handler.start_threads_again()
         existed_ring_id_associated_with_call = self.parent.get_ring_id_by_possible_ringers(self.participants)
         if existed_ring_id_associated_with_call is not None:
             self.call_id = existed_ring_id_associated_with_call
