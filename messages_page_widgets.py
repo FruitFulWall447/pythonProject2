@@ -720,7 +720,7 @@ class ChatBox(QWidget):
                 else:
                     temp_widget_height = self.height_of_chat_box - int(self.screen_height * 0.12037)
 
-                if self.parent.is_messages_need_update or self.parent.messages_content_saver is None:
+                if self.parent.messages_content_saver is None:
                     temp_widget = MessagesBox(self, temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
                     self.parent.messages_content_saver = temp_widget
                     self.parent.is_messages_need_update = False
