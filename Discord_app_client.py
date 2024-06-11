@@ -1688,6 +1688,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.is_joining_call = False
             self.joining_to = ""
             self.is_in_a_call = False
+            self.udp_packet_handler.stop_threads()
             self.is_calling = False
             self.calling_to = ""
             self.in_call_with = ""
@@ -1716,6 +1717,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def initiate_call(self):
         self.is_in_a_call = True
+        self.udp_packet_handler.start_threads_again()
         self.is_calling = False
         self.is_getting_called = False
         self.is_joining_call = False
@@ -3765,7 +3767,7 @@ class UDPPacketsHandler:
         self.share_camera_data_queue = PriorityQueue()
 
         # Cleanup thread to remove stale packets
-        self.running = True
+        self.running = False
         self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
         self.cleanup_thread.daemon = True
         self.cleanup_thread.start()
@@ -3878,10 +3880,7 @@ class UDPPacketsHandler:
                     self.main_page.update_stream_screen_frame(decompressed_frame)
                 except Exception as e:
                     print(f"Error processing CameraStream packet: {e}")
-            if self.main_page.is_in_a_call:
-                time.sleep(0.01)  # Slight delay to prevent tight loop
-            else:
-                time.sleep(1)
+            time.sleep(0.01)  # Slight delay to prevent tight loop
 
 
 if __name__ == '__main__':
