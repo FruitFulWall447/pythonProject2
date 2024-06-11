@@ -2298,7 +2298,6 @@ class MessagesBox(QWidget):
                 }
             """)
             self.scroll_area.setWidgetResizable(True)
-
             # Create a widget to contain labels and buttons
             inner_widget = QWidget()
 
@@ -2334,6 +2333,7 @@ class MessagesBox(QWidget):
     def scroll_maximum(self):
         maximum = self.scroll_area.verticalScrollBar().maximum()
         self.scroll_area.verticalScrollBar().setValue(maximum)
+        print(f"scrolled to maximum {maximum}")
 
     def update_scroll_area_parent(self, new_parent):
         self.setParent(new_parent)

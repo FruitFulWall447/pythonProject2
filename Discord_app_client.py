@@ -672,10 +672,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def reset_message_box_and_load_new_messages(self):
         if self.messages_content_saver is not None:
+            self.is_new_chat_clicked = True
             self.messages_content_saver.clear_layout()
             self.messages_content_saver.load_all_message_func()
-            self.scroll_maximum()
-            self.is_new_chat_clicked = False
+            self.messages_content_saver.scroll_maximum()
+            # self.is_new_chat_clicked = False
         else:
             self.updated_chat()
 
@@ -1907,7 +1908,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                 self.chats_list.insert(0, self.selected_chat)
                             self.chat_box.text_entry.setFocus()
                             self.insert_message_that_client_send(message_dict)
-                            self.is_new_chat_clicked = True
                             self.chat_box.text_entry.setFocus(True)
                 if self.file_to_send:
                     # encodes the compressed data as base64, and then decodes
