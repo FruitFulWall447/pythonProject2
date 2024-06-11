@@ -854,6 +854,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     def handle_vc_data(self, data):
         is_last = data.get("is_last")
         is_first = data.get("is_first")
+
         data_list = self.vc_data_fragments_list
 
         self.handle_data_fragment(data_list, data, is_first, is_last, "vc_data")

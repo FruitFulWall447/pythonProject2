@@ -240,8 +240,6 @@ class ClientNet:
         for i, data_slice in enumerate(sliced_data):
             message = {
                 "message_type": data_type,
-                "is_first": i == 0,
-                "is_last": i == len(sliced_data) - 1,
                 "fragment_id": i,
                 "packet_id": packet_id,
                 "total_fragments": len(sliced_data),

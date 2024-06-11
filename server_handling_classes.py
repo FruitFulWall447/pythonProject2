@@ -502,6 +502,7 @@ class ServerHandler:
         self.UDPClientHandler_dict = {}
         self.server_mtu = None
         self.emails_addresses_in_progress = []
+        self.packet_id_generator = PacketIDGenerator()
 
     def add_email_address_in_progress(self, address):
         if address not in self.emails_addresses_in_progress:
@@ -600,6 +601,7 @@ class ServerHandler:
         else:
             sliced_data = [data]
         index = 0
+        packet_id = self.packet_id_generator
         for data_slice in sliced_data:
             if index == 0:
                 is_first = True
@@ -611,7 +613,10 @@ class ServerHandler:
                 is_last = False
             message = {"message_type": data_type,
                        "is_first": is_first, "is_last": is_last,
-                       "sliced_data": data_slice, "shape_of_frame": shape_of_frame, "speaker": sender}
+                       "sliced_data": data_slice, "shape_of_frame": shape_of_frame, "speaker": sender,
+                       "fragment_id": index,
+                        "packet_id": packet_id,
+                        "total_fragments": len(sliced_data)}
             self.send_message_dict_udp(message, address_to_send, sending_to)
             index += 1
 
@@ -1417,6 +1422,19 @@ class UDPClientHandler:
                     self.logger.error(f"Error processing CameraStream packet: {e}")
 
             time.sleep(0.01)  # Slight delay to prevent tight loop
+
+
+class PacketIDGenerator:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.counter = 0
+
+    def generate_packet_id(self):
+        with self.lock:
+            current_time = int(time.time() * 1000)  # Current time in milliseconds
+            packet_id = f"{current_time}_{self.counter}"
+            self.counter += 1
+            return packet_id
 
 
 
