@@ -1689,7 +1689,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.mute = False
             self.deafen = False
             self.stop_sound()
-            self.updated_chat()
+            self.update_chat_page_without_messages()
             self.is_screen_shared = False
             self.is_camera_shared = False
             self.watching_user = ""
@@ -1971,7 +1971,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 if self.is_create_group_pressed:
                     self.is_create_group_pressed = False
                     self.selected_group_members.clear()
-                    self.updated_chat()
+                    self.update_chat_page_without_messages()
         else:
             if event.key() == Qt.Key_F2:
                 self.scroll_maximum_down()
