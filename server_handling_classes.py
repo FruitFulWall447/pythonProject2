@@ -613,10 +613,12 @@ class ServerHandler:
     def send_new_group_to_members(self, group_id):
         group_members = database_func.get_group_members(group_id)
         group_dict = database_func.get_group_by_id(group_id)
+        group_chat_name = f"({group_id}){group_dict.get('group_name')}"
         for member in group_members:
             net = self.get_net_by_name(member)
             if net is not None:
                 net.send_new_group(group_dict)
+                net.send_user_to_remove_from_list(group_chat_name, "chats_list", False)
 
     def update_group_dict_for_members(self, group_id):
         group_members = database_func.get_group_members(group_id)
