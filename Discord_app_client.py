@@ -1585,11 +1585,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"update_stream_screen_frame: {e}")
 
     def stop_watching_video_stream(self):
+        print(f"stopped watching {self.main_page.watching_user} share screen")
         self.is_watching_screen = False
         self.watching_user = ""
         self.watching_type = None
         self.stream_screen.close()
-        self.showMaximized()
+        self.Network.stop_watching_current_stream()
 
     def start_watching_video_stream(self):
         self.stream_screen = VideoClient(self)
@@ -2553,16 +2554,6 @@ class VideoClient(QMainWindow):
     def resizeEvent(self, event):
         self.update_image()
         super().resizeEvent(event)
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
-            self.main_page.showMaximized()
-            self.main_page.Network.stop_watching_current_stream()
-            print(f"stopped watching {self.main_page.watching_user} share screen")
-            self.main_page.is_watching_screen = False
-            self.main_page.watching_user = ""
-            self.main_page.watching_type = None
-            self.close()
 
     def closeEvent(self, event):
         self.main_page.stop_watching_video_stream()
