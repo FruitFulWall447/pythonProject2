@@ -1000,6 +1000,7 @@ class ServerHandler:
             if value.client_username == username:
                 value.stop_threads()
                 del self.UDPClientHandler_dict[key]
+                return
 
     def get_aes_key_by_username(self, username):
         user_net = self.get_net_by_name(username)
