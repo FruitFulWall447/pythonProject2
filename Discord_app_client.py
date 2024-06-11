@@ -1302,7 +1302,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def scroll_back_to_index_before_update(self, n_last_widgets):
         self.messages_content_saver.scroll_up_by_n_widgets(n_last_widgets)
-        print(f"scrolled back down by {n_last_widgets} widgets")
 
     def insert_messages_into_message_box(self, messages_list):
         self.messages_content_saver.insert_messages_list_to_layout(messages_list)

@@ -2603,7 +2603,6 @@ class MessagesBox(QWidget):
             widget = self.layout.itemAt(i).widget()
             if widget:
                 total_height += widget.sizeHint().height() + self.space_between_widgets
-        print(f"total height is {total_height}")
         self.scroll_area.verticalScrollBar().setValue(total_height)
         self.scroll_value_changed(self.scroll_area.verticalScrollBar().value())
 
