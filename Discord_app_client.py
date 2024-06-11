@@ -791,7 +791,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Convert the screenshot to a NumPy array
                 frame = np.array(screen)
 
-                resized_frame = cv2.resize(frame, (1280, 720))  # Set your desired width and height
+                resized_frame = cv2.resize(frame, (640, 480))  # Set your desired width and height
 
                 frame_bgr = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
 
