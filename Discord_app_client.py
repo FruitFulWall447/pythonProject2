@@ -3448,7 +3448,8 @@ class PageController:
             is_remove = data.get("is_remove")
             if list_type == "friends_list":
                 if is_remove:
-                    self.main_page.friends_list.remove(user_to_update)
+                    if user_to_update in self.main_page.friends_list:
+                        self.main_page.friends_list.remove(user_to_update)
                 else:
                     if user_to_update not in self.main_page.friends_list:
                         self.main_page.friends_list.append(user_to_update)
