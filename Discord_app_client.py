@@ -668,6 +668,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.setLayout(self.main_layout)
 
+    def play_ring_sound_effect(self):
+        media_content = QMediaContent(
+            QUrl.fromLocalFile('discord_app_assets/Phone_Internal_RingingCalling - Sound Effect.mp3'))
+        self.play_calling_sound_effect(media_content)
+
     def close_all_threads(self):
         # turns every thread flag to False
         try:

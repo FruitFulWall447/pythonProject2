@@ -2114,6 +2114,7 @@ class ChatBox(QWidget):
         self.parent.calling_to = name
         try:
             self.parent.updated_chat()
+            self.parent.play_ring_sound_effect()
         except Exception as e:
             print(f"error ringing_user {e}")
 
@@ -2124,8 +2125,6 @@ class ChatBox(QWidget):
                     print(f"Calling Group...{self.parent.selected_chat}")  # Replace this with your actual functionality
                 else:
                     print(f"Calling User...{self.parent.selected_chat}")  # Replace this with your actual functionality
-                media_content = QMediaContent(QUrl.fromLocalFile('discord_app_assets/Phone_Internal_RingingCalling - Sound Effect.mp3'))
-                self.parent.play_calling_sound_effect(media_content)
                 self.Network.send_calling_user(self.parent.selected_chat)
                 self.ringing_user(self.parent.selected_chat)
         except Exception as e:
