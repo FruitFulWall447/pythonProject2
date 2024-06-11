@@ -674,6 +674,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         if self.messages_content_saver is not None:
             self.messages_content_saver.clear_layout()
             self.messages_content_saver.load_all_message_func()
+            self.scroll_maximum()
+            self.is_new_chat_clicked = False
         else:
             self.updated_chat()
 
