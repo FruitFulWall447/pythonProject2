@@ -3415,8 +3415,6 @@ class PageController:
                     if not self.is_closing_app:
                         print("lost connection with server")
                         self.is_logged_in = False
-                        # QMetaObject.invokeMethod(self.main_page, "lost_connection_with_server_signal",
-                        #                          Qt.QueuedConnection)
                         break
             except Exception as e:
                 print(f"error in receiving thread {e}")

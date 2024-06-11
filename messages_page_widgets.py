@@ -2125,7 +2125,7 @@ class ChatBox(QWidget):
         self.parent.is_calling = True
         self.parent.calling_to = name
         try:
-            self.parent.updated_chat()
+            self.parent.update_chat_page_without_messages()
             self.parent.play_ring_sound_effect()
         except Exception as e:
             print(f"error ringing_user {e}")
