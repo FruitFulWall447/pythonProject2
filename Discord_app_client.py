@@ -3510,9 +3510,16 @@ class PageController:
                 self.main_page.chats_list.insert(0, chat)
                 print("got new message from current chat")
             else:
+                if chat in self.main_page.chats_list:
+                    self.main_page.chats_list.remove(chat)
+                    self.main_page.chats_list.insert(0, chat)
+                else:
+                    self.main_page.chats_list.insert(0, chat)
                 QMetaObject.invokeMethod(self.main_page, "new_message_play_audio_signal",
                                          Qt.QueuedConnection)
                 print("got new message")
+            QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
+                                     Qt.QueuedConnection)
         elif message_type == "requests_list":
             requests_list = json.loads(data.get("requests_list"))
             self.main_page.request_list = requests_list
