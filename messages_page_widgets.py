@@ -726,6 +726,7 @@ class ChatBox(QWidget):
                     self.parent.is_messages_need_update = False
                 else:
                     self.parent.messages_content_saver.update_scroll_area_parent(self)
+                    self.parent.messages_content_saver.update_geometry_of_scroll_area(temp_widget_width, temp_widget_height, temp_widget_x, temp_widget_y)
                 self.around_name.raise_()
                 self.ringing_square_label = QLabel(self)
 
@@ -2317,6 +2318,9 @@ class MessagesBox(QWidget):
             self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
         except Exception as e:
             print(f"Error in creating messages box {e}")
+
+    def update_geometry_of_scroll_area(self, width, height, x, y):
+        self.scroll_area.setGeometry(x, y, width, height)  # Set the geometry directly
 
     def handle_new_messages_in_box(self):
         if self.parent.parent.is_new_chat_clicked:
