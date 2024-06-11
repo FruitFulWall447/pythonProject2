@@ -2351,6 +2351,7 @@ class MessagesBox(QWidget):
         for i in message_list:
             self.insert_message_to_layout(i)
         self.is_clearing_layout = False
+        self.handle_new_messages_in_box()
 
     def add_message_to_layout(self, message):
         self.add_or_insert_message_to_layout(message, False)
