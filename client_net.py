@@ -4,6 +4,7 @@ import zlib
 import threading
 import logging
 import base64
+import time
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -163,6 +164,7 @@ class ClientNet:
         self.aes_key = None
         self.connected = False
         self.sending_tcp_data_lock = threading.Lock()
+        self.packet_id_generator = PacketIDGenerator()
 
     def reset_vars(self):
         self.mtu = None
@@ -234,12 +236,15 @@ class ClientNet:
             sliced_data = slice_up_data(data, int(self.mtu * 0.8))
         else:
             sliced_data = [data]
-
+        packet_id = self.packet_id_generator.generate_packet_id()
         for i, data_slice in enumerate(sliced_data):
             message = {
                 "message_type": data_type,
                 "is_first": i == 0,
                 "is_last": i == len(sliced_data) - 1,
+                "fragment_id": i,
+                "packet_id": packet_id,
+                "total_fragments": len(sliced_data),
                 "sliced_data": data_slice,
                 "shape_of_frame": shape_of_frame
             }
@@ -847,3 +852,16 @@ class ClientNet:
         else:
             self.logger.error(f"failed key exchange")
             return False
+
+
+class PacketIDGenerator:
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.counter = 0
+
+    def generate_packet_id(self):
+        with self.lock:
+            current_time = int(time.time() * 1000)  # Current time in milliseconds
+            packet_id = f"{current_time}_{self.counter}"
+            self.counter += 1
+            return packet_id

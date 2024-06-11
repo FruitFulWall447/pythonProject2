@@ -528,6 +528,9 @@ class SettingsBox(QWidget):
                 output_label = self.create_white_label(output_x, output_y-space_between_option_box_and_label, self.default_labels_font_size, None, None, "OUTPUT DEVICES")
                 if self.parent.output_device_name not in output_devices:
                     self.output_combobox.setCurrentText("Default")
+                    self.parent.output_device_name = "Default"
+                else:
+                    self.output_combobox.setCurrentText(self.parent.output_device_name)
 
                 input_x, input_y = (1150, starter_y)
                 self.input_combobox = self.create_option_box(width, height, input_x, input_y, input_devices)
@@ -535,6 +538,9 @@ class SettingsBox(QWidget):
                 self.input_combobox.currentIndexChanged.connect(self.input_device_changed)
                 if self.parent.input_device_name not in input_devices:
                     self.input_combobox.setCurrentText("Default")
+                    self.parent.input_device_name = "Default"
+                else:
+                    self.input_combobox.setCurrentText(self.parent.input_device_name)
 
                 input_label = self.create_white_label(input_x, input_y - space_between_option_box_and_label, self.default_labels_font_size, None,
                                                        None, "INPUT DEVICES")

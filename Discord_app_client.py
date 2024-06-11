@@ -1585,7 +1585,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             print(f"update_stream_screen_frame: {e}")
 
     def stop_watching_video_stream(self):
-        print(f"stopped watching {self.main_page.watching_user} share screen")
+        print(f"stopped watching {self.watching_user} share screen")
         self.is_watching_screen = False
         self.watching_user = ""
         self.watching_type = None
@@ -2556,7 +2556,10 @@ class VideoClient(QMainWindow):
         super().resizeEvent(event)
 
     def closeEvent(self, event):
-        self.main_page.stop_watching_video_stream()
+        try:
+            self.main_page.stop_watching_video_stream()
+        except Exception as e:
+            print(e)
 
 
 class ForgetPasswordPage(QWidget):

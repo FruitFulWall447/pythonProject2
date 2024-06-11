@@ -11,6 +11,7 @@ from server_net import decrypt_with_aes, encrypt_with_aes, slice_up_data
 import zlib
 import socket
 import logging
+from queue import PriorityQueue
 
 
 def get_id_from_format(str_format):
@@ -483,7 +484,7 @@ class ServerHandler:
         self.udp_socket = None
         self.logger = logging.getLogger(__name__)
         self.udp_socket = None
-        self.UDPClientHandler_list = []
+        self.UDPClientHandler_dict = {}
         self.server_mtu = None
         self.emails_addresses_in_progress = []
 
@@ -789,6 +790,7 @@ class ServerHandler:
         self.remove_user_handler(user)
         self.update_nets_for_child_class()
         self.update_online_list_for_users_friends(user)
+        self.remove_udp_handler_object_by_username(user)
         if self.is_user_in_a_call(user):
             self.remove_user_from_call(user)
 
@@ -984,14 +986,20 @@ class ServerHandler:
                 call.remove_spectator_for_stream(spectator)
 
     def handle_udp_fragment(self, fragment, address):
-        for udp_handler_object in self.UDPClientHandler_list:
-            if udp_handler_object.udp_address == address:
-                udp_handler_object.handle_udp_message(fragment)
+        udp_handler_object = self.UDPClientHandler_dict.get(address)
+        if udp_handler_object is not None:
+            udp_handler_object.handle_udp_message(fragment)
 
     def create_and_add_udp_handler_object(self, username, udp_address, tcp_address):
         self.add_udp_address(udp_address, username)
         udp_handler_object = UDPClientHandler(udp_address, tcp_address, self, username)
-        self.UDPClientHandler_list.append(udp_handler_object)
+        self.UDPClientHandler_dict[udp_address] = udp_handler_object
+
+    def remove_udp_handler_object_by_username(self, username):
+        for key, value in self.UDPClientHandler_dict.items():
+            if value.client_username == username:
+                value.stop_threads()
+                del self.UDPClientHandler_dict[key]
 
     def get_aes_key_by_username(self, username):
         user_net = self.get_net_by_name(username)
@@ -1249,6 +1257,74 @@ class VideoStream:
             self.data_collection.append((user, share_screen_data, shape_bytes_of_frame))
 
 
+# class UDPClientHandler:
+#     def __init__(self, udp_address, tcp_address, ServerHandler_object, client_username):
+#         self.logger = logging.getLogger(__name__)
+#         self.udp_address = udp_address
+#         self.tcp_address = tcp_address
+#         self.ServerHandler_object = ServerHandler_object
+#         self.client_username = client_username
+#         self.logger.info(
+#             f"create udp client handler of udp address {self.udp_address} and tcp address of {self.tcp_address} of username {self.client_username}")
+#         self.aes_key = self.ServerHandler_object.get_aes_key_by_username(self.client_username)
+#         self.lost_packets = 0
+#         self.gotten_packets = 0
+#
+#         # Dictionaries to store the fragments for each packet_id
+#         self.vc_data_fragments = {}
+#         self.share_screen_data_fragments = {}
+#         self.share_camera_data_fragments = {}
+#
+#     def decrypt_data(self, data):
+#         return decrypt_with_aes(self.aes_key, data)
+#
+#     def handle_udp_message(self, fragment):
+#         try:
+#             pickled_data = self.decrypt_data(fragment)
+#             data = pickle.loads(pickled_data)
+#             message_type = data.get("message_type")
+#             packet_id = data.get("packet_id")
+#             fragment_id = data.get("fragment_id")
+#             total_fragments = data.get("total_fragments")
+#             sliced_data = data.get("sliced_data")
+#             shape_of_frame = data.get("shape_of_frame")
+#
+#             if message_type == "vc_data":
+#                 self.handle_data_fragment(self.vc_data_fragments, packet_id, fragment_id, total_fragments, sliced_data,
+#                                           "vc_data")
+#             elif message_type == "share_screen_data":
+#                 self.handle_data_fragment(self.share_screen_data_fragments, packet_id, fragment_id, total_fragments,
+#                                           sliced_data, "ScreenStream", shape_of_frame)
+#             elif message_type == "share_camera_data":
+#                 self.handle_data_fragment(self.share_camera_data_fragments, packet_id, fragment_id, total_fragments,
+#                                           sliced_data, "CameraStream", shape_of_frame)
+#
+#             self.gotten_packets += 1
+#         except Exception as e:
+#             self.lost_packets += 1
+#             self.gotten_packets += 1
+#             self.logger.error(f"Error handling UDP message: {e}")
+#
+#     def handle_data_fragment(self, fragment_dict, packet_id, fragment_id, total_fragments, sliced_data, data_type,
+#                              shape_of_frame=None):
+#         if packet_id not in fragment_dict:
+#             fragment_dict[packet_id] = {'fragments': {}, 'total_fragments': total_fragments}
+#
+#         fragment_dict[packet_id]['fragments'][fragment_id] = sliced_data
+#
+#         if len(fragment_dict[packet_id]['fragments']) == total_fragments:
+#             fragments = fragment_dict[packet_id]['fragments']
+#             full_data = b''.join(fragments[i] for i in range(total_fragments))
+#             decompressed_data = zlib.decompress(full_data)
+#             if data_type == "vc_data":
+#                 self.ServerHandler_object.send_vc_data_to_call(decompressed_data, self.client_username)
+#             elif data_type in ("ScreenStream", "CameraStream"):
+#                 self.ServerHandler_object.send_share_screen_data_to_call(decompressed_data, shape_of_frame,
+#                                                                          self.client_username, data_type)
+#
+#             del fragment_dict[packet_id]  # Clean up the dictionary
+
+
 class UDPClientHandler:
     def __init__(self, udp_address, tcp_address, ServerHandler_object, client_username):
         self.logger = logging.getLogger(__name__)
@@ -1256,13 +1332,40 @@ class UDPClientHandler:
         self.tcp_address = tcp_address
         self.ServerHandler_object = ServerHandler_object
         self.client_username = client_username
-        self.logger.info(f"create udp client handler of udp address {self.udp_address} and tcp address of {self.tcp_address} of username {self.client_username}")
+        self.logger.info(
+            f"create udp client handler of udp address {self.udp_address} and tcp address of {self.tcp_address} of username {self.client_username}")
         self.aes_key = self.ServerHandler_object.get_aes_key_by_username(self.client_username)
         self.lost_packets = 0
         self.gotten_packets = 0
-        self.vc_data = []
-        self.share_screen_data = []
-        self.share_camera_data = []
+
+        # Dictionaries to store the fragments for each packet_id
+        self.vc_data_fragments = {}
+        self.share_screen_data_fragments = {}
+        self.share_camera_data_fragments = {}
+
+        # Priority queues to store completed packets sorted by time
+        self.vc_data_queue = PriorityQueue()
+        self.share_screen_data_queue = PriorityQueue()
+        self.share_camera_data_queue = PriorityQueue()
+
+        # Cleanup thread to remove stale packets
+        self.running = True
+        self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
+        self.cleanup_thread.daemon = True
+        self.cleanup_thread.start()
+
+        # Processing thread to handle completed packets
+        self.processing_thread = threading.Thread(target=self.process_completed_packets)
+        self.processing_thread.daemon = True
+        self.processing_thread.start()
+
+    def stop_threads(self):
+        # Set the running flag to False to stop the threads
+        self.running = False
+
+        # Wait for the threads to join (i.e., finish execution)
+        self.cleanup_thread.join()
+        self.processing_thread.join()
 
     def decrypt_data(self, data):
         return decrypt_with_aes(self.aes_key, data)
@@ -1272,40 +1375,82 @@ class UDPClientHandler:
             pickled_data = self.decrypt_data(fragment)
             data = pickle.loads(pickled_data)
             message_type = data.get("message_type")
-            is_first = data.get("is_first")
-            is_last = data.get("is_last")
+            packet_id = data.get("packet_id")
+            fragment_id = data.get("fragment_id")
+            total_fragments = data.get("total_fragments")
             sliced_data = data.get("sliced_data")
             shape_of_frame = data.get("shape_of_frame")
+
             if message_type == "vc_data":
-                self.handle_data_fragment(self.vc_data, sliced_data, is_first, is_last, "vc_data")
+                self.handle_data_fragment(self.vc_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "vc_data")
             elif message_type == "share_screen_data":
-                self.handle_data_fragment(self.share_screen_data, sliced_data, is_first, is_last, "ScreenStream",
-                                          shape_of_frame)
+                self.handle_data_fragment(self.share_screen_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "ScreenStream", shape_of_frame)
             elif message_type == "share_camera_data":
-                self.handle_data_fragment(self.share_camera_data, sliced_data, is_first, is_last, "CameraStream",
-                                          shape_of_frame)
+                self.handle_data_fragment(self.share_camera_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "CameraStream", shape_of_frame)
+
             self.gotten_packets += 1
-        except:
+        except Exception as e:
             self.lost_packets += 1
             self.gotten_packets += 1
+            self.logger.error(f"Error handling UDP message: {e}")
 
-    def handle_data_fragment(self, data_list, sliced_data, is_first, is_last, data_type, shape_of_frame=None):
-        if is_first:
-            data_list.clear()
-        data_list.append(sliced_data)
+    def handle_data_fragment(self, fragment_dict, packet_id, fragment_id, total_fragments, sliced_data, data_type, shape_of_frame=None):
+        if packet_id not in fragment_dict:
+            timestamp = int(packet_id.split('_')[0])  # Extract timestamp from packet_id
+            fragment_dict[packet_id] = {'fragments': {}, 'total_fragments': total_fragments, 'timestamp': timestamp, 'received_time': time.time()}
 
-        if is_last:
-            full_data = b''.join(data_list)
+        fragment_dict[packet_id]['fragments'][fragment_id] = sliced_data
+
+        if len(fragment_dict[packet_id]['fragments']) == total_fragments:
+            fragments = fragment_dict[packet_id]['fragments']
+            full_data = b''.join(fragments[i] for i in range(total_fragments))
             decompressed_data = zlib.decompress(full_data)
             if data_type == "vc_data":
-                self.ServerHandler_object.send_vc_data_to_call(decompressed_data, self.client_username)
+                self.vc_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data))
             elif data_type == "ScreenStream":
-                self.ServerHandler_object.send_share_screen_data_to_call(decompressed_data, shape_of_frame,
-                                                                         self.client_username, data_type)
+                self.share_screen_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame))
             elif data_type == "CameraStream":
-                self.ServerHandler_object.send_share_screen_data_to_call(decompressed_data, shape_of_frame,
-                                                                         self.client_username, data_type)
-            data_list.clear()
+                self.share_camera_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame))
+
+            del fragment_dict[packet_id]  # Clean up the dictionary
+
+    def cleanup_stale_packets(self):
+        timeout = 10  # Timeout in seconds
+        while self.running:
+            current_time = time.time()
+            for fragment_dict in [self.vc_data_fragments, self.share_screen_data_fragments, self.share_camera_data_fragments]:
+                stale_packets = [packet_id for packet_id, packet_info in fragment_dict.items() if current_time - packet_info['received_time'] > timeout]
+                for packet_id in stale_packets:
+                    del fragment_dict[packet_id]
+            time.sleep(1)
+
+    def process_completed_packets(self):
+        while self.running:
+            while not self.vc_data_queue.empty():
+                timestamp, data = self.vc_data_queue.get()
+                try:
+                    self.ServerHandler_object.send_vc_data_to_call(data, self.client_username)
+                except Exception as e:
+                    self.logger.error(f"Error processing VC data packet: {e}")
+
+            while not self.share_screen_data_queue.empty():
+                timestamp, data, shape_of_frame = self.share_screen_data_queue.get()
+                try:
+                    self.ServerHandler_object.send_share_screen_data_to_call(data, shape_of_frame, self.client_username, "ScreenStream")
+                except Exception as e:
+                    self.logger.error(f"Error processing ScreenStream packet: {e}")
+
+            while not self.share_camera_data_queue.empty():
+                timestamp, data, shape_of_frame = self.share_camera_data_queue.get()
+                try:
+                    self.ServerHandler_object.send_share_screen_data_to_call(data, shape_of_frame, self.client_username, "CameraStream")
+                except Exception as e:
+                    self.logger.error(f"Error processing CameraStream packet: {e}")
+
+            time.sleep(0.01)  # Slight delay to prevent tight loop
+
+
+
 
 
 
