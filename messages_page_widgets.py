@@ -21,6 +21,17 @@ import hashlib
 import re
 
 
+def clear_layout(layout):
+    if layout is not None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                clear_layout(item.layout())
+
+
 def parse_group_caller_format(input_format):
     # Define a regular expression pattern to capture the information
     pattern = re.compile(r'\((\d+)\)([^()]+)\(([^()]+)\)')
@@ -2315,6 +2326,9 @@ class MessagesBox(QWidget):
             self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
         except Exception as e:
             print(f"Error in creating messages box {e}")
+
+    def clear_layout(self):
+        clear_layout(self.layout)
 
     def scroll_maximum(self):
         self.scroll_area.widget().layout().activate()
