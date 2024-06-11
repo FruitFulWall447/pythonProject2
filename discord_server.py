@@ -607,7 +607,6 @@ def thread_recv_messages(n, addr):
                     members_list.append(User)
                     group_chat_name, new_group_id = database_func.create_group(f"{User}'s Group", User, members_list)
                     ServerHandler.send_new_group_to_members(new_group_id)
-                    n.add_new_chat(group_chat_name)
                     logger.info(f"{User} created a new group")
                 elif action == "rename_group":
                     group_id = data.get("group_id")
