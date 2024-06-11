@@ -2279,6 +2279,7 @@ class MessagesBox(QWidget):
         self.main_page_object = parent.parent
         self.x = x
         self.y = y
+        self.is_clearing_layout = False
         self.init_ui()
 
     def init_ui(self):
@@ -2328,6 +2329,7 @@ class MessagesBox(QWidget):
             print(f"Error in creating messages box {e}")
 
     def clear_layout(self):
+        self.is_clearing_layout = True
         clear_layout(self.layout)
 
     def scroll_maximum(self):
@@ -2576,13 +2578,6 @@ class MessagesBox(QWidget):
             except Exception as e:
                 print(f"error in show messages is:{e}")
 
-    def clear_layout(self):
-        while self.layout.count():
-            item = self.layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-
     def update_messages_layout(self):
         self.initUI()
 
@@ -2605,7 +2600,7 @@ class MessagesBox(QWidget):
 
     def scroll_value_changed(self, value):
         # I don't want to ask for more message when I just load the messages in
-        if value == 0 and not self.parent.parent.is_new_chat_clicked:
+        if value == 0 and not self.parent.parent.is_new_chat_clicked and not self.is_clearing_layout:
             if len(self.main_page_object.list_messages) >= 15:
                 self.main_page_object.Network.ask_for_more_messages()
                 print("asked for more messages")
