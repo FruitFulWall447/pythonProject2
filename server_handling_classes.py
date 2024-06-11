@@ -1298,7 +1298,7 @@ class UDPClientHandler:
         self.share_camera_data_queue = PriorityQueue()
 
         # Cleanup thread to remove stale packets
-        self.running = True
+        self.running = False
         self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
         self.cleanup_thread.daemon = True
         self.cleanup_thread.start()
