@@ -601,7 +601,7 @@ class ServerHandler:
         else:
             sliced_data = [data]
         index = 0
-        packet_id = self.packet_id_generator
+        packet_id = self.packet_id_generator.generate_packet_id()
         for data_slice in sliced_data:
             if index == 0:
                 is_first = True

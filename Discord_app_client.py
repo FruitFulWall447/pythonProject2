@@ -26,6 +26,8 @@ import pyautogui
 import re
 from PIL import ImageGrab
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
+from queue import PriorityQueue
+
 
 email_providers = ["gmail", "outlook", "yahoo", "aol", "protonmail", "zoho", "mail", "fastmail", "gmx", "yandex",
                    "mail.ru",
@@ -579,6 +581,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
         self.is_new_chat_clicked = True
 
+        self.udp_packet_handler = UDPPacketsHandler(self)
+
         self.current_chat_box_search = False
         self.temp_search_list = []
         self.spacer = QSpacerItem(1, 1, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -837,9 +841,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     pass
                 elif fragment_data:
                     data = pickle.loads(fragment_data)
-                    self.handle_udp_data(data)
+                    self.handle_udp_data1(data)
             except Exception as e:
                 print(f"Exception in listening to udp socket: {e}")
+
+    def handle_udp_data1(self, data):
+        self.udp_packet_handler.handle_udp_message(data)
 
     def handle_udp_data(self, data):
         message_type = data.get("message_type")
@@ -3741,6 +3748,140 @@ class PageController:
                 self.main_page.friends_box.request_was_sent()
             elif status == "active":
                 self.main_page.friends_box.request_is_pending()
+
+
+class UDPPacketsHandler:
+    def __init__(self, main_page):
+        self.main_page = main_page
+
+        # Dictionaries to store the fragments for each packet_id
+        self.vc_data_fragments = {}
+        self.share_screen_data_fragments = {}
+        self.share_camera_data_fragments = {}
+
+        # Priority queues to store completed packets sorted by time
+        self.vc_data_queue = PriorityQueue()
+        self.share_screen_data_queue = PriorityQueue()
+        self.share_camera_data_queue = PriorityQueue()
+
+        # Cleanup thread to remove stale packets
+        self.running = True
+        self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
+        self.cleanup_thread.daemon = True
+        self.cleanup_thread.start()
+
+        # Processing thread to handle completed packets
+        self.processing_thread = threading.Thread(target=self.process_completed_packets)
+        self.processing_thread.daemon = True
+        self.processing_thread.start()
+
+    def stop_threads(self):
+        # Set the running flag to False to stop the threads
+        self.vc_data_fragments = {}
+        self.share_screen_data_fragments = {}
+        self.share_camera_data_fragments = {}
+        self.running = False
+
+        # Wait for the threads to join (i.e., finish execution)
+        self.cleanup_thread.join()
+        self.processing_thread.join()
+        print(f"stopped udp threads")
+
+    def start_threads_again(self):
+        self.running = True
+        self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
+        self.cleanup_thread.daemon = True
+        self.cleanup_thread.start()
+
+        # Processing thread to handle completed packets
+        self.processing_thread = threading.Thread(target=self.process_completed_packets)
+        self.processing_thread.daemon = True
+        self.processing_thread.start()
+        print(f"started udp threads")
+
+    def handle_udp_message(self, data):
+        try:
+            message_type = data.get("message_type")
+            packet_id = data.get("packet_id")
+            fragment_id = data.get("fragment_id")
+            total_fragments = data.get("total_fragments")
+            sliced_data = data.get("sliced_data")
+            shape_of_frame = data.get("shape_of_frame")
+            speaker = data.get("speaker")
+
+            if message_type == "vc_data":
+                self.handle_data_fragment(self.vc_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "vc_data", speaker)
+            elif message_type == "share_screen_data":
+                self.handle_data_fragment(self.share_screen_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "ScreenStream", speaker, shape_of_frame)
+            elif message_type == "share_camera_data":
+                self.handle_data_fragment(self.share_camera_data_fragments, packet_id, fragment_id, total_fragments, sliced_data, "CameraStream", speaker, shape_of_frame)
+
+        except Exception as e:
+            print(f"Error handling UDP message: {e}")
+
+    def handle_data_fragment(self, fragment_dict, packet_id, fragment_id, total_fragments, sliced_data, data_type, speaker, shape_of_frame=None):
+        if packet_id not in fragment_dict:
+            timestamp = int(packet_id.split('_')[0])  # Extract timestamp from packet_id
+            fragment_dict[packet_id] = {'fragments': {}, 'total_fragments': total_fragments, 'timestamp': timestamp, 'received_time': time.time(), 'speaker': speaker}
+
+        fragment_dict[packet_id]['fragments'][fragment_id] = sliced_data
+
+        if len(fragment_dict[packet_id]['fragments']) == total_fragments:
+            fragments = fragment_dict[packet_id]['fragments']
+            full_data = b''.join(fragments[i] for i in range(total_fragments))
+            decompressed_data = zlib.decompress(full_data)
+            if data_type == "vc_data":
+                self.vc_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, speaker))
+            elif data_type == "ScreenStream":
+                self.share_screen_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame, speaker))
+            elif data_type == "CameraStream":
+                self.share_camera_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame, speaker))
+
+            del fragment_dict[packet_id]  # Clean up the dictionary
+
+    def cleanup_stale_packets(self):
+        timeout = 10  # Timeout in seconds
+        while self.running:
+            count = 0
+            current_time = time.time()
+            for fragment_dict in [self.vc_data_fragments, self.share_screen_data_fragments, self.share_camera_data_fragments]:
+                stale_packets = [packet_id for packet_id, packet_info in fragment_dict.items() if current_time - packet_info['received_time'] > timeout]
+                for packet_id in stale_packets:
+                    count += 1
+                    del fragment_dict[packet_id]
+            time.sleep(1)
+
+    def process_completed_packets(self):
+        while self.running:
+            while not self.vc_data_queue.empty():
+                timestamp, data, speaker = self.vc_data_queue.get()
+                decompressed_data = data
+                try:
+                    self.main_page.vc_data_list.append((decompressed_data, speaker))
+                except Exception as e:
+                    print(f"Error processing VC data packet: {e}")
+
+            while not self.share_screen_data_queue.empty():
+                timestamp, data, shape_of_frame, speaker = self.share_screen_data_queue.get()
+                decompressed_data = data
+                decompressed_frame = np.frombuffer(decompressed_data, dtype=np.uint8).reshape(shape_of_frame)
+                try:
+                    self.main_page.update_stream_screen_frame(decompressed_frame)
+                except Exception as e:
+                    print(f"Error processing ScreenStream packet: {e}")
+
+            while not self.share_camera_data_queue.empty():
+                timestamp, data, shape_of_frame, speaker = self.share_camera_data_queue.get()
+                decompressed_data = data
+                decompressed_frame = np.frombuffer(decompressed_data, dtype=np.uint8).reshape(shape_of_frame)
+                try:
+                    self.main_page.update_stream_screen_frame(decompressed_frame)
+                except Exception as e:
+                    print(f"Error processing CameraStream packet: {e}")
+            if self.main_page.is_in_a_call:
+                time.sleep(0.01)  # Slight delay to prevent tight loop
+            else:
+                time.sleep(1)
 
 
 if __name__ == '__main__':
