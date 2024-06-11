@@ -1300,6 +1300,17 @@ class UDPClientHandler:
         self.cleanup_thread.join()
         self.processing_thread.join()
 
+    def start_threads_again(self):
+        self.running = True
+        self.cleanup_thread = threading.Thread(target=self.cleanup_stale_packets)
+        self.cleanup_thread.daemon = True
+        self.cleanup_thread.start()
+
+        # Processing thread to handle completed packets
+        self.processing_thread = threading.Thread(target=self.process_completed_packets)
+        self.processing_thread.daemon = True
+        self.processing_thread.start()
+
     def decrypt_data(self, data):
         return decrypt_with_aes(self.aes_key, data)
 
