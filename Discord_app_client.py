@@ -3430,8 +3430,6 @@ class PageController:
             # self.main_page.is_messages_need_update = True
             # QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
             #                          Qt.QueuedConnection)
-            QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
-                                     Qt.QueuedConnection)
             self.main_page.is_new_chat_clicked = True
             self.main_page.chat_start_index = None
             QMetaObject.invokeMethod(self.main_page, "reset_message_box_and_load_new_messages_signal",
