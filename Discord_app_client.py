@@ -675,7 +675,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             self.is_new_chat_clicked = True
             self.messages_content_saver.clear_layout()
             self.messages_content_saver.load_all_message_func()
-            self.messages_content_saver.scroll_maximum()
             # self.is_new_chat_clicked = False
         else:
             self.updated_chat()
@@ -1314,7 +1313,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def insert_message_that_client_send(self, message_dict):
         self.insert_new_message_in_chat(message_dict)
-        self.scroll_maximum_down()
+        self.call_scroll_maximum_with_delay()
 
     def scroll_maximum_down(self):
         self.messages_content_saver.scroll_maximum()

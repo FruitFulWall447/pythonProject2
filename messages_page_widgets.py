@@ -2330,10 +2330,14 @@ class MessagesBox(QWidget):
         self.is_clearing_layout = True
         clear_layout(self.layout)
 
+    def call_scroll_maximum_with_delay(self):
+        QTimer.singleShot(100, self.scroll_maximum)  # Use a slight delay
+
     def scroll_maximum(self):
         maximum = self.scroll_area.verticalScrollBar().maximum()
         self.scroll_area.verticalScrollBar().setValue(maximum)
         print(f"scrolled to maximum {maximum}")
+        self.parent.parent.is_new_chat_clicked = False
 
     def update_scroll_area_parent(self, new_parent):
         self.setParent(new_parent)
@@ -2345,6 +2349,7 @@ class MessagesBox(QWidget):
         for i in message_list:
             self.insert_message_to_layout(i)
         self.is_clearing_layout = False
+        self.call_scroll_maximum_with_delay()
 
     def add_message_to_layout(self, message):
         self.add_or_insert_message_to_layout(message, False)
