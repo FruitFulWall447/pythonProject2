@@ -216,6 +216,9 @@ class Call:
         self.send_call_object_to_clients()
 
         self.logger.info(f"{user} left call by id {self.call_id}")
+        self.logger.info(f"{user} joined call by id {self.call_id}")
+        user_udp_handler = self.parent.get_udp_handler_of_user(user)
+        user_udp_handler.stop_threads()
 
     def add_user_to_call(self, user):
         self.participants.append(user)
@@ -228,6 +231,8 @@ class Call:
             self.logger.error(f"Error sending string: {e}")
         self.send_call_object_to_clients()
         self.logger.info(f"{user} joined call by id {self.call_id}")
+        user_udp_handler = self.parent.get_udp_handler_of_user(user)
+        user_udp_handler.start_threads_again()
 
     def process_vc_data(self):
         while not self.stop_thread.is_set():
@@ -1002,6 +1007,11 @@ class ServerHandler:
                 del self.UDPClientHandler_dict[key]
                 return
 
+    def get_udp_handler_of_user(self, username):
+        for key, value in self.UDPClientHandler_dict.items():
+            if value.client_username == username:
+                return value
+
     def get_aes_key_by_username(self, username):
         user_net = self.get_net_by_name(username)
         return user_net.get_aes_key()
@@ -1294,6 +1304,9 @@ class UDPClientHandler:
 
     def stop_threads(self):
         # Set the running flag to False to stop the threads
+        self.vc_data_fragments = {}
+        self.share_screen_data_fragments = {}
+        self.share_camera_data_fragments = {}
         self.running = False
 
         # Wait for the threads to join (i.e., finish execution)
