@@ -1974,6 +1974,8 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     self.selected_group_members.clear()
                     self.updated_chat()
         else:
+            if event.key() == Qt.Key_F2:
+                self.scroll_maximum_down()
             if self.setting_clicked and self.is_editing_push_to_talk_button:
                 key = event.key()
                 key_string = chr(key) if 32 <= key <= 126 else self.special_keys_mapping.get(key)

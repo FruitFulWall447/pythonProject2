@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QColor
 from functools import partial
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QGraphicsBlurEffect
-from PyQt5.QtCore import QSize, Qt, QUrl
+from PyQt5.QtCore import QSize, Qt, QUrl, QTimer
 from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath, QFont
 from PyQt5.QtMultimedia import QMediaContent
 from io import BytesIO
