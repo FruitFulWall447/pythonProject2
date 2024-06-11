@@ -254,7 +254,6 @@ class ClientNet:
             if self.aes_key is not None:
                 encrypted_data = encrypt_with_aes(self.aes_key, data)
                 data = encrypted_data
-
             self.client_udp_socket.sendto(data, self.addr)
         except socket.error as e:
             print(f"error in sending udp {e} , data size = {len(data)}")
