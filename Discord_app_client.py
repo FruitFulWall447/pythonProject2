@@ -351,6 +351,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
     scroll_back_to_index_before_update_signal = pyqtSignal(int)
     insert_search_result_signal = pyqtSignal(dict, bool)
     update_settings_from_dict_signal = pyqtSignal(dict)
+    reset_message_box_and_load_new_messages_signal = pyqtSignal()
     update_message_box_signal = pyqtSignal()
     close_call_threads_signal = pyqtSignal()
     start_call_threads_signal = pyqtSignal()
@@ -667,6 +668,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.main_layout.addWidget(self.stacked_widget)
 
         self.setLayout(self.main_layout)
+
+    def reset_message_box_and_load_new_messages(self):
+        self.messages_content_saver.clear_layout()
+
 
     def play_ring_sound_effect(self):
         media_content = QMediaContent(
@@ -3416,9 +3421,10 @@ class PageController:
             message_list = json.loads(data.get("messages_list"))
             self.main_page.list_messages = message_list
             self.main_page.is_new_chat_clicked = True
-            self.main_page.is_messages_need_update = True
-            QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
-                                     Qt.QueuedConnection)
+            # self.main_page.is_messages_need_update = True
+            # QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
+            #                          Qt.QueuedConnection)
+
             print("Updated the messages list")
         elif message_type == "tcp_thread":
             action = data.get("action")

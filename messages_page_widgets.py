@@ -2309,7 +2309,7 @@ class MessagesBox(QWidget):
             self.layout.setAlignment(Qt.AlignLeft | Qt.AlignTop)  # Align widgets to the left and top
 
             # Add labels and buttons to the layout
-            self.load_all_message_func((self.parent.parent.list_messages))
+            self.load_all_message_func()
 
             # Set the inner widget as the scroll area's widget
             self.scroll_area.setWidget(inner_widget)
@@ -2343,7 +2343,8 @@ class MessagesBox(QWidget):
         self.parent = new_parent
         self.scroll_area.setParent(new_parent)
 
-    def load_all_message_func(self, message_list):
+    def load_all_message_func(self):
+        message_list = self.parent.parent.list_messages
         for i in message_list:
             self.insert_message_to_layout(i)
 
