@@ -168,9 +168,13 @@ class Call:
     def call_ending_protocol(self):
         self.logger.debug(f"call participants: {self.participants}")
         for name, net in self.call_nets.items():
+            user_udp_handler = self.parent.get_udp_handler_of_user(name)
+            if user_udp_handler:
+                user_udp_handler.stop_threads()
             if net is not None:
                 net.send_user_that_call_ended()
                 net.remove_call_to_user_of_id(self.call_id)
+
         self.close_all_video_streams()
         self.logger.info(f"Call of id {self.call_id} ended")
         call_time = datetime.now() - self.initiated_time
@@ -218,7 +222,8 @@ class Call:
         self.logger.info(f"{user} left call by id {self.call_id}")
         self.logger.info(f"{user} joined call by id {self.call_id}")
         user_udp_handler = self.parent.get_udp_handler_of_user(user)
-        user_udp_handler.stop_threads()
+        if user_udp_handler:
+            user_udp_handler.stop_threads()
 
     def add_user_to_call(self, user):
         self.participants.append(user)
@@ -232,7 +237,8 @@ class Call:
         self.send_call_object_to_clients()
         self.logger.info(f"{user} joined call by id {self.call_id}")
         user_udp_handler = self.parent.get_udp_handler_of_user(user)
-        user_udp_handler.start_threads_again()
+        if user_udp_handler:
+            user_udp_handler.start_threads_again()
 
     def process_vc_data(self):
         while not self.stop_thread.is_set():
