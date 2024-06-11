@@ -790,11 +790,15 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 screen = ImageGrab.grab()
                 # Convert the screenshot to a NumPy array
                 frame = np.array(screen)
-                frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+
+                resized_frame = cv2.resize(frame, (1280, 720))  # Set your desired width and height
+
+                frame_bgr = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
 
                 frame_bytes = frame_bgr.tobytes()
+                print(len(frame_bytes))
                 # Send the frame to the server
-                self.Network.send_share_screen_data(frame_bytes, frame.shape)
+                self.Network.send_share_screen_data(frame_bytes, frame_bgr.shape)
 
                 time.sleep(time_between_frame)  # Adjust the sleep time based on your needs
             print("send share screen data thread closed")
@@ -820,6 +824,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
                 # Convert the NumPy array to bytes
                 frame_bytes = frame_np.tobytes()
+                print(len(frame_bytes))
 
                 # Send the frame to the server
                 network.send_share_camera_data(frame_bytes, frame_np.shape)
