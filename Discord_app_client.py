@@ -609,6 +609,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.lost_connection_with_server_signal.connect(self.lost_connection_with_server)
         self.too_many_request_signal.connect(too_many_request)
         self.quit_application_signal.connect(self.page_controller_object.quit_application)
+        self.reset_message_box_and_load_new_messages_signal.connect(self.reset_message_box_and_load_new_messages)
 
         self.sound_effect_media_player = QMediaPlayer()
         self.sound_effect_media_player.setVolume(50)
@@ -670,8 +671,11 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.setLayout(self.main_layout)
 
     def reset_message_box_and_load_new_messages(self):
-        self.messages_content_saver.clear_layout()
-
+        if self.messages_content_saver is not None:
+            self.messages_content_saver.clear_layout()
+            self.messages_content_saver.load_all_message_func()
+        else:
+            self.updated_chat()
 
     def play_ring_sound_effect(self):
         media_content = QMediaContent(
@@ -3424,7 +3428,8 @@ class PageController:
             # self.main_page.is_messages_need_update = True
             # QMetaObject.invokeMethod(self.main_page, "updated_chat_signal",
             #                          Qt.QueuedConnection)
-
+            QMetaObject.invokeMethod(self.main_page, "reset_message_box_and_load_new_messages_signal",
+                                     Qt.QueuedConnection)
             print("Updated the messages list")
         elif message_type == "tcp_thread":
             action = data.get("action")

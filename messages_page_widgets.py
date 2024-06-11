@@ -2314,19 +2314,22 @@ class MessagesBox(QWidget):
             # Set the inner widget as the scroll area's widget
             self.scroll_area.setWidget(inner_widget)
             self.scroll_area.setGeometry(self.x, self.y, self.width, self.height)  # Set the geometry directly
-            if self.parent.parent.is_new_chat_clicked:
-                maximum = self.scroll_area.verticalScrollBar().maximum()
-                self.scroll_area.verticalScrollBar().setValue(maximum)
-                print(f"Scrolled to maximum {maximum}")
-                self.scroll_value_changed(maximum)
-                # Reset the flag
-                self.parent.parent.is_new_chat_clicked = False
-            else:
-                if self.parent.parent.chat_start_index is not None:
-                    self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
+            self.handle_new_messages_in_box()
             self.scroll_area.verticalScrollBar().valueChanged.connect(self.scroll_value_changed)
         except Exception as e:
             print(f"Error in creating messages box {e}")
+
+    def handle_new_messages_in_box(self):
+        if self.parent.parent.is_new_chat_clicked:
+            maximum = self.scroll_area.verticalScrollBar().maximum()
+            self.scroll_area.verticalScrollBar().setValue(maximum)
+            print(f"Scrolled to maximum {maximum}")
+            self.scroll_value_changed(maximum)
+            # Reset the flag
+            self.parent.parent.is_new_chat_clicked = False
+        else:
+            if self.parent.parent.chat_start_index is not None:
+                self.scroll_area.verticalScrollBar().setValue(self.parent.parent.chat_start_index)
 
     def clear_layout(self):
         self.is_clearing_layout = True
