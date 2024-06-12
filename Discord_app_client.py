@@ -2562,8 +2562,11 @@ class VideoClient(QMainWindow):
             self.image_label.setPixmap(pixmap)
 
     def resizeEvent(self, event):
-        self.update_image()
-        super().resizeEvent(event)
+        try:
+            self.update_image()
+            super().resizeEvent(event)
+        except Exception as e:
+            print(e)
 
     def closeEvent(self, event):
         try:
