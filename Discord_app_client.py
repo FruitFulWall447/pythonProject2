@@ -2527,7 +2527,8 @@ class VideoClient(QMainWindow):
     def __init__(self, main_page):
         super().__init__()
         self.main_page = main_page
-        self.setMinimumSize(200, 200)
+        self.setMinimumSize(320, 180)
+        self.setGeometry(100, 100, 320, 180)
         self.init_ui()
         self.frame = None
 
