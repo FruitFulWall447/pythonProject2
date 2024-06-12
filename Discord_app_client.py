@@ -2537,7 +2537,6 @@ class VideoClient(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         self.image_label = QLabel(self)
-        self.image_label.move(0, 0)
 
         layout = QVBoxLayout(self.central_widget)
         layout.addWidget(self.image_label)
@@ -2554,12 +2553,15 @@ class VideoClient(QMainWindow):
         self.update_image()
 
     def update_image(self):
-        if self.frame is not None:
-            height, width, channel = self.frame.shape
-            bytes_per_line = 3 * width
-            q_image = QImage(self.frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-            pixmap = QPixmap.fromImage(q_image).scaled(self.image_label.size(), aspectRatioMode=True)
-            self.image_label.setPixmap(pixmap)
+        try:
+            if self.frame is not None:
+                height, width, channel = self.frame.shape
+                bytes_per_line = 3 * width
+                q_image = QImage(self.frame.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+                pixmap = QPixmap.fromImage(q_image).scaled(self.image_label.size(), aspectRatioMode=True)
+                self.image_label.setPixmap(pixmap)
+        except Exception as e:
+            print(e)
 
     def resizeEvent(self, event):
         try:
