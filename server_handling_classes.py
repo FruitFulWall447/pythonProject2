@@ -596,7 +596,7 @@ class ServerHandler:
 
     def send_large_udp_data(self, sender, sending_to, data, data_type, shape_of_frame=None):
         address_to_send = self.udp_addresses_dict.get(sending_to)
-        if len(data) > self.server_mtu:
+        if len(data) > int(self.server_mtu * 0.8):
             sliced_data = slice_up_data(data, int(self.server_mtu * 0.2))
         else:
             sliced_data = [data]
