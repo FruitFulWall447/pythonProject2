@@ -2342,7 +2342,6 @@ class MessagesBox(QWidget):
     def scroll_maximum(self):
         maximum = self.scroll_area.verticalScrollBar().maximum()
         self.scroll_area.verticalScrollBar().setValue(maximum)
-        print(f"scrolled to maximum {maximum}")
         self.parent.parent.is_new_chat_clicked = False
 
     def update_scroll_area_parent(self, new_parent):

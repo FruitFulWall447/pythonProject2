@@ -201,10 +201,6 @@ def audio_data_list_set_volume(datalist, volume):
 def set_camera_properties(cap):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Set frame width to 1280 pixels
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Set frame height to 720 pixels
-    cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)  # Disable autofocus
-    cap.set(cv2.CAP_PROP_FOCUS, 0)  # Set focus to minimum (if supported)
-    cap.set(cv2.CAP_PROP_ZOOM, 1)  # Set zoom to minimum (if supported)
-    cap.set(cv2.CAP_PROP_EXPOSURE, -7)  # Set exposure to minimum (if supported)
 
 
 class SplashScreen(QWidget):
@@ -844,14 +840,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     pass
                 elif fragment_data:
                     data = pickle.loads(fragment_data)
-                    self.handle_udp_data1(data)
+                    self.handle_udp_data(data)
             except Exception as e:
                 print(f"Exception in listening to udp socket: {e}")
 
-    def handle_udp_data1(self, data):
+    def handle_udp_data(self, data):
         self.udp_packet_handler.handle_udp_message(data)
 
-    def handle_udp_data(self, data):
+    def handle_udp_data1(self, data):
         message_type = data.get("message_type")
         try:
             if message_type == "vc_data":
@@ -3824,15 +3820,16 @@ class UDPPacketsHandler:
         except Exception as e:
             print(f"Error handling UDP message: {e}")
 
-    def handle_data_fragment(self, fragment_dict, packet_id, fragment_id, total_fragments, sliced_data, data_type, speaker, shape_of_frame=None):
+    def handle_data_fragment(self, fragment_dict, packet_id, fragment_id, total_fragments, sliced_data, data_type, speaker_of_data, shape_of_frame=None):
         if packet_id not in fragment_dict:
             timestamp = int(packet_id.split('_')[0])  # Extract timestamp from packet_id
-            fragment_dict[packet_id] = {'fragments': {}, 'total_fragments': total_fragments, 'timestamp': timestamp, 'received_time': time.time(), 'speaker': speaker}
+            fragment_dict[packet_id] = {'fragments': {}, 'total_fragments': total_fragments, 'timestamp': timestamp, 'received_time': time.time(), 'speaker': speaker_of_data}
 
         fragment_dict[packet_id]['fragments'][fragment_id] = sliced_data
 
         if len(fragment_dict[packet_id]['fragments']) == total_fragments:
             fragments = fragment_dict[packet_id]['fragments']
+            speaker = fragment_dict[packet_id]['speaker']
             full_data = b''.join(fragments[i] for i in range(total_fragments))
             decompressed_data = zlib.decompress(full_data)
             if data_type == "vc_data":
@@ -3862,7 +3859,10 @@ class UDPPacketsHandler:
                 timestamp, data, speaker = self.vc_data_queue.get()
                 decompressed_data = data
                 try:
-                    self.main_page.vc_data_list.append((decompressed_data, speaker))
+                    self.main_page.audio_data_lock.acquire()
+                    if speaker not in self.main_page.muted_users:
+                        self.main_page.vc_data_list.append((decompressed_data, speaker))
+                    self.main_page.audio_data_lock.release()
                 except Exception as e:
                     print(f"Error processing VC data packet: {e}")
 
