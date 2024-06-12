@@ -796,7 +796,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 frame_bgr = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
 
                 frame_bytes = frame_bgr.tobytes()
-                print(len(frame_bytes))
                 # Send the frame to the server
                 self.Network.send_share_screen_data(frame_bytes, frame_bgr.shape)
 
@@ -824,7 +823,6 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
                 # Convert the NumPy array to bytes
                 frame_bytes = frame_np.tobytes()
-                print(len(frame_bytes))
 
                 # Send the frame to the server
                 network.send_share_camera_data(frame_bytes, frame_np.shape)
