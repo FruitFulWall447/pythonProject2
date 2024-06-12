@@ -267,7 +267,7 @@ class Call:
         user_is_private = user_handler.is_private_account
         user_friends_list = user_handler.friends_list if user_is_private else []
 
-        compressed_vc_data = zlib.compress(vc_data)
+        compressed_vc_data = vc_data
 
         for name, net in self.call_nets.items():
             if name == user or net is None:
@@ -603,16 +603,7 @@ class ServerHandler:
         index = 0
         packet_id = self.packet_id_generator.generate_packet_id()
         for data_slice in sliced_data:
-            if index == 0:
-                is_first = True
-            else:
-                is_first = False
-            if index == len(sliced_data)-1:
-                is_last = True
-            else:
-                is_last = False
             message = {"message_type": data_type,
-                       "is_first": is_first, "is_last": is_last,
                        "sliced_data": data_slice, "shape_of_frame": shape_of_frame, "speaker": sender,
                        "fragment_id": index,
                         "packet_id": packet_id,
@@ -1248,7 +1239,7 @@ class VideoStream:
         user_friends_list = user_handler.friends_list if user_is_private else []
 
         # Compress share screen data once
-        compressed_share_screen_data = zlib.compress(share_screen_data)
+        compressed_share_screen_data = share_screen_data
 
         for name, net in self.call_parent.call_nets.items():
             if name == user or net is None or name not in self.spectators:
@@ -1378,13 +1369,12 @@ class UDPClientHandler:
         if len(fragment_dict[packet_id]['fragments']) == total_fragments:
             fragments = fragment_dict[packet_id]['fragments']
             full_data = b''.join(fragments[i] for i in range(total_fragments))
-            decompressed_data = zlib.decompress(full_data)
             if data_type == "vc_data":
-                self.vc_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data))
+                self.vc_data_queue.put((fragment_dict[packet_id]['timestamp'], full_data))
             elif data_type == "ScreenStream":
-                self.share_screen_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame))
+                self.share_screen_data_queue.put((fragment_dict[packet_id]['timestamp'], full_data, shape_of_frame))
             elif data_type == "CameraStream":
-                self.share_camera_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, shape_of_frame))
+                self.share_camera_data_queue.put((fragment_dict[packet_id]['timestamp'], full_data, shape_of_frame))
 
             del fragment_dict[packet_id]  # Clean up the dictionary
 
