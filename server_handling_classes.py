@@ -782,6 +782,20 @@ class ServerHandler:
     def add_user_handler(self, username):
         self.user_handlers_dict[username] = UserHandler(username, self.get_net_by_name(username), self)
 
+    def update_user_chat_index_if_needed(self, chat_that_needs_update, user):
+        user_handler = self.get_user_handler_object_of_user(user)
+        if user_handler:
+            if user_handler.current_chat == chat_that_needs_update:
+                user_handler.chat_max_index += 1
+
+    def update_users_chat_index_for_list(self, list_of_users, chat_that_need_update=None, is_group=None):
+        if is_group:
+            for i in list_of_users:
+                self.update_user_chat_index_if_needed(chat_that_need_update, i)
+        else:
+            self.update_user_chat_index_if_needed(list_of_users[0], list_of_users[1])
+            self.update_user_chat_index_if_needed(list_of_users[1], list_of_users[0])
+
     def remove_user_handler(self, username):
         if username in self.user_handlers_dict:
             del self.user_handlers_dict[username]
@@ -1223,7 +1237,7 @@ class VideoStream:
                 self.send_share_screen_data_to_everyone_but_user(share_screen, user, share_screen_frame_shape_bytes)
             else:
                 # Sleep or perform other tasks if the data collection is empty
-                time.sleep(0.1)
+                time.sleep(0.01)
         self.logger.info(f"stopped thread of video stream of id {self.stream_id} for sssssure")
 
     def stop_processing(self):

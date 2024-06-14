@@ -379,6 +379,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.watching_user = ""
         self.watching_type = None
 
+        self.screen_share_res = (640, 480)
         self.is_screen_shared = False
         self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
 
@@ -780,6 +781,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
 
     def thread_send_share_screen_data(self):
         time_between_frame = 1 / SCREEN_FPS
+        share_screen_res = self.screen_share_res
         try:
             while self.is_screen_shared:
                 # Capture the screen using PyAutoGUI
@@ -787,7 +789,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                 # Convert the screenshot to a NumPy array
                 frame = np.array(screen)
 
-                resized_frame = cv2.resize(frame, (640, 480))  # Set your desired width and height
+                resized_frame = cv2.resize(frame, share_screen_res)  # Set your desired width and height
 
                 frame_bgr = cv2.cvtColor(resized_frame, cv2.COLOR_RGB2BGR)
 
@@ -1564,6 +1566,14 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             video_player.play_video()
         except Exception as e:
             print(f"had error trying to show video: {e}")
+
+    def update_and_start_camera_thread(self):
+        self.update_share_camera_thread()
+        self.start_camera_data_thread()
+
+    def update_and_start_screen_thread(self):
+        self.update_share_screen_thread()
+        self.start_share_screen_send_thread()
 
     def start_share_screen_send_thread(self):
         self.send_share_screen_thread.start()
