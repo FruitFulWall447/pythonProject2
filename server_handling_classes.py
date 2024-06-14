@@ -8,7 +8,6 @@ import threading
 import base64
 import pickle
 from server_net import decrypt_with_aes, encrypt_with_aes, slice_up_data
-import zlib
 import socket
 import logging
 from queue import PriorityQueue

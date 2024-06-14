@@ -16,7 +16,7 @@ import random
 import json
 import threading
 import time
-import zlib
+import zstandard as zstd
 import base64
 import datetime
 import pickle
@@ -886,7 +886,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             speaker = data.get("speaker")
             shape_of_frame = data.get("shape_of_frame") if data_type == "stream_data" else None
 
-            decompressed_data = zlib.decompress(compressed_data)
+            decompressed_data = zstd.ZstdDecompressor().decompress(compressed_data)
             if data_type == "stream_data":
                 decompressed_frame = np.frombuffer(decompressed_data, dtype=np.uint8).reshape(shape_of_frame)
                 self.update_stream_screen_frame(decompressed_frame)
@@ -3828,7 +3828,7 @@ class UDPPacketsHandler:
             fragments = fragment_dict[packet_id]['fragments']
             speaker = fragment_dict[packet_id]['speaker']
             full_data = b''.join(fragments[i] for i in range(total_fragments))
-            decompressed_data = zlib.decompress(full_data)
+            decompressed_data = zstd.ZstdDecompressor().decompress(full_data)
             if data_type == "vc_data":
                 self.vc_data_queue.put((fragment_dict[packet_id]['timestamp'], decompressed_data, speaker))
             elif data_type == "ScreenStream":

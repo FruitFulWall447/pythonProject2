@@ -7,7 +7,6 @@ from PyQt5.QtGui import QIcon, QPixmap, QImage, QPainter, QPainterPath, QFont
 from PyQt5.QtMultimedia import QMediaContent
 from io import BytesIO
 import base64
-import zlib
 from PIL import Image
 import tempfile
 import os

@@ -1,6 +1,6 @@
 import socket
 import json
-import zlib
+import zstandard as zstd
 import threading
 import logging
 import base64
@@ -550,7 +550,7 @@ class ClientNet:
     def send_vc_data(self, vc_data):
         try:
             full_message = vc_data
-            compressed_message = zlib.compress(full_message)
+            compressed_message = zstd.ZstdCompressor().compress(full_message)
             message_format = "vc_data"
             self.send_large_udp_data(compressed_message, message_format)
         except Exception as e:
@@ -559,7 +559,7 @@ class ClientNet:
     def send_share_screen_data(self, share_screen_data, shape_of_frame):
         try:
             full_message = share_screen_data
-            compressed_message = zlib.compress(full_message)
+            compressed_message = zstd.ZstdCompressor().compress(full_message)
             message_format = "share_screen_data"
             self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:
@@ -568,7 +568,7 @@ class ClientNet:
     def send_share_camera_data(self, share_camera_data, shape_of_frame):
         try:
             full_message = share_camera_data
-            compressed_message = zlib.compress(full_message)
+            compressed_message = zstd.ZstdCompressor().compress(full_message)
             message_format = "share_camera_data"
             self.send_large_udp_data(compressed_message, message_format, shape_of_frame)
         except Exception as e:

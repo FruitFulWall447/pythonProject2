@@ -1,6 +1,5 @@
 import socket
 import json
-import zlib
 import threading
 import logging
 import base64
@@ -317,36 +316,6 @@ class ServerNet:
             self.send_message_dict_tcp(message)
         except socket.error as e:
             print(e)
-
-    def send_vc_data(self, vc_data, speaker):
-        try:
-            compressed_vc_data = zlib.compress(vc_data)
-            message = {"message_type": "vc_data", "compressed_vc_data": compressed_vc_data, "speaker": speaker
-                       }
-            self.send_message_dict_tcp(message)
-        except Exception as e:
-            print(f"error in send vc data is: {e}")
-
-    def send_share_screen_data(self, share_screen_data, speaker, shape_of_frame_bytes):
-        try:
-            compressed_share_screen_data = zlib.compress(share_screen_data)
-            message = {"message_type": "share_screen_data", "compressed_share_screen_data":
-                compressed_share_screen_data, "speaker": speaker, "frame_shape": shape_of_frame_bytes
-                       }
-            self.send_message_dict_tcp(message)
-        except Exception as e:
-            print(f"error in send share screen data is: {e}")
-
-    def send_share_camera_data(self, share_camera_data, speaker, shape_of_frame_bytes):
-        try:
-            compressed_share_screen_data = zlib.compress(share_camera_data)
-            message = {"message_type": "share_camera_data",
-                       "compressed_share_camera_data": compressed_share_screen_data,
-                       "speaker": speaker, "frame_shape": shape_of_frame_bytes
-                       }
-            self.send_message_dict_tcp(message)
-        except Exception as e:
-            print(f"error in send camera data is: {e}")
 
     def send_to_client_he_has_all_of_the_messages(self):
         message = {"message_type": "messages_status",

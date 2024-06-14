@@ -8,7 +8,6 @@ import re
 import random
 import json
 import time
-import zlib
 import logging
 import base64
 from song_search_engine import extract_audio_bytes
@@ -61,16 +60,6 @@ def is_string(variable):
 
 def is_dict(variable):
     return isinstance(variable, dict)
-
-
-def is_zlib_compressed(data):
-    try:
-        # Attempt to decompress the data using zlib
-        zlib.decompress(data)
-        return True
-    except zlib.error:
-        # If an error occurs during decompression, it's not zlib compressed
-        return False
 
 
 def gets_group_attributes_from_format(group_format):
