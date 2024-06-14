@@ -3545,25 +3545,6 @@ class PageController:
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             print("Updated the requests list")
-        elif message_type == "vc_data":
-            compressed_vc_data = data.get("compressed_vc_data")
-            speaker = data.get("speaker")
-            vc_data = zlib.decompress(compressed_vc_data)
-            self.main_page.vc_data_list.append((vc_data, speaker))
-        elif message_type == "share_screen_data":
-            compressed_share_screen_data = data.get("compressed_share_screen_data")
-            speaker = data.get("speaker")
-            frame_shape = data.get("frame_shape")
-            share_screen_data = zlib.decompress(compressed_share_screen_data)
-            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-            self.main_page.update_stream_screen_frame(decompressed_frame)
-        elif message_type == "share_camera_data":
-            compressed_share_camera_data = data.get("compressed_share_camera_data")
-            speaker = data.get("speaker")
-            frame_shape = data.get("frame_shape")
-            share_screen_data = zlib.decompress(compressed_share_camera_data)
-            decompressed_frame = np.frombuffer(share_screen_data, dtype=np.uint8).reshape(frame_shape)
-            self.main_page.update_stream_screen_frame(decompressed_frame)
         elif message_type == "friends_list":
             json_friends_list = data.get("friends_list")
             friends_list = json.loads(json_friends_list)
