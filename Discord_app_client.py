@@ -39,7 +39,7 @@ CHANNELS = 1
 RATE = 44100
 CHUNK = 4096
 p = pyaudio.PyAudio()
-SCREEN_FPS = 60
+SCREEN_FPS = 30
 
 
 def is_valid_password(password):
