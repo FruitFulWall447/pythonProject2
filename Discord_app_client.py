@@ -379,7 +379,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         self.watching_user = ""
         self.watching_type = None
 
-        self.screen_share_res = (640, 480)
+        self.screen_share_res = (1280, 720)
         self.is_screen_shared = False
         self.send_share_screen_thread = threading.Thread(target=self.thread_send_share_screen_data, args=())
 
