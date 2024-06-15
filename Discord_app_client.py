@@ -1982,7 +1982,7 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             if not self.chat_clicked_var:
                 if not self.music_clicked:
                     self.chat_clicked()
-                    self.updated_chat()
+                    self.reset_message_box_and_load_new_messages()
                 else:
                     self.chat_clicked()
             else:
