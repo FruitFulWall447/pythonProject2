@@ -1981,8 +1981,12 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         elif event.key() == Qt.Key_Escape:
             if not self.chat_clicked_var:
                 if not self.music_clicked:
-                    self.chat_clicked()
-                    self.reset_message_box_and_load_new_messages()
+                    if self.setting_clicked:
+                        self.chat_clicked()
+                        self.reset_message_box_and_load_new_messages()
+                    else:
+                        self.chat_clicked()
+                        self.update_chat_page_without_messages()
                 else:
                     self.chat_clicked()
             else:
