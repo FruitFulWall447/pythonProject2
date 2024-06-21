@@ -2599,7 +2599,7 @@ class MessagesBox(QWidget):
         # Set the scroll bar value to scroll to the specified index
         scroll_bar.setValue(index)
 
-    def scroll_up_by_n_widgets(self, n):
+    def scroll_down_by_n_widgets(self, n):
         total_height = 0
         for i in range(min(n * 2, self.layout.count())):
             widget = self.layout.itemAt(i).widget()
