@@ -1072,20 +1072,29 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
             action = menu.addAction(action_text)
             action.triggered.connect(lambda: self.pause_and_unpause_playlist())
 
-            label = QLabel("Playlist Volume", parent=self)
-            label.setAlignment(Qt.AlignCenter)
-            menu.addAction(label)
+            widget = QWidget()
 
-            slider = QSlider(Qt.Horizontal)
+            # Create QLabel for the label "Playlist Volume"
+            label = QLabel("Playlist Volume", parent=widget)
+            label.setStyleSheet("color: white;")
+            label.setAlignment(Qt.AlignCenter)
+
+            # Create QSlider
+            slider = QSlider(Qt.Horizontal, parent=widget)
             slider.setStyleSheet(self.music_box.sliders_style_sheet)
             slider.setRange(0, 100)
             slider.setValue(self.playlist_volume)
             slider.valueChanged.connect(self.music_box.playlist_volume_update)
 
-            slider_action = QWidgetAction(menu)
-            slider_action.setDefaultWidget(slider)
+            # Create layout for the widget and add label and slider
+            layout = QVBoxLayout(widget)
+            layout.addWidget(label)
+            layout.addWidget(slider)
 
-            menu.addAction(slider_action)
+            # Create QWidgetAction for the widget
+            widget_action = QWidgetAction(menu)
+            widget_action.setDefaultWidget(widget)
+            menu.addAction(widget_action)
 
             global_pos = button.mapToGlobal(pos)
             # Show the context menu at the adjusted position
