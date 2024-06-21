@@ -1968,9 +1968,9 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                                 self.chats_list.remove(self.selected_chat)
                                 self.chats_list.insert(0, self.selected_chat)
                             self.chat_box.text_entry.setFocus()
-                            self.insert_message_that_client_send(message_dict)
                             self.update_chat_page_without_messages()
                             self.chat_box.text_entry.setFocus(True)
+                            self.insert_message_that_client_send(message_dict)
                 if self.file_to_send:
                     # encodes the compressed data as base64, and then decodes
                     # it into a UTF-8 string for transmission or storage.
@@ -2011,10 +2011,10 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
                     if self.selected_chat != self.chats_list[0]:
                         self.chats_list.remove(self.selected_chat)
                         self.chats_list.insert(0, self.selected_chat)
-                    self.insert_message_that_client_send(message_dict)
                     self.is_new_chat_clicked = True
                     self.update_chat_page_without_messages()
                     self.chat_box.text_entry.setFocus(True)
+                    self.insert_message_that_client_send(message_dict)
                 elif self.social_clicked_var:
                     self.friends_box.send_friend_request()
                 elif self.music_clicked:
