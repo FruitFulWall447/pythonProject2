@@ -391,6 +391,10 @@ class ServerNet:
         except socket.error as e:
             print(e)
 
+    def send_all_data_size(self, size):
+        message = {"message_type": "all_data_size", "all_data_size": size}
+        self.send_message_dict_tcp(message)
+
     def send_user_that_calling(self, user_that_is_calling):
         try:
             message = {"message_type": "call", "call_action_type": "in_call_action",

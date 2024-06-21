@@ -13,6 +13,24 @@ import logging
 from queue import PriorityQueue
 
 
+def get_size(data):
+    if isinstance(data, (str, bytes)):
+        return len(data)
+    elif isinstance(data, (int, float, complex)):
+        return 1
+    elif isinstance(data, (list, tuple, set)):
+        return sum(get_size(item) for item in data)
+    elif isinstance(data, dict):
+        size = 0
+        for key, value in data.items():
+            size += get_size(key) + get_size(value)
+        return size
+    elif data is None:
+        return 1
+    else:
+        raise TypeError(f"Unsupported data type: {type(data)}")
+
+
 def get_id_from_format(str_format):
     temp = str_format.split("(")[1]
     temp = temp.split(")")[0]
@@ -520,13 +538,6 @@ class ServerHandler:
             friend_request_list = database_func.get_friend_requests(name)
             net.send_requests_list(friend_request_list)
 
-    def send_friends_list(self, name):
-        net = self.get_net_by_name(name)
-        if net:
-            friends_list = database_func.get_user_friends(name)
-            net.send_friends_list(friends_list)
-            self.logger.info(f"Sent friend list ({friends_list}) to user {name}")
-
     def send_user_to_update_from_list(self, user_to_remove_from_list, list_type, user_to_send_to, is_remove):
         # list_type = friends_list, requests_list...
         net = self.get_net_by_name(user_to_send_to)
@@ -643,39 +654,77 @@ class ServerHandler:
     def send_to_user_needed_info(self, User):
         net = self.get_net_by_name(User)
 
+        size = 0
+
+        # unlimited
         friends_list = database_func.get_user_friends(User)
+        size += get_size(friends_list)
+
+        # unlimited
+        friend_request_list = database_func.get_friend_requests(User)
+        size += get_size(friend_request_list)
+
+        # unlimited
+        user_groups_list = database_func.get_user_groups(User)
+        size += get_size(user_groups_list)
+
+        # unlimited
+        user_blocked_list = database_func.get_blocked_users(User)
+        size += get_size(user_blocked_list)
+
+        # unlimited
+        user_chats_list = database_func.get_user_chats(User)
+        size += get_size(user_chats_list)
+
+        # unlimited
+        online_friends = find_common_elements(self.online_users, friends_list)
+        size += get_size(online_friends)
+
+        # unlimited
+        list_call_dicts = self.get_list_of_calls_for_user(User)
+        size += get_size(list_call_dicts)
+
+        # limited
+        email = database_func.get_email_by_username(User)
+        size += get_size(email)
+
+        # unlimited
+        songs_list = database_func.get_songs_by_owner(User)
+        size += get_size(songs_list)
+
+        # limited
+        settings_dict = database_func.get_user_settings(User)
+        size += get_size(settings_dict)
+
+        # unlimited
+        profile_list_of_dicts = self.get_profile_list_of_dicts_to_user(User)
+        size += get_size(profile_list_of_dicts)
+
+        net.send_all_data_size(size)
+
         net.send_friends_list(friends_list)
         self.logger.info(f"Sent friend list ({friends_list}) to user {User}")
-        friend_request_list = database_func.get_friend_requests(User)
         net.send_requests_list(friend_request_list)
         self.logger.info(f"Sent requests list ({friend_request_list}) to user {User}")
-        user_groups_list = database_func.get_user_groups(User)
         net.send_user_groups_list(user_groups_list)
         self.logger.info(f"Sent groups list to user {User}")
-        user_blocked_list = database_func.get_blocked_users(User)
         net.send_blocked_list(user_blocked_list)
         self.logger.info(f"Sent blocked list to user {User}")
-        user_chats_list = database_func.get_user_chats(User)
         net.send_user_chats_list(user_chats_list)
         self.logger.info(f"Sent Chats list to user {User}")
-        online_friends = find_common_elements(self.online_users, friends_list)
         net.send_online_users_list(online_friends)
         self.logger.info(f"Sent Online friends list to user {User}")
-        list_call_dicts = self.get_list_of_calls_for_user(User)
         net.send_call_list_of_dicts(list_call_dicts)
         self.logger.info(f"Sent list of call dicts list to user {User}")
 
-        self.send_profile_list_of_dicts_to_user(User)
+        self.send_profile_list_of_dicts_to_user(profile_list_of_dicts, User)
         self.logger.info(f"Sent list of profile dicts list to user {User}")
 
-        email = database_func.get_email_by_username(User)
         net.send_user_email(email)
 
-        songs_list = database_func.get_songs_by_owner(User)
         net.playlist_songs_list(songs_list)
         self.logger.info(f"Sent list of songs dicts list to user {User}")
 
-        settings_dict = database_func.get_user_settings(User)
         if settings_dict is not None:
             net.send_settings_dict(settings_dict)
             self.logger.info(f"Sent settings to user {User}")
@@ -715,12 +764,14 @@ class ServerHandler:
             net.send_profile_dict_of_user(profile_dict, user_of_profile)
             self.logger.info(f"Sent list new profile dict of user {user_of_profile} to user {user}")
 
-    def send_profile_list_of_dicts_to_user(self, user):
+    def get_profile_list_of_dicts_to_user(self, user):
+        list_profile_dicts = get_list_of_needed_profile_dict(user, self)
+        return list_profile_dicts
+
+    def send_profile_list_of_dicts_to_user(self, list_to_send, user):
         net = self.get_net_by_name(user)
         if net is not None:
-            list_profile_dicts = get_list_of_needed_profile_dict(user, self)
-            net.send_profile_list_of_dicts(list_profile_dicts)
-            self.logger.info(f"Sent list of profile dicts list to user {user}")
+            net.send_profile_list_of_dicts(list_to_send)
 
     def get_list_of_calls_for_user(self, user):
         list_of_calls_dicts = []

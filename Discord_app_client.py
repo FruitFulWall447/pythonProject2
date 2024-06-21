@@ -42,6 +42,24 @@ p = pyaudio.PyAudio()
 SCREEN_FPS = 30
 
 
+def get_size(data):
+    if isinstance(data, (str, bytes)):
+        return len(data)
+    elif isinstance(data, (int, float, complex)):
+        return 1
+    elif isinstance(data, (list, tuple, set)):
+        return sum(get_size(item) for item in data)
+    elif isinstance(data, dict):
+        size = 0
+        for key, value in data.items():
+            size += get_size(key) + get_size(value)
+        return size
+    elif data is None:
+        return 1
+    else:
+        raise TypeError(f"Unsupported data type: {type(data)}")
+
+
 def is_valid_password(password):
     # Check if the password is at least 8 characters long
     if len(password) < 8:
@@ -205,6 +223,7 @@ def set_camera_properties(cap):
 
 class SplashScreen(QWidget):
     stop_loading_signal = pyqtSignal()
+    update_progress_bar_signal = pyqtSignal(int)
 
     def __init__(self, page_controller_object):
         super().__init__()
@@ -218,6 +237,7 @@ class SplashScreen(QWidget):
     def init_ui(self):
         # Set window properties
         self.stop_loading_signal.connect(self.close_page_open_main_page)
+        self.update_progress_bar_signal.connect(self.update_progress_bar_value)
         self.setWindowTitle('Splash Screen')
         self.setStyleSheet("""
             QWidget {
@@ -227,7 +247,19 @@ class SplashScreen(QWidget):
                 color: white;
                 font-size: 18px;  /* Set your desired font size */
             }
+            QProgressBar {
+                background-color: #2c3e50; /* Set background color */
+                color: white; /* Set text color */
+                border-style: none;
+                text-align: center;
+                font-size: 18px;
+            }
+            QProgressBar::chunk {
+                background-color: #3498db; /* Set progress bar color */
+                width: 20px;
+            }
         """)
+
         # Create logo label
         logo_label = QLabel(self)
         logo_label.setPixmap(
@@ -241,23 +273,26 @@ class SplashScreen(QWidget):
         loading_label.setObjectName('loading_label')
         loading_label.move(1690 // 2 + 55, 460)
 
-        # Set up dot counter
-        self.dot_count = 0
-
-        # Create timer to update loading dots
-        self.loading_timer = QTimer(self)
-        self.loading_timer.timeout.connect(self.update_loading_dots)
-        self.loading_timer.timeout.connect(self.update_loading_animation)
+        # Create progress bar
+        self.progressBar = QProgressBar(self)
+        self.progressBar.setGeometry(1690 // 2, 500, 200, 25)
+        self.progressBar.setMaximum(100)
+        self.progressBar.setValue(0)
 
         # Set up elapsed time variable
         self.elapsed_time = 0
+        self.total_data_size = 0
+        self.gotten_data_size = 0
         self.start_timer()
 
         # Show the splash screen
         self.show()
 
     def start_timer(self):
-        self.loading_timer.start(400)  # Update every 500 milliseconds
+        self.loading_timer = QTimer(self)
+        self.loading_timer.timeout.connect(self.update_progress_bar)
+        self.loading_time = 4  # seconds
+        self.loading_timer.start(self.loading_time * 100)  # Update every 400 milliseconds
 
     def close_page_open_main_page(self):
         try:
@@ -267,63 +302,68 @@ class SplashScreen(QWidget):
         except Exception as e:
             print(e)
 
-    def update_loading_animation(self):
-        self.dot_count = (self.dot_count + 1) % 5
-        loading_label = self.findChild(QLabel, 'loading_label')
-        loading_label.setText('Loading' + '.' * self.dot_count)
-        loading_label.adjustSize()
+    def update_progress_bar_value(self, added_value):
+        self.gotten_data_size += added_value
+        print(self.gotten_data_size)
+        new_value = int((self.gotten_data_size / self.total_data_size) * 100)
+        print(new_value)
+        if new_value < 100:
+            self.progressBar.setValue(new_value)
+        else:
+            self.progressBar.setValue(100)
 
-    def update_loading_dots(self):
+    def update_progress_bar(self):
         n = self.page_controller_object.n
-        wait_time_sec = 5
-        # Increment elapsed time
-        self.elapsed_time += 500  # Timer interval is 500 milliseconds
-
-        if self.elapsed_time >= wait_time_sec * 1000 and not self.page_controller_object.is_logged_in:  # 5 seconds
-            # Transition to the login page after 5 seconds
-            if self.page_controller_object.main_page.username == "":
-                if not are_token_saved():
-                    self.loading_timer.stop()
-                    self.page_controller_object.change_to_login_page()
-                    self.close()
-                elif not self.page_controller_object.is_logged_in:
-                    security_token = get_saved_token()
-                    n.send_security_token(security_token)
-                    data = n.recv_str()
-                    message_type = data.get("message_type")
-                    if message_type == "security_token":
-                        server_answer = data.get("security_status")
-                        if server_answer == "valid":
-                            data = n.recv_str()
-                            message_type = data.get("message_type")
-                            if message_type == "login_action":
-                                username, action_state = data.get("username"), data.get("login_status")
-                                if action_state is True:
-                                    self.loading_timer.stop()
-                                    print("logged in successfully")
-                                    try:
+        if not self.page_controller_object.is_logged_in:
+            value = self.progressBar.value()
+            value += int((1/self.loading_time) * 100)
+            if value < 100:
+                self.progressBar.setValue(value)
+            else:
+                self.progressBar.setValue(100)
+                if self.page_controller_object.main_page.username == "":
+                    if not are_token_saved():
+                        self.loading_timer.stop()
+                        self.page_controller_object.change_to_login_page()
+                        self.close()
+                    elif not self.page_controller_object.is_logged_in:
+                        security_token = get_saved_token()
+                        n.send_security_token(security_token)
+                        data = n.recv_str()
+                        message_type = data.get("message_type")
+                        if message_type == "security_token":
+                            server_answer = data.get("security_status")
+                            if server_answer == "valid":
+                                data = n.recv_str()
+                                message_type = data.get("message_type")
+                                if message_type == "login_action":
+                                    username, action_state = data.get("username"), data.get("login_status")
+                                    if action_state is True:
+                                        self.loading_timer.stop()
+                                        print("logged in successfully")
+                                        try:
+                                            self.page_controller_object.main_page.username = username
+                                            self.page_controller_object.main_page.update_values()
+                                            self.page_controller_object.is_logged_in = True
+                                            self.page_controller_object.start_receive_thread_after_login()
+                                            self.page_controller_object.main_page.start_listen_udp_thread()
+                                            self.page_controller_object.change_to_splash_page()
+                                            self.close()
+                                        except Exception as e:
+                                            print(e)
+                                    elif action_state == "2fa":
+                                        self.page_controller_object.login_page.username_entry.setText(username)
+                                        self.page_controller_object.is_waiting_for_2fa_code = True
                                         self.page_controller_object.main_page.username = username
-                                        self.page_controller_object.main_page.update_values()
-                                        self.page_controller_object.is_logged_in = True
-                                        self.page_controller_object.start_receive_thread_after_login()
-                                        self.page_controller_object.main_page.start_listen_udp_thread()
-                                        self.page_controller_object.change_to_splash_page()
+                                        self.page_controller_object.change_to_verification_code_page()
                                         self.close()
-                                    except Exception as e:
-                                        print(e)
-                                elif action_state == "2fa":
-                                    self.page_controller_object.login_page.username_entry.setText(username)
-                                    self.page_controller_object.is_waiting_for_2fa_code = True
-                                    self.page_controller_object.main_page.username = username
-                                    self.page_controller_object.change_to_verification_code_page()
-                                    self.close()
-                                else:
-                                    print("username already logged in")
-                        elif server_answer == "invalid":
-                            print("security token isn't valid")
-                            self.loading_timer.stop()
-                            self.page_controller_object.change_to_login_page()
-                            self.close()
+                                    else:
+                                        print("username already logged in")
+                            elif server_answer == "invalid":
+                                print("security token isn't valid")
+                                self.loading_timer.stop()
+                                self.page_controller_object.change_to_login_page()
+                                self.close()
 
 
 class MainPage(QWidget):  # main page doesnt know when chat is changed...
@@ -3459,10 +3499,14 @@ class PageController:
                 self.is_tcp_receive_thread_paused = False
         elif message_type == "users_email":
             self.main_page.email = data.get("email")
+            self.splash_page.update_progress_bar_signal.emit(get_size(self.main_page.email))
+
             QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",
                                      Qt.QueuedConnection)
         elif message_type == "settings_dict":
             settings_dict = data.get("settings_dict")
+            self.splash_page.update_progress_bar_signal.emit(get_size(settings_dict))
+
             self.main_page.update_settings_from_dict_signal.emit(settings_dict)
             print("got settings")
         elif message_type == "update_user_in_list":
@@ -3513,6 +3557,8 @@ class PageController:
         elif message_type == "playlist_songs":
             playlist_songs_list = pickle.loads(data.get("playlist_songs_list"))
             self.main_page.playlist_songs = playlist_songs_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(playlist_songs_list))
+
             QMetaObject.invokeMethod(self.main_page, "insert_playlist_to_table_signal",
                                      Qt.QueuedConnection)
             print("got playlists songs")
@@ -3523,6 +3569,10 @@ class PageController:
                 message_list_addition)
             self.main_page.scroll_back_to_index_before_update_signal.emit(
                 len(message_list_addition))
+        elif message_type == "all_data_size":
+            all_data_size = data.get("all_data_size")
+            self.splash_page.total_data_size = all_data_size
+            print(f"upcoming data size is {all_data_size} bytes")
         elif message_type == "new_message":
             chat = data.get("chat_name")
             if self.main_page.selected_chat == chat:
@@ -3546,6 +3596,8 @@ class PageController:
         elif message_type == "requests_list":
             requests_list = json.loads(data.get("requests_list"))
             self.main_page.request_list = requests_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(requests_list))
+
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             print("Updated the requests list")
@@ -3553,6 +3605,7 @@ class PageController:
             json_friends_list = data.get("friends_list")
             friends_list = json.loads(json_friends_list)
             self.main_page.friends_list = friends_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(friends_list))
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
@@ -3562,6 +3615,8 @@ class PageController:
         elif message_type == "online_users_list":
             online_users_list = json.loads(data.get("online_users_list"))
             self.main_page.online_users_list = online_users_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(online_users_list))
+
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
@@ -3570,12 +3625,16 @@ class PageController:
         elif message_type == "blocked_list":
             blocked_list = json.loads(data.get("blocked_list"))
             self.main_page.blocked_list = blocked_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(blocked_list))
+
             QMetaObject.invokeMethod(self.main_page, "updated_social_page_signal",
                                      Qt.QueuedConnection)
             print("Updated the requests list")
         elif message_type == "groups_list":
             groups_list = json.loads(data.get("groups_list"))
             self.main_page.groups_list = groups_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(groups_list))
+
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page,
@@ -3584,6 +3643,8 @@ class PageController:
         elif message_type == "chats_list":
             chats_list = json.loads(data.get("chats_list"))
             self.main_page.chats_list = chats_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(chats_list))
+
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
                                      Qt.QueuedConnection)
             print("Updated the chats list")
@@ -3681,6 +3742,7 @@ class PageController:
                     list_call_dicts = json.loads(data.get("list_call_dicts"))
                     list_of_call_dicts = list_call_dicts
                     self.main_page.call_dicts = list_of_call_dicts
+                    self.splash_page.update_progress_bar_signal.emit(get_size(list_of_call_dicts))
                     print(f"got list of call dicts: {list_of_call_dicts}")
             if call_action_type == "update_calls":
                 action = data.get("action")
@@ -3690,6 +3752,7 @@ class PageController:
         elif message_type == "profile_dicts_list":
             profile_dicts_list = (data.get("profile_dicts_list"))
             self.main_page.list_user_profile_dicts = profile_dicts_list
+            self.splash_page.update_progress_bar_signal.emit(get_size(profile_dicts_list))
             QMetaObject.invokeMethod(self.main_page, "updated_settings_signal",
                                      Qt.QueuedConnection)
             QMetaObject.invokeMethod(self.main_page, "update_chat_page_without_messages_signal",
@@ -3737,6 +3800,7 @@ class PageController:
                 if receive_status == "done":
                     QMetaObject.invokeMethod(self.splash_page, "stop_loading_signal",
                                              Qt.QueuedConnection)
+                    print(f"got everything")
         elif message_type == "security_token":
             security_token = data.get("security_token")
             save_token(security_token)
