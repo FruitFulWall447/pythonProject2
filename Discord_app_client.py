@@ -320,7 +320,7 @@ class SplashScreen(QWidget):
         n = self.page_controller_object.n
         if not self.page_controller_object.is_logged_in:
             value = self.progressBar.value()
-            value += random.randint(18, 32)
+            value += random.randint(12, 25)
             if value < 100:
                 self.set_value_as_animation(value)
             else:
@@ -2843,6 +2843,7 @@ class VerificationCodePage(QWidget):
         self.label.move(label_x, label_y)
         self.label.setStyleSheet("font-size: 20px;")
         self.start_timer()
+        self.number_of_attempts = 0
 
     def start_timer(self):
         self.timer = QTimer(self)
@@ -2958,7 +2959,9 @@ class VerificationCodePage(QWidget):
         code = self.code.text()
         try:
             if self.time_left != QTime(0, 0, 0):
-                if len(code) == 6:
+                if len(code) == 6 and self.number_of_attempts < 3:
+                    self.code.setText(None)
+                    self.number_of_attempts += 1
                     if not self.page_controller_object.is_waiting_for_2fa_code:
                         n.send_sign_up_verification_code(code)
                     else:
@@ -2972,6 +2975,8 @@ class VerificationCodePage(QWidget):
                             break
                         else:
                             self.page_controller_object.handle_tcp_data(data)
+                elif self.number_of_attempts == 3:
+                    self.return_button_pressed()
         except Exception as e:
             print(f"error in submit_form verification code {e}")
 
@@ -2983,10 +2988,13 @@ class VerificationCodePage(QWidget):
                 result = data.get("code_status")
                 if result == "valid":
                     print("Server got the code")
+                    self.timer.stop()
                     self.successfully_signed_up.show()
                     self.image_button.show()
                 elif result == "invalid":
-                    pass
+                    if self.number_of_attempts == 3:
+                        self.timer.stop()
+                        self.code.setEnabled(False)
         elif message_type == "forget_password":
             kind = data.get("action")
             result = data.get("code_status")
