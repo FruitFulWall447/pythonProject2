@@ -304,7 +304,6 @@ class SplashScreen(QWidget):
 
     def update_progress_bar_value(self, added_value):
         self.gotten_data_size += added_value
-        original_value = self.progressBar.value()
         new_value = int((self.gotten_data_size / self.total_data_size) * 100)
         if new_value < 100:
             self.set_value_as_animation(new_value)
@@ -321,7 +320,7 @@ class SplashScreen(QWidget):
         n = self.page_controller_object.n
         if not self.page_controller_object.is_logged_in:
             value = self.progressBar.value()
-            value += int((1/self.loading_time) * 100)
+            value += random.randint(18, 32)
             if value < 100:
                 self.set_value_as_animation(value)
             else:
