@@ -275,7 +275,7 @@ class SplashScreen(QWidget):
 
         # Create progress bar
         self.progressBar = QProgressBar(self)
-        self.progressBar.setGeometry(1690 // 2, 500, 200, 25)
+        self.progressBar.setGeometry(1690 // 2 - 10, 500, 200, 25)
         self.progressBar.setMaximum(100)
         self.progressBar.setValue(0)
 
