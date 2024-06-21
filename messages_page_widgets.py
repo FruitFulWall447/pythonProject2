@@ -1384,6 +1384,9 @@ class ChatBox(QWidget):
                 pause_mp3_files_button.clicked.connect(self.parent.pause_or_unpause_mp3_files_player)
 
                 music_page_button = QPushButton(self)
+                music_page_button.setContextMenuPolicy(Qt.CustomContextMenu)
+                music_page_button.customContextMenuRequested.connect(
+                    lambda pos, parent=self, button=music_page_button: self.parent.right_click_func_for_music_button(pos, parent, button))
                 mp3_pause_path = "discord_app_assets/music_icon.png"
                 set_button_icon(music_page_button, mp3_pause_path, 40, 40)
                 music_page_button.move(friend_x + 185, info_y + 10)

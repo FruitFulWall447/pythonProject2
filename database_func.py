@@ -76,7 +76,7 @@ def file_to_bytes(file_path):
             file_bytes = file.read()
         return file_bytes
     except FileNotFoundError:
-        print(f"File not found: {file_path}")
+        print(f"File not found")
         return None
     except Exception as e:
         print(f"Error reading file: {e}")
@@ -1284,7 +1284,10 @@ def format_messages(messages):
 
         if message_type != "string":
             content_bytes = file_to_bytes(content)
-            content = base64.b64encode(content_bytes).decode('utf-8')
+            if content_bytes is None:
+                content = None
+            else:
+                content = base64.b64encode(content_bytes).decode('utf-8')
         sender_name = get_username_from_id(sender_id)
         formatted_message = {
             "content": content,

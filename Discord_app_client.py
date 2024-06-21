@@ -1056,6 +1056,36 @@ class MainPage(QWidget):  # main page doesnt know when chat is changed...
         except Exception as e:
             print(f"error in right click func {e}")
 
+    def right_click_func_for_music_button(self, pos, parent, button):
+        menu = QMenu(parent)
+        menu.setStyleSheet(f"""
+            QMenu {{
+                color: white; /* Text color of menu items */
+                border: 1px solid gray; /* Border style */
+            }}
+            QMenu::item:selected {{
+                background-color: {self.standard_hover_color}; /* Hover color when item is selected */
+            }}
+        """)
+        action_text = f"Toggle music player"
+        action = menu.addAction(action_text)
+        action.triggered.connect(lambda: self.pause_and_unpause_playlist())
+
+        slider = QSlider(Qt.Horizontal)
+        slider.setStyleSheet(self.music_box.sliders_style_sheet)
+        slider.setRange(0, 100)
+        slider.setValue(self.playlist_volume)
+        slider.valueChanged.connect(self.music_box.playlist_volume_update)
+
+        slider_action = QWidgetAction(menu)
+        slider_action.setDefaultWidget(slider)
+
+        menu.addAction(slider_action)
+
+        global_pos = button.mapToGlobal(pos)
+        # Show the context menu at the adjusted position
+        menu.exec_(global_pos)
+
     def update_group_image(self, image_bytes, group_id):
         try:
             self.Network.send_new_group_image_to_server(image_bytes, group_id)
@@ -3326,7 +3356,8 @@ class PageController:
                 self.receive_thread_after_login = threading.Thread(target=self.thread_recv_messages, args=())
                 self.is_logged_in = False
                 self.is_waiting_for_2fa_code = False
-                self.change_to_login_page()
+                self.change_to_splash_page()
+                # self.change_to_login_page()
             else:
                 print("tried reconnecting but server still offline")
         except Exception as e:
