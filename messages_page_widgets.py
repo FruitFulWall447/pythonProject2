@@ -779,7 +779,10 @@ class ChatBox(QWidget):
                             self.ringing_to_label.move(rings_to_x, y_of_label)
                             text_1_width = self.ringing_to_label.width()
 
-                            text = f"{self.parent.calling_to}"
+                            if self.parent.calling_to.startswith("("):
+                                text, _ = gets_group_attributes_from_format(self.parent.calling_to)
+                            else:
+                                text = f"{self.parent.calling_to}"
                             self.calling_to_label = QLabel(text, self)
                             self.calling_to_label.setStyleSheet("color: white; font-size: 25px; margin: 10px;")
                             text_2_width = self.calling_to_label.width()
