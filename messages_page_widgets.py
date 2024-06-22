@@ -1678,10 +1678,15 @@ class ChatBox(QWidget):
         checkbox = self.sender()
         friend_name = checkbox.friend_name
         wanted_len = self.parent.group_max_members - 1
+        if self.parent.is_create_group_inside_chat_pressed:
+            len_of_members = len(self.parent.selected_group_members) + len(self.parent.get_group_members_by_group_id(
+                                self.current_group_id)) - 1
+        else:
+            len_of_members = len(self.parent.selected_group_members)
         try:
-            if state == 2 and len(self.parent.selected_group_members) < wanted_len:  # Checked state
+            if state == 2 and len_of_members < wanted_len:  # Checked state
                 self.parent.selected_group_members.append(friend_name)
-            elif state == 2 and len(self.parent.selected_group_members) >= wanted_len:
+            elif state == 2 and len_of_members >= wanted_len:
                 checkbox.toggle()
             else:
                 if friend_name in self.parent.selected_group_members and state == 0:
