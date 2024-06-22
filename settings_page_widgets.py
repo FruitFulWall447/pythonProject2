@@ -493,11 +493,6 @@ class SettingsBox(QWidget):
                                                                       change_password_button_y, button_width,
                                                                       button_height, "Change Password")
                 change_password_button.clicked.connect(self.change_password_function)
-                delete_account_button_x, delete_account_button_y = change_password_button_x, change_password_button_y+100
-                delete_account_button = self.create_colored_button(red_hex, dark_red_hex, None,
-                                                                      delete_account_button_x,
-                                                                      delete_account_button_y, button_width,
-                                                                      button_height, "Delete Account")
 
             elif self.parent.selected_settings == "Voice & Video":
                 # Check if the device has input capability
