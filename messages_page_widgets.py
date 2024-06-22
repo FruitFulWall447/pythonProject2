@@ -1681,6 +1681,8 @@ class ChatBox(QWidget):
         try:
             if state == 2 and len(self.parent.selected_group_members) < wanted_len:  # Checked state
                 self.parent.selected_group_members.append(friend_name)
+            elif state == 2 and len(self.parent.selected_group_members) >= wanted_len:
+                checkbox.toggle()
             else:
                 if friend_name in self.parent.selected_group_members and state == 0:
                     self.parent.selected_group_members.remove(friend_name)
